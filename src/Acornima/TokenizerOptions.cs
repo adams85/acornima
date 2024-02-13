@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace Acornima;
 
-// https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/options.js
+// https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/options.js
 
 public delegate void OnTokenHandler(in Token token);
 

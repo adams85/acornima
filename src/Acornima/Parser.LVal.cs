@@ -9,7 +9,7 @@ namespace Acornima;
 
 using static Unsafe;
 
-// https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/lval.js
+// https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/lval.js
 
 public partial class Parser
 {
@@ -18,7 +18,7 @@ public partial class Parser
     [return: NotNullIfNotNull(nameof(node))]
     private Node? ToAssignable(Node? node, bool isBinding, ref DestructuringErrors destructuringErrors)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/lval.js > `pp.toAssignable = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/lval.js > `pp.toAssignable = function`
 
         if (node is not null && _tokenizerOptions._ecmaVersion >= EcmaVersion.ES6)
         {
@@ -159,7 +159,7 @@ public partial class Parser
     // Convert list of expression atoms to binding list.
     private NodeList<Node?> ToAssignableList(in NodeList<Node?> exprList, bool isBinding)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/lval.js > `pp.toAssignableList = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/lval.js > `pp.toAssignableList = function`
 
         if (exprList.Count == 0)
         {
@@ -191,7 +191,7 @@ public partial class Parser
     // Parses spread element.
     private SpreadElement ParseSpread(ref DestructuringErrors destructuringErrors)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/lval.js > `pp.parseSpread = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/lval.js > `pp.parseSpread = function`
 
         var startMarker = StartNode();
         Next();
@@ -202,7 +202,7 @@ public partial class Parser
 
     private RestElement ParseRestBinding()
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/lval.js > `pp.parseRestBinding = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/lval.js > `pp.parseRestBinding = function`
 
         var startMarker = StartNode();
         Next();
@@ -221,7 +221,7 @@ public partial class Parser
     // Parses lvalue (assignable) atom.
     private Node ParseBindingAtom()
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/lval.js > `pp.parseBindingAtom = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/lval.js > `pp.parseBindingAtom = function`
 
         if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES6)
         {
@@ -245,7 +245,7 @@ public partial class Parser
 
     private NodeList<Node?> ParseBindingList(TokenType close, bool allowEmptyElement, bool allowTrailingComma)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/lval.js > `pp.parseBindingList = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/lval.js > `pp.parseBindingList = function`
 
         var elements = new ArrayList<Node?>();
         var first = true;
@@ -291,7 +291,7 @@ public partial class Parser
 
     private Node ParseAssignableListItem()
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/lval.js > `pp.parseAssignableListItem = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/lval.js > `pp.parseAssignableListItem = function`
 
         var startMarker = StartNode();
         var element = ParseMaybeDefault(startMarker);
@@ -301,7 +301,7 @@ public partial class Parser
     // Parses assignment pattern around given atom if possible.
     private Node ParseMaybeDefault(in Marker startMarker, Node? left = null)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/lval.js > `pp.parseMaybeDefault = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/lval.js > `pp.parseMaybeDefault = function`
 
         left ??= ParseBindingAtom();
         if (_tokenizerOptions._ecmaVersion < EcmaVersion.ES6 || !Eat(TokenType.Eq))
@@ -379,7 +379,7 @@ public partial class Parser
 
     private void CheckLValSimple(Node expr, BindingType bindingType = BindingType.None, HashSet<string>? checkClashes = null)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/lval.js > `pp.checkLValSimple = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/lval.js > `pp.checkLValSimple = function`
 
         var isBind = bindingType != BindingType.None;
 
@@ -446,7 +446,7 @@ public partial class Parser
 
     private void CheckLValPattern(Node expr, BindingType bindingType = BindingType.None, HashSet<string>? checkClashes = null)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/lval.js > `pp.checkLValPattern = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/lval.js > `pp.checkLValPattern = function`
 
         switch (expr.Type)
         {
@@ -477,7 +477,7 @@ public partial class Parser
 
     private void CheckLValInnerPattern(Node pattern, BindingType bindingType = BindingType.None, HashSet<string>? checkClashes = null)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/lval.js > `pp.checkLValInnerPattern = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/lval.js > `pp.checkLValInnerPattern = function`
 
         switch (pattern.Type)
         {

@@ -82,7 +82,7 @@ internal static class StringExtensions
 
     public static int CodePointAt(this string s, int index, int endIndex)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/util.js > `export function codePointToString`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/util.js > `export function codePointToString`
 
         var code = s.CharCodeAt(index, endIndex);
         if (((char)code).IsHighSurrogate())

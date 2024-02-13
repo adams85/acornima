@@ -10,7 +10,7 @@ using static Helpers.ExceptionHelper;
 
 public readonly struct Position : IEquatable<Position>, IComparable<Position>
 {
-    // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/locutil.js > `export class Position`
+    // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/locutil.js > `export class Position`
 
     /// <summary>
     /// Line number (1-indexed).

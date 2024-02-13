@@ -6,7 +6,7 @@ namespace Acornima;
 
 public partial class Parser
 {
-    // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/identifier.js
+    // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/identifier.js
 
     // TODO: add tests to verify identical behavior to acornjs
 

@@ -7,7 +7,7 @@ using Acornima.Helpers;
 
 namespace Acornima;
 
-// https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/state.js
+// https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/state.js
 
 public partial class Tokenizer
 {

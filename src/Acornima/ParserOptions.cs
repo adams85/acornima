@@ -3,7 +3,7 @@ using Acornima.Ast;
 
 namespace Acornima;
 
-// https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/options.js
+// https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/options.js
 
 public delegate void OnInsertedSemicolonHandler(int lastTokenEnd, Position lastTokenEndLocation);
 
@@ -105,9 +105,8 @@ public record class ParserOptions
     /// <summary>
     /// <see cref="OnInsertedSemicolon"/> can be a callback that will be called
     /// when a semicolon is automatically inserted. It will be passed
-    /// the position of the comma as an offset, and if <see cref="Locations"/> is
-    /// enabled, it is given the location as a <see cref="Position"/> object
-    /// as second argument.
+    /// the position of the inserted semicolon as an offset, and
+    /// it is given the location as a <see cref="Position"/> object as second argument.
     /// </summary>
     public OnInsertedSemicolonHandler? OnInsertedSemicolon { get => _onInsertedSemicolon; init => _onInsertedSemicolon = value; }
 

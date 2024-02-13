@@ -6,7 +6,7 @@ using Acornima.Helpers;
 
 namespace Acornima;
 
-// https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/index.js
+// https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/index.js
 
 public sealed partial class Parser
 {
@@ -24,10 +24,6 @@ public sealed partial class Parser
         _isReservedWord = _isReservedWordBind = null!;
     }
 
-    // Tokenizer's superficial context tracking is not perfect, in a few situations
-    // the parser needs to "help it out" by altering tokenizer's internal state.
-    private ref ArrayList<TokenContext> TokenContextStack { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref _tokenizer._contextStack; }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void Next(bool ignoreEscapeSequenceInKeyword = false, bool requireValidEscapeSequenceInTemplate = true)
     {
@@ -37,14 +33,14 @@ public sealed partial class Parser
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private Marker StartNode()
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/node.js > `pp.startNode = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/node.js > `pp.startNode = function`
 
         return new Marker(_tokenizer._start, _tokenizer._startLocation);
     }
 
     private T FinishNodeAt<T>(in Marker startMarker, in Marker endMarker, T node) where T : Node
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/node.js > `function finishNodeAt`, `pp.finishNodeAt = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/node.js > `function finishNodeAt`, `pp.finishNodeAt = function`
 
         node._range = new Range(startMarker.Index, endMarker.Index);
         node._location = new SourceLocation(startMarker.Position, endMarker.Position, _tokenizer._sourceFile);
@@ -55,7 +51,7 @@ public sealed partial class Parser
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private T FinishNode<T>(in Marker startMarker, T node) where T : Node
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/node.js > `pp.finishNode = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/node.js > `pp.finishNode = function`
 
         return FinishNodeAt(startMarker, new Marker(_tokenizer._lastTokenEnd, _tokenizer._lastTokenEndLocation), node);
     }
@@ -159,7 +155,7 @@ public sealed partial class Parser
 
     private void DeclareName(string name, BindingType bindingType, int pos)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/scope.js > `pp.declareName = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/scope.js > `pp.declareName = function`
 
         var redeclared = false;
         ref var scope = ref Unsafe.NullRef<Scope>();
@@ -220,7 +216,7 @@ public sealed partial class Parser
 
     private void CheckLocalExport(Identifier id)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/scope.js > `pp.checkLocalExport = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/scope.js > `pp.checkLocalExport = function`
 
         ref readonly var rootScope = ref _scopeStack.GetItemRef(0);
         // scope.functions must be empty as Module code is always strict.

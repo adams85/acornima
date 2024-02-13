@@ -11,7 +11,7 @@ using static Helpers.ExceptionHelper;
 
 public readonly struct SourceLocation : IEquatable<SourceLocation>
 {
-    // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/locutil.js > `export class SourceLocation`
+    // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/locutil.js > `export class SourceLocation`
 
     public readonly Position Start;
     public readonly Position End;

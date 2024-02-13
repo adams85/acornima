@@ -2,7 +2,7 @@ using System.Diagnostics;
 
 namespace Acornima;
 
-// https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokencontext.js
+// https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokencontext.js
 
 // The algorithm used to determine whether a regexp can appear at a
 // given point in the program is loosely based on sweet.js' approach.

@@ -7,7 +7,7 @@ using Acornima.Helpers;
 
 namespace Acornima;
 
-// https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/state.js
+// https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/state.js
 
 public partial class Parser
 {
@@ -240,7 +240,7 @@ public partial class Parser
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static ScopeFlags FunctionFlags(bool async, bool generator)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/scopeflags.js > `export function functionFlags`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/scopeflags.js > `export function functionFlags`
 
         var flags = ScopeFlags.Function;
         if (async)
@@ -257,7 +257,7 @@ public partial class Parser
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void EnterScope(ScopeFlags flags)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/scope.js > `pp.enterScope = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/scope.js > `pp.enterScope = function`
 
         int currentVarScopeIndex, currentThisScopeIndex;
         if ((flags & ScopeFlags.Var) != 0)
@@ -278,17 +278,17 @@ public partial class Parser
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void ExitScope()
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/scope.js > `pp.exitScope = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/scope.js > `pp.exitScope = function`
 
         _scopeStack.Pop();
     }
 
-    // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/scope.js > `pp.currentScope = function`
+    // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/scope.js > `pp.currentScope = function`
     private ref Scope CurrentScope { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref _scopeStack.PeekRef(); }
 
     private ref Scope CurrentVarScope(out int index)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/scope.js > `pp.currentVarScope = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/scope.js > `pp.currentVarScope = function`
 
         // NOTE: to improve performance, we calculate and store the index of the current var scope on the fly
         // instead of looking it up at every call as it's done in acornjs (see also `EnterScope`).
@@ -300,7 +300,7 @@ public partial class Parser
     // Could be useful for `this`, `new.target`, `super()`, `super.property`, and `super[property]`.
     private ref Scope CurrentThisScope(out int index)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/scope.js > `pp.currentThisScope = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/scope.js > `pp.currentThisScope = function`
 
         // NOTE: to improve performance, we calculate and store the index of the current this scope on the fly
         // instead of looking it up at every call as it's done in acornjs (see also `EnterScope`).
@@ -312,7 +312,7 @@ public partial class Parser
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool InFunction()
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/state.js > `get inFunction`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/state.js > `get inFunction`
 
         return (CurrentVarScope(out _).Flags & ScopeFlags.Function) != 0;
     }
@@ -320,7 +320,7 @@ public partial class Parser
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool InGenerator()
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/state.js > `get inGenerator`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/state.js > `get inGenerator`
 
         return (CurrentVarScope(out _).Flags & (ScopeFlags.Generator | ScopeFlags.InClassFieldInit)) == ScopeFlags.Generator;
     }
@@ -328,14 +328,14 @@ public partial class Parser
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool InAsync()
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/state.js > `get inAsync`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/state.js > `get inAsync`
 
         return (CurrentVarScope(out _).Flags & (ScopeFlags.Async | ScopeFlags.InClassFieldInit)) == ScopeFlags.Async;
     }
 
     public bool CanAwait()
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/state.js > `get canAwait`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/state.js > `get canAwait`
 
         for (var i = _scopeStack.Count - 1; i >= 0; i--)
         {
@@ -358,7 +358,7 @@ public partial class Parser
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool AllowSuper()
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/state.js > `get allowSuper`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/state.js > `get allowSuper`
 
         return _options._allowSuperOutsideMethod || (CurrentThisScope(out _).Flags & (ScopeFlags.Super | ScopeFlags.InClassFieldInit)) != 0;
     }
@@ -366,7 +366,7 @@ public partial class Parser
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool AllowDirectSuper()
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/state.js > `get allowDirectSuper`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/state.js > `get allowDirectSuper`
 
         return (CurrentThisScope(out _).Flags & ScopeFlags.DirectSuper) != 0;
     }
@@ -374,8 +374,8 @@ public partial class Parser
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool TreatFunctionsAsVar()
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/state.js > `get treatFunctionsAsVar`
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/scope.js > `pp.treatFunctionsAsVarInScope = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/state.js > `get treatFunctionsAsVar`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/scope.js > `pp.treatFunctionsAsVarInScope = function`
 
         // NOTE: to improve performance, we calculate and store this flag on the fly
         // instead of recalculating it at every call as it's done in acornjs.
@@ -386,7 +386,7 @@ public partial class Parser
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool AllowNewDotTarget()
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/state.js > `get allowNewDotTarget`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/state.js > `get allowNewDotTarget`
 
         return (CurrentThisScope(out _).Flags & (ScopeFlags.Function | ScopeFlags.ClassStaticBlock | ScopeFlags.InClassFieldInit)) != 0;
     }
@@ -394,7 +394,7 @@ public partial class Parser
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool InClassStaticBlock()
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/state.js > `get inClassStaticBlock`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/state.js > `get inClassStaticBlock`
 
         return (CurrentVarScope(out _).Flags & ScopeFlags.ClassStaticBlock) != 0;
     }
@@ -431,7 +431,7 @@ public partial class Parser
     [Flags]
     private enum ScopeFlags : ushort
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/scopeflags.js
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/scopeflags.js
 
         None = 0,
         Top = 1 << 0,
@@ -452,7 +452,7 @@ public partial class Parser
 
     private struct Scope
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/scope.js > `class Scope`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/scope.js > `class Scope`
 
         public Scope(ScopeFlags flags, int currentVarScopeIndex, int currentThisScopeIndex)
         {

@@ -33,7 +33,7 @@ public partial class Tokenizer
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static bool IsNewLine(char ch)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/whitespace.js > `export function isNewLine`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/whitespace.js > `export function isNewLine`
 
         // NOTE: In isolation (when checking for other character categories is not needed),
         // this is around 2x faster than the lookup approach.
@@ -50,7 +50,7 @@ public partial class Tokenizer
 
     internal static int NextLineBreak(string text, int startIndex, int endIndex)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/whitespace.js > `export function nextLineBreak`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/whitespace.js > `export function nextLineBreak`
 
         for (var i = startIndex; i < endIndex; i++)
         {
@@ -74,7 +74,7 @@ public partial class Tokenizer
     // into.
     internal static Position GetLineInfo(string text, int offset, out int lineStartIndex)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/locutil.js > `export function getLineInfo`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/locutil.js > `export function getLineInfo`
 
         lineStartIndex = 0;
         for (var line = 1; ;)

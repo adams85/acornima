@@ -9,7 +9,7 @@ namespace Acornima;
 
 using static Unsafe;
 
-// https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js
+// https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js
 
 public partial class Parser
 {
@@ -20,7 +20,7 @@ public partial class Parser
 
     private NodeList<Statement> ParseTopLevel()
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseTopLevel = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseTopLevel = function`
 
         Next();
 
@@ -44,7 +44,7 @@ public partial class Parser
 
     private bool IsLet(StatementContext context = StatementContext.Default)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.isLet = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.isLet = function`
 
         if (_tokenizerOptions._ecmaVersion < EcmaVersion.ES6 || !IsContextual("let"))
         {
@@ -101,7 +101,7 @@ public partial class Parser
     // - 'async /*\n*/ function' is invalid.
     private bool IsAsyncFunction()
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.isAsyncFunction = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.isAsyncFunction = function`
 
         if (_tokenizerOptions._ecmaVersion < EcmaVersion.ES8 || !IsContextual("async"))
         {
@@ -134,7 +134,7 @@ public partial class Parser
     // does not help.
     private Statement ParseStatement(StatementContext context, bool topLevel = false)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseStatement = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseStatement = function`
 
         var startMarker = StartNode();
 
@@ -298,7 +298,7 @@ public partial class Parser
 
     private Statement ParseBreakContinueStatement(in Marker startMarker, TokenType keyword)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseBreakContinueStatement = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseBreakContinueStatement = function`
 
         var isBreak = keyword == TokenType.Break;
         Next();
@@ -351,7 +351,7 @@ public partial class Parser
 
     private DebuggerStatement ParseDebuggerStatement(in Marker startMarker)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseDebuggerStatement = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseDebuggerStatement = function`
 
         Next();
         Semicolon();
@@ -361,7 +361,7 @@ public partial class Parser
 
     private DoWhileStatement ParseDoStatement(in Marker startMarker)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseDoStatement = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseDoStatement = function`
 
         Next();
 
@@ -393,7 +393,7 @@ public partial class Parser
     // is a regular `for` loop.
     private Statement ParseForStatement(in Marker startMarker)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseForStatement = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseForStatement = function`
 
         Next();
 
@@ -479,7 +479,7 @@ public partial class Parser
 
     private FunctionDeclaration ParseFunctionStatement(in Marker startMarker, bool isAsync, bool declarationPosition)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseFunctionStatement = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseFunctionStatement = function`
 
         Next();
         var flags = declarationPosition
@@ -498,7 +498,7 @@ public partial class Parser
 
     private IfStatement ParseIfStatement(in Marker startMarker)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseIfStatement = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseIfStatement = function`
 
         Next();
         var test = ParseParenExpression();
@@ -511,7 +511,7 @@ public partial class Parser
 
     private ReturnStatement ParseReturnStatement(in Marker startMarker)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseReturnStatement = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseReturnStatement = function`
 
         if (!_options._allowReturnOutsideFunction && !InFunction())
         {
@@ -540,7 +540,7 @@ public partial class Parser
 
     private SwitchStatement ParseSwitchStatement(in Marker startMarker)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseSwitchStatement = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseSwitchStatement = function`
 
         Next();
         var discriminant = ParseParenExpression();
@@ -602,7 +602,7 @@ public partial class Parser
 
     private ThrowStatement ParseThrowStatement(in Marker startMarker)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseThrowStatement = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseThrowStatement = function`
 
         Next();
 
@@ -619,7 +619,7 @@ public partial class Parser
 
     private Node ParseCatchClauseParam()
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseCatchClauseParam = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseCatchClauseParam = function`
 
         var param = ParseBindingAtom();
 
@@ -645,7 +645,7 @@ public partial class Parser
 
     private TryStatement ParseTryStatement(in Marker startMarker)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseTryStatement = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseTryStatement = function`
 
         Next();
         var blockStartMarker = StartNode();
@@ -702,7 +702,7 @@ public partial class Parser
 
     private VariableDeclaration ParseVarStatement(in Marker startMarker, VariableDeclarationKind kind, bool allowMissingInitializer = false)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseVarStatement = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseVarStatement = function`
 
         Next();
         var declaration = ParseVar(kind, isFor: false, allowMissingInitializer);
@@ -713,7 +713,7 @@ public partial class Parser
 
     private WhileStatement ParseWhileStatement(in Marker startMarker)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseWhileStatement = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseWhileStatement = function`
 
         Next();
         var test = ParseParenExpression();
@@ -727,7 +727,7 @@ public partial class Parser
 
     private WithStatement ParseWithStatement(in Marker startMarker)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseWithStatement = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseWithStatement = function`
 
         if (_strict)
         {
@@ -743,7 +743,7 @@ public partial class Parser
 
     private EmptyStatement ParseEmptyStatement(in Marker startMarker)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseEmptyStatement = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseEmptyStatement = function`
 
         Next();
 
@@ -752,7 +752,7 @@ public partial class Parser
 
     private LabeledStatement ParseLabeledStatement(in Marker startMarker, string maybeName, Identifier expr, StatementContext context)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseLabeledStatement = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseLabeledStatement = function`
 
         for (var i = 0; i < _labels.Count; i++)
         {
@@ -791,7 +791,7 @@ public partial class Parser
 
     private ExpressionStatement ParseExpressionStatement(in Marker startMarker, Expression expression)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseExpressionStatement = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseExpressionStatement = function`
 
         Semicolon();
 
@@ -815,7 +815,7 @@ public partial class Parser
 
     private void ParseBlock(ref ArrayList<Statement> body, bool createNewLexicalScope = true, bool exitStrict = false)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseBlock = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseBlock = function`
 
         if (createNewLexicalScope)
         {
@@ -844,7 +844,7 @@ public partial class Parser
     // expression.
     private ForStatement ParseFor(in Marker startMarker, StatementOrExpression? init)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseFor = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseFor = function`
 
         Expect(TokenType.Semicolon);
 
@@ -866,7 +866,7 @@ public partial class Parser
     // same from parser's perspective.
     private Statement ParseForIn(in Marker startMarker, bool await, Node init)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseForIn = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseForIn = function`
 
         var isForIn = _tokenizer._type == TokenType.In;
         Next();
@@ -904,7 +904,7 @@ public partial class Parser
     // Parse a list of variable declarations.
     private VariableDeclaration ParseVar(VariableDeclarationKind kind, bool isFor, bool allowMissingInitializer = false)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseVar = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseVar = function`
 
         var declarations = new ArrayList<VariableDeclarator>();
         do
@@ -947,7 +947,7 @@ public partial class Parser
 
     private Node ParseVarId(VariableDeclarationKind kind)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseVarId = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseVarId = function`
 
         var id = ParseBindingAtom();
         CheckLValPattern(id, kind == VariableDeclarationKind.Var ? BindingType.Var : BindingType.Lexical);
@@ -959,7 +959,7 @@ public partial class Parser
     private StatementOrExpression ParseFunction(in Marker startMarker, FunctionOrClassFlags flags, bool isAsync = false,
         ExpressionContext context = ExpressionContext.Default)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseFunction = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseFunction = function`
 
         bool generator;
         if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES9 || !isAsync && _tokenizerOptions._ecmaVersion >= EcmaVersion.ES6)
@@ -1024,7 +1024,7 @@ public partial class Parser
 
     private NodeList<Node> ParseFunctionParams()
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseFunctionParams = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseFunctionParams = function`
 
         Expect(TokenType.ParenLeft);
         var parameters = ParseBindingList(close: TokenType.ParenRight, allowEmptyElement: false, allowTrailingComma: _tokenizerOptions._ecmaVersion >= EcmaVersion.ES8);
@@ -1036,7 +1036,7 @@ public partial class Parser
     // `FunctionOrClassFlags.Statement` flag).
     private StatementOrExpression ParseClass(in Marker startMarker, FunctionOrClassFlags flags)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseClass = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseClass = function`
 
         // ecma-262 14.6 Class Definitions
         // A class definition is always strict mode code.
@@ -1098,7 +1098,7 @@ public partial class Parser
 
     private Node ParseClassElement(bool constructorAllowsSuper)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseClassElement = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseClassElement = function`
 
         var startMarker = StartNode();
         string? keyName = null;
@@ -1181,7 +1181,7 @@ public partial class Parser
 
     private bool IsClassElementNameStart()
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.isClassElementNameStart = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.isClassElementNameStart = function`
 
         return _tokenizer._type == TokenType.Name
             || _tokenizer._type == TokenType.PrivateId
@@ -1192,7 +1192,7 @@ public partial class Parser
 
     private Expression ParseClassElementName(out bool computed)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseClassElementName = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseClassElementName = function`
 
         if (_tokenizer._type == TokenType.PrivateId)
         {
@@ -1211,7 +1211,7 @@ public partial class Parser
 
     private MethodDefinition ParseClassMethod(in Marker startMarker, PropertyKind kind, Expression key, bool computed, bool isStatic, bool isAsync, bool isGenerator, bool constructorAllowsSuper)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseClassMethod = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseClassMethod = function`
 
         var isConstructor = !isStatic && CheckKeyName(key, computed, "constructor");
         var allowsDirectSuper = isConstructor && constructorAllowsSuper;
@@ -1268,7 +1268,7 @@ public partial class Parser
 
     private PropertyDefinition ParseClassField(in Marker startMarker, Expression key, bool computed, bool isStatic)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseClassField = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseClassField = function`
 
         if (CheckKeyName(key, computed, "constructor"))
         {
@@ -1304,7 +1304,7 @@ public partial class Parser
 
     private StaticBlock ParseClassStaticBlock(in Marker startMarker)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseClassStaticBlock = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseClassStaticBlock = function`
 
         var body = new ArrayList<Statement>();
 
@@ -1326,7 +1326,7 @@ public partial class Parser
 
     private Identifier? ParseClassId(FunctionOrClassFlags flags)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseClassId = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseClassId = function`
 
         Identifier? id;
         if (_tokenizer._type == TokenType.Name)
@@ -1351,14 +1351,14 @@ public partial class Parser
 
     private Expression? ParseClassSuper()
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseClassSuper = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseClassSuper = function`
 
         return Eat(TokenType.Extends) ? ParseExprSubscripts(ref NullRef<DestructuringErrors>()) : null;
     }
 
     private int EnterClassBody()
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.enterClassBody = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.enterClassBody = function`
 
         var element = new PrivateNameStatus();
         _privateNameStack.Push(element);
@@ -1367,7 +1367,7 @@ public partial class Parser
 
     private void ExitClassBody()
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.exitClassBody = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.exitClassBody = function`
 
         if (!_options._checkPrivateFields)
         {
@@ -1399,7 +1399,7 @@ public partial class Parser
 
     private static bool IsPrivateNameConflicted(ref PrivateNameStatus privateNameStatus, ClassProperty element)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `function isPrivateNameConflicted`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `function isPrivateNameConflicted`
 
         const int staticFlag = 1 << (int)PropertyKind.Unknown;
         const int getterFlag = 1 << (int)PropertyKind.Get;
@@ -1449,7 +1449,7 @@ public partial class Parser
 
     private static bool CheckKeyName(Expression key, bool computed, string name)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `function checkKeyName`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `function checkKeyName`
 
         return !computed
             && (key is Identifier identifier && identifier.Name == name
@@ -1460,7 +1460,7 @@ public partial class Parser
 
     private ExportDeclaration ParseExport(in Marker startMarker, HashSet<string>? exports)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseExport = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseExport = function`
 
         Next();
 
@@ -1481,7 +1481,7 @@ public partial class Parser
 
     private ExportDeclaration ParseExportDeclaration(in Marker startMarker, HashSet<string>? exports)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseExportDeclaration = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseExportDeclaration = function`
 
         Declaration? declaration;
         NodeList<ExportSpecifier> specifiers;
@@ -1557,7 +1557,7 @@ public partial class Parser
 
     private ExportDefaultDeclaration ParseExportDefaultDeclaration(in Marker startMarker, HashSet<string>? exports)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseExportDefaultDeclaration = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseExportDefaultDeclaration = function`
 
         CheckExport(exports, "default", _tokenizer._lastTokenStart);
 
@@ -1592,7 +1592,7 @@ public partial class Parser
 
     private ExportAllDeclaration ParseExportAllDeclaration(in Marker startMarker, HashSet<string>? exports)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseExportAllDeclaration = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseExportAllDeclaration = function`
 
         Expression? exported;
         if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES11 && EatContextual("as"))
@@ -1621,7 +1621,7 @@ public partial class Parser
 
     private void CheckExport(HashSet<string>? exports, object name, int pos)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.checkExport = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.checkExport = function`
 
         if (exports is null)
         {
@@ -1647,7 +1647,7 @@ public partial class Parser
 
     private void CheckPatternExport(HashSet<string>? exports, Node pattern)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.checkPatternExport = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.checkPatternExport = function`
 
         int i;
         switch (pattern)
@@ -1684,16 +1684,12 @@ public partial class Parser
             case RestElement restElement:
                 CheckPatternExport(exports, restElement.Argument);
                 break;
-
-            case ParenthesizedPattern parenthesizedPattern:
-                CheckPatternExport(exports, parenthesizedPattern.Pattern);
-                break;
         }
     }
 
     private void CheckVariableExport(HashSet<string>? exports, in NodeList<VariableDeclarator> decls)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.checkVariableExport = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.checkVariableExport = function`
 
         if (exports is null)
         {
@@ -1708,7 +1704,7 @@ public partial class Parser
 
     private bool ShouldParseExportStatement()
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.shouldParseExportStatement = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.shouldParseExportStatement = function`
 
         return _tokenizer._type.Keyword is Keyword.Var or Keyword.Const or Keyword.Class or Keyword.Function
             || IsLet()
@@ -1719,7 +1715,7 @@ public partial class Parser
 
     private ExportSpecifier ParseExportSpecifier(HashSet<string>? exports)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseExportSpecifier = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseExportSpecifier = function`
 
         var startMarker = StartNode();
         var local = ParseModuleExportName();
@@ -1732,7 +1728,7 @@ public partial class Parser
 
     private NodeList<ExportSpecifier> ParseExportSpecifiers(HashSet<string>? exports)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseExportSpecifiers = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseExportSpecifiers = function`
 
         var nodes = new ArrayList<ExportSpecifier>();
 
@@ -1764,7 +1760,7 @@ public partial class Parser
     // Parses import declaration.
     private ImportDeclaration ParseImport(in Marker startMarker)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseImport = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseImport = function`
 
         Next();
 
@@ -1793,7 +1789,7 @@ public partial class Parser
 
     private ImportSpecifier ParseImportSpecifier()
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseImportSpecifier = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseImportSpecifier = function`
 
         var startMarker = StartNode();
         var imported = ParseModuleExportName();
@@ -1824,7 +1820,7 @@ public partial class Parser
 
     private ImportDefaultSpecifier ParseImportDefaultSpecifier()
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseImportDefaultSpecifier = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseImportDefaultSpecifier = function`
 
         // import defaultObj, { x, y as z } from '...'
 
@@ -1836,7 +1832,7 @@ public partial class Parser
 
     private ImportNamespaceSpecifier ParseImportNamespaceSpecifier()
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseImportNamespaceSpecifier = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseImportNamespaceSpecifier = function`
 
         var startMarker = StartNode();
         Next();
@@ -1849,7 +1845,7 @@ public partial class Parser
     // Parses a comma-separated list of module imports.
     private NodeList<ImportDeclarationSpecifier> ParseImportSpecifiers()
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseImportSpecifiers = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseImportSpecifiers = function`
 
         var nodes = new ArrayList<ImportDeclarationSpecifier>();
 
@@ -1894,7 +1890,7 @@ public partial class Parser
 
     private Expression ParseModuleExportName()
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.parseModuleExportName = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseModuleExportName = function`
 
         if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES13 && _tokenizer._type == TokenType.String)
         {

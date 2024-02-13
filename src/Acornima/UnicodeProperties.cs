@@ -5,7 +5,7 @@ using Acornima.Helpers;
 
 namespace Acornima;
 
-// https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/unicode-property-data.js
+// https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/unicode-property-data.js
 
 internal static class UnicodeProperties
 {

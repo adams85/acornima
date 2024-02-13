@@ -6,7 +6,7 @@ namespace Acornima;
 
 using KeywordEnum = Keyword;
 
-// https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokentype.js
+// https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokentype.js
 
 // ## Token types
 
@@ -54,7 +54,7 @@ internal sealed partial class TokenType
     public static readonly TokenType ParenRight = Punctuator(")", updateContext: Tokenizer.UpdateContext_ParenOrBraceRight);
     public static readonly TokenType Comma = Punctuator(",", beforeExpression: true);
     public static readonly TokenType Semicolon = Punctuator(";", beforeExpression: true);
-    public static readonly TokenType Colon = Punctuator(":", beforeExpression: true);
+    public static readonly TokenType Colon = Punctuator(":", beforeExpression: true, updateContext: Tokenizer.UpdateContext_Colon);
     public static readonly TokenType Dot = Punctuator(".");
     public static readonly TokenType Question = Punctuator("?", beforeExpression: true);
     public static readonly TokenType QuestionDot = Punctuator("?.");

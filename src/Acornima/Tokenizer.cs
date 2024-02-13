@@ -9,7 +9,7 @@ using Acornima.Helpers;
 
 namespace Acornima;
 
-// https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokenize.js
+// https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js
 
 public sealed partial class Tokenizer
 {
@@ -49,7 +49,7 @@ public sealed partial class Tokenizer
 
     public Token GetToken(in TokenizerContext context = default)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokenize.js > `pp.getToken = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.getToken = function`
 
         Next(context);
         return Current;
@@ -58,7 +58,7 @@ public sealed partial class Tokenizer
     // Move to the next token
     public void Next(in TokenizerContext context = default)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokenize.js > `pp.next = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.next = function`
 
         if (!context.IgnoreEscapeSequenceInKeyword && _type.Keyword is not null && _containsEscape)
         {
@@ -82,7 +82,7 @@ public sealed partial class Tokenizer
     // Read a single token, updating the token-related properties.
     private void NextToken()
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokenize.js > `pp.nextToken = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.nextToken = function`
 
         var currentContext = CurrentContext;
 
@@ -118,7 +118,7 @@ public sealed partial class Tokenizer
 
     private bool TryReadToken(int code)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokenize.js > `pp.readToken = function`, `pp.getTokenFromCode = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readToken = function`, `pp.getTokenFromCode = function`
 
         // NOTE: `getTokenFromCode` and `readToken` was merged into a single method (`TryReadToken`).
         // The merged method was also changed to return success instead of throwing on invalid token.
@@ -255,7 +255,7 @@ public sealed partial class Tokenizer
 
     private void SkipBlockComment(OnCommentHandler? onComment)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokenize.js > `pp.skipBlockComment = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.skipBlockComment = function`
 
         var startLoc = CurrentPosition;
         var start = _position;
@@ -278,7 +278,7 @@ public sealed partial class Tokenizer
 
     private void SkipLineComment(int startSkip, CommentKind kind, OnCommentHandler? onComment)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokenize.js > `pp.skipLineComment = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.skipLineComment = function`
 
         var startLoc = CurrentPosition;
         var start = _position;
@@ -297,7 +297,7 @@ public sealed partial class Tokenizer
     // whitespace and comments.
     private void SkipSpace(OnCommentHandler? onComment)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokenize.js > `pp.skipSpace = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.skipSpace = function`
 
         while (_position < _endPosition)
         {
@@ -382,7 +382,7 @@ public sealed partial class Tokenizer
     // right position.
     private bool FinishToken(TokenType type, TokenValue value)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokenize.js > `pp.finishToken = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.finishToken = function`
 
         _end = _position;
         _endLocation = CurrentPosition;
@@ -407,7 +407,7 @@ public sealed partial class Tokenizer
 
     private bool ReadToken_Dot(int code)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokenize.js > `pp.readToken_dot = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readToken_dot = function`
 
         var next = CharCodeAtPosition(1);
         if (((char)next).IsDecimalDigit())
@@ -426,7 +426,7 @@ public sealed partial class Tokenizer
 
     private bool ReadToken_Slash(int code)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokenize.js > `pp.readToken_slash = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readToken_slash = function`
 
         var next = CharCodeAtPosition(1);
         if (_expressionAllowed)
@@ -446,7 +446,7 @@ public sealed partial class Tokenizer
 
     private bool ReadToken_Mult_Modulo_Exp(int code)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokenize.js > `pp.readToken_mult_modulo_exp = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readToken_mult_modulo_exp = function`
 
         var next = CharCodeAtPosition(1);
         if (next == '=')
@@ -468,7 +468,7 @@ public sealed partial class Tokenizer
 
     private bool ReadToken_PipeAmp(int code)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokenize.js > `pp.readToken_pipe_amp = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readToken_pipe_amp = function`
 
         var next = CharCodeAtPosition(1);
         if (next == code)
@@ -496,7 +496,7 @@ public sealed partial class Tokenizer
 
     private bool ReadToken_Caret(int code)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokenize.js > `pp.readToken_caret = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readToken_caret = function`
 
         var next = CharCodeAtPosition(1);
         if (next == '=')
@@ -511,7 +511,7 @@ public sealed partial class Tokenizer
 
     private bool ReadToken_PlusMinus(int code)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokenize.js > `pp.readToken_plus_min = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readToken_plus_min = function`
 
         var next = CharCodeAtPosition(1);
         if (next == code)
@@ -543,7 +543,7 @@ public sealed partial class Tokenizer
 
     private bool ReadToken_Lt_Gt(int code)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokenize.js > `pp.readToken_lt_gt = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readToken_lt_gt = function`
 
         var next = CharCodeAtPosition(1);
         if (next == code)
@@ -581,7 +581,7 @@ public sealed partial class Tokenizer
 
     private bool ReadToken_Eq_Excl(int code)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokenize.js > `pp.readToken_eq_excl = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readToken_eq_excl = function`
 
         var next = CharCodeAtPosition(1);
         if (next == '=')
@@ -602,7 +602,7 @@ public sealed partial class Tokenizer
 
     private bool ReadToken_Question(int code)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokenize.js > `pp.readToken_question = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readToken_question = function`
 
         var ecmaVersion = _options._ecmaVersion;
         if (ecmaVersion >= EcmaVersion.ES11)
@@ -634,7 +634,7 @@ public sealed partial class Tokenizer
 
     private bool ReadToken_NumberSign(int code)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokenize.js > `pp.readToken_numberSign = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readToken_numberSign = function`
 
         var ecmaVersion = _options._ecmaVersion;
         if (ecmaVersion >= EcmaVersion.ES13)
@@ -653,7 +653,7 @@ public sealed partial class Tokenizer
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool FinishOp(TokenType type, string value)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokenize.js > `pp.finishOp = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.finishOp = function`
 
         _position += value.Length;
         return FinishToken(type, value);
@@ -661,7 +661,7 @@ public sealed partial class Tokenizer
 
     internal bool ReadRegExp()
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokenize.js > `pp.readRegexp = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readRegexp = function`
 
         var escaped = false;
         var inClass = false;
@@ -722,7 +722,7 @@ public sealed partial class Tokenizer
     // will return `null` unless the integer has exactly `len` digi
     private bool ReadInt(out ulong value, out bool overflow, out bool hasSeparator, byte radix, bool maybeLegacyOctalNumericLiteral = false, int? len = null)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokenize.js > `pp.readInt = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readInt = function`
 
         // `len` is used for character escape sequences. In that case, disallow separators.
         var allowSeparators = _options._ecmaVersion >= EcmaVersion.ES12 && len is null;
@@ -787,7 +787,7 @@ public sealed partial class Tokenizer
 
     private bool ReadRadixNumber(byte radix)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokenize.js > `pp.readRadixNumber = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readRadixNumber = function`
 
         _position += 2; // 0x
         if (!ReadInt(out var intValue, out var overflow, out _, radix))
@@ -836,7 +836,7 @@ public sealed partial class Tokenizer
     // Read an integer, octal integer, or floating-point number.
     private bool ReadNumber(bool startsWithZero, bool startsWithDot)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokenize.js > `pp.readNumber = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readNumber = function`
 
         var start = _position;
         ulong intValue;
@@ -956,7 +956,7 @@ public sealed partial class Tokenizer
     // Read a string value, interpreting backslash-escapes.
     private bool ReadString(int quote)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokenize.js > `pp.readString = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readString = function`
 
         _legacyOctalPosition = -1;
         AcquireStringBuilder(out var sb);
@@ -1016,7 +1016,7 @@ public sealed partial class Tokenizer
     // Read a string value, interpreting backslash-escapes.
     private int ReadCodePoint()
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokenize.js > `pp.readCodePoint = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readCodePoint = function`
 
         var ch = CharCodeAtPosition();
         if (ch == '{')
@@ -1053,7 +1053,7 @@ public sealed partial class Tokenizer
 
     private bool TryReadTemplateToken()
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokenize.js > `pp.tryReadTemplateToken = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.tryReadTemplateToken = function`
 
         _inTemplateElement = true;
 
@@ -1067,7 +1067,7 @@ public sealed partial class Tokenizer
 
     private void InvalidStringToken(int pos, string message)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokenize.js > `pp.invalidStringToken = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.invalidStringToken = function`
 
         if (_inTemplateElement && _options._ecmaVersion >= EcmaVersion.ES9)
         {
@@ -1088,7 +1088,7 @@ public sealed partial class Tokenizer
 
     private bool ReadTemplateToken(out bool invalidTemplate)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokenize.js > `pp.readTmplToken = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readTmplToken = function`
 
         invalidTemplate = false;
         _legacyOctalPosition = -1;
@@ -1176,7 +1176,7 @@ public sealed partial class Tokenizer
     // Reads a template token to search for the end, without validating any escape sequences
     private bool ReadInvalidTemplateToken()
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokenize.js > `pp.readInvalidTemplateToken = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readInvalidTemplateToken = function`
 
         for (int ch; (ch = CharCodeAtPosition()) >= 0; _position++)
         {
@@ -1234,7 +1234,7 @@ public sealed partial class Tokenizer
     // Used to read escaped characters
     private StringBuilder? ReadEscapedChar(StringBuilder sb, bool inTemplate)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokenize.js > `pp.readEscapedChar = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readEscapedChar = function`
         ++_position;
         var ch = CharCodeAtPosition();
         ++_position;
@@ -1330,7 +1330,7 @@ public sealed partial class Tokenizer
     // Used to read character escape sequences ('\x', '\u', '\U').
     private int ReadHexChar(int len)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokenize.js > `pp.readHexChar = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readHexChar = function`
         var codePos = _position;
         if (!ReadInt(out var n, out var overflow, out _, radix: 16, len: len) || overflow) // TODO: error msg when overflow?
         {
@@ -1348,7 +1348,7 @@ public sealed partial class Tokenizer
     // as a micro-optimization.
     private ReadOnlySpan<char> ReadWord1()
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokenize.js > `pp.readWord1 = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readWord1 = function`
 
         _containsEscape = false;
         AcquireStringBuilder(out var sb);
@@ -1408,7 +1408,7 @@ public sealed partial class Tokenizer
     // words when necessary.
     private bool ReadWord()
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokenize.js > `pp.readWord = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readWord = function`
 
         var word = ReadWord1();
 
@@ -1425,11 +1425,11 @@ public sealed partial class Tokenizer
 
     private bool InGeneratorContext()
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokencontext.js > `pp.inGeneratorContext = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokencontext.js > `pp.inGeneratorContext = function`
 
         for (var i = _contextStack.Count - 1; i >= 1; i--)
         {
-            var context = _contextStack.GetItemRef(i);
+            var context = _contextStack[i];
             if (context.Kind == TokenContextKind.Function)
             {
                 return context.Generator;
@@ -1441,7 +1441,7 @@ public sealed partial class Tokenizer
 
     private void UpdateContext(TokenType previousType)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokencontext.js > `pp.updateContext = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokencontext.js > `pp.updateContext = function`
 
         var currentType = _type;
         if (currentType.Keyword is not null && previousType == TokenType.Dot)
@@ -1458,9 +1458,18 @@ public sealed partial class Tokenizer
         }
     }
 
+    // Used to handle edge cases when token context could not be inferred correctly during tokenization phase
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal void OverrideContext(TokenContext context)
+    {
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokencontext.js > `pp.overrideContext = function`
+
+        _contextStack.PeekRef() = context;
+    }
+
     internal static void UpdateContext_ParenOrBraceRight(Tokenizer tokenizer, TokenType previousType)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokencontext.js > `tt.parenR.updateContext = tt.braceR.updateContext = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokencontext.js > `tt.parenR.updateContext = tt.braceR.updateContext = function`
 
         if (tokenizer._contextStack.Count == 1)
         {
@@ -1479,7 +1488,7 @@ public sealed partial class Tokenizer
 
     internal static void UpdateContext_BraceLeft(Tokenizer tokenizer, TokenType previousType)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokencontext.js > `tt.braceL.updateContext = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokencontext.js > `tt.braceL.updateContext = function`
 
         tokenizer._contextStack.Push(BraceIsBlock(tokenizer, previousType) ? TokenContext.BracketsInStatement : TokenContext.BracketsInExpression);
         tokenizer._expressionAllowed = true;
@@ -1525,7 +1534,7 @@ public sealed partial class Tokenizer
 
     internal static void UpdateContext_DollarBraceLeft(Tokenizer tokenizer, TokenType previousType)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokencontext.js > `tt.dollarBraceL.updateContext = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokencontext.js > `tt.dollarBraceL.updateContext = function`
 
         tokenizer._contextStack.Push(TokenContext.BracketsInTemplate);
         tokenizer._expressionAllowed = true;
@@ -1533,7 +1542,7 @@ public sealed partial class Tokenizer
 
     internal static void UpdateContext_ParenLeft(Tokenizer tokenizer, TokenType previousType)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokencontext.js > `tt.parenL.updateContext = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokencontext.js > `tt.parenL.updateContext = function`
 
         var statementParens = previousType == TokenType.If || previousType == TokenType.For || previousType == TokenType.With || previousType == TokenType.While;
         tokenizer._contextStack.Push(statementParens ? TokenContext.ParensInStatement : TokenContext.ParensInExpression);
@@ -1542,14 +1551,14 @@ public sealed partial class Tokenizer
 
     internal static void UpdateContext_IncDec(Tokenizer tokenizer, TokenType previousType)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokencontext.js > `tt.incDec.updateContext = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokencontext.js > `tt.incDec.updateContext = function`
 
         // tokExprAllowed stays unchanged
     }
 
     internal static void UpdateContext_FunctionOrClass(Tokenizer tokenizer, TokenType previousType)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokencontext.js > `tt._function.updateContext = tt._class.updateContext = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokencontext.js > `tt._function.updateContext = tt._class.updateContext = function`
 
         if (previousType.BeforeExpression && previousType != TokenType.Else
             && !(previousType == TokenType.Semicolon && tokenizer.CurrentContext != TokenContext.ParensInStatement)
@@ -1566,9 +1575,21 @@ public sealed partial class Tokenizer
         tokenizer._expressionAllowed = false;
     }
 
+    internal static void UpdateContext_Colon(Tokenizer tokenizer, TokenType previousType)
+    {
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokencontext.js > `tt.colon.updateContext = function`
+
+        if (tokenizer.CurrentContext.Kind == TokenContextKind.Function)
+        {
+            tokenizer._contextStack.Pop();
+        }
+
+        tokenizer._expressionAllowed = true;
+    }
+
     internal static void UpdateContext_BackQuote(Tokenizer tokenizer, TokenType previousType)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokencontext.js > `tt.backQuote.updateContext = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokencontext.js > `tt.backQuote.updateContext = function`
 
         if (tokenizer.CurrentContext == TokenContext.QuoteInTemplate)
         {
@@ -1584,7 +1605,7 @@ public sealed partial class Tokenizer
 
     internal static void UpdateContext_Star(Tokenizer tokenizer, TokenType previousType)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokencontext.js > `tt.star.updateContext = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokencontext.js > `tt.star.updateContext = function`
 
         if (previousType == TokenType.Function)
         {
@@ -1604,7 +1625,7 @@ public sealed partial class Tokenizer
 
     internal static void UpdateContext_Name(Tokenizer tokenizer, TokenType previousType)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/tokencontext.js > `tt.name.updateContext = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokencontext.js > `tt.name.updateContext = function`
 
         var allowed = false;
         if (tokenizer._options._ecmaVersion >= EcmaVersion.ES6 && previousType != TokenType.Dot && tokenizer._value.Value is string value)
@@ -1625,7 +1646,7 @@ public sealed partial class Tokenizer
     [DoesNotReturn]
     internal void Unexpected(int? pos = null)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/parseutil.js > `pp.unexpected = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/parseutil.js > `pp.unexpected = function`
 
         Raise(pos ?? _start, "Unexpected token");
     }
@@ -1633,7 +1654,7 @@ public sealed partial class Tokenizer
     [DoesNotReturn]
     internal T Unexpected<T>(int? pos = null)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/parseutil.js > `pp.unexpected = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/parseutil.js > `pp.unexpected = function`
 
         Unexpected(pos);
         return default!;
@@ -1647,7 +1668,7 @@ public sealed partial class Tokenizer
     [DoesNotReturn]
     internal void Raise(int pos, string message, ParseError.Factory? errorFactory = null)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/location.js > `pp.raise = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/location.js > `pp.raise = function`
 
         var loc = GetLineInfo(_input, pos, out _);
         var error = errorFactory is null
@@ -1659,7 +1680,7 @@ public sealed partial class Tokenizer
     [DoesNotReturn]
     internal T Raise<T>(int pos, string message, ParseError.Factory? errorFactory = null)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/location.js > `pp.raise = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/location.js > `pp.raise = function`
 
         Raise(pos, message, errorFactory);
         return default!;
@@ -1667,7 +1688,7 @@ public sealed partial class Tokenizer
 
     internal ParseError RaiseRecoverable(int pos, string message, ParseError.Factory? errorFactory = null)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/location.js > `pp.raiseRecoverable =`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/location.js > `pp.raiseRecoverable =`
 
         var loc = GetLineInfo(_input, pos, out _);
         var error = errorFactory is null

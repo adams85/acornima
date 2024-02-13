@@ -5,7 +5,7 @@ using Acornima.Ast;
 
 namespace Acornima;
 
-// https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/parseutil.js
+// https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/parseutil.js
 
 public partial class Parser
 {
@@ -15,7 +15,7 @@ public partial class Parser
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool Eat(TokenType type)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/parseutil.js > `pp.eat = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/parseutil.js > `pp.eat = function`
 
         if (_tokenizer._type == type)
         {
@@ -29,7 +29,7 @@ public partial class Parser
     // Tests whether parsed token is a contextual keyword.
     private bool IsContextual(string name)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/parseutil.js > `pp.isContextual = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/parseutil.js > `pp.isContextual = function`
 
         return _tokenizer._type == TokenType.Name
             && name.Equals(_tokenizer._value.Value)
@@ -40,7 +40,7 @@ public partial class Parser
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool EatContextual(string name)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/parseutil.js > `pp.eatContextual = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/parseutil.js > `pp.eatContextual = function`
 
         if (IsContextual(name))
         {
@@ -55,7 +55,7 @@ public partial class Parser
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void ExpectContextual(string name)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/parseutil.js > `pp.expectContextual = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/parseutil.js > `pp.expectContextual = function`
 
         if (!EatContextual(name))
         {
@@ -66,7 +66,7 @@ public partial class Parser
     // Test whether a semicolon can be inserted at the current position.
     private bool CanInsertSemicolon()
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/parseutil.js > `pp.canInsertSemicolon = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/parseutil.js > `pp.canInsertSemicolon = function`
 
         return _tokenizer._type == TokenType.EOF
             || _tokenizer._type == TokenType.BraceRight
@@ -75,7 +75,7 @@ public partial class Parser
 
     public bool InsertSemicolon()
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/parseutil.js > `pp.insertSemicolon = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/parseutil.js > `pp.insertSemicolon = function`
 
         if (CanInsertSemicolon())
         {
@@ -91,7 +91,7 @@ public partial class Parser
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Semicolon()
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/parseutil.js > `pp.semicolon = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/parseutil.js > `pp.semicolon = function`
 
         if (!Eat(TokenType.Semicolon) && !InsertSemicolon())
         {
@@ -101,7 +101,7 @@ public partial class Parser
 
     private bool AfterTrailingComma(TokenType tokType, bool notNext = false)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/parseutil.js > `pp.afterTrailingComma = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/parseutil.js > `pp.afterTrailingComma = function`
 
         if (_tokenizer._type == tokType)
         {
@@ -122,7 +122,7 @@ public partial class Parser
     // raise an unexpected token error.
     private void Expect(TokenType type)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/parseutil.js > `pp.expect = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/parseutil.js > `pp.expect = function`
 
         if (!Eat(type))
         {
@@ -147,7 +147,7 @@ public partial class Parser
 
     private void CheckPatternErrors(ref DestructuringErrors destructuringErrors, bool isAssign)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/parseutil.js > `pp.checkPatternErrors = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/parseutil.js > `pp.checkPatternErrors = function`
 
         // TODO: move to callsite?
         if (Unsafe.IsNullRef(ref destructuringErrors))
@@ -169,7 +169,7 @@ public partial class Parser
 
     private bool CheckExpressionErrors(ref DestructuringErrors destructuringErrors, bool andThrow = false)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/parseutil.js > `pp.checkExpressionErrors = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/parseutil.js > `pp.checkExpressionErrors = function`
 
         // TODO: move to callsite?
         if (Unsafe.IsNullRef(ref destructuringErrors))
@@ -197,7 +197,7 @@ public partial class Parser
 
     private void CheckYieldAwaitInDefaultParams()
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/parseutil.js > `pp.checkYieldAwaitInDefaultParams = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/parseutil.js > `pp.checkYieldAwaitInDefaultParams = function`
 
         if (_yieldPosition != 0 && (_awaitPosition == 0 || _yieldPosition < _awaitPosition))
         {
@@ -212,7 +212,7 @@ public partial class Parser
 
     private static bool IsSimpleAssignTarget(Expression expr)
     {
-        // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/parseutil.js > `pp.isSimpleAssignTarget = function`
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/parseutil.js > `pp.isSimpleAssignTarget = function`
 
         for (; ; )
         {
