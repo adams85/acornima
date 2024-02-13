@@ -1,0 +1,2 @@
+# to generate this file run:
+# dotnet run -c Release -- --update-allow-list

@@ -1,0 +1,17 @@
+{
+  "SuiteGitSha": "c5b24c64c3c27544f15e1c18ef274924cff1e32c",
+  //"SuiteDirectory": "//mnt/c/work/test262",
+  "TargetPath": "./Generated",
+  "Namespace": "Acornima.Tests.Test262",
+  "Parallel": true,
+  "ExcludedFeatures": [
+    "decorators",
+    "import-assertions",
+    "regexp-v-flag",
+    "regexp-duplicate-named-groups"
+  ],
+  "ExcludedFlags": [],
+  "ExcludedDirectories": [],
+  "ExcludedFiles": [],
+  "ExcludedFilesSource": "allow-list.txt"
+}
