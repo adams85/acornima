@@ -1,20 +1,20 @@
 # Acorn + Esprima = Acornima 
 
-This project is an interbreeding of the [acornjs](https://github.com/acornjs/) and the [Esprima.NET](https://github.com/sebastienros/esprima-dotnet) parsers, with the intention of creating an even more complete and performant ECMAScript (also known as JavaScript) parser library by combining the best bits of those.
+This project is an interbreeding of the [acornjs](https://github.com/acornjs/) and the [Esprima.NET](https://github.com/sebastienros/esprima-dotnet) parsers, with the intention of creating an even more complete and performant ECMAScript (a.k.a JavaScript) parser library by combining the best bits of those.
 
 (It's also worth mentioning that there is an earlier, unmaintained .NET port of acornjs, [AcornSharp](https://github.com/MatthewSmit/AcornSharp), which served as a good starting point. If it weren't for AcornSharp, this project probably have never started.)
 
 ### Here is how this Frankenstein's monster looks like:
 
-* The tokenizer is mostly a direct translation of the acornjs tokenizer to C# (with many minor performance improvements, partly inspired by Esprima.NET), apart from the regex validation/conversion logic, which has been borrowed from Esprima.NET.
-* The parser is ~95% acornjs (also with a bunch of minor improvements) and ~5% Esprima.NET (strict mode detection, public API).
+* The tokenizer is mostly a direct translation of the acornjs tokenizer to C# (with many smaller and bigger performance improvements, partly inspired by Esprima.NET), apart from the regex validation/conversion logic, which has been borrowed from Esprima.NET.
+* The parser is ~99% acornjs (also with a bunch of minor improvements) and ~1% Esprima.NET (strict mode detection, public API).
 * Both projects follow the ESTree specification, so is Acornima. The actual implementation is based on that of Esprima.NET, with further minor improvements to the class hierarchy that bring it even closer to the spec and allow encoding a bit more information.
 * The built-in AST visitors and additional utility functionality stems from Esprima.NET as well.
 
 ### And what good comes out of this mix?
 
 * A parser which already matches the performance of Esprima.NET, while doing more: it also passes the **complete** [Test262](https://github.com/tc39/test262) test suite for ECMAScript 2023.
-* It is also more economic with regard to stack usage, so it can parse more than ~1.5x deeper structures.
+* It is also more economic with regard to stack usage, so it can parse ~1.5x deeper structures.
 * More options for fine-tuning parsing.
 * As the parser tracks variable scopes to detect variable redeclarations, it will be possible to expose this information to the consumer.
 
@@ -70,5 +70,5 @@ This project is an interbreeding of the [acornjs](https://github.com/acornjs/) a
 * Moving messages into resources and replacing acorn messages with V8 messages
 * Support for JSX
 * AST to JSON, AST to source code conversion
-* Additional tests from acornjs and Esprima.NET
+* Porting additional tests from acornjs and Esprima.NET
 * CI
