@@ -1695,7 +1695,7 @@ public partial class Parser
     {
         // https://github.com/acornjs/acorn/blob/8.10.0/acorn/src/statement.js > `pp.checkVariableExport = function`
 
-        if (exports == null)
+        if (exports is null)
         {
             return;
         }
