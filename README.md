@@ -64,11 +64,123 @@ This project is an interbreeding of the [acornjs](https://github.com/acornjs/) a
 | Esprima-v3.0.4 | .NET 8.0           | yui-3.12.0          | 6.488 ms  | 2585.78 KB |
 | Esprima-v3.0.4 | .NET Framework 4.8 | yui-3.12.0          | 12.365 ms | 2624.92 KB |
 
+### AST
+
+```
+Node [x]
+ +-ArrayPattern [v,s]
+ +-AssignmentPattern [v,s]
+ +-CatchClause [v,s]
+ +-ClassBody [v,s]
+ +-ClassProperty
+ ¦  +-AccessorProperty [v,s]
+ ¦  +-MethodDefinition [v,s]
+ ¦  +-PropertyDefinition [v,s]
+ +-Decorator [v,s]
+ +-ImportAttribute [v,s]
+ +-ModuleSpecifier
+ ¦  +-ExportSpecifier [v,s]
+ ¦  +-ImportDeclarationSpecifier
+ ¦     +-ImportDefaultSpecifier [v,s]
+ ¦     +-ImportNamespaceSpecifier [v,s]
+ ¦     +-ImportSpecifier [v,s]
+ +-ObjectPattern [v,s]
+ +-ParenthesizedPattern [v,s]
+ +-Program [v]
+ ¦  +-Module [s]
+ ¦  +-Script [s]
+ +-Property [v]
+ ¦  +-AssignmentProperty [s]
+ ¦  +-ObjectProperty [s]
+ +-RestElement [v,s]
+ +-StatementOrExpression
+ ¦  +-Expression [x]
+ ¦  ¦  +-ArrayExpression [v,s]
+ ¦  ¦  +-ArrowFunctionExpression [v,s]
+ ¦  ¦  +-AssignmentExpression [v,s]
+ ¦  ¦  +-AwaitExpression [v,s]
+ ¦  ¦  +-BinaryExpression [v]
+ ¦  ¦  ¦  +-LogicalExpression [s]
+ ¦  ¦  ¦  +-NonLogicalBinaryExpression [s]
+ ¦  ¦  +-CallExpression [v,s]
+ ¦  ¦  +-ChainExpression [v,s]
+ ¦  ¦  +-ClassExpression [v,s]
+ ¦  ¦  +-ConditionalExpression [v,s]
+ ¦  ¦  +-FunctionExpression [v,s]
+ ¦  ¦  +-Identifier [v,s]
+ ¦  ¦  +-ImportExpression [v,s]
+ ¦  ¦  +-Literal [v]
+ ¦  ¦  ¦  +-BigIntLiteral [s]
+ ¦  ¦  ¦  +-BooleanLiteral [s]
+ ¦  ¦  ¦  +-NullLiteral [s]
+ ¦  ¦  ¦  +-NumericLiteral [s]
+ ¦  ¦  ¦  +-RegExpLiteral [s]
+ ¦  ¦  ¦  +-StringLiteral [s]
+ ¦  ¦  +-MemberExpression [v,s]
+ ¦  ¦  +-MetaProperty [v,s]
+ ¦  ¦  +-NewExpression [v,s]
+ ¦  ¦  +-ObjectExpression [v,s]
+ ¦  ¦  +-ParenthesizedExpression [v,s]
+ ¦  ¦  +-PrivateIdentifier [v,s]
+ ¦  ¦  +-SequenceExpression [v,s]
+ ¦  ¦  +-SpreadElement [v,s]
+ ¦  ¦  +-Super [v,s]
+ ¦  ¦  +-TaggedTemplateExpression [v,s]
+ ¦  ¦  +-TemplateLiteral [v,s]
+ ¦  ¦  +-ThisExpression [v,s]
+ ¦  ¦  +-UnaryExpression [v]
+ ¦  ¦  ¦  +-NonUpdateUnaryExpression [s]
+ ¦  ¦  ¦  +-UpdateExpression [s]
+ ¦  ¦  +-YieldExpression [v,s]
+ ¦  +-Statement [x]
+ ¦     +-BlockStatement [v]
+ ¦     ¦  +-FunctionBody [s]
+ ¦     ¦  +-NestedBlockStatement [s]
+ ¦     ¦  +-StaticBlock [v,s]
+ ¦     +-BreakStatement [v,s]
+ ¦     +-ContinueStatement [v,s]
+ ¦     +-DebuggerStatement [v,s]
+ ¦     +-Declaration [x]
+ ¦     ¦  +-ClassDeclaration [v,s]
+ ¦     ¦  +-FunctionDeclaration [v,s]
+ ¦     ¦  +-ImportOrExportDeclaration
+ ¦     ¦  ¦  +-ExportDeclaration
+ ¦     ¦  ¦  ¦  +-ExportAllDeclaration [v,s]
+ ¦     ¦  ¦  ¦  +-ExportDefaultDeclaration [v,s]
+ ¦     ¦  ¦  ¦  +-ExportNamedDeclaration [v,s]
+ ¦     ¦  ¦  +-ImportDeclaration [v,s]
+ ¦     ¦  +-VariableDeclaration [v,s]
+ ¦     +-DoWhileStatement [v,s]
+ ¦     +-EmptyStatement [v,s]
+ ¦     +-ExpressionStatement [v]
+ ¦     ¦  +-Directive [s]
+ ¦     ¦  +-NonSpecialExpressionStatement [s]
+ ¦     +-ForInStatement [v,s]
+ ¦     +-ForOfStatement [v,s]
+ ¦     +-ForStatement [v,s]
+ ¦     +-IfStatement [v,s]
+ ¦     +-LabeledStatement [v,s]
+ ¦     +-ReturnStatement [v,s]
+ ¦     +-SwitchStatement [v,s]
+ ¦     +-ThrowStatement [v,s]
+ ¦     +-TryStatement [v,s]
+ ¦     +-WhileStatement [v,s]
+ ¦     +-WithStatement [v,s]
+ +-SwitchCase [v,s]
+ +-TemplateElement [v,s]
+ +-VariableDeclarator [v,s]
+```
+
+Legend:
+* *v* - A visitation method is generated in the visitors for the node type.
+* *s* - The node class is sealed. (It's [beneficial to check for sealed types](https://www.meziantou.net/performance-benefits-of-sealed-class.htm#casting-objects-is-a) when possible.)
+* *x* - The node class can be subclassed. (The AST provides some limited extensibility for special use cases.)
+ 
 ### What's missing currently:
 * License (considering MIT or BSD-3-Clause, but need to discuss this with the Esprima.NET guys)
 * Implementation of some experimental features (decorators, import attributes)
 * Moving messages into resources and replacing acorn messages with V8 messages
+* AST to JSON, AST to JS code conversion
 * Support for JSX
-* AST to JSON, AST to source code conversion
 * Porting additional tests from acornjs and Esprima.NET
 * CI
