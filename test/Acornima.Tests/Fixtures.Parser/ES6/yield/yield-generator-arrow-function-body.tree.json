@@ -1,0 +1,229 @@
+{
+  "type": "Program",
+  "body": [
+    {
+      "type": "FunctionDeclaration",
+      "id": {
+        "type": "Identifier",
+        "name": "g",
+        "range": [
+          10,
+          11
+        ],
+        "loc": {
+          "start": {
+            "line": 1,
+            "column": 10
+          },
+          "end": {
+            "line": 1,
+            "column": 11
+          }
+        }
+      },
+      "params": [],
+      "body": {
+        "type": "BlockStatement",
+        "body": [
+          {
+            "type": "ExpressionStatement",
+            "expression": {
+              "type": "ArrowFunctionExpression",
+              "id": null,
+              "params": [
+                {
+                  "type": "Identifier",
+                  "name": "z",
+                  "range": [
+                    17,
+                    18
+                  ],
+                  "loc": {
+                    "start": {
+                      "line": 1,
+                      "column": 17
+                    },
+                    "end": {
+                      "line": 1,
+                      "column": 18
+                    }
+                  }
+                }
+              ],
+              "body": {
+                "type": "BlockStatement",
+                "body": [
+                  {
+                    "type": "ExpressionStatement",
+                    "expression": {
+                      "type": "BinaryExpression",
+                      "operator": "+",
+                      "left": {
+                        "type": "Identifier",
+                        "name": "yield",
+                        "range": [
+                          25,
+                          30
+                        ],
+                        "loc": {
+                          "start": {
+                            "line": 1,
+                            "column": 25
+                          },
+                          "end": {
+                            "line": 1,
+                            "column": 30
+                          }
+                        }
+                      },
+                      "right": {
+                        "type": "Identifier",
+                        "name": "z",
+                        "range": [
+                          33,
+                          34
+                        ],
+                        "loc": {
+                          "start": {
+                            "line": 1,
+                            "column": 33
+                          },
+                          "end": {
+                            "line": 1,
+                            "column": 34
+                          }
+                        }
+                      },
+                      "range": [
+                        25,
+                        34
+                      ],
+                      "loc": {
+                        "start": {
+                          "line": 1,
+                          "column": 25
+                        },
+                        "end": {
+                          "line": 1,
+                          "column": 34
+                        }
+                      }
+                    },
+                    "range": [
+                      25,
+                      34
+                    ],
+                    "loc": {
+                      "start": {
+                        "line": 1,
+                        "column": 25
+                      },
+                      "end": {
+                        "line": 1,
+                        "column": 34
+                      }
+                    }
+                  }
+                ],
+                "range": [
+                  23,
+                  36
+                ],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 23
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 36
+                  }
+                }
+              },
+              "generator": false,
+              "expression": false,
+              "strict": false,
+              "async": false,
+              "range": [
+                16,
+                36
+              ],
+              "loc": {
+                "start": {
+                  "line": 1,
+                  "column": 16
+                },
+                "end": {
+                  "line": 1,
+                  "column": 36
+                }
+              }
+            },
+            "range": [
+              16,
+              37
+            ],
+            "loc": {
+              "start": {
+                "line": 1,
+                "column": 16
+              },
+              "end": {
+                "line": 1,
+                "column": 37
+              }
+            }
+          }
+        ],
+        "range": [
+          14,
+          39
+        ],
+        "loc": {
+          "start": {
+            "line": 1,
+            "column": 14
+          },
+          "end": {
+            "line": 1,
+            "column": 39
+          }
+        }
+      },
+      "generator": true,
+      "expression": false,
+      "strict": false,
+      "async": false,
+      "range": [
+        0,
+        39
+      ],
+      "loc": {
+        "start": {
+          "line": 1,
+          "column": 0
+        },
+        "end": {
+          "line": 1,
+          "column": 39
+        }
+      }
+    }
+  ],
+  "sourceType": "script",
+  "strict": false,
+  "range": [
+    0,
+    40
+  ],
+  "loc": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 2,
+      "column": 0
+    }
+  }
+}

@@ -1,0 +1,5 @@
+*.js text eol=lf
+
+expression/primary/literal/string/migrated_0017.js eol=crlf
+expression/binary/multiline_string_literal.js eol=crlf
+

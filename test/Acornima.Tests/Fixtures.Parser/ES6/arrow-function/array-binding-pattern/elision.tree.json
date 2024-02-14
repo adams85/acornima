@@ -1,0 +1,102 @@
+{
+  "type": "Program",
+  "body": [
+    {
+      "type": "ExpressionStatement",
+      "expression": {
+        "type": "ArrowFunctionExpression",
+        "id": null,
+        "params": [
+          {
+            "type": "ArrayPattern",
+            "elements": [
+              null,
+              null
+            ],
+            "range": [
+              1,
+              5
+            ],
+            "loc": {
+              "start": {
+                "line": 1,
+                "column": 1
+              },
+              "end": {
+                "line": 1,
+                "column": 5
+              }
+            }
+          }
+        ],
+        "body": {
+          "type": "Literal",
+          "value": 0,
+          "raw": "0",
+          "range": [
+            8,
+            9
+          ],
+          "loc": {
+            "start": {
+              "line": 1,
+              "column": 8
+            },
+            "end": {
+              "line": 1,
+              "column": 9
+            }
+          }
+        },
+        "generator": false,
+        "expression": true,
+        "strict": false,
+        "async": false,
+        "range": [
+          0,
+          9
+        ],
+        "loc": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 9
+          }
+        }
+      },
+      "range": [
+        0,
+        9
+      ],
+      "loc": {
+        "start": {
+          "line": 1,
+          "column": 0
+        },
+        "end": {
+          "line": 1,
+          "column": 9
+        }
+      }
+    }
+  ],
+  "sourceType": "script",
+  "strict": false,
+  "range": [
+    0,
+    10
+  ],
+  "loc": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 2,
+      "column": 0
+    }
+  }
+}

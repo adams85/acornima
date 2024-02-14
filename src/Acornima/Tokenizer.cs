@@ -437,7 +437,7 @@ public sealed partial class Tokenizer
 
         var next = CharCodeAtPosition(1);
 
-        Debug.Assert(!_trackRegExpContext || !_expressionAllowed);
+        Debug.Assert(_trackRegExpContext || !_expressionAllowed);
         if (_expressionAllowed)
         {
             ++_position;

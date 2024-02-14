@@ -1,0 +1,110 @@
+{
+  "type": "Program",
+  "body": [
+    {
+      "type": "TryStatement",
+      "block": {
+        "type": "BlockStatement",
+        "body": [],
+        "range": [
+          4,
+          7
+        ],
+        "loc": {
+          "start": {
+            "line": 1,
+            "column": 4
+          },
+          "end": {
+            "line": 1,
+            "column": 7
+          }
+        }
+      },
+      "handler": {
+        "type": "CatchClause",
+        "param": {
+          "type": "ArrayPattern",
+          "elements": [],
+          "range": [
+            15,
+            17
+          ],
+          "loc": {
+            "start": {
+              "line": 1,
+              "column": 15
+            },
+            "end": {
+              "line": 1,
+              "column": 17
+            }
+          }
+        },
+        "body": {
+          "type": "BlockStatement",
+          "body": [],
+          "range": [
+            19,
+            21
+          ],
+          "loc": {
+            "start": {
+              "line": 1,
+              "column": 19
+            },
+            "end": {
+              "line": 1,
+              "column": 21
+            }
+          }
+        },
+        "range": [
+          8,
+          21
+        ],
+        "loc": {
+          "start": {
+            "line": 1,
+            "column": 8
+          },
+          "end": {
+            "line": 1,
+            "column": 21
+          }
+        }
+      },
+      "finalizer": null,
+      "range": [
+        0,
+        21
+      ],
+      "loc": {
+        "start": {
+          "line": 1,
+          "column": 0
+        },
+        "end": {
+          "line": 1,
+          "column": 21
+        }
+      }
+    }
+  ],
+  "sourceType": "script",
+  "strict": false,
+  "range": [
+    0,
+    22
+  ],
+  "loc": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 2,
+      "column": 0
+    }
+  }
+}

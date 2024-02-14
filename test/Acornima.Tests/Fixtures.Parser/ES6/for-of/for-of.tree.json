@@ -1,0 +1,92 @@
+{
+  "type": "Program",
+  "body": [
+    {
+      "type": "ForOfStatement",
+      "await": false,
+      "left": {
+        "type": "Identifier",
+        "name": "p",
+        "range": [
+          5,
+          6
+        ],
+        "loc": {
+          "start": {
+            "line": 1,
+            "column": 5
+          },
+          "end": {
+            "line": 1,
+            "column": 6
+          }
+        }
+      },
+      "right": {
+        "type": "Identifier",
+        "name": "q",
+        "range": [
+          10,
+          11
+        ],
+        "loc": {
+          "start": {
+            "line": 1,
+            "column": 10
+          },
+          "end": {
+            "line": 1,
+            "column": 11
+          }
+        }
+      },
+      "body": {
+        "type": "EmptyStatement",
+        "range": [
+          12,
+          13
+        ],
+        "loc": {
+          "start": {
+            "line": 1,
+            "column": 12
+          },
+          "end": {
+            "line": 1,
+            "column": 13
+          }
+        }
+      },
+      "range": [
+        0,
+        13
+      ],
+      "loc": {
+        "start": {
+          "line": 1,
+          "column": 0
+        },
+        "end": {
+          "line": 1,
+          "column": 13
+        }
+      }
+    }
+  ],
+  "sourceType": "script",
+  "strict": false,
+  "range": [
+    0,
+    14
+  ],
+  "loc": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 2,
+      "column": 0
+    }
+  }
+}

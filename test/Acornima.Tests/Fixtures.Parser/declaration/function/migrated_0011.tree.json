@@ -1,0 +1,189 @@
+{
+  "type": "Program",
+  "body": [
+    {
+      "type": "VariableDeclaration",
+      "declarations": [
+        {
+          "type": "VariableDeclarator",
+          "id": {
+            "type": "Identifier",
+            "name": "hello",
+            "range": [
+              4,
+              9
+            ],
+            "loc": {
+              "start": {
+                "line": 1,
+                "column": 4
+              },
+              "end": {
+                "line": 1,
+                "column": 9
+              }
+            }
+          },
+          "init": {
+            "type": "FunctionExpression",
+            "id": {
+              "type": "Identifier",
+              "name": "hi",
+              "range": [
+                21,
+                23
+              ],
+              "loc": {
+                "start": {
+                  "line": 1,
+                  "column": 21
+                },
+                "end": {
+                  "line": 1,
+                  "column": 23
+                }
+              }
+            },
+            "params": [],
+            "body": {
+              "type": "BlockStatement",
+              "body": [
+                {
+                  "type": "ExpressionStatement",
+                  "expression": {
+                    "type": "CallExpression",
+                    "callee": {
+                      "type": "Identifier",
+                      "name": "sayHi",
+                      "range": [
+                        28,
+                        33
+                      ],
+                      "loc": {
+                        "start": {
+                          "line": 1,
+                          "column": 28
+                        },
+                        "end": {
+                          "line": 1,
+                          "column": 33
+                        }
+                      }
+                    },
+                    "arguments": [],
+                    "optional": false,
+                    "range": [
+                      28,
+                      35
+                    ],
+                    "loc": {
+                      "start": {
+                        "line": 1,
+                        "column": 28
+                      },
+                      "end": {
+                        "line": 1,
+                        "column": 35
+                      }
+                    }
+                  },
+                  "range": [
+                    28,
+                    35
+                  ],
+                  "loc": {
+                    "start": {
+                      "line": 1,
+                      "column": 28
+                    },
+                    "end": {
+                      "line": 1,
+                      "column": 35
+                    }
+                  }
+                }
+              ],
+              "range": [
+                26,
+                37
+              ],
+              "loc": {
+                "start": {
+                  "line": 1,
+                  "column": 26
+                },
+                "end": {
+                  "line": 1,
+                  "column": 37
+                }
+              }
+            },
+            "generator": false,
+            "expression": false,
+            "strict": false,
+            "async": false,
+            "range": [
+              12,
+              37
+            ],
+            "loc": {
+              "start": {
+                "line": 1,
+                "column": 12
+              },
+              "end": {
+                "line": 1,
+                "column": 37
+              }
+            }
+          },
+          "range": [
+            4,
+            37
+          ],
+          "loc": {
+            "start": {
+              "line": 1,
+              "column": 4
+            },
+            "end": {
+              "line": 1,
+              "column": 37
+            }
+          }
+        }
+      ],
+      "kind": "var",
+      "range": [
+        0,
+        38
+      ],
+      "loc": {
+        "start": {
+          "line": 1,
+          "column": 0
+        },
+        "end": {
+          "line": 1,
+          "column": 38
+        }
+      }
+    }
+  ],
+  "sourceType": "script",
+  "strict": false,
+  "range": [
+    0,
+    38
+  ],
+  "loc": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 1,
+      "column": 38
+    }
+  }
+}

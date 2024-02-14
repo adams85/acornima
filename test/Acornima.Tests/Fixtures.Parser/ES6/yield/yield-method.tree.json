@@ -1,0 +1,137 @@
+{
+  "type": "Program",
+  "body": [
+    {
+      "type": "ExpressionStatement",
+      "expression": {
+        "type": "ObjectExpression",
+        "properties": [
+          {
+            "type": "Property",
+            "key": {
+              "type": "Identifier",
+              "name": "yield",
+              "range": [
+                3,
+                8
+              ],
+              "loc": {
+                "start": {
+                  "line": 1,
+                  "column": 3
+                },
+                "end": {
+                  "line": 1,
+                  "column": 8
+                }
+              }
+            },
+            "computed": false,
+            "value": {
+              "type": "FunctionExpression",
+              "id": null,
+              "params": [],
+              "body": {
+                "type": "BlockStatement",
+                "body": [],
+                "range": [
+                  11,
+                  13
+                ],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 11
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 13
+                  }
+                }
+              },
+              "generator": false,
+              "expression": false,
+              "strict": false,
+              "async": false,
+              "range": [
+                8,
+                13
+              ],
+              "loc": {
+                "start": {
+                  "line": 1,
+                  "column": 8
+                },
+                "end": {
+                  "line": 1,
+                  "column": 13
+                }
+              }
+            },
+            "kind": "init",
+            "method": true,
+            "shorthand": false,
+            "range": [
+              3,
+              13
+            ],
+            "loc": {
+              "start": {
+                "line": 1,
+                "column": 3
+              },
+              "end": {
+                "line": 1,
+                "column": 13
+              }
+            }
+          }
+        ],
+        "range": [
+          1,
+          15
+        ],
+        "loc": {
+          "start": {
+            "line": 1,
+            "column": 1
+          },
+          "end": {
+            "line": 1,
+            "column": 15
+          }
+        }
+      },
+      "range": [
+        0,
+        16
+      ],
+      "loc": {
+        "start": {
+          "line": 1,
+          "column": 0
+        },
+        "end": {
+          "line": 1,
+          "column": 16
+        }
+      }
+    }
+  ],
+  "sourceType": "script",
+  "strict": false,
+  "range": [
+    0,
+    17
+  ],
+  "loc": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 2,
+      "column": 0
+    }
+  }
+}

@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\test\Acornima.Tests\Fixtures\3rdparty\**" CopyToOutputDirectory="PreserveNewest" LinkBase="3rdparty" />
+    <None Include="..\..\test\Acornima.Tests\Fixtures.Parser\3rdparty\**" CopyToOutputDirectory="PreserveNewest" LinkBase="3rdparty" />
   </ItemGroup>
 
 </Project>

@@ -1,0 +1,80 @@
+{
+  "type": "Program",
+  "body": [
+    {
+      "type": "ExpressionStatement",
+      "expression": {
+        "type": "TemplateLiteral",
+        "quasis": [
+          {
+            "type": "TemplateElement",
+            "value": {
+              "raw": "\\u{000042}\\u0042\\x42\\A\\0",
+              "cooked": "BBBA\u0000"
+            },
+            "tail": true,
+            "range": [
+              1,
+              25
+            ],
+            "loc": {
+              "start": {
+                "line": 1,
+                "column": 1
+              },
+              "end": {
+                "line": 1,
+                "column": 25
+              }
+            }
+          }
+        ],
+        "expressions": [],
+        "range": [
+          0,
+          26
+        ],
+        "loc": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 26
+          }
+        }
+      },
+      "range": [
+        0,
+        26
+      ],
+      "loc": {
+        "start": {
+          "line": 1,
+          "column": 0
+        },
+        "end": {
+          "line": 1,
+          "column": 26
+        }
+      }
+    }
+  ],
+  "sourceType": "script",
+  "strict": false,
+  "range": [
+    0,
+    26
+  ],
+  "loc": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 1,
+      "column": 26
+    }
+  }
+}

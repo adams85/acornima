@@ -1932,7 +1932,7 @@ public partial class Parser
             var expr = ParseExpression(ref NullRef<DestructuringErrors>());
             if (expr is StringLiteral literal)
             {
-                var directive = literal.Value;
+                var directive = Tokenizer.DeduplicateString(literal.Raw.SliceBetween(1, literal.Raw.Length - 1), ref _tokenizer._stringPool);
                 if (!sawStrict && directive == "use strict")
                 {
                     if (!allowStrictDirective)

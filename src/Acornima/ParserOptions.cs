@@ -15,6 +15,21 @@ public record class ParserOptions
 {
     public static readonly ParserOptions Default = new();
 
+    protected ParserOptions(ParserOptions original)
+    {
+        _tokenizerOptions = original._tokenizerOptions with { };
+        _allowReserved = original._allowReserved;
+        _allowReturnOutsideFunction = original._allowReturnOutsideFunction;
+        _allowImportExportEverywhere = original._allowImportExportEverywhere;
+        _allowAwaitOutsideFunction = original._allowAwaitOutsideFunction;
+        _allowSuperOutsideMethod = original._allowSuperOutsideMethod;
+        _checkPrivateFields = original._checkPrivateFields;
+        _onInsertedSemicolon = original._onInsertedSemicolon;
+        _onTrailingComma = original._onTrailingComma;
+        _onNode = original._onNode;
+        _preserveParens = original._preserveParens;
+    }
+
     private readonly TokenizerOptions _tokenizerOptions = new();
 
     public TokenizerOptions GetTokenizerOptions() => _tokenizerOptions;
@@ -117,6 +132,7 @@ public record class ParserOptions
     /// </summary>
     public OnTrailingCommaHandler? OnTrailingComma { get => _onTrailingComma; init => _onTrailingComma = value; }
 
+    internal OnNodeHandler? _onNode;
     /// <summary>
     /// An optional callback to execute on each parsed node.
     /// </summary>
@@ -135,7 +151,7 @@ public record class ParserOptions
     /// Please note that the callback is executed on nodes which are reinterpreted
     /// later during parsing, thus, won't become a part of the final AST.
     /// </remarks>
-    public OnNodeHandler? OnNode { get; init; }
+    public OnNodeHandler? OnNode { get => _onNode; init => _onNode = value; }
 
     internal readonly bool _preserveParens;
     /// <summary>

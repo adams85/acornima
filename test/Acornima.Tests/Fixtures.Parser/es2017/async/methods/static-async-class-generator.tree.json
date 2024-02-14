@@ -1,0 +1,155 @@
+{
+  "type": "Program",
+  "body": [
+    {
+      "type": "ClassDeclaration",
+      "id": {
+        "type": "Identifier",
+        "name": "X",
+        "range": [
+          6,
+          7
+        ],
+        "loc": {
+          "start": {
+            "line": 1,
+            "column": 6
+          },
+          "end": {
+            "line": 1,
+            "column": 7
+          }
+        }
+      },
+      "superClass": null,
+      "body": {
+        "type": "ClassBody",
+        "body": [
+          {
+            "type": "MethodDefinition",
+            "key": {
+              "type": "Identifier",
+              "name": "g",
+              "range": [
+                24,
+                25
+              ],
+              "loc": {
+                "start": {
+                  "line": 1,
+                  "column": 24
+                },
+                "end": {
+                  "line": 1,
+                  "column": 25
+                }
+              }
+            },
+            "computed": false,
+            "value": {
+              "type": "FunctionExpression",
+              "id": null,
+              "params": [],
+              "body": {
+                "type": "BlockStatement",
+                "body": [],
+                "range": [
+                  27,
+                  29
+                ],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 27
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 29
+                  }
+                }
+              },
+              "generator": true,
+              "expression": false,
+              "strict": true,
+              "async": true,
+              "range": [
+                25,
+                29
+              ],
+              "loc": {
+                "start": {
+                  "line": 1,
+                  "column": 25
+                },
+                "end": {
+                  "line": 1,
+                  "column": 29
+                }
+              }
+            },
+            "kind": "method",
+            "static": true,
+            "range": [
+              10,
+              29
+            ],
+            "loc": {
+              "start": {
+                "line": 1,
+                "column": 10
+              },
+              "end": {
+                "line": 1,
+                "column": 29
+              }
+            }
+          }
+        ],
+        "range": [
+          8,
+          31
+        ],
+        "loc": {
+          "start": {
+            "line": 1,
+            "column": 8
+          },
+          "end": {
+            "line": 1,
+            "column": 31
+          }
+        }
+      },
+      "range": [
+        0,
+        31
+      ],
+      "loc": {
+        "start": {
+          "line": 1,
+          "column": 0
+        },
+        "end": {
+          "line": 1,
+          "column": 31
+        }
+      }
+    }
+  ],
+  "sourceType": "script",
+  "strict": false,
+  "range": [
+    0,
+    32
+  ],
+  "loc": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 2,
+      "column": 0
+    }
+  }
+}

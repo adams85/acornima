@@ -793,9 +793,14 @@ public partial class Parser
             case TokenKind.Punctuator when _tokenizer._type == TokenType.BackQuote:
                 return ParseTemplate(isTagged: false);
 
-            case TokenKind.Punctuator when IsRegExpStart():
+            case TokenKind.Punctuator when _tokenizer._type == TokenType.Slash:
                 // If a division operator appears in an expression position, the
                 // tokenizer got confused, and we force it to read a regexp instead.
+                _tokenizer.ReadRegExp();
+                goto case TokenKind.RegExpLiteral;
+
+            case TokenKind.Punctuator when _tokenizer._type == TokenType.Assign && "/=".Equals(_tokenizer._value.Value):
+                _tokenizer._position -= 1;
                 _tokenizer.ReadRegExp();
                 goto case TokenKind.RegExpLiteral;
 
@@ -1712,7 +1717,8 @@ public partial class Parser
         bool @delegate;
         Expression? argument;
         if (_tokenizer._type == TokenType.Semicolon || CanInsertSemicolon()
-            || !_tokenizer._type.StartsExpression && _tokenizer._type != TokenType.Star && !IsRegExpStart())
+            || !_tokenizer._type.StartsExpression && _tokenizer._type != TokenType.Star
+                && !(_tokenizer._type == TokenType.Slash || _tokenizer._type == TokenType.Assign && "/=".Equals(_tokenizer._value.Value)))
         {
             @delegate = false;
             argument = null;
@@ -1740,10 +1746,5 @@ public partial class Parser
 
         var argument = ParseMaybeUnary(sawUnary: true, incDec: false, ref NullRef<DestructuringErrors>(), context);
         return FinishNode(startMarker, new AwaitExpression(argument));
-    }
-
-    private bool IsRegExpStart()
-    {
-        return _tokenizer._type == TokenType.Slash || _tokenizer._type == TokenType.Assign && "/=".Equals(_tokenizer._value);
     }
 }

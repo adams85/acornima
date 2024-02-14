@@ -1,0 +1,98 @@
+{
+  "type": "Program",
+  "body": [
+    {
+      "type": "FunctionDeclaration",
+      "id": {
+        "type": "Identifier",
+        "name": "a",
+        "range": [
+          9,
+          10
+        ],
+        "loc": {
+          "start": {
+            "line": 1,
+            "column": 9
+          },
+          "end": {
+            "line": 1,
+            "column": 10
+          }
+        }
+      },
+      "params": [
+        {
+          "type": "ObjectPattern",
+          "properties": [],
+          "range": [
+            11,
+            13
+          ],
+          "loc": {
+            "start": {
+              "line": 1,
+              "column": 11
+            },
+            "end": {
+              "line": 1,
+              "column": 13
+            }
+          }
+        }
+      ],
+      "body": {
+        "type": "BlockStatement",
+        "body": [],
+        "range": [
+          15,
+          17
+        ],
+        "loc": {
+          "start": {
+            "line": 1,
+            "column": 15
+          },
+          "end": {
+            "line": 1,
+            "column": 17
+          }
+        }
+      },
+      "generator": false,
+      "expression": false,
+      "strict": false,
+      "async": false,
+      "range": [
+        0,
+        17
+      ],
+      "loc": {
+        "start": {
+          "line": 1,
+          "column": 0
+        },
+        "end": {
+          "line": 1,
+          "column": 17
+        }
+      }
+    }
+  ],
+  "sourceType": "script",
+  "strict": false,
+  "range": [
+    0,
+    18
+  ],
+  "loc": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 2,
+      "column": 0
+    }
+  }
+}

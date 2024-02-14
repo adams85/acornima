@@ -1,0 +1,116 @@
+{
+  "type": "Program",
+  "body": [
+    {
+      "type": "FunctionDeclaration",
+      "id": {
+        "type": "Identifier",
+        "name": "a",
+        "range": [
+          9,
+          10
+        ],
+        "loc": {
+          "start": {
+            "line": 1,
+            "column": 9
+          },
+          "end": {
+            "line": 1,
+            "column": 10
+          }
+        }
+      },
+      "params": [],
+      "body": {
+        "type": "BlockStatement",
+        "body": [
+          {
+            "type": "ReturnStatement",
+            "argument": {
+              "type": "Literal",
+              "value": "hello   \tworld",
+              "raw": "'hello \\\n  \tworld'",
+              "range": [
+                24,
+                42
+              ],
+              "loc": {
+                "start": {
+                  "line": 2,
+                  "column": 9
+                },
+                "end": {
+                  "line": 3,
+                  "column": 9
+                }
+              }
+            },
+            "range": [
+              17,
+              43
+            ],
+            "loc": {
+              "start": {
+                "line": 2,
+                "column": 2
+              },
+              "end": {
+                "line": 3,
+                "column": 10
+              }
+            }
+          }
+        ],
+        "range": [
+          13,
+          45
+        ],
+        "loc": {
+          "start": {
+            "line": 1,
+            "column": 13
+          },
+          "end": {
+            "line": 4,
+            "column": 1
+          }
+        }
+      },
+      "generator": false,
+      "expression": false,
+      "strict": false,
+      "async": false,
+      "range": [
+        0,
+        45
+      ],
+      "loc": {
+        "start": {
+          "line": 1,
+          "column": 0
+        },
+        "end": {
+          "line": 4,
+          "column": 1
+        }
+      }
+    }
+  ],
+  "sourceType": "script",
+  "strict": false,
+  "range": [
+    0,
+    46
+  ],
+  "loc": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 5,
+      "column": 0
+    }
+  }
+}

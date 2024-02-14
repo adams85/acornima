@@ -1,0 +1,221 @@
+{
+  "type": "Program",
+  "body": [
+    {
+      "type": "ImportDeclaration",
+      "specifiers": [
+        {
+          "type": "ImportDefaultSpecifier",
+          "local": {
+            "type": "Identifier",
+            "name": "$",
+            "range": [
+              7,
+              8
+            ],
+            "loc": {
+              "start": {
+                "line": 1,
+                "column": 7
+              },
+              "end": {
+                "line": 1,
+                "column": 8
+              }
+            }
+          },
+          "range": [
+            7,
+            8
+          ],
+          "loc": {
+            "start": {
+              "line": 1,
+              "column": 7
+            },
+            "end": {
+              "line": 1,
+              "column": 8
+            }
+          }
+        }
+      ],
+      "source": {
+        "type": "Literal",
+        "value": "a",
+        "raw": "\"a\"",
+        "range": [
+          14,
+          17
+        ],
+        "loc": {
+          "start": {
+            "line": 1,
+            "column": 14
+          },
+          "end": {
+            "line": 1,
+            "column": 17
+          }
+        }
+      },
+      "range": [
+        0,
+        18
+      ],
+      "loc": {
+        "start": {
+          "line": 1,
+          "column": 0
+        },
+        "end": {
+          "line": 1,
+          "column": 18
+        }
+      }
+    },
+    {
+      "type": "ExpressionStatement",
+      "expression": {
+        "type": "CallExpression",
+        "callee": {
+          "type": "MemberExpression",
+          "computed": false,
+          "object": {
+            "type": "ImportExpression",
+            "source": {
+              "type": "Literal",
+              "value": "b",
+              "raw": "\"b\"",
+              "range": [
+                26,
+                29
+              ],
+              "loc": {
+                "start": {
+                  "line": 2,
+                  "column": 7
+                },
+                "end": {
+                  "line": 2,
+                  "column": 10
+                }
+              }
+            },
+            "range": [
+              19,
+              30
+            ],
+            "loc": {
+              "start": {
+                "line": 2,
+                "column": 0
+              },
+              "end": {
+                "line": 2,
+                "column": 11
+              }
+            }
+          },
+          "property": {
+            "type": "Identifier",
+            "name": "then",
+            "range": [
+              31,
+              35
+            ],
+            "loc": {
+              "start": {
+                "line": 2,
+                "column": 12
+              },
+              "end": {
+                "line": 2,
+                "column": 16
+              }
+            }
+          },
+          "optional": false,
+          "range": [
+            19,
+            35
+          ],
+          "loc": {
+            "start": {
+              "line": 2,
+              "column": 0
+            },
+            "end": {
+              "line": 2,
+              "column": 16
+            }
+          }
+        },
+        "arguments": [
+          {
+            "type": "Identifier",
+            "name": "c",
+            "range": [
+              36,
+              37
+            ],
+            "loc": {
+              "start": {
+                "line": 2,
+                "column": 17
+              },
+              "end": {
+                "line": 2,
+                "column": 18
+              }
+            }
+          }
+        ],
+        "optional": false,
+        "range": [
+          19,
+          38
+        ],
+        "loc": {
+          "start": {
+            "line": 2,
+            "column": 0
+          },
+          "end": {
+            "line": 2,
+            "column": 19
+          }
+        }
+      },
+      "range": [
+        19,
+        39
+      ],
+      "loc": {
+        "start": {
+          "line": 2,
+          "column": 0
+        },
+        "end": {
+          "line": 2,
+          "column": 20
+        }
+      }
+    }
+  ],
+  "sourceType": "module",
+  "range": [
+    0,
+    40
+  ],
+  "loc": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 3,
+      "column": 0
+    }
+  }
+}

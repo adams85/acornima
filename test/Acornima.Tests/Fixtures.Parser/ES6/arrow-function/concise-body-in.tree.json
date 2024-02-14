@@ -1,0 +1,170 @@
+{
+  "type": "Program",
+  "body": [
+    {
+      "type": "ForStatement",
+      "init": {
+        "type": "ArrowFunctionExpression",
+        "id": null,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "expression": {
+                "type": "BinaryExpression",
+                "operator": "in",
+                "left": {
+                  "type": "Identifier",
+                  "name": "x",
+                  "range": [
+                    13,
+                    14
+                  ],
+                  "loc": {
+                    "start": {
+                      "line": 1,
+                      "column": 13
+                    },
+                    "end": {
+                      "line": 1,
+                      "column": 14
+                    }
+                  }
+                },
+                "right": {
+                  "type": "Identifier",
+                  "name": "y",
+                  "range": [
+                    18,
+                    19
+                  ],
+                  "loc": {
+                    "start": {
+                      "line": 1,
+                      "column": 18
+                    },
+                    "end": {
+                      "line": 1,
+                      "column": 19
+                    }
+                  }
+                },
+                "range": [
+                  13,
+                  19
+                ],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 13
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 19
+                  }
+                }
+              },
+              "range": [
+                13,
+                19
+              ],
+              "loc": {
+                "start": {
+                  "line": 1,
+                  "column": 13
+                },
+                "end": {
+                  "line": 1,
+                  "column": 19
+                }
+              }
+            }
+          ],
+          "range": [
+            11,
+            21
+          ],
+          "loc": {
+            "start": {
+              "line": 1,
+              "column": 11
+            },
+            "end": {
+              "line": 1,
+              "column": 21
+            }
+          }
+        },
+        "generator": false,
+        "expression": false,
+        "strict": false,
+        "async": false,
+        "range": [
+          5,
+          21
+        ],
+        "loc": {
+          "start": {
+            "line": 1,
+            "column": 5
+          },
+          "end": {
+            "line": 1,
+            "column": 21
+          }
+        }
+      },
+      "test": null,
+      "update": null,
+      "body": {
+        "type": "EmptyStatement",
+        "range": [
+          24,
+          25
+        ],
+        "loc": {
+          "start": {
+            "line": 1,
+            "column": 24
+          },
+          "end": {
+            "line": 1,
+            "column": 25
+          }
+        }
+      },
+      "range": [
+        0,
+        25
+      ],
+      "loc": {
+        "start": {
+          "line": 1,
+          "column": 0
+        },
+        "end": {
+          "line": 1,
+          "column": 25
+        }
+      }
+    }
+  ],
+  "sourceType": "script",
+  "strict": false,
+  "range": [
+    0,
+    26
+  ],
+  "loc": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 2,
+      "column": 0
+    }
+  }
+}
