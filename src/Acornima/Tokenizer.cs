@@ -84,9 +84,10 @@ public sealed partial class Tokenizer
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.nextToken = function`
 
+        Debug.Assert(_contextStack.Count > 0);
         var currentContext = CurrentContext;
 
-        if (currentContext is null || !currentContext.PreserveSpace)
+        if (!currentContext.PreserveSpace)
         {
             SkipSpace(_options._onComment);
         }
@@ -101,8 +102,7 @@ public sealed partial class Tokenizer
             return;
         }
 
-        Debug.Assert(currentContext is not null);
-        ReadToken(currentContext!);
+        ReadToken(currentContext);
     }
 
     private void ReadToken(TokenContext currentContext)
@@ -391,7 +391,14 @@ public sealed partial class Tokenizer
         _type = type;
         _value = value;
 
-        UpdateContext(prevType);
+        if (_trackRegExpContext)
+        {
+            UpdateContext(prevType);
+        }
+        else if (_type.Kind == TokenKind.Punctuator)
+        {
+            UpdateContextMinimal(prevType);
+        }
 
         return true;
     }
@@ -429,6 +436,8 @@ public sealed partial class Tokenizer
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readToken_slash = function`
 
         var next = CharCodeAtPosition(1);
+
+        Debug.Assert(!_trackRegExpContext || !_expressionAllowed);
         if (_expressionAllowed)
         {
             ++_position;
@@ -1439,6 +1448,40 @@ public sealed partial class Tokenizer
         return false;
     }
 
+    private void UpdateContextMinimal(TokenType previousType)
+    {
+        // The minimal context tracking necessary for dealing with nested template literals.
+        // Should be used when the tokenizer doesn't need to deal with regex disambiguation
+        // (i.e. when the tokenizer is not used in standalone mode and the user doesn't care about tokens either).
+
+        if (_type == TokenType.BraceLeft)
+        {
+            _contextStack.Push(TokenContext.BracketsInStatement);
+        }
+        else if (_type == TokenType.BraceRight)
+        {
+            if (_contextStack.Count > 0)
+            {
+                _contextStack.Pop();
+            }
+        }
+        else if (_type == TokenType.BackQuote)
+        {
+            if (CurrentContext == TokenContext.QuoteInTemplate)
+            {
+                _contextStack.Pop();
+            }
+            else
+            {
+                _contextStack.Push(TokenContext.QuoteInTemplate);
+            }
+        }
+        else if (_type == TokenType.DollarBraceLeft)
+        {
+            _contextStack.Push(TokenContext.BracketsInTemplate);
+        }
+    }
+
     private void UpdateContext(TokenType previousType)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokencontext.js > `pp.updateContext = function`
@@ -1464,7 +1507,10 @@ public sealed partial class Tokenizer
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokencontext.js > `pp.overrideContext = function`
 
-        _contextStack.PeekRef() = context;
+        if (_trackRegExpContext)
+        {
+            _contextStack.PeekRef() = context;
+        }
     }
 
     internal static void UpdateContext_ParenOrBraceRight(Tokenizer tokenizer, TokenType previousType)

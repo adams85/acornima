@@ -13,7 +13,6 @@ public partial class Tokenizer
 {
     internal string _input;
     internal int _startPosition, _endPosition;
-    private SourceType _sourceType;
     internal string? _sourceFile;
 
     // Used to signal to callers of `ReadWord1` whether the word
@@ -51,6 +50,7 @@ public partial class Tokenizer
     // given position.
     internal ArrayList<TokenContext> _contextStack;
     internal bool _expressionAllowed;
+    internal bool _trackRegExpContext;
 
     internal bool _inModule;
     internal bool _strict;
@@ -72,7 +72,7 @@ public partial class Tokenizer
         Reset(input ?? throw new ArgumentNullException(nameof(input)), start, input.Length - start, sourceType, sourceFile);
     }
 
-    public void Reset(string input, int start, int length, SourceType sourceType = SourceType.Script, string? sourceFile = null)
+    public void Reset(string input, int start, int length, SourceType sourceType = SourceType.Script, string? sourceFile = null, bool trackRegExpContext = true)
     {
         _input = input ?? throw new ArgumentNullException(nameof(input));
         _startPosition = 0 <= start && start <= input.Length
@@ -81,7 +81,6 @@ public partial class Tokenizer
         _endPosition = 0 <= length && length <= input.Length - start
             ? _startPosition + length
             : throw new ArgumentOutOfRangeException(nameof(length), length, null);
-        _sourceType = sourceType;
         _sourceFile = sourceFile;
 
         _containsEscape = false;
@@ -111,7 +110,7 @@ public partial class Tokenizer
         _contextStack.Clear();
         _contextStack.Push(TokenContext.BracketsInStatement);
 
-        _expressionAllowed = true;
+        _expressionAllowed = _trackRegExpContext = trackRegExpContext;
 
         _inModule = _strict = sourceType == SourceType.Module;
 
