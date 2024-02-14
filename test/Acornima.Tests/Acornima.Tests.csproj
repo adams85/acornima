@@ -1,14 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <TargetFrameworks>net8.0</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">$(TargetFrameworks);net462</TargetFrameworks>
     <DefaultItemExcludes>Fixtures.RegExp\Generator\**;$(DefaultItemExcludes)</DefaultItemExcludes>
   </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\src\Acornima.Extras\Acornima.Extras.csproj" />
   </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="DiffEngine" Version="13.0.2" />
+    <PackageReference Include="GitHubActionsTestLogger" Version="2.3.3" PrivateAssets="all" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="UnicodeInformation" Version="2.7.1" />
@@ -21,4 +25,5 @@
   <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
+
 </Project>

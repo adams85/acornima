@@ -400,3 +400,6 @@ FodyWeavers.xsd
 
 # generated code
 /test/Acornima.Tests.Test262/Generated
+
+# Rider
+/.idea
