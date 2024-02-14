@@ -22,6 +22,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Acornima.Tests.Test262", "t
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Acornima.SourceGenerators", "src\Acornima.SourceGenerators\Acornima.SourceGenerators.csproj", "{E88ED3EB-27F2-4BAF-805F-EE25F810F4EA}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Acornima.Extras", "src\Acornima.Extras\Acornima.Extras.csproj", "{F2B479F2-5104-4ACB-BC8A-92422C9F3736}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -52,6 +54,10 @@ Global
 		{E88ED3EB-27F2-4BAF-805F-EE25F810F4EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E88ED3EB-27F2-4BAF-805F-EE25F810F4EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E88ED3EB-27F2-4BAF-805F-EE25F810F4EA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F2B479F2-5104-4ACB-BC8A-92422C9F3736}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2B479F2-5104-4ACB-BC8A-92422C9F3736}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2B479F2-5104-4ACB-BC8A-92422C9F3736}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2B479F2-5104-4ACB-BC8A-92422C9F3736}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

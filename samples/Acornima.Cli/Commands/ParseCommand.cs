@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Acornima.Ast;
 using Acornima.Cli.Helpers;
 using McMaster.Extensions.CommandLineUtils;
@@ -32,23 +31,20 @@ internal sealed class ParseCommand
     //[Option("--jsx", Description = "Allow JSX expressions.")]
     //public bool AllowJsx { get; set; }
 
-    //[Option("--comments", Description = "Also include comments.")]
-    //public bool Comments { get; set; }
-
-    //[Option("--tokens", Description = "Also include tokens.")]
-    //public bool Tokens { get; set; }
-
     [Option("--skip-regexp", Description = "Skip parsing of regular expressions.")]
     public bool SkipRegExp { get; set; }
 
     [Option("-t|--tolerant", Description = "Tolerate noncritical syntax errors.")]
     public bool Tolerant { get; set; }
 
-    //[Option("-l|--linecol", Description = "Include line and column location information.")]
-    //public bool IncludeLineColumn { get; set; }
+    [Option("-s|--simple", Description = "Print a simple overview of the AST.")]
+    public bool Simple { get; set; }
 
-    //[Option("-r|--range", Description = "Include range location information.")]
-    //public bool IncludeRange { get; set; }
+    [Option("-l|--linecol", Description = "Include line and column location information.")]
+    public bool IncludeLineColumn { get; set; }
+
+    [Option("-r|--range", Description = "Include range location information.")]
+    public bool IncludeRange { get; set; }
 
     // TODO: more options
 
@@ -78,17 +74,28 @@ internal sealed class ParseCommand
             _ => throw new InvalidOperationException()
         };
 
-        // TODO: print JSON
-
-        var treePrinter = new TreePrinter(_console);
-        treePrinter.Print(new[] { rootNode },
-            node => node.ChildNodes,
-            node =>
+        if (Simple)
+        {
+            var treePrinter = new TreePrinter(_console);
+            treePrinter.Print(new[] { rootNode },
+                node => node.ChildNodes,
+                node =>
+                {
+                    var nodeType = node.Type.ToString();
+                    var nodeClrType = node.GetType().Name;
+                    return nodeType == nodeClrType ? nodeType : $"{nodeType} ({nodeClrType})";
+                });
+        }
+        else
+        {
+            var astToJsonOptions = new AstToJsonOptions
             {
-                var nodeType = node.Type.ToString();
-                var nodeClrType = node.GetType().Name;
-                return nodeType == nodeClrType ? nodeType : $"{nodeType} ({nodeClrType})";
-            });
+                IncludeLineColumn = IncludeLineColumn,
+                IncludeRange = IncludeRange,
+            };
+
+            _console.WriteLine(rootNode.ToJsonString(astToJsonOptions, indent: "  "));
+        }
 
         return 0;
     }

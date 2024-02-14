@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Acornima.Benchmarks" />
+    <InternalsVisibleTo Include="Acornima.Extras" />
     <InternalsVisibleTo Include="Acornima.Tests" />
   </ItemGroup>
 
@@ -63,8 +64,6 @@
       System.Diagnostics.CodeAnalysis.NotNullAttribute;
       System.Diagnostics.CodeAnalysis.NotNullIfNotNullAttribute;
       System.Diagnostics.CodeAnalysis.DoesNotReturnAttribute;
-      System.Diagnostics.CodeAnalysis.DoesNotReturnAttribute;
-      System.Diagnostics.CodeAnalysis.MaybeNullWhenAttribute
     </PolySharpIncludeGeneratedTypes>
   </PropertyGroup>
 
