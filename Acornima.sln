@@ -22,12 +22,16 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Acornima.Tests.Test262", "t
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Acornima.SourceGenerators", "src\Acornima.SourceGenerators\Acornima.SourceGenerators.csproj", "{E88ED3EB-27F2-4BAF-805F-EE25F810F4EA}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "_build", "build\_build.csproj", "{C924464D-28FC-427E-A65A-A75ADCDADA00}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C924464D-28FC-427E-A65A-A75ADCDADA00}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C924464D-28FC-427E-A65A-A75ADCDADA00}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A3A0B6A1-AA69-4811-BD6D-AF786CA9D619}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A3A0B6A1-AA69-4811-BD6D-AF786CA9D619}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A3A0B6A1-AA69-4811-BD6D-AF786CA9D619}.Release|Any CPU.ActiveCfg = Release|Any CPU
