@@ -2,7 +2,6 @@ using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Acornima.Ast;
-using Acornima.Helpers;
 
 namespace Acornima;
 
@@ -44,7 +43,7 @@ public sealed partial class Parser
 
         node._range = new Range(startMarker.Index, endMarker.Index);
         node._location = new SourceLocation(startMarker.Position, endMarker.Position, _tokenizer._sourceFile);
-        _options.OnNode?.Invoke(node);
+        _options._onNode?.Invoke(node);
         return node;
     }
 
@@ -60,7 +59,7 @@ public sealed partial class Parser
     {
         node._range = originalNode._range;
         node._location = originalNode._location;
-        _options.OnNode?.Invoke(node);
+        _options._onNode?.Invoke(node);
         return node;
     }
 

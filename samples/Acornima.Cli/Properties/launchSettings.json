@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "Acornima.Cli": {
-      "commandName": "Project",
-      "commandLineArgs": "parse"
-    }
-  }
-}

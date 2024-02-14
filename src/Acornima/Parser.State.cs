@@ -49,7 +49,7 @@ public partial class Parser
 
     internal void Reset(string input, int start, int length, SourceType sourceType, string? sourceFile, bool strict)
     {
-        _tokenizer.Reset(input, start, length, sourceType, sourceFile);
+        _tokenizer.Reset(input, start, length, sourceType, sourceFile, trackRegExpContext: _options.OnToken is not null);
 
         _inModule = _tokenizer._inModule;
         _strict = _tokenizer._strict || strict;

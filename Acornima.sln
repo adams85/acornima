@@ -10,21 +10,23 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Directory.Build.props = Directory.Build.props
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "_build", "build\_build.csproj", "{C924464D-28FC-427E-A65A-A75ADCDADA00}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Acornima", "src\Acornima\Acornima.csproj", "{384C7882-6721-4885-9DFC-461BD6AE2ABA}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Acornima.Benchmarks", "benchmarks\Acornima.Benchmarks\Acornima.Benchmarks.csproj", "{A3A0B6A1-AA69-4811-BD6D-AF786CA9D619}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Acornima.Cli", "samples\Acornima.Cli\Acornima.Cli.csproj", "{F41FD930-C3E8-42C0-AFE8-670C2E47E3D3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Acornima", "src\Acornima\Acornima.csproj", "{384C7882-6721-4885-9DFC-461BD6AE2ABA}"
+roject("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Acornima.Extras", "src\Acornima.Extras\Acornima.Extras.csproj", "{F2B479F2-5104-4ACB-BC8A-92422C9F3736}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Acornima.SourceGenerators", "src\Acornima.SourceGenerators\Acornima.SourceGenerators.csproj", "{E88ED3EB-27F2-4BAF-805F-EE25F810F4EA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Acornima.Tests", "test\Acornima.Tests\Acornima.Tests.csproj", "{460A0A53-B9F6-47DB-83D7-763A39562A55}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Acornima.Tests.Test262", "test\Acornima.Tests.Test262\Acornima.Tests.Test262.csproj", "{A7CA9D3E-5247-4212-9E08-BDECBC63B8E1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Acornima.SourceGenerators", "src\Acornima.SourceGenerators\Acornima.SourceGenerators.csproj", "{E88ED3EB-27F2-4BAF-805F-EE25F810F4EA}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "_build", "build\_build.csproj", "{C924464D-28FC-427E-A65A-A75ADCDADA00}"
-EndProject
-Global
+lobal
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
@@ -56,6 +58,10 @@ Global
 		{E88ED3EB-27F2-4BAF-805F-EE25F810F4EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E88ED3EB-27F2-4BAF-805F-EE25F810F4EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E88ED3EB-27F2-4BAF-805F-EE25F810F4EA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F2B479F2-5104-4ACB-BC8A-92422C9F3736}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2B479F2-5104-4ACB-BC8A-92422C9F3736}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2B479F2-5104-4ACB-BC8A-92422C9F3736}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2B479F2-5104-4ACB-BC8A-92422C9F3736}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

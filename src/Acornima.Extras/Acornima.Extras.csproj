@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Acornima</RootNamespace>
+    <TargetFrameworks>net6.0;net462;netstandard2.0;netstandard2.1</TargetFrameworks>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="PolySharp" Version="1.14.1" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Acornima\Acornima.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Acornima.Benchmarks" />
+    <InternalsVisibleTo Include="Acornima.Tests" />
+  </ItemGroup>
+
+  <!-- Configure polyfills -->
+
+  <PropertyGroup>
+    <PolySharpIncludeGeneratedTypes Condition="'$(TargetFramework)' == 'net462' OR '$(TargetFramework)' == 'netstandard2.0' OR '$(TargetFramework)' == 'netstandard2.1'">
+      System.Runtime.CompilerServices.IsExternalInit;
+      System.Runtime.CompilerServices.SkipLocalsInitAttribute
+    </PolySharpIncludeGeneratedTypes>
+  </PropertyGroup>
+
+</Project>

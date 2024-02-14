@@ -643,13 +643,6 @@ public partial class Parser
 
         // WARNING: ExpressionContext.ForNew should not be propagated in most cases.
 
-        // If a division operator appears in an expression position, the
-        // tokenizer got confused, and we force it to read a regexp instead.
-        if (_tokenizer._type == TokenType.Slash)
-        {
-            _tokenizer.ReadRegExp();
-        }
-
         var startMarker = StartNode();
 
         bool canBeArrow;
@@ -799,6 +792,17 @@ public partial class Parser
 
             case TokenKind.Punctuator when _tokenizer._type == TokenType.BackQuote:
                 return ParseTemplate(isTagged: false);
+
+            case TokenKind.Punctuator when _tokenizer._type == TokenType.Slash:
+                // If a division operator appears in an expression position, the
+                // tokenizer got confused, and we force it to read a regexp instead.
+                _tokenizer.ReadRegExp();
+                goto case TokenKind.RegExpLiteral;
+
+            case TokenKind.Punctuator when _tokenizer._type == TokenType.Assign && "/=".Equals(_tokenizer._value.Value):
+                _tokenizer._position -= 1;
+                _tokenizer.ReadRegExp();
+                goto case TokenKind.RegExpLiteral;
 
             default:
                 return Unexpected<Expression>();
@@ -1636,7 +1640,8 @@ public partial class Parser
             // `class` and `function` keywords push new context into `_state.ContextStack`.
             // But there is no chance to pop the context if the keyword is consumed as an identifier such as a property name.
             // If the previous token is a dot, this does not apply because the context-managing code already ignored the keyword
-            if (_tokenizer._type.Keyword.Value is Keyword.Class or Keyword.Function
+            if (_tokenizer._trackRegExpContext
+                && _tokenizer._type.Keyword.Value is Keyword.Class or Keyword.Function
                 && (_tokenizer._lastTokenEnd != _tokenizer._lastTokenStart + 1 || _tokenizer._input.CharCodeAt(_tokenizer._lastTokenStart) != '.'))
             {
                 _tokenizer._contextStack.Pop();
@@ -1712,7 +1717,8 @@ public partial class Parser
         bool @delegate;
         Expression? argument;
         if (_tokenizer._type == TokenType.Semicolon || CanInsertSemicolon()
-            || _tokenizer._type != TokenType.Star && !_tokenizer._type.StartsExpression)
+            || !_tokenizer._type.StartsExpression && _tokenizer._type != TokenType.Star
+                && !(_tokenizer._type == TokenType.Slash || _tokenizer._type == TokenType.Assign && "/=".Equals(_tokenizer._value.Value)))
         {
             @delegate = false;
             argument = null;

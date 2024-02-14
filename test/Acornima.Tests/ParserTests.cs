@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Acornima.Tests;
 
-public class ParserTests
+public partial class ParserTests
 {
 #if NET8_0_OR_GREATER
     /// <summary>
