@@ -22,6 +22,8 @@ on:
       - main
     paths:
       - '**/*'
+  
+  workflow_dispatch:
 
 jobs:
   macos-latest:
