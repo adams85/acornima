@@ -17,13 +17,12 @@
 name: build
 
 on:
-  pull_request:
+  push:
     branches:
       - main
-    paths:
-      - '**/*'
-  
-  workflow_dispatch:
+      - master
+    tags:
+      - 'v*.*.*'
 
 jobs:
   macos-latest:
@@ -33,6 +32,16 @@ jobs:
       - uses: actions/checkout@v3
       - name: 'Run: Compile, Test, Pack'
         run: ./build.cmd Compile Test Pack
+      - name: 'Publish: test-results'
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: artifacts/test-results
+      - name: 'Publish: packages'
+        uses: actions/upload-artifact@v3
+        with:
+          name: packages
+          path: artifacts/packages
   ubuntu-latest:
     name: ubuntu-latest
     runs-on: ubuntu-latest
@@ -40,6 +49,16 @@ jobs:
       - uses: actions/checkout@v3
       - name: 'Run: Compile, Test, Pack'
         run: ./build.cmd Compile Test Pack
+      - name: 'Publish: test-results'
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: artifacts/test-results
+      - name: 'Publish: packages'
+        uses: actions/upload-artifact@v3
+        with:
+          name: packages
+          path: artifacts/packages
   windows-latest:
     name: windows-latest
     runs-on: windows-latest
@@ -47,3 +66,13 @@ jobs:
       - uses: actions/checkout@v3
       - name: 'Run: Compile, Test, Pack'
         run: ./build.cmd Compile Test Pack
+      - name: 'Publish: test-results'
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: artifacts/test-results
+      - name: 'Publish: packages'
+        uses: actions/upload-artifact@v3
+        with:
+          name: packages
+          path: artifacts/packages

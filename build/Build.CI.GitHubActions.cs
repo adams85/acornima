@@ -6,7 +6,7 @@ using Nuke.Components;
         GitHubActionsImage.MacOsLatest,
         GitHubActionsImage.UbuntuLatest,
         GitHubActionsImage.WindowsLatest,
-        OnPullRequestBranches = ["main"],
+        OnPullRequestBranches = ["main", "master"],
         OnPullRequestIncludePaths = ["**/*"],
         PublishArtifacts = false,
         InvokedTargets = [nameof(ICompile.Compile), nameof(ITest.Test), nameof(IPack.Pack)],
@@ -18,9 +18,9 @@ using Nuke.Components;
         GitHubActionsImage.MacOsLatest,
         GitHubActionsImage.UbuntuLatest,
         GitHubActionsImage.WindowsLatest,
-        OnPullRequestBranches = ["main"],
-        OnPullRequestIncludePaths = ["**/*"],
-        PublishArtifacts = false,
+        OnPushBranches = ["main", "master"],
+        OnPushTags = ["v*.*.*"],
+        PublishArtifacts = true,
         InvokedTargets = [nameof(ICompile.Compile), nameof(ITest.Test), nameof(IPack.Pack)],
         CacheKeyFiles = []
     )
