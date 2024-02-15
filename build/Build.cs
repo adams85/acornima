@@ -18,14 +18,12 @@ partial class Build : NukeBuild, ITest, IPack
 {
     public static int Main() => Execute<Build>(x => ((ICompile) x).Compile);
 
-    [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")] readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
-
     [GitRepository] readonly GitRepository GitRepository;
 
     AbsolutePath SourceDirectory => RootDirectory / "src";
     AbsolutePath TestDirectory => RootDirectory / "test";
 
-    string TagVersion => GitRepository.Tags.SingleOrDefault(x => "v".StartsWith(x))?[1..];
+    string TagVersion => GitRepository.Tags.SingleOrDefault(x => x.StartsWith('v'))?[1..];
     bool IsTaggedBuild => !string.IsNullOrWhiteSpace(TagVersion);
 
     string VersionSuffix;
@@ -45,7 +43,7 @@ partial class Build : NukeBuild, ITest, IPack
         }
 
         Log.Information("BUILD SETUP");
-        Log.Information("Configuration:\t{Configuration}", Configuration);
+        Log.Information("Configuration:\t{Configuration}", ((IHazConfiguration) this).Configuration);
         Log.Information("Version suffix:\t{VersionSuffix}", VersionSuffix);
         Log.Information("Version:\t\t{Version}", Version);
         Log.Information("Tagged build:\t{IsTaggedBuild}", IsTaggedBuild);
