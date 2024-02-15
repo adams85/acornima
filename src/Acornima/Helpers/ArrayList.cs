@@ -88,10 +88,7 @@ internal struct ArrayList<T> : IList<T>
 
     public ArrayList(int initialCapacity)
     {
-        if (initialCapacity < 0)
-        {
-            ThrowInvalidInitialCapacity();
-        }
+        Debug.Assert(initialCapacity >= 0);
 
         _items = initialCapacity > 0 ? new T[initialCapacity] : null;
         _count = 0;
@@ -100,12 +97,6 @@ internal struct ArrayList<T> : IList<T>
         _localVersion = 0;
         _sharedVersion = null;
 #endif
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        static void ThrowInvalidInitialCapacity()
-        {
-            ThrowArgumentException("Invalid initial capacity.", nameof(initialCapacity));
-        }
     }
 
     /// <remarks>

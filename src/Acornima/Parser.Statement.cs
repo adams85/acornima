@@ -828,10 +828,7 @@ public partial class Parser
             body.Add(statement);
         }
 
-        if (exitStrict)
-        {
-            _strict = false;
-        }
+        _strict = _strict && !exitStrict;
 
         if (createNewLexicalScope)
         {

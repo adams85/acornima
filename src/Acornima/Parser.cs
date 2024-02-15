@@ -85,7 +85,7 @@ public sealed partial class Parser
             var body = ParseTopLevel();
 
             Debug.Assert(_tokenizer._type == TokenType.EOF);
-            return FinishNodeAt(startMarker, new Marker(_tokenizer._start, _tokenizer._startLocation), new Script(body, strict));
+            return FinishNodeAt(startMarker, new Marker(_tokenizer._start, _tokenizer._startLocation), new Script(body, _strict));
         }
         finally
         {
@@ -126,7 +126,7 @@ public sealed partial class Parser
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Expression ParseExpression(string input, string? sourceFile = null, SourceType sourceType = SourceType.Script, bool strict = false)
     {
-        return ParseExpression(input ?? throw new ArgumentNullException(nameof(input)), 0, input.Length, sourceFile);
+        return ParseExpression(input ?? throw new ArgumentNullException(nameof(input)), 0, input.Length, sourceFile, sourceType, strict);
     }
 
     public Expression ParseExpression(string input, int start, int length, string? sourceFile = null, SourceType sourceType = SourceType.Script, bool strict = false)
@@ -144,7 +144,12 @@ public sealed partial class Parser
         try
         {
             Next();
-            return ParseExpression(ref Unsafe.NullRef<DestructuringErrors>());
+            var expression = ParseExpression(ref Unsafe.NullRef<DestructuringErrors>());
+            if (_tokenizer._type != TokenType.EOF)
+            {
+                Unexpected();
+            }
+            return expression;
         }
         finally
         {

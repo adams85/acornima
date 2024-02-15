@@ -25,7 +25,7 @@ public class ParseErrorException : Exception
     public int LineNumber => Error.LineNumber;
 
     /// <summary>
-    /// One-based column index.
+    /// Zero-based column index.
     /// </summary>
     public int Column => Error.Column;
 

@@ -27,9 +27,9 @@ public class ParseError
     public int LineNumber => Position.Line;
 
     /// <summary>
-    /// One-based column index.
+    /// Zero-based column index.
     /// </summary>
-    public int Column => Position.Column + 1;
+    public int Column => Position.Column;
 
     public string? SourceFile { get; }
 
@@ -44,8 +44,8 @@ public class ParseError
     public override string ToString()
     {
         return SourceFile is null
-            ? (IsPositionDefined ? $"{Description} ({LineNumber}:{Column})" : Description)
-            : (IsPositionDefined ? $"{Description} ({SourceFile}:{LineNumber}:{Column})" : $"{Description} ({SourceFile})");
+            ? (IsPositionDefined ? $"{Description} ({LineNumber}:{Column + 1})" : Description)
+            : (IsPositionDefined ? $"{Description} ({SourceFile}:{LineNumber}:{Column + 1})" : $"{Description} ({SourceFile})");
     }
 
     public virtual ParseErrorException ToException()

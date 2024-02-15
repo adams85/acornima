@@ -116,7 +116,6 @@ internal static class CodeAnalysisHelper
         private StringBuilder? _tempSb;
         private StringBuilder TempSb => _tempSb ??= new StringBuilder();
 
-
         public MethodSignatureRewriter(SemanticModel semanticModel)
         {
             _semanticModel = semanticModel;

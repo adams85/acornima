@@ -18,22 +18,13 @@ public readonly struct NodeList<T> : IReadOnlyList<T> where T : Node?
 
     internal NodeList(ICollection<T> collection)
     {
-        if (collection is null)
-        {
-            ThrowArgumentNullException();
-        }
+        Debug.Assert(collection is not null);
 
         _count = collection!.Count;
         if (_count > 0)
         {
             _items = new T[_count];
             collection.CopyTo(_items, 0);
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        static void ThrowArgumentNullException()
-        {
-            ThrowArgumentNullException<T>(nameof(collection));
         }
     }
 
@@ -217,49 +208,52 @@ public static class NodeList
 
     public static NodeList<T> Create<T>(IEnumerable<T> source) where T : Node?
     {
-        switch (source)
+        if (source is null)
         {
-            case null:
-                throw new ArgumentNullException(nameof(source));
-
-            case NodeList<T> nodeList:
-                return nodeList;
-
-            case ICollection<T> collection:
-                return collection.Count > 0
-                    ? new NodeList<T>(collection)
-                    : default;
-
-            case IReadOnlyList<T> sourceList:
-                if (sourceList.Count == 0)
-                {
-                    return default;
-                }
-
-                var list = new ArrayList<T>(sourceList.Count);
-                for (var i = 0; i < sourceList.Count; i++)
-                {
-                    list.Add(sourceList[i]);
-                }
-
-                return From(ref list);
-
-            default:
-                var count = source is IReadOnlyCollection<T> readOnlyCollection ? readOnlyCollection.Count : -1;
-
-                list = count is int initialCapacity
-                    ? new ArrayList<T>(initialCapacity)
-                    : new ArrayList<T>();
-
-                if (count != 0)
-                {
-                    foreach (var item in source)
-                    {
-                        list.Add(item);
-                    }
-                }
-
-                return From(ref list);
+            throw new ArgumentNullException(nameof(source));
         }
+
+        if (source is NodeList<T> nodeList)
+        {
+            return nodeList;
+        }
+
+        if (source is ICollection<T> collection)
+        {
+            return new NodeList<T>(collection);
+        }
+
+        ArrayList<T> list;
+
+        if (source is IReadOnlyCollection<T> readOnlyCollection)
+        {
+            var count = readOnlyCollection.Count;
+            if (count == 0)
+            {
+                return new NodeList<T>();
+            }
+
+            list = new ArrayList<T>(count);
+
+            if (readOnlyCollection is IReadOnlyList<T> readOnlyList)
+            {
+                for (var i = 0; i < count; i++)
+                {
+                    list.Add(readOnlyList[i]);
+                }
+                return From(ref list);
+            }
+        }
+        else
+        {
+            list = new ArrayList<T>();
+        }
+
+        foreach (var item in source)
+        {
+            list.Add(item);
+        }
+
+        return From(ref list);
     }
 }

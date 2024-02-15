@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Numerics;
 using Acornima.Helpers;
 using Acornima.Tests.Acorn;
@@ -10,6 +11,163 @@ namespace Acornima.Tests;
 
 public class TokenizerTests
 {
+    [Fact]
+    public void CanResetTokenizer()
+    {
+        var comments = new List<Comment>();
+        var tokens = new List<Token>();
+        var tokensDirect = new List<Token>();
+
+        const string code = "var /* c1 */ foo=1; // c2";
+
+        var tokenizer = new Tokenizer(code, new TokenizerOptions
+        {
+            OnComment = (in Comment comment) => comments.Add(comment),
+            OnToken = (in Token token) => tokens.Add(token)
+        });
+
+        for (var n = 0; n < 3; n++, tokenizer.Reset(code))
+        {
+            comments.Clear();
+            tokens.Clear();
+            tokensDirect.Clear();
+
+            Token token;
+            do
+            {
+                token = tokenizer.GetToken();
+                tokensDirect.Add(token);
+            }
+            while (token.Kind != TokenKind.EOF);
+
+            Assert.Equal(new string[] { "var", "foo", "=", "1", ";", "" }, tokens.Select(t => t.GetRawValue(code).ToString()).ToArray());
+            Assert.Equal(tokens, tokensDirect);
+
+            Assert.Equal(new string[] { "/* c1 */", "// c2" }, comments.Select(c => c.GetRawValue(code).ToString()).ToArray());
+        }
+    }
+
+    [Fact]
+    public void CanResetScannerToCustomPosition()
+    {
+        var comments = new List<Comment>();
+        var tokens = new List<Token>();
+        var tokensDirect = new List<Token>();
+
+        const string code = "var /* c1 */ foo=1; // c2";
+
+        var tokenizer = new Tokenizer(code, new TokenizerOptions
+        {
+            OnComment = (in Comment comment) => comments.Add(comment),
+            OnToken = (in Token token) => tokens.Add(token)
+        });
+
+        tokenizer.Reset(code, 4, code.Length - 4);
+
+        comments.Clear();
+        tokens.Clear();
+        tokensDirect.Clear();
+
+        Token token;
+        do
+        {
+            token = tokenizer.GetToken();
+            tokensDirect.Add(token);
+        }
+        while (token.Kind != TokenKind.EOF);
+
+        Assert.Equal(new string[] { "foo", "=", "1", ";", "" }, tokens.Select(t => t.GetRawValue(code).ToString()).ToArray());
+        Assert.Equal(tokens, tokensDirect);
+
+        Assert.Equal(new string[] { "/* c1 */", "// c2" }, comments.Select(c => c.GetRawValue(code).ToString()).ToArray());
+    }
+
+    [Fact]
+    public void ShouldRejectInvalidUnescapedSurrogateAsIdentifierStart()
+    {
+        // These values are altered by XUnit if passed in InlineData to the test method
+        foreach (var s in new[]
+        {
+            "\ud800",
+            "\ud800b",
+            "\ud800\ud800",
+            "\udc00",
+            "\udc00b",
+            "\udc00\ud800",
+            "\udc00\udc00",
+        })
+        {
+            var tokenizer = new Tokenizer(s);
+            var ex = Assert.Throws<SyntaxErrorException>(() => tokenizer.Next());
+            Assert.StartsWith("Unexpected character", ex.Error.Description);
+        }
+    }
+
+    [Fact]
+    public void ShouldRejectInvalidUnescapedSurrogateAsIdentifierPart()
+    {
+        // These values are altered by XUnit if passed in InlineData to the test method
+        foreach (var s in new[]
+        {
+            "a\ud800",
+            "a\ud800b",
+            "a\ud800\ud800",
+            "a\udc00",
+            "a\udc00b",
+            "a\udc00\ud800",
+            "a\udc00\udc00",
+        })
+        {
+            var tokenizer = new Tokenizer(s);
+            var ex = Assert.Throws<SyntaxErrorException>(() =>
+            {
+                tokenizer.Next();
+                tokenizer.Next();
+            });
+            // TODO: error message
+            Assert.StartsWith("Unexpected character", ex.Error.Description);
+        }
+    }
+
+    [InlineData(@"\ud800")]
+    [InlineData(@"\udc00")]
+    [InlineData(@"\ud800\udc00")]
+    [InlineData(@"\u{d800}")]
+    [InlineData(@"\u{dc00}")]
+    [InlineData(@"\u{d800}\u{dc00}")]
+    [Theory]
+    public void ShouldRejectEscapedSurrogateAsIdentifierStart(string s)
+    {
+        var tokenizer = new Tokenizer(s);
+        var ex = Assert.Throws<SyntaxErrorException>(() => tokenizer.Next());
+        // TODO: error message
+        Assert.StartsWith("Invalid Unicode escape", ex.Error.Description);
+    }
+
+    [InlineData(@"a\ud800")]
+    [InlineData(@"a\udc00")]
+    [InlineData(@"a\ud800\udc00")]
+    [InlineData(@"a\u{d800}")]
+    [InlineData(@"a\u{dc00}")]
+    [InlineData(@"a\u{d800}\u{dc00}")]
+    [Theory]
+    public void ShouldRejectEscapedSurrogateAsIdentifierPart(string s)
+    {
+        var tokenizer = new Tokenizer(s);
+        var ex = Assert.Throws<SyntaxErrorException>(() => tokenizer.Next());
+        // TODO: error message
+        Assert.StartsWith("Invalid Unicode escape", ex.Error.Description);
+    }
+
+    [Fact]
+    public void ShouldAcceptSurrogateRangeInLiterals()
+    {
+        var tokenizer = new Tokenizer(@"'a\u{d800}\u{dc00}'");
+        var token = tokenizer.GetToken();
+        Assert.Equal(TokenKind.StringLiteral, token.Kind);
+        Assert.Equal("a\ud800\udc00", token.StringValue);
+    }
+
     [Fact]
     public void IsLineTerminatorMatchesAcornImpl()
     {
@@ -560,4 +718,6 @@ public class TokenizerTests
             // TODO: check error messages
         }
     }
+
+
 }
