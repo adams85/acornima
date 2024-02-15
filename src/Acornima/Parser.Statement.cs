@@ -15,7 +15,7 @@ public partial class Parser
 {
     // Parse a program. Initializes the parser, reads any number of
     // statements, and wraps them in a Program node.  Optionally takes a
-    // `program` argument.  If present, the statements will be appended
+    // `program` argument. If present, the statements will be appended
     // to its body instead of creating a new node.
 
     private NodeList<Statement> ParseTopLevel()

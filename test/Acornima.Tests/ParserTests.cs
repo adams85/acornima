@@ -147,14 +147,14 @@ public partial class ParserTests
 
         token = tokens[4];
         Assert.Equal(TokenKind.NullLiteral, token.Kind);
-        Assert.Equal("null", token.Value);
+        Assert.Null(token.Value);
         Assert.Equal("null", token.GetRawValue(code).ToString());
         Assert.Equal(Range.From(23, 27), token.Range);
         Assert.Equal(SourceLocation.From(Position.From(2, 1), Position.From(2, 5)), token.Location);
 
         token = tokens[6];
         Assert.Equal(TokenKind.BooleanLiteral, token.Kind);
-        Assert.Equal("true", token.Value);
+        Assert.Same(CachedValues.True, token.Value);
         Assert.Equal("true", token.GetRawValue(code).ToString());
         Assert.Equal(Range.From(28, 32), token.Range);
         Assert.Equal(SourceLocation.From(Position.From(2, 6), Position.From(2, 10)), token.Location);

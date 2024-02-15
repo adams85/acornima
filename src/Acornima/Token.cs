@@ -1,6 +1,7 @@
 using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using Acornima.Helpers;
 
 namespace Acornima;
 
@@ -12,8 +13,8 @@ public readonly struct Token
     public static Token Punctuator(string value, Range range, SourceLocation location) => new Token(TokenKind.Punctuator, value, range, location);
     public static Token Keyword(string value, Range range, SourceLocation location) => new Token(TokenKind.Keyword, value, range, location);
     public static Token Identifier(string value, Range range, SourceLocation location) => new Token(TokenKind.Identifier, value, range, location);
-    public static Token NullLiteral(Range range, SourceLocation location) => new Token(TokenKind.NullLiteral, TokenType.Null.Label, range, location);
-    public static Token BooleanLiteral(bool value, Range range, SourceLocation location) => new Token(TokenKind.BooleanLiteral, value ? TokenType.True.Label : TokenType.False.Label, range, location);
+    public static Token NullLiteral(Range range, SourceLocation location) => new Token(TokenKind.NullLiteral, new TokenValue(null), range, location);
+    public static Token BooleanLiteral(bool value, Range range, SourceLocation location) => new Token(TokenKind.BooleanLiteral, new TokenValue(value.AsCachedObject()), range, location);
     public static Token StringLiteral(string value, Range range, SourceLocation location) => new Token(TokenKind.StringLiteral, value, range, location);
     public static Token NumericLiteral(double value, Range range, SourceLocation location) => new Token(TokenKind.NumericLiteral, value, range, location);
     public static Token BigIntLiteral(BigInteger value, Range range, SourceLocation location) => new Token(TokenKind.BigIntLiteral, value, range, location);
@@ -36,7 +37,9 @@ public readonly struct Token
 
     /// <remarks>
     /// Return value type depends on <see cref="Kind"/> as follows:<br/>
-    /// * <see cref="TokenKind.Punctuator"/> | <see cref="TokenKind.Keyword"/> | <see cref="TokenKind.Identifier"/> | <see cref="TokenKind.NullLiteral"/> | <see cref="TokenKind.BooleanLiteral"/> | <see cref="TokenKind.StringLiteral"/> | <see cref="TokenKind.EOF"/> => <see cref="string"/><br/>
+    /// * <see cref="TokenKind.Punctuator"/> | <see cref="TokenKind.Keyword"/> | <see cref="TokenKind.Identifier"/> | <see cref="TokenKind.StringLiteral"/> | <see cref="TokenKind.EOF"/> => <see cref="string"/><br/>
+    /// * <see cref="TokenKind.NullLiteral"/> => <see langword="null"/><br/>
+    /// * <see cref="TokenKind.BooleanLiteral"/> => <see cref="bool"/><br/>
     /// * <see cref="TokenKind.NumericLiteral"/> => <see cref="double"/><br/>
     /// * <see cref="TokenKind.BigIntLiteral"/> => <see cref="BigInteger"/><br/>
     /// * <see cref="TokenKind.RegExpLiteral"/> => <see cref="Acornima.RegExpValue"/><br/>
@@ -58,6 +61,8 @@ public readonly struct Token
         TokenKind.Template => new TemplateValue(_value.TemplateCooked, (string)_value.Value!),
         _ => null
     };
+
+    public bool? BooleanValue { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _value.Value as bool?; }
 
     public string? StringValue { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _value.Value as string; }
 

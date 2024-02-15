@@ -1424,7 +1424,7 @@ public sealed partial class Tokenizer
         var tokenType = TokenType.GetKeywordBy(word);
 
         return tokenType is not null
-            ? FinishToken(tokenType, tokenType.Label)
+            ? FinishToken(tokenType, new TokenValue(tokenType.Value))
             : FinishToken(TokenType.Name, DeduplicateString(word, ref _stringPool));
     }
 

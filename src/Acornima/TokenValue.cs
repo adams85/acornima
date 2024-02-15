@@ -18,7 +18,7 @@ internal readonly struct TokenValue
     public readonly BigInteger BigIntValue;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private TokenValue(object? value, string? templateCooked = null, double numericValue = default, BigInteger bigIntValue = default)
+    internal TokenValue(object? value, string? templateCooked = null, double numericValue = default, BigInteger bigIntValue = default)
     {
         Value = value;
         TemplateCooked = templateCooked;

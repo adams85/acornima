@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Acornima.Helpers;
 
@@ -7,9 +8,14 @@ public sealed class BooleanLiteral : Literal
 {
     private readonly object _value;
 
-    public BooleanLiteral(bool value, string raw) : base(TokenKind.BooleanLiteral, raw)
+    internal BooleanLiteral(object? value, string raw) : base(TokenKind.BooleanLiteral, raw)
     {
-        _value = value.AsCachedObject();
+        Debug.Assert(value is bool);
+        _value = value!;
+    }
+
+    public BooleanLiteral(bool value, string raw) : this(value.AsCachedObject(), raw)
+    {
     }
 
     public new bool Value { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ReferenceEquals(_value, CachedValues.True); }

@@ -737,7 +737,7 @@ public partial class Parser
                     : _tokenizer._type.Label;
                 Literal literal = _tokenizer._type.Kind == TokenKind.NullLiteral
                     ? new NullLiteral(raw)
-                    : new BooleanLiteral(_tokenizer._type == TokenType.True, raw);
+                    : new BooleanLiteral(_tokenizer._type.Value, raw);
                 Next();
                 return FinishNode(startMarker, literal);
 

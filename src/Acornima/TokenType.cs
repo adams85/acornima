@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using Acornima.Helpers;
 
 namespace Acornima;
 
@@ -96,41 +97,41 @@ internal sealed partial class TokenType
     public static readonly TokenType Coalesce = PunctuatorOperator("??", beforeExpression: true, precedence: 1);
 
     // Keyword token types.
-    public static readonly TokenType Break = ReservedWord(KeywordEnum.Break);
-    public static readonly TokenType Case = ReservedWord(KeywordEnum.Case, beforeExpression: true);
-    public static readonly TokenType Catch = ReservedWord(KeywordEnum.Catch);
-    public static readonly TokenType Continue = ReservedWord(KeywordEnum.Continue);
-    public static readonly TokenType Debugger = ReservedWord(KeywordEnum.Debugger);
-    public static readonly TokenType Default = ReservedWord(KeywordEnum.Default, beforeExpression: true);
-    public static readonly TokenType Do = ReservedWord(KeywordEnum.Do, isLoop: true, beforeExpression: true);
-    public static readonly TokenType Else = ReservedWord(KeywordEnum.Else, beforeExpression: true);
-    public static readonly TokenType Finally = ReservedWord(KeywordEnum.Finally);
-    public static readonly TokenType For = ReservedWord(KeywordEnum.For, isLoop: true);
-    public static readonly TokenType Function = ReservedWord(KeywordEnum.Function, startsExpression: true, updateContext: Tokenizer.UpdateContext_FunctionOrClass);
-    public static readonly TokenType If = ReservedWord(KeywordEnum.If);
-    public static readonly TokenType Return = ReservedWord(KeywordEnum.Return, beforeExpression: true);
-    public static readonly TokenType Switch = ReservedWord(KeywordEnum.Switch);
-    public static readonly TokenType Throw = ReservedWord(KeywordEnum.Throw, beforeExpression: true);
-    public static readonly TokenType Try = ReservedWord(KeywordEnum.Try);
-    public static readonly TokenType Var = ReservedWord(KeywordEnum.Var);
-    public static readonly TokenType Const = ReservedWord(KeywordEnum.Const, ecmaVersion: EcmaVersion.ES6);
-    public static readonly TokenType While = ReservedWord(KeywordEnum.While, isLoop: true);
-    public static readonly TokenType With = ReservedWord(KeywordEnum.With);
-    public static readonly TokenType New = ReservedWord(KeywordEnum.New, beforeExpression: true, startsExpression: true);
-    public static readonly TokenType This = ReservedWord(KeywordEnum.This, startsExpression: true);
-    public static readonly TokenType Super = ReservedWord(KeywordEnum.Super, ecmaVersion: EcmaVersion.ES6, startsExpression: true);
-    public static readonly TokenType Class = ReservedWord(KeywordEnum.Class, ecmaVersion: EcmaVersion.ES6, startsExpression: true, updateContext: Tokenizer.UpdateContext_FunctionOrClass);
-    public static readonly TokenType Extends = ReservedWord(KeywordEnum.Extends, ecmaVersion: EcmaVersion.ES6, beforeExpression: true);
-    public static readonly TokenType Export = ReservedWord(KeywordEnum.Export, ecmaVersion: EcmaVersion.ES6);
-    public static readonly TokenType Import = ReservedWord(KeywordEnum.Import, ecmaVersion: EcmaVersion.ES6, startsExpression: true);
-    public static readonly TokenType Null = ReservedWord(KeywordEnum.Null, kind: TokenKind.NullLiteral, startsExpression: true);
-    public static readonly TokenType True = ReservedWord(KeywordEnum.True, kind: TokenKind.BooleanLiteral, startsExpression: true);
-    public static readonly TokenType False = ReservedWord(KeywordEnum.False, kind: TokenKind.BooleanLiteral, startsExpression: true);
-    public static readonly TokenType In = ReservedWordOperator(KeywordEnum.In, beforeExpression: true, precedence: 7);
-    public static readonly TokenType InstanceOf = ReservedWordOperator(KeywordEnum.InstanceOf, beforeExpression: true, precedence: 7);
-    public static readonly TokenType TypeOf = ReservedWordOperator(KeywordEnum.TypeOf, beforeExpression: true, prefix: true, startsExpression: true);
-    public static readonly TokenType Void = ReservedWordOperator(KeywordEnum.Void, beforeExpression: true, prefix: true, startsExpression: true);
-    public static readonly TokenType Delete = ReservedWordOperator(KeywordEnum.Delete, beforeExpression: true, prefix: true, startsExpression: true);
+    public static readonly TokenType Break = Keyword_("break", KeywordEnum.Break);
+    public static readonly TokenType Case = Keyword_("case", KeywordEnum.Case, beforeExpression: true);
+    public static readonly TokenType Catch = Keyword_("catch", KeywordEnum.Catch);
+    public static readonly TokenType Continue = Keyword_("continue", KeywordEnum.Continue);
+    public static readonly TokenType Debugger = Keyword_("debugger", KeywordEnum.Debugger);
+    public static readonly TokenType Default = Keyword_("default", KeywordEnum.Default, beforeExpression: true);
+    public static readonly TokenType Do = Keyword_("do", KeywordEnum.Do, isLoop: true, beforeExpression: true);
+    public static readonly TokenType Else = Keyword_("else", KeywordEnum.Else, beforeExpression: true);
+    public static readonly TokenType Finally = Keyword_("finally", KeywordEnum.Finally);
+    public static readonly TokenType For = Keyword_("for", KeywordEnum.For, isLoop: true);
+    public static readonly TokenType Function = Keyword_("function", KeywordEnum.Function, startsExpression: true, updateContext: Tokenizer.UpdateContext_FunctionOrClass);
+    public static readonly TokenType If = Keyword_("if", KeywordEnum.If);
+    public static readonly TokenType Return = Keyword_("return", KeywordEnum.Return, beforeExpression: true);
+    public static readonly TokenType Switch = Keyword_("switch", KeywordEnum.Switch);
+    public static readonly TokenType Throw = Keyword_("throw", KeywordEnum.Throw, beforeExpression: true);
+    public static readonly TokenType Try = Keyword_("try", KeywordEnum.Try);
+    public static readonly TokenType Var = Keyword_("var", KeywordEnum.Var);
+    public static readonly TokenType Const = Keyword_("const", KeywordEnum.Const, ecmaVersion: EcmaVersion.ES6);
+    public static readonly TokenType While = Keyword_("while", KeywordEnum.While, isLoop: true);
+    public static readonly TokenType With = Keyword_("with", KeywordEnum.With);
+    public static readonly TokenType New = Keyword_("new", KeywordEnum.New, beforeExpression: true, startsExpression: true);
+    public static readonly TokenType This = Keyword_("this", KeywordEnum.This, startsExpression: true);
+    public static readonly TokenType Super = Keyword_("super", KeywordEnum.Super, ecmaVersion: EcmaVersion.ES6, startsExpression: true);
+    public static readonly TokenType Class = Keyword_("class", KeywordEnum.Class, ecmaVersion: EcmaVersion.ES6, startsExpression: true, updateContext: Tokenizer.UpdateContext_FunctionOrClass);
+    public static readonly TokenType Extends = Keyword_("extends", KeywordEnum.Extends, ecmaVersion: EcmaVersion.ES6, beforeExpression: true);
+    public static readonly TokenType Export = Keyword_("export", KeywordEnum.Export, ecmaVersion: EcmaVersion.ES6);
+    public static readonly TokenType Import = Keyword_("import", KeywordEnum.Import, ecmaVersion: EcmaVersion.ES6, startsExpression: true);
+    public static readonly TokenType Null = Keyword_("null", KeywordEnum.Null, TokenKind.NullLiteral, value: null, startsExpression: true);
+    public static readonly TokenType True = Keyword_("true", KeywordEnum.True, TokenKind.BooleanLiteral, CachedValues.True, startsExpression: true);
+    public static readonly TokenType False = Keyword_("false", KeywordEnum.False, TokenKind.BooleanLiteral, CachedValues.False, startsExpression: true);
+    public static readonly TokenType In = KeywordOperator("in", KeywordEnum.In, beforeExpression: true, precedence: 7);
+    public static readonly TokenType InstanceOf = KeywordOperator("instanceof", KeywordEnum.InstanceOf, beforeExpression: true, precedence: 7);
+    public static readonly TokenType TypeOf = KeywordOperator("typeof", KeywordEnum.TypeOf, beforeExpression: true, prefix: true, startsExpression: true);
+    public static readonly TokenType Void = KeywordOperator("void", KeywordEnum.Void, beforeExpression: true, prefix: true, startsExpression: true);
+    public static readonly TokenType Delete = KeywordOperator("delete", KeywordEnum.Delete, beforeExpression: true, prefix: true, startsExpression: true);
 
     private static TokenType Identifier(string name, bool beforeExpression = false, bool startsExpression = false,
         Action<Tokenizer, TokenType>? updateContext = null)
@@ -171,26 +172,36 @@ internal sealed partial class TokenType
             updateContext: updateContext);
     }
 
-    private static TokenType ReservedWord(KeywordEnum keyword, TokenKind kind = TokenKind.Keyword, EcmaVersion ecmaVersion = EcmaVersion.ES3,
+    private static TokenType Keyword_(string label, KeywordEnum keyword, EcmaVersion ecmaVersion = EcmaVersion.ES3,
         bool beforeExpression = false, bool startsExpression = false, bool isLoop = false,
         Action<Tokenizer, TokenType>? updateContext = null)
     {
-        return new TokenType(label: keyword.ToString().ToLowerInvariant(), kind,
+        return Keyword_(label, keyword, TokenKind.Keyword, value: label, ecmaVersion: ecmaVersion,
+            beforeExpression: beforeExpression, startsExpression: startsExpression, isLoop: isLoop, updateContext: updateContext);
+    }
+
+    private static TokenType Keyword_(string label, KeywordEnum keyword, TokenKind kind, object? value, EcmaVersion ecmaVersion = EcmaVersion.ES3,
+        bool beforeExpression = false, bool startsExpression = false, bool isLoop = false,
+        Action<Tokenizer, TokenType>? updateContext = null)
+    {
+        return new TokenType(label, kind,
             keyword: keyword,
             ecmaVersion: ecmaVersion,
+            value: value,
             beforeExpression: beforeExpression,
             startsExpression: startsExpression,
             isLoop: isLoop,
             updateContext: updateContext);
     }
 
-    private static TokenType ReservedWordOperator(KeywordEnum keyword, EcmaVersion ecmaVersion = EcmaVersion.ES3,
+    private static TokenType KeywordOperator(string label, KeywordEnum keyword, EcmaVersion ecmaVersion = EcmaVersion.ES3,
         bool beforeExpression = false, bool startsExpression = false, bool isLoop = false,
         bool isAssignment = false, bool prefix = false, bool postfix = false, int precedence = 0)
     {
-        return new TokenType(label: keyword.ToString().ToLowerInvariant(), TokenKind.Keyword,
+        return new TokenType(label, TokenKind.Keyword,
             keyword: keyword,
             ecmaVersion: ecmaVersion,
+            value: label,
             beforeExpression: beforeExpression,
             startsExpression: startsExpression,
             isLoop: isLoop,
@@ -205,6 +216,7 @@ internal sealed partial class TokenType
         TokenKind kind,
         KeywordEnum? keyword = null,
         EcmaVersion ecmaVersion = EcmaVersion.Unknown,
+        object? value = null,
         bool beforeExpression = false,
         bool startsExpression = false,
         bool isLoop = false,
@@ -218,6 +230,7 @@ internal sealed partial class TokenType
         Kind = kind;
         Keyword = keyword;
         EcmaVersion = ecmaVersion;
+        Value = value;
         BeforeExpression = beforeExpression;
         StartsExpression = startsExpression;
         IsLoop = isLoop;
@@ -232,6 +245,7 @@ internal sealed partial class TokenType
     public readonly TokenKind Kind;
     public readonly KeywordEnum? Keyword;
     public readonly EcmaVersion EcmaVersion;
+    public readonly object? Value;
     public readonly bool BeforeExpression;
     public readonly bool StartsExpression;
     public readonly bool IsLoop;
