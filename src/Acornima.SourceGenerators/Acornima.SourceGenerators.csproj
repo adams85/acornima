@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <IsRoslynComponent>true</IsRoslynComponent>
+    <IsPackable>false</IsPackable>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     <NoWarn>$(NoWarn);RS1035</NoWarn>
   </PropertyGroup>
@@ -22,5 +23,5 @@
       System.Runtime.CompilerServices.InterpolatedStringHandlerArgumentAttribute
     </PolySharpIncludeGeneratedTypes>
   </PropertyGroup>
-  
+
 </Project>
