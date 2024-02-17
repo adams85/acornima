@@ -4,6 +4,7 @@
     <LangVersion>12</LangVersion>
     <Nullable>enable</Nullable>
     <WarningsAsErrors>nullable</WarningsAsErrors>
+    <VersionPrefix>0.1.0</VersionPrefix>
   </PropertyGroup>
 
 </Project>

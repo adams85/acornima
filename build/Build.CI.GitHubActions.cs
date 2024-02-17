@@ -15,14 +15,14 @@ using Nuke.Components;
 ]
 [GitHubActions(
         "build",
-        GitHubActionsImage.MacOsLatest,
         GitHubActionsImage.UbuntuLatest,
-        GitHubActionsImage.WindowsLatest,
         OnPushBranches = ["main", "master"],
         OnPushTags = ["v*.*.*"],
         PublishArtifacts = true,
-        InvokedTargets = [nameof(ICompile.Compile), nameof(ITest.Test), nameof(IPack.Pack)],
-        CacheKeyFiles = []
+        InvokedTargets = [nameof(ICompile.Compile), nameof(ITest.Test), nameof(IPack.Pack), nameof(IPublish.Publish)],
+        CacheKeyFiles = [],
+        EnableGitHubToken = true,
+        ImportSecrets = [nameof(FeedzNuGetApiKey), nameof(PublicNuGetApiKey)]
     )
 ]
 public partial class Build;
