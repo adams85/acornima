@@ -159,7 +159,7 @@ internal sealed partial class TokenType
     }
 
     private static TokenType PunctuatorOperator(string label, bool beforeExpression = false, bool startsExpression = false,
-        bool isAssignment = false, bool prefix = false, bool postfix = false, int precedence = 0,
+        bool isAssignment = false, bool prefix = false, bool postfix = false, int precedence = -1,
         Action<Tokenizer, TokenType>? updateContext = null)
     {
         return new TokenType(label, TokenKind.Punctuator,
@@ -196,7 +196,7 @@ internal sealed partial class TokenType
 
     private static TokenType KeywordOperator(string label, KeywordEnum keyword, EcmaVersion ecmaVersion = EcmaVersion.ES3,
         bool beforeExpression = false, bool startsExpression = false, bool isLoop = false,
-        bool isAssignment = false, bool prefix = false, bool postfix = false, int precedence = 0)
+        bool isAssignment = false, bool prefix = false, bool postfix = false, int precedence = -1)
     {
         return new TokenType(label, TokenKind.Keyword,
             keyword: keyword,
