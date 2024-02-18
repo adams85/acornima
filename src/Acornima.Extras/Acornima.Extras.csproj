@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All"/>
     <PackageReference Include="PolySharp" Version="1.14.1" PrivateAssets="all" />
   </ItemGroup>
 
@@ -17,6 +18,10 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Acornima.Benchmarks" />
     <InternalsVisibleTo Include="Acornima.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="../../README.md" Pack="true" PackagePath=""/>
   </ItemGroup>
 
   <!-- Configure polyfills -->
