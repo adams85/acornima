@@ -10,7 +10,7 @@ public class AstVisitorTests
     public void ThrowsCatchableExceptionOnTooDeepRecursion()
     {
         Expression expression = new Identifier("x");
-        for (int i = 0; i < 100_000; i++)
+        for (int i = 0; i < 1_000_000; i++)
         {
             expression = new ParenthesizedExpression(expression);
         }
