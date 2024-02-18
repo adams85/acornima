@@ -434,7 +434,7 @@ public partial class ParserTests
                 OnComment = (in Comment comment) => comments.Add(comment)
             };
 
-        var parser = new Parser(new ParserOptions { OnComment = (in Comment comment) => comments.Add(comment) });
+        var parser = new Parser(parserOptions);
 
         var code =
             """
@@ -443,15 +443,22 @@ public partial class ParserTests
             console.log("Hello world");
             """.Replace("\r\n", "\n");
 
-        var script = parser.ParseScript(code);
+        if (!expectSyntaxError)
+        {
+            var script = parser.ParseScript(code);
 
-        var comment = Assert.Single(comments);
+            var comment = Assert.Single(comments);
 
-        Assert.Equal(CommentKind.HashBang, comment.Kind);
-        Assert.Equal("/usr/bin/env node", comment.GetContent(code).ToString());
-        Assert.Equal("#!/usr/bin/env node", comment.GetRawValue(code).ToString());
-        Assert.Equal(Range.From(0, 19), comment.Range);
-        Assert.Equal(SourceLocation.From(Position.From(1, 0), Position.From(1, 19)), comment.Location);
+            Assert.Equal(CommentKind.HashBang, comment.Kind);
+            Assert.Equal("/usr/bin/env node", comment.GetContent(code).ToString());
+            Assert.Equal("#!/usr/bin/env node", comment.GetRawValue(code).ToString());
+            Assert.Equal(Range.From(0, 19), comment.Range);
+            Assert.Equal(SourceLocation.From(Position.From(1, 0), Position.From(1, 19)), comment.Location);
+        }
+        else
+        {
+            Assert.Throws<SyntaxErrorException>(() => parser.ParseScript(code));
+        }
     }
 
     [Theory]
