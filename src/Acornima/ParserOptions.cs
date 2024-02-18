@@ -183,6 +183,4 @@ public record class ParserOptions
         get => _tokenizerOptions._errorHandler;
         init => _tokenizerOptions._errorHandler = value ?? throw new ArgumentNullException(nameof(value));
     }
-
-    // TODO: MaxDepth (or some other protection against StackOverflowException)
 }

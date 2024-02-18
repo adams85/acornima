@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using Acornima.Ast;
+using Acornima.Helpers;
 
 namespace Acornima;
 
@@ -10,9 +11,17 @@ public partial class AstVisitor
     private static Exception UnsupportedNodeType(Type nodeType, [CallerMemberName] string? callerName = null) =>
         new NotImplementedException($"The visitor does not support nodes of type {nodeType}. You can override {callerName} to handle this case.");
 
+    private int _recursionDepth = 0;
+
     public virtual object? Visit(Node node)
     {
-        return node.Accept(this);
+        _recursionDepth++;
+        StackGuard.EnsureSufficientExecutionStack(_recursionDepth);
+
+        var result = node.Accept(this);
+
+        _recursionDepth--;
+        return result;
     }
 
     protected internal virtual object? VisitExportSpecifier(ExportSpecifier node)

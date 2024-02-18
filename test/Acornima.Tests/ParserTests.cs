@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Numerics;
 using Acornima.Ast;
@@ -15,7 +16,7 @@ public partial class ParserTests
     /// Ensures that we don't regress in stack handling, only test in modern runtime for now
     /// </summary>
     [Fact]
-    public void CanHandleDeepRecursionWithoutStackOverflow()
+    public void CanHandleDeepRecursion()
     {
         if (OperatingSystem.IsMacOS())
         {
@@ -25,14 +26,95 @@ public partial class ParserTests
 
         var parser = new Parser();
 #if DEBUG
-        const int depth = 450;
+        const int depth = 390;
 #else
-        const int depth = 830;
+        const int depth = 690;
 #endif
         var input = $"if ({new string('(', depth)}true{new string(')', depth)}) {{ }}";
         parser.ParseScript(input);
     }
 #endif
+
+    [Fact]
+    public void ThrowsCatchableExceptionOnTooDeepRecursion_MaybeAssign()
+    {
+        var parser = new Parser();
+        const int depth = 100_000;
+        var input = $"if ({new string('(', depth)}true{new string(')', depth)}) {{ }}";
+        Assert.Throws<InsufficientExecutionStackException>(() => parser.ParseScript(input));
+    }
+
+    [Fact]
+    public void ThrowsCatchableExceptionOnTooDeepRecursion_MaybeAssign_Yield()
+    {
+        var parser = new Parser();
+        const int depth = 100_000;
+        var input = "function* f() { " + string.Join(" ", Enumerable.Range(0, depth).Select(_ => "yield")) + " 0 }";
+        Assert.Throws<InsufficientExecutionStackException>(() => parser.ParseScript(input));
+    }
+
+    [Fact]
+    public void ThrowsCatchableExceptionOnTooDeepRecursion_MaybeUnary_Prefix()
+    {
+        var parser = new Parser();
+        const int depth = 100_000;
+        var input = new string('+', depth) + "x";
+        Assert.Throws<InsufficientExecutionStackException>(() => parser.ParseScript(input));
+    }
+
+    [Fact]
+    public void ThrowsCatchableExceptionOnTooDeepRecursion_MaybeUnary_Exponentiation()
+    {
+        var parser = new Parser();
+        const int depth = 100_000;
+        var input = string.Join("**", Enumerable.Range(0, depth).Select(n => n.ToString(CultureInfo.InvariantCulture)));
+        Assert.Throws<InsufficientExecutionStackException>(() => parser.ParseScript(input));
+    }
+
+    [Fact]
+    public void ThrowsCatchableExceptionOnTooDeepRecursion_MaybeUnary_Await()
+    {
+        var parser = new Parser();
+        const int depth = 100_000;
+        var input = string.Join(" ", Enumerable.Range(0, depth).Select(_ => "await")) + " m()";
+        Assert.Throws<InsufficientExecutionStackException>(() => parser.ParseModule(input));
+    }
+
+    [Fact]
+    public void ThrowsCatchableExceptionOnTooDeepRecursion_ExprAtom()
+    {
+        var parser = new Parser();
+        const int depth = 100_000;
+        var input = string.Join(" ", Enumerable.Range(0, depth).Select(_ => "new")) + "X";
+        Assert.Throws<InsufficientExecutionStackException>(() => parser.ParseScript(input));
+    }
+
+    [Fact]
+    public void ThrowsCatchableExceptionOnTooDeepRecursion_Binding()
+    {
+        var parser = new Parser();
+        const int depth = 100_000;
+        var input = "try{}catch(" + string.Join("", Enumerable.Range(0, depth).Select(_ => "[...")) + "x" + new string(']', depth) + "){}";
+        Assert.Throws<InsufficientExecutionStackException>(() => parser.ParseScript(input));
+    }
+
+    [Fact]
+    public void ThrowsCatchableExceptionOnTooDeepRecursion_Binding_Reinterpreted()
+    {
+        var parser = new Parser();
+        const int depth = 100_000;
+        var input = string.Join("", Enumerable.Range(0, depth).Select(_ => "[...")) + "x" + new string(']', depth) + "=[]";
+        Assert.Throws<InsufficientExecutionStackException>(() => parser.ParseScript(input));
+    }
+
+    [Fact]
+    public void ThrowsCatchableExceptionOnTooDeepRecursion_Statement()
+    {
+        var parser = new Parser();
+        const int depth = 100_000;
+        var input = string.Join("", Enumerable.Range(0, depth).Select(_ => "function f(){")) + "x" + new string('}', depth);
+        Assert.Throws<InsufficientExecutionStackException>(() => parser.ParseScript(input));
+    }
 
     [Fact]
     public void CanReuseParser()

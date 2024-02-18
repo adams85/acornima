@@ -157,11 +157,13 @@ public partial class Parser
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/expression.js > `pp.parseMaybeAssign = function`
 
+        EnterRecursion();
+
         if (IsContextual("yield"))
         {
             if (InGenerator())
             {
-                return ParseYield(context);
+                return ExitRecursion(ParseYield(context));
             }
 
             // The tokenizer will assume an expression is allowed after
@@ -223,7 +225,7 @@ public partial class Parser
                 actualDestructuringErrors.DoubleProto = oldDoubleProto;
             }
 
-            return FinishNode(startMarker, new AssignmentExpression(op, leftNode, right));
+            return ExitRecursion(FinishNode(startMarker, new AssignmentExpression(op, leftNode, right)));
         }
 
         if (ownsDestructuringErrors)
@@ -241,7 +243,7 @@ public partial class Parser
             actualDestructuringErrors.TrailingComma = oldTrailingComma;
         }
 
-        return left;
+        return ExitRecursion(left);
     }
 
     // Parse a ternary conditional (`?:`) operator.
@@ -331,6 +333,7 @@ public partial class Parser
                     Next();
 
                     var rightStartMarker = StartNode();
+                    // NOTE: We don't need stack overflow protection here because this recursion is known to be bounded (by the number of precedence levels).
                     var right = ParseBinaryOp(rightStartMarker, ParseMaybeUnary(sawUnary: false, incDec: false, ref NullRef<DestructuringErrors>(), context), prec, context);
                     var node = BuildBinary(leftStartMarker, left, right, op, logical || coalesce);
 
@@ -375,7 +378,8 @@ public partial class Parser
         Operator op;
         if (IsContextual("await") && CanAwait())
         {
-            expr = ParseAwait(context);
+            EnterRecursion();
+            expr = ExitRecursion(ParseAwait(context));
             sawUnary = true;
         }
         else if (_tokenizer._type.Prefix)
@@ -387,7 +391,9 @@ public partial class Parser
             Debug.Assert(op != Operator.Unknown);
 
             Next();
-            var argument = ParseMaybeUnary(sawUnary: true, incDec: update, ref NullRef<DestructuringErrors>(), context);
+
+            EnterRecursion();
+            var argument = ExitRecursion(ParseMaybeUnary(sawUnary: true, incDec: update, ref NullRef<DestructuringErrors>(), context));
             CheckExpressionErrors(ref destructuringErrors, andThrow: true);
 
             if (update)
@@ -456,7 +462,8 @@ public partial class Parser
             }
             else
             {
-                var right = ParseMaybeUnary(sawUnary: false, incDec: false, ref NullRef<DestructuringErrors>(), context);
+                EnterRecursion();
+                var right = ExitRecursion(ParseMaybeUnary(sawUnary: false, incDec: false, ref NullRef<DestructuringErrors>(), context));
                 return BuildBinary(startMarker, left: expr, right, Operator.Exponentiation, logical: false);
             }
         }
@@ -468,8 +475,20 @@ public partial class Parser
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/expression.js > `function isPrivateFieldAccess`
 
-        return expr is MemberExpression { Property.Type: NodeType.PrivateIdentifier }
-            || expr is ChainExpression chainExpression && IsPrivateFieldAccess(chainExpression.Expression);
+        for (; ; )
+        {
+            switch (expr)
+            {
+                case MemberExpression { Property.Type: NodeType.PrivateIdentifier }:
+                    return true;
+
+                case ChainExpression chainExpression:
+                    expr = chainExpression.Expression;
+                    continue;
+            }
+
+            return false;
+        }
     }
 
     // Parse call, dot, and `[]`-subscript expressions.
@@ -641,6 +660,8 @@ public partial class Parser
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/expression.js > `pp.parseExprAtom = function`
 
+        EnterRecursion();
+
         // WARNING: ExpressionContext.ForNew should not be propagated in most cases.
 
         var startMarker = StartNode();
@@ -675,25 +696,25 @@ public partial class Parser
                             Unexpected();
                         }
 
-                        return FinishNode(startMarker, new Super());
+                        return ExitRecursion(FinishNode(startMarker, new Super()));
 
                     case Keyword.This:
                         Next();
-                        return FinishNode(startMarker, new ThisExpression());
+                        return ExitRecursion(FinishNode(startMarker, new ThisExpression()));
 
                     case Keyword.Function:
                         Next();
-                        return (FunctionExpression)ParseFunction(startMarker, FunctionOrClassFlags.None);
+                        return ExitRecursion((FunctionExpression)ParseFunction(startMarker, FunctionOrClassFlags.None));
 
                     case Keyword.Class:
                         Next();
-                        return (ClassExpression)ParseClass(startMarker, FunctionOrClassFlags.None);
+                        return ExitRecursion((ClassExpression)ParseClass(startMarker, FunctionOrClassFlags.None));
 
                     case Keyword.New:
-                        return ParseNew();
+                        return ExitRecursion(ParseNew());
 
                     case Keyword.Import when _tokenizerOptions._ecmaVersion >= EcmaVersion.ES11:
-                        return ParseExprImport(context);
+                        return ExitRecursion(ParseExprImport(context));
                 }
                 goto default;
 
@@ -705,14 +726,14 @@ public partial class Parser
                 if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES8 && !containsEsc && id.Name == "async" && !CanInsertSemicolon() && Eat(TokenType.Function))
                 {
                     _tokenizer.OverrideContext(TokenContext.FunctionInExpression);
-                    return (Expression)ParseFunction(startMarker, FunctionOrClassFlags.None, isAsync: true, context & ~ExpressionContext.ForNew);
+                    return ExitRecursion((Expression)ParseFunction(startMarker, FunctionOrClassFlags.None, isAsync: true, context & ~ExpressionContext.ForNew));
                 }
 
                 if (canBeArrow && !CanInsertSemicolon())
                 {
                     if (Eat(TokenType.Arrow))
                     {
-                        return ParseArrowExpression(startMarker, parameters: new NodeList<Node>(id), isAsync: false, context & ~ExpressionContext.ForNew);
+                        return ExitRecursion(ParseArrowExpression(startMarker, parameters: new NodeList<Node>(id), isAsync: false, context & ~ExpressionContext.ForNew));
                     }
 
                     if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES8 && id.Name == "async" && _tokenizer._type == TokenType.Name && !containsEsc
@@ -724,11 +745,11 @@ public partial class Parser
                             Unexpected();
                         }
 
-                        return ParseArrowExpression(startMarker, parameters: new NodeList<Node>(id), isAsync: true, context & ~ExpressionContext.ForNew);
+                        return ExitRecursion(ParseArrowExpression(startMarker, parameters: new NodeList<Node>(id), isAsync: true, context & ~ExpressionContext.ForNew));
                     }
                 }
 
-                return id;
+                return ExitRecursion(id);
 
             case TokenKind.NullLiteral:
             case TokenKind.BooleanLiteral:
@@ -739,7 +760,7 @@ public partial class Parser
                     ? new NullLiteral(raw)
                     : new BooleanLiteral(_tokenizer._type.Value, raw);
                 Next();
-                return FinishNode(startMarker, literal);
+                return ExitRecursion(FinishNode(startMarker, literal));
 
             case TokenKind.StringLiteral:
             case TokenKind.NumericLiteral:
@@ -761,7 +782,7 @@ public partial class Parser
                 }
 
                 Next();
-                return FinishNode(startMarker, literal);
+                return ExitRecursion(FinishNode(startMarker, literal));
 
             case TokenKind.Punctuator when _tokenizer._type == TokenType.ParenLeft:
                 canBeArrow = _potentialArrowAt == _tokenizer._start;
@@ -779,19 +800,19 @@ public partial class Parser
                     }
                 }
 
-                return expr;
+                return ExitRecursion(expr);
 
             case TokenKind.Punctuator when _tokenizer._type == TokenType.BracketLeft:
                 Next();
                 var elements = ParseExprList(close: TokenType.BracketRight, allowTrailingComma: true, allowEmptyItem: true, ref destructuringErrors);
-                return FinishNode(startMarker, new ArrayExpression(elements));
+                return ExitRecursion(FinishNode(startMarker, new ArrayExpression(elements)));
 
             case TokenKind.Punctuator when _tokenizer._type == TokenType.BraceLeft:
                 _tokenizer.OverrideContext(TokenContext.BracketsInExpression);
-                return (Expression)ParseObject(isPattern: false, ref destructuringErrors);
+                return ExitRecursion((Expression)ParseObject(isPattern: false, ref destructuringErrors));
 
             case TokenKind.Punctuator when _tokenizer._type == TokenType.BackQuote:
-                return ParseTemplate(isTagged: false);
+                return ExitRecursion(ParseTemplate(isTagged: false));
 
             case TokenKind.Punctuator when _tokenizer._type == TokenType.Slash:
                 // If a division operator appears in an expression position, the

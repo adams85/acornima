@@ -136,6 +136,8 @@ public partial class Parser
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseStatement = function`
 
+        EnterRecursion();
+
         var startMarker = StartNode();
 
         bool hasContext;
@@ -162,16 +164,16 @@ public partial class Parser
             switch (startType.Keyword.Value)
             {
                 case Keyword.Break or Keyword.Continue:
-                    return ParseBreakContinueStatement(startMarker, startType);
+                    return ExitRecursion(ParseBreakContinueStatement(startMarker, startType));
 
                 case Keyword.Debugger:
-                    return ParseDebuggerStatement(startMarker);
+                    return ExitRecursion(ParseDebuggerStatement(startMarker));
 
                 case Keyword.Do:
-                    return ParseDoStatement(startMarker);
+                    return ExitRecursion(ParseDoStatement(startMarker));
 
                 case Keyword.For:
-                    return ParseForStatement(startMarker);
+                    return ExitRecursion(ParseForStatement(startMarker));
 
                 case Keyword.Function:
                     // Function as sole body of either an if statement or a labeled statement
@@ -186,7 +188,7 @@ public partial class Parser
                         Unexpected();
                     }
 
-                    return ParseFunctionStatement(startMarker, isAsync: false, declarationPosition: !hasContext);
+                    return ExitRecursion(ParseFunctionStatement(startMarker, isAsync: false, declarationPosition: !hasContext));
 
                 case Keyword.Class:
                     if (context != StatementContext.Default)
@@ -194,22 +196,22 @@ public partial class Parser
                         Unexpected();
                     }
 
-                    return ParseClassStatement(startMarker);
+                    return ExitRecursion(ParseClassStatement(startMarker));
 
                 case Keyword.If:
-                    return ParseIfStatement(startMarker);
+                    return ExitRecursion(ParseIfStatement(startMarker));
 
                 case Keyword.Return:
-                    return ParseReturnStatement(startMarker);
+                    return ExitRecursion(ParseReturnStatement(startMarker));
 
                 case Keyword.Switch:
-                    return ParseSwitchStatement(startMarker);
+                    return ExitRecursion(ParseSwitchStatement(startMarker));
 
                 case Keyword.Throw:
-                    return ParseThrowStatement(startMarker);
+                    return ExitRecursion(ParseThrowStatement(startMarker));
 
                 case Keyword.Try:
-                    return ParseTryStatement(startMarker);
+                    return ExitRecursion(ParseTryStatement(startMarker));
 
                 case Keyword.Const or Keyword.Var:
                     if (kind == VariableDeclarationKind.Unknown)
@@ -222,13 +224,13 @@ public partial class Parser
                         Unexpected();
                     }
 
-                    return ParseVarStatement(startMarker, kind);
+                    return ExitRecursion(ParseVarStatement(startMarker, kind));
 
                 case Keyword.While:
-                    return ParseWhileStatement(startMarker);
+                    return ExitRecursion(ParseWhileStatement(startMarker));
 
                 case Keyword.With:
-                    return ParseWithStatement(startMarker);
+                    return ExitRecursion(ParseWithStatement(startMarker));
 
                 case Keyword.Export or Keyword.Import:
                     if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES10 && startType.Keyword.Value == Keyword.Import)
@@ -237,7 +239,7 @@ public partial class Parser
                         var nextCh = _tokenizer._input.CharCodeAt(next);
                         if (nextCh is '(' or '.')
                         {
-                            return ParseExpressionStatement(startMarker, ParseExpression(ref NullRef<DestructuringErrors>()));
+                            return ExitRecursion(ParseExpressionStatement(startMarker, ParseExpression(ref NullRef<DestructuringErrors>())));
                         }
                     }
 
@@ -256,21 +258,21 @@ public partial class Parser
 
                     if (startType == TokenType.Import)
                     {
-                        return ParseImport(startMarker);
+                        return ExitRecursion(ParseImport(startMarker));
                     }
                     else
                     {
-                        return ParseExport(startMarker, topLevel ? _exports : null);
+                        return ExitRecursion(ParseExport(startMarker, topLevel ? _exports : null));
                     }
             }
         }
         else if (startType == TokenType.BraceLeft)
         {
-            return ParseBlockStatement(startMarker);
+            return ExitRecursion(ParseBlockStatement(startMarker));
         }
         else if (startType == TokenType.Semicolon)
         {
-            return ParseEmptyStatement(startMarker);
+            return ExitRecursion(ParseEmptyStatement(startMarker));
         }
         else if (IsAsyncFunction())
         {
@@ -281,18 +283,18 @@ public partial class Parser
             }
 
             Next();
-            return ParseFunctionStatement(startMarker, isAsync: true, declarationPosition: !hasContext);
+            return ExitRecursion(ParseFunctionStatement(startMarker, isAsync: true, declarationPosition: !hasContext));
         }
 
         var maybeName = _tokenizer._value.Value;
         var expr = ParseExpression(ref NullRef<DestructuringErrors>());
         if (startType == TokenType.Name && expr is Identifier identifier && Eat(TokenType.Colon))
         {
-            return ParseLabeledStatement(startMarker, (string)maybeName!, identifier, context);
+            return ExitRecursion(ParseLabeledStatement(startMarker, (string)maybeName!, identifier, context));
         }
         else
         {
-            return ParseExpressionStatement(startMarker, expr);
+            return ExitRecursion(ParseExpressionStatement(startMarker, expr));
         }
     }
 

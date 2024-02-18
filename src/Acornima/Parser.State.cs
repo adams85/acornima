@@ -47,6 +47,8 @@ public partial class Parser
     // When it exited from the outermost class definition, all used private names must be declared.
     private ArrayList<PrivateNameStatus> _privateNameStack;
 
+    private int _recursionDepth;
+
     internal void Reset(string input, int start, int length, SourceType sourceType, string? sourceFile, bool strict)
     {
         _tokenizer.Reset(input, start, length, sourceType, sourceFile, trackRegExpContext: _options.OnToken is not null);
@@ -209,6 +211,8 @@ public partial class Parser
         EnterScope(ScopeFlags.Top);
 
         _privateNameStack.Clear();
+
+        _recursionDepth = 0;
     }
 
     private void ReleaseLargeBuffers()

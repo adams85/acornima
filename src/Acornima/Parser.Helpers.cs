@@ -1,11 +1,67 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using Acornima.Ast;
+using Acornima.Helpers;
 
 namespace Acornima;
 
 public partial class Parser
 {
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void Next(bool ignoreEscapeSequenceInKeyword = false, bool requireValidEscapeSequenceInTemplate = true)
+    {
+        _tokenizer.Next(new TokenizerContext(_strict, ignoreEscapeSequenceInKeyword, requireValidEscapeSequenceInTemplate));
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private Marker StartNode()
+    {
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/node.js > `pp.startNode = function`
+
+        return new Marker(_tokenizer._start, _tokenizer._startLocation);
+    }
+
+    private T FinishNodeAt<T>(in Marker startMarker, in Marker endMarker, T node) where T : Node
+    {
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/node.js > `function finishNodeAt`, `pp.finishNodeAt = function`
+
+        node._range = new Range(startMarker.Index, endMarker.Index);
+        node._location = new SourceLocation(startMarker.Position, endMarker.Position, _tokenizer._sourceFile);
+        _options._onNode?.Invoke(node);
+        return node;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private T FinishNode<T>(in Marker startMarker, T node) where T : Node
+    {
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/node.js > `pp.finishNode = function`
+
+        return FinishNodeAt(startMarker, new Marker(_tokenizer._lastTokenEnd, _tokenizer._lastTokenEndLocation), node);
+    }
+
+    private T ReinterpretNode<T>(Node originalNode, T node) where T : Node
+    {
+        node._range = originalNode._range;
+        node._location = originalNode._location;
+        _options._onNode?.Invoke(node);
+        return node;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void EnterRecursion()
+    {
+        _recursionDepth++;
+        StackGuard.EnsureSufficientExecutionStack(_recursionDepth);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private T ExitRecursion<T>(T node)
+    {
+        _recursionDepth--;
+        return node;
+    }
+
     // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/identifier.js
 
     // TODO: add tests to verify identical behavior to acornjs
