@@ -1657,7 +1657,7 @@ public partial class Parser
         }
 
         ReadOnlySpan<char> nameSpan = name.AsSpan();
-        if (IsKeyword(nameSpan, _tokenizerOptions._ecmaVersion, _inModule))
+        if (IsKeyword(nameSpan, _tokenizerOptions._ecmaVersion))
         {
             Raise(id.Start, $"Unexpected keyword '{name}'");
         }

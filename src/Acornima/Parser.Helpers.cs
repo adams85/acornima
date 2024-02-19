@@ -66,12 +66,10 @@ public partial class Parser
 
     // TODO: add tests to verify identical behavior to acornjs
 
-    internal static bool IsKeyword(ReadOnlySpan<char> word, EcmaVersion ecmaVersion, bool isModule)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static bool IsKeyword(ReadOnlySpan<char> word, EcmaVersion ecmaVersion)
     {
-        return TokenType.GetKeywordBy(word) is { } tokenType
-            && (tokenType.EcmaVersion <= ecmaVersion
-                // In modules, export and import should be treated as keywords even in the case of versions older than ES6.
-                || isModule && tokenType.Keyword is Keyword.Export or Keyword.Import);
+        return TokenType.GetKeywordBy(word) is { } tokenType && tokenType.EcmaVersion <= ecmaVersion;
     }
 
     [StringMatcher("in", "instanceof")]

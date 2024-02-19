@@ -1213,41 +1213,26 @@ public partial class ParserTests
     }
 
     [Theory]
-    [InlineData("that", EcmaVersion.ES3, false, false)]
-    [InlineData("that", EcmaVersion.ES3, true, false)]
-    [InlineData("this", EcmaVersion.ES3, false, true)]
-    [InlineData("this", EcmaVersion.ES3, true, true)]
-    [InlineData("super", EcmaVersion.ES3, false, false)]
-    [InlineData("super", EcmaVersion.ES3, true, false)]
-    [InlineData("export", EcmaVersion.ES3, false, false)]
-    [InlineData("export", EcmaVersion.ES3, true, true)]
-    [InlineData("import", EcmaVersion.ES3, false, false)]
-    [InlineData("import", EcmaVersion.ES3, true, true)]
+    [InlineData("that", EcmaVersion.ES3, false)]
+    [InlineData("this", EcmaVersion.ES3, true)]
+    [InlineData("super", EcmaVersion.ES3, false)]
+    [InlineData("export", EcmaVersion.ES3, false)]
+    [InlineData("import", EcmaVersion.ES3, false)]
 
-    [InlineData("that", EcmaVersion.ES5, false, false)]
-    [InlineData("that", EcmaVersion.ES5, true, false)]
-    [InlineData("this", EcmaVersion.ES5, false, true)]
-    [InlineData("this", EcmaVersion.ES5, true, true)]
-    [InlineData("super", EcmaVersion.ES5, false, false)]
-    [InlineData("super", EcmaVersion.ES5, true, false)]
-    [InlineData("export", EcmaVersion.ES5, false, false)]
-    [InlineData("export", EcmaVersion.ES5, true, true)]
-    [InlineData("import", EcmaVersion.ES5, false, false)]
-    [InlineData("import", EcmaVersion.ES5, true, true)]
+    [InlineData("that", EcmaVersion.ES5, false)]
+    [InlineData("this", EcmaVersion.ES5, true)]
+    [InlineData("super", EcmaVersion.ES5, false)]
+    [InlineData("export", EcmaVersion.ES5, false)]
+    [InlineData("import", EcmaVersion.ES5, false)]
 
-    [InlineData("that", EcmaVersion.ES6, false, false)]
-    [InlineData("that", EcmaVersion.ES6, true, false)]
-    [InlineData("this", EcmaVersion.ES6, false, true)]
-    [InlineData("this", EcmaVersion.ES6, true, true)]
-    [InlineData("super", EcmaVersion.ES6, false, true)]
-    [InlineData("super", EcmaVersion.ES6, true, true)]
-    [InlineData("export", EcmaVersion.ES6, false, true)]
-    [InlineData("export", EcmaVersion.ES6, true, true)]
-    [InlineData("import", EcmaVersion.ES6, false, true)]
-    [InlineData("import", EcmaVersion.ES6, true, true)]
-    public void IsKeyword_Works(string word, EcmaVersion ecmaVersion, bool isModule, bool isKeyword)
+    [InlineData("that", EcmaVersion.ES6, false)]
+    [InlineData("this", EcmaVersion.ES6, true)]
+    [InlineData("super", EcmaVersion.ES6, true)]
+    [InlineData("export", EcmaVersion.ES6, true)]
+    [InlineData("import", EcmaVersion.ES6, true)]
+    public void IsKeyword_Works(string word, EcmaVersion ecmaVersion, bool isKeyword)
     {
-        Assert.Equal(isKeyword, Parser.IsKeyword(word.AsSpan(), ecmaVersion, isModule));
+        Assert.Equal(isKeyword, Parser.IsKeyword(word.AsSpan(), ecmaVersion));
     }
 
     [Theory]

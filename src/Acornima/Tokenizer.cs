@@ -1426,7 +1426,7 @@ public sealed partial class Tokenizer
 
         var tokenType = TokenType.GetKeywordBy(word);
 
-        return tokenType is not null
+        return tokenType is not null && tokenType.EcmaVersion <= _options._ecmaVersion
             ? FinishToken(tokenType, new TokenValue(tokenType.Value))
             : FinishToken(TokenType.Name, DeduplicateString(word, ref _stringPool));
     }

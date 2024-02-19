@@ -1142,10 +1142,10 @@ public partial class Parser
             }
         }
 
-        // Original acornjs implementation doesn't require ES6 for generators.
-        // TODO: report bug
         var isGenerator = keyName is null
-            && (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES9 || (!isAsync && _tokenizerOptions._ecmaVersion >= EcmaVersion.ES6))
+            // NOTE: We only need to check the ECMA version in the case of async generators
+            // since non-async generators were introduced in ES6, together with classes.
+            && (!isAsync || _tokenizerOptions._ecmaVersion >= EcmaVersion.ES9)
             && Eat(TokenType.Star);
 
         var isAccessor = false;
