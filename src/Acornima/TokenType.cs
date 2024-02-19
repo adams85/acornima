@@ -63,6 +63,7 @@ internal sealed partial class TokenType
     public static readonly TokenType Ellipsis = Punctuator("...", beforeExpression: true);
     public static readonly TokenType BackQuote = Punctuator("`", startsExpression: true, updateContext: Tokenizer.UpdateContext_BackQuote);
     public static readonly TokenType DollarBraceLeft = Punctuator("${", beforeExpression: true, startsExpression: true, updateContext: Tokenizer.UpdateContext_DollarBraceLeft);
+    public static readonly TokenType At = Punctuator("@", beforeExpression: true);
 
     // Operators. These carry several kinds of properties to help the
     // parser use them properly (the presence of these properties is

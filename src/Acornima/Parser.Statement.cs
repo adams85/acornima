@@ -285,6 +285,10 @@ public partial class Parser
             Next();
             return ExitRecursion(ParseFunctionStatement(startMarker, isAsync: true, declarationPosition: !hasContext));
         }
+        else if (startType == TokenType.At && _tokenizerOptions.EcmaVersion >= EcmaVersion.Experimental)
+        {
+            return ExitRecursion(ParseDecoratedClassStatement(startMarker));
+        }
 
         var maybeName = _tokenizer._value.Value;
         var expr = ParseExpression(ref NullRef<DestructuringErrors>());
@@ -1089,10 +1093,10 @@ public partial class Parser
         ExitClassBody();
 
         var isStatement = (flags & FunctionOrClassFlags.Statement) != 0;
-        // TODO: decorators
+
         return FinishNode<StatementOrExpression>(startMarker, isStatement
-            ? new ClassDeclaration(id, superClass, classBody, new NodeList<Decorator>())
-            : new ClassExpression(id, superClass, classBody, new NodeList<Decorator>()));
+            ? new ClassDeclaration(id, superClass, classBody, NodeList.From(ref _decorators))
+            : new ClassExpression(id, superClass, classBody, NodeList.From(ref _decorators)));
     }
 
     private Node ParseClassElement(bool constructorAllowsSuper)
@@ -1100,6 +1104,10 @@ public partial class Parser
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseClassElement = function`
 
         var startMarker = StartNode();
+
+        var hasDecorators = _tokenizer._type == TokenType.At && _tokenizerOptions.EcmaVersion >= EcmaVersion.Experimental;
+        var decorators = hasDecorators ? ParseDecorators() : new ArrayList<Decorator>();
+
         string? keyName = null;
         string keyword;
 
@@ -1109,6 +1117,11 @@ public partial class Parser
             // Parse static init block
             if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES13 && Eat(TokenType.BraceLeft))
             {
+                if (hasDecorators)
+                {
+                    Raise(startMarker.Index, "Decorators cannot be applied to static initialization blocks.");
+                }
+
                 return ParseClassStaticBlock(startMarker);
             }
 
@@ -1135,15 +1148,43 @@ public partial class Parser
             && (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES9 || (!isAsync && _tokenizerOptions._ecmaVersion >= EcmaVersion.ES6))
             && Eat(TokenType.Star);
 
-        var kind = keyName is null && !isAsync && !isGenerator && (EatContextual(keyword = "get") || EatContextual(keyword = "set"))
-            ? keyword[0] == 'g' ? PropertyKind.Get : PropertyKind.Set
-            : PropertyKind.Unknown;
-        if (kind != PropertyKind.Unknown)
+        var isAccessor = false;
+        var kind = PropertyKind.Unknown;
+
+        if (keyName is null && !isAsync && !isGenerator)
         {
-            if (!IsClassElementNameStart())
+            if (EatContextual(keyword = "get"))
             {
-                kind = PropertyKind.Unknown;
-                keyName = keyword;
+                if (IsClassElementNameStart())
+                {
+                    kind = PropertyKind.Get;
+                }
+                else
+                {
+                    keyName = keyword;
+                }
+            }
+            else if (EatContextual(keyword = "set"))
+            {
+                if (IsClassElementNameStart())
+                {
+                    kind = PropertyKind.Set;
+                }
+                else
+                {
+                    keyName = keyword;
+                }
+            }
+            else if (_tokenizerOptions.EcmaVersion >= EcmaVersion.Experimental && EatContextual(keyword = "accessor"))
+            {
+                if (IsClassElementNameStart())
+                {
+                    isAccessor = true;
+                }
+                else
+                {
+                    keyName = keyword;
+                }
             }
         }
 
@@ -1156,7 +1197,7 @@ public partial class Parser
         }
         else
         {
-            // 'async', 'get', 'set', or 'static' were not a keyword contextually.
+            // 'async', 'get', 'set', 'accessor' or 'static' were not a keyword contextually.
             // The last token is any of those. Make it the element name.
             computed = false;
             var keyStartMarker = new Marker(_tokenizer._lastTokenStart, _tokenizer._lastTokenStartLocation);
@@ -1170,11 +1211,11 @@ public partial class Parser
             {
                 kind = PropertyKind.Method;
             }
-            return ParseClassMethod(startMarker, kind, key, computed, isStatic, isAsync, isGenerator, constructorAllowsSuper);
+            return ParseClassMethod(startMarker, kind, key, computed, isStatic, isAsync, isGenerator, constructorAllowsSuper, ref decorators);
         }
         else
         {
-            return ParseClassField(startMarker, key, computed, isStatic);
+            return ParseClassField(startMarker, key, computed, isStatic, isAccessor, ref decorators);
         }
     }
 
@@ -1208,7 +1249,8 @@ public partial class Parser
         }
     }
 
-    private MethodDefinition ParseClassMethod(in Marker startMarker, PropertyKind kind, Expression key, bool computed, bool isStatic, bool isAsync, bool isGenerator, bool constructorAllowsSuper)
+    private MethodDefinition ParseClassMethod(in Marker startMarker, PropertyKind kind, Expression key,
+        bool computed, bool isStatic, bool isAsync, bool isGenerator, bool constructorAllowsSuper, ref ArrayList<Decorator> decorators)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseClassMethod = function`
 
@@ -1261,11 +1303,10 @@ public partial class Parser
             }
         }
 
-        // TODO: decorators
-        return FinishNode(startMarker, new MethodDefinition(kind, key, value, computed, isStatic, new NodeList<Decorator>()));
+        return FinishNode(startMarker, new MethodDefinition(kind, key, value, computed, isStatic, NodeList.From(ref decorators)));
     }
 
-    private PropertyDefinition ParseClassField(in Marker startMarker, Expression key, bool computed, bool isStatic)
+    private ClassProperty ParseClassField(in Marker startMarker, Expression key, bool computed, bool isStatic, bool isAccessor, ref ArrayList<Decorator> decorators)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseClassField = function`
 
@@ -1297,8 +1338,9 @@ public partial class Parser
         }
         Semicolon();
 
-        // TODO: decorators
-        return FinishNode(startMarker, new PropertyDefinition(PropertyKind.Property, key, value, computed, isStatic, new NodeList<Decorator>()));
+        return FinishNode<ClassProperty>(startMarker, isAccessor
+            ? new AccessorProperty(key, value, computed, isStatic, NodeList.From(ref decorators))
+            : new PropertyDefinition(key, value, computed, isStatic, NodeList.From(ref decorators)));
     }
 
     private StaticBlock ParseClassStaticBlock(in Marker startMarker)
@@ -1579,6 +1621,11 @@ public partial class Parser
             declarationStartMarker = StartNode();
             Next();
             declaration = ParseClass(declarationStartMarker, FunctionOrClassFlags.Statement | FunctionOrClassFlags.NullableId);
+        }
+        else if (_tokenizer._type == TokenType.At && _tokenizerOptions.EcmaVersion >= EcmaVersion.Experimental)
+        {
+            declarationStartMarker = StartNode();
+            declaration = ParseDecoratedClassStatement(declarationStartMarker, FunctionOrClassFlags.Statement | FunctionOrClassFlags.NullableId);
         }
         else
         {
@@ -1968,5 +2015,16 @@ public partial class Parser
         }
 
         return body;
+    }
+
+    private ClassDeclaration ParseDecoratedClassStatement(in Marker startMarker, FunctionOrClassFlags flags = FunctionOrClassFlags.Statement)
+    {
+        var previousDecorators = _decorators;
+        _decorators = ParseDecorators();
+        Expect(TokenType.Class);
+        var declaration = (ClassDeclaration)ParseClass(startMarker, flags);
+        _decorators = previousDecorators;
+
+        return FinishNode(startMarker, declaration);
     }
 }

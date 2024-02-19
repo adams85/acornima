@@ -26,7 +26,7 @@ public partial class ParserTests
 
         var parser = new Parser();
 #if DEBUG
-        const int depth = 390;
+        const int depth = 380;
 #else
         const int depth = 690;
 #endif

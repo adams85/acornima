@@ -63,7 +63,7 @@ internal sealed class ParseCommand
             Tolerant = Tolerant
         };
 
-        var parser = new Parser();
+        var parser = new Parser(parserOptions);
 
         Node rootNode = CodeType switch
         {

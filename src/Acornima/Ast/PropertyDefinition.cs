@@ -9,13 +9,12 @@ public sealed partial class PropertyDefinition : ClassProperty
     private readonly NodeList<Decorator> _decorators;
 
     public PropertyDefinition(
-        PropertyKind kind,
         Expression key,
         Expression? value,
         bool computed,
         bool isStatic,
         in NodeList<Decorator> decorators)
-        : base(NodeType.PropertyDefinition, kind, key, computed, isStatic)
+        : base(NodeType.PropertyDefinition, PropertyKind.Property, key, computed, isStatic)
     {
         Value = value;
         _decorators = decorators;
@@ -29,6 +28,6 @@ public sealed partial class PropertyDefinition : ClassProperty
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private PropertyDefinition Rewrite(in NodeList<Decorator> decorators, Expression key, Expression? value)
     {
-        return new PropertyDefinition(Kind, key, value, Computed, Static, decorators);
+        return new PropertyDefinition(key, value, Computed, Static, decorators);
     }
 }

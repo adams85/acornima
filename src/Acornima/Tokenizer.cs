@@ -248,6 +248,9 @@ public sealed partial class Tokenizer
 
             case '#':
                 return ReadToken_NumberSign(code);
+
+            case '@' when _options._ecmaVersion >= EcmaVersion.Experimental:
+                return FinishOp(TokenType.At, ((char)code).ToStringCached());
         }
 
         return false;

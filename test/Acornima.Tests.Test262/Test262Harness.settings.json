@@ -5,10 +5,8 @@
   "Namespace": "Acornima.Tests.Test262",
   "Parallel": true,
   "ExcludedFeatures": [
-    "decorators",
     "import-assertions",
-    "regexp-v-flag",
-    "regexp-duplicate-named-groups"
+    "regexp-v-flag"
   ],
   "ExcludedFlags": [],
   "ExcludedDirectories": [],

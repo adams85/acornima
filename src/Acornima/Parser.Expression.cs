@@ -185,7 +185,7 @@ public partial class Parser
         if (_tokenizer._type == TokenType.ParenLeft || _tokenizer._type == TokenType.Name)
         {
             _potentialArrowAt = _tokenizer._start;
-            _potentialArrowInForAwait = context == ExpressionContext.AwaitForInit;
+            _potentialArrowInForAwait = (context & ExpressionContext.AwaitForInit) == ExpressionContext.AwaitForInit;
         }
 
         var left = ParseMaybeConditional(ref actualDestructuringErrors, context);
@@ -496,7 +496,20 @@ public partial class Parser
 
         var startMarker = StartNode();
 
-        var expr = ParseExprAtom(ref destructuringErrors, context);
+        Expression expr;
+        if ((context & ExpressionContext.Decorator) == 0)
+        {
+            expr = ParseExprAtom(ref destructuringErrors, context);
+        }
+        else
+        {
+            if (_tokenizer._type != TokenType.Name && _tokenizer._type != TokenType.ParenLeft)
+            {
+                Unexpected<Expression>();
+            }
+
+            expr = ParseExprAtom(ref destructuringErrors, context & ~ExpressionContext.Decorator);
+        }
 
         if (expr.Type == NodeType.ArrowFunctionExpression
             && !_tokenizer._input.SliceBetween(_tokenizer._lastTokenStart, _tokenizer._lastTokenEnd).SequenceEqual(")".AsSpan()))
@@ -538,10 +551,11 @@ public partial class Parser
             && _potentialArrowAt == baseExpr.Start;
 
         var optionalChained = false;
+        var hasCall = false;
 
         for (; ; )
         {
-            var element = ParseSubscript(startMarker, baseExpr, noCalls, maybeAsyncArrow, ref optionalChained, context);
+            var element = ParseSubscript(startMarker, baseExpr, noCalls, maybeAsyncArrow, ref optionalChained, ref hasCall, context);
 
             if (element == baseExpr || element.Type == NodeType.ArrowFunctionExpression)
             {
@@ -557,16 +571,24 @@ public partial class Parser
         }
     }
 
-    private Expression ParseSubscript(in Marker startMarker, Expression baseExpr, bool noCalls, bool maybeAsyncArrow, ref bool optionalChained, ExpressionContext context)
+    private Expression ParseSubscript(in Marker startMarker, Expression baseExpr, bool noCalls, bool maybeAsyncArrow,
+        ref bool optionalChained, ref bool hasCall, ExpressionContext context)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/expression.js > `pp.parseSubscript = function`
 
         var optionalSupported = _tokenizerOptions._ecmaVersion >= EcmaVersion.ES11;
         var optional = optionalSupported && Eat(TokenType.QuestionDot);
-
-        if (noCalls && optional)
+        if (optional)
         {
-            Raise(_tokenizer._lastTokenStart, "Optional chaining cannot appear in the callee of new expressions");
+            if (noCalls)
+            {
+                Raise(_tokenizer._lastTokenStart, "Optional chaining cannot appear in the callee of new expressions");
+            }
+
+            if ((context & ExpressionContext.Decorator) != 0)
+            {
+                Raise(_tokenizer._lastTokenStart, "Invalid decorator member expression");
+            }
         }
 
         var computed = Eat(TokenType.BracketLeft);
@@ -577,16 +599,24 @@ public partial class Parser
             Expression property;
             if (computed)
             {
+                if ((context & ExpressionContext.Decorator) != 0)
+                {
+                    Raise(_tokenizer._lastTokenStart, "Invalid decorator member expression");
+                }
+
                 property = ParseExpression(ref NullRef<DestructuringErrors>());
                 Expect(TokenType.BracketRight);
             }
-            else if (_tokenizer._type == TokenType.PrivateId && baseExpr.Type != NodeType.Super)
-            {
-                property = ParsePrivateIdentifier();
-            }
             else
             {
-                property = ParseIdentifier(liberal: _options._allowReserved != AllowReservedOption.Never);
+                if (hasCall && (context & ExpressionContext.Decorator) != 0)
+                {
+                    Raise(_tokenizer._lastTokenStart, "Invalid decorator member expression");
+                }
+
+                property = _tokenizer._type == TokenType.PrivateId && baseExpr.Type != NodeType.Super
+                    ? ParsePrivateIdentifier()
+                    : ParseIdentifier(liberal: _options._allowReserved != AllowReservedOption.Never);
             }
 
             baseExpr = FinishNode(startMarker, new MemberExpression(obj: baseExpr, property, computed, optional));
@@ -599,6 +629,11 @@ public partial class Parser
             var oldAwaitPos = _awaitPosition;
             var oldAwaitIdentPos = _awaitIdentifierPosition;
             _yieldPosition = _awaitPosition = _awaitIdentifierPosition = 0;
+
+            if (hasCall && (context & ExpressionContext.Decorator) != 0)
+            {
+                Raise(_tokenizer._lastTokenStart, "Invalid decorator member expression");
+            }
 
             NodeList<Expression> exprList = ParseExprList(close: TokenType.ParenRight,
                 allowTrailingComma: _tokenizerOptions._ecmaVersion >= EcmaVersion.ES8, allowEmptyItem: false,
@@ -635,12 +670,18 @@ public partial class Parser
             }
             baseExpr = FinishNode(startMarker, new CallExpression(callee: baseExpr, exprList, optional));
             optionalChained = optionalChained || optional;
+            hasCall = true;
         }
         else if (_tokenizer._type == TokenType.BackQuote)
         {
             if (optional || optionalChained)
             {
                 Raise(_tokenizer._start, "Optional chaining cannot appear in the tag of tagged template expressions");
+            }
+
+            if ((context & ExpressionContext.Decorator) != 0)
+            {
+                Raise(_tokenizer._start, "Invalid decorator member expression");
             }
 
             var quasi = ParseTemplate(isTagged: true);
@@ -822,6 +863,9 @@ public partial class Parser
                 _tokenizer._position -= 1;
                 _tokenizer.ReadRegExp();
                 goto case TokenKind.RegExpLiteral;
+
+            case TokenKind.Punctuator when _tokenizer._type == TokenType.At && _tokenizerOptions.EcmaVersion >= EcmaVersion.Experimental:
+                return ExitRecursion(ParseDecoratedClassExpression(startMarker));
 
             default:
                 return Unexpected<Expression>();
@@ -1765,5 +1809,48 @@ public partial class Parser
 
         var argument = ParseMaybeUnary(sawUnary: true, incDec: false, ref NullRef<DestructuringErrors>(), context);
         return FinishNode(startMarker, new AwaitExpression(argument));
+    }
+
+    private Expression ParseDecoratedClassExpression(in Marker node)
+    {
+        var previousDecorators = _decorators;
+        _decorators = ParseDecorators();
+        if (_tokenizer._type != TokenType.Class)
+        {
+            Unexpected();
+        }
+        var expression = ParseExprAtom(ref NullRef<DestructuringErrors>());
+        _decorators = previousDecorators;
+
+        return FinishNode(node, expression);
+    }
+
+    private ArrayList<Decorator> ParseDecorators()
+    {
+        var decorators = new ArrayList<Decorator>();
+
+        do
+        {
+            decorators.Add(ParseDecorator());
+        }
+        while (_tokenizer._type == TokenType.At);
+
+        return decorators;
+    }
+
+    private Decorator ParseDecorator()
+    {
+        var startMarker = StartNode();
+
+        Expect(TokenType.At);
+
+        var expression = ParseExprSubscripts(ref NullRef<DestructuringErrors>(), ExpressionContext.Decorator);
+
+        if (_tokenizer._type == TokenType.Semicolon)
+        {
+            Raise(_tokenizer._start, "Decorators must not be followed by a semicolon.");
+        }
+
+        return FinishNode(startMarker, new Decorator(expression));
     }
 }

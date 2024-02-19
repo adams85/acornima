@@ -47,6 +47,8 @@ public partial class Parser
     // When it exited from the outermost class definition, all used private names must be declared.
     private ArrayList<PrivateNameStatus> _privateNameStack;
 
+    private ArrayList<Decorator> _decorators;
+
     private int _recursionDepth;
 
     internal void Reset(string input, int start, int length, SourceType sourceType, string? sourceFile, bool strict)
@@ -212,11 +214,19 @@ public partial class Parser
 
         _privateNameStack.Clear();
 
+        _decorators.Clear();
+
         _recursionDepth = 0;
     }
 
     private void ReleaseLargeBuffers()
     {
+        _decorators.Clear();
+        if (_decorators.Capacity > 64)
+        {
+            _decorators.Capacity = 64;
+        }
+
         _labels.Clear();
         if (_labels.Capacity > 64)
         {

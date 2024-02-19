@@ -238,6 +238,7 @@ public partial class Parser
         ForInit = 1 << 1,
         AwaitForInit = ForInit | 1,
         ForNew = 1 << 2,
+        Decorator = 1 << 3,
     }
 
     private struct DestructuringErrors

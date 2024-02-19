@@ -51,19 +51,31 @@ public partial class ParserTests
     [MemberData(nameof(Fixtures), FixturesDirName)]
     public void ExecuteTestCase(string fixture)
     {
-        static T CreateParserOptions<T>(bool tolerant, RegExpParseMode regExpParseMode) where T : ParserOptions, new() => new T
+        static T CreateParserOptions<T>(bool tolerant, RegExpParseMode regExpParseMode, EcmaVersion ecmaVersion) where T : ParserOptions, new() => new T
         {
             Tolerant = tolerant,
             RegExpParseMode = regExpParseMode,
             AllowReturnOutsideFunction = tolerant,
+            EcmaVersion = ecmaVersion,
         };
 
-        var (parserOptionsFactory, parserFactory, conversionDefaultOptions) = (new Func<bool, RegExpParseMode, ParserOptions>(CreateParserOptions<ParserOptions>),
+        var (parserOptionsFactory, parserFactory, conversionDefaultOptions) = (new Func<bool, RegExpParseMode, EcmaVersion, ParserOptions>(CreateParserOptions<ParserOptions>),
             new Func<ParserOptions, Parser>(opts => new Parser(opts)),
             AstToJsonOptions.Default);
 
         string treeFilePath, failureFilePath, moduleFilePath;
         var jsFilePath = Path.Combine(GetFixturesPath(), FixturesDirName, fixture);
+
+        if (!Metadata.Value.TryGetValue(jsFilePath, out var metadata))
+        {
+            metadata = FixtureMetadata.Default;
+        }
+
+        if (metadata.Skip)
+        {
+            return;
+        }
+
         var jsFileDirectoryName = Path.GetDirectoryName(jsFilePath)!;
         if (jsFilePath.EndsWith(".source.js", StringComparison.Ordinal))
         {
@@ -106,17 +118,10 @@ public partial class ParserTests
             ? SourceType.Module
             : SourceType.Script;
 
-        if (!Metadata.Value.TryGetValue(jsFilePath, out var metadata))
-        {
-            metadata = FixtureMetadata.Default;
-        }
+        var regExpParseMode = !metadata.IgnoresRegex ? RegExpParseMode.AdaptToInterpreted : RegExpParseMode.Skip;
+        var ecmaVersion = jsFilePath.Contains("experimental") ? EcmaVersion.Experimental : EcmaVersion.Latest;
 
-        if (metadata.Skip)
-        {
-            return;
-        }
-
-        var parserOptions = parserOptionsFactory(false, !metadata.IgnoresRegex ? RegExpParseMode.AdaptToInterpreted : RegExpParseMode.Skip);
+        var parserOptions = parserOptionsFactory(false, regExpParseMode, ecmaVersion);
 
         var conversionOptions = metadata.CreateConversionOptions(conversionDefaultOptions);
         if (File.Exists(moduleFilePath))
@@ -181,7 +186,7 @@ public partial class ParserTests
 
         if (!invalid)
         {
-            parserOptions = parserOptionsFactory(true, parserOptions.RegExpParseMode);
+            parserOptions = parserOptionsFactory(true, parserOptions.RegExpParseMode, parserOptions.EcmaVersion);
 
             var actual = ParseAndFormat(sourceType, script, parserOptions, parserFactory, conversionOptions);
             CompareTreesAndAssert(actual, expected);
@@ -191,7 +196,7 @@ public partial class ParserTests
         }
         else
         {
-            parserOptions = parserOptionsFactory(false, parserOptions.RegExpParseMode);
+            parserOptions = parserOptionsFactory(false, parserOptions.RegExpParseMode, parserOptions.EcmaVersion);
 
             // TODO: check the accuracy of the message and of the location
             Assert.Throws<SyntaxErrorException>(() => ParseAndFormat(sourceType, script, parserOptions, parserFactory, conversionOptions));
