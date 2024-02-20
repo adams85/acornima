@@ -1,11 +1,12 @@
 {
-  "SuiteGitSha": "c5b24c64c3c27544f15e1c18ef274924cff1e32c",
+  "SuiteGitSha": "45e740928f9ac3c2144307fee20bb58570fb9588",
   //"SuiteDirectory": "//mnt/c/work/test262",
   "TargetPath": "./Generated",
   "Namespace": "Acornima.Tests.Test262",
   "Parallel": true,
   "ExcludedFeatures": [
     "import-assertions",
+    "json-modules",
     "regexp-v-flag"
   ],
   "ExcludedFlags": [],

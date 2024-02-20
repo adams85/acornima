@@ -864,7 +864,7 @@ public partial class Parser
                 _tokenizer.ReadRegExp();
                 goto case TokenKind.RegExpLiteral;
 
-            case TokenKind.Punctuator when _tokenizer._type == TokenType.At && _tokenizerOptions.EcmaVersion >= EcmaVersion.Experimental:
+            case TokenKind.Punctuator when _tokenizer._type == TokenType.At && _tokenizerOptions.EcmaVersion == EcmaVersion.Experimental:
                 return ExitRecursion(ParseDecoratedClassExpression(startMarker));
 
             default:
@@ -912,10 +912,22 @@ public partial class Parser
         // Parse node.source.
         var source = ParseMaybeAssign(ref NullRef<DestructuringErrors>());
 
+        Expression? attributes = null;
+        if (_tokenizerOptions._ecmaVersion == EcmaVersion.Experimental
+            && Eat(TokenType.Comma) && _tokenizer._type != TokenType.ParenRight)
+        {
+            attributes = ParseMaybeAssign(ref NullRef<DestructuringErrors>());
+            if (Eat(TokenType.Comma))
+            {
+                AfterTrailingComma(TokenType.ParenRight, notNext: true);
+            }
+            Expect(TokenType.ParenRight);
+        }
         // Verify ending.
-        if (!Eat(TokenType.ParenRight))
+        else if (!Eat(TokenType.ParenRight))
         {
             var errorPos = _tokenizer._start;
+
             if (Eat(TokenType.Comma) && Eat(TokenType.ParenRight))
             {
                 RaiseRecoverable(errorPos, "Trailing comma is not allowed in import()");
@@ -926,7 +938,7 @@ public partial class Parser
             }
         }
 
-        return FinishNode(startMarker, new ImportExpression(source));
+        return FinishNode(startMarker, new ImportExpression(source, attributes));
     }
 
     private MetaProperty ParseImportMeta(in Marker startMarker, Identifier meta)
@@ -1842,7 +1854,7 @@ public partial class Parser
     {
         var startMarker = StartNode();
 
-        Expect(TokenType.At);
+        Next();
 
         var expression = ParseExprSubscripts(ref NullRef<DestructuringErrors>(), ExpressionContext.Decorator);
 

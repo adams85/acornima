@@ -9,7 +9,7 @@ public abstract partial class Test262Test
 {
     public static bool TestsExperimentalFeature(Test262File file)
     {
-        return file.Features.ContainsAny(new[] { "decorators", "regexp-duplicate-named-groups" });
+        return file.Features.ContainsAny(new[] { "decorators", "regexp-duplicate-named-groups", "import-attributes" });
     }
 
     private Parser BuildTestExecutor(Test262File file)

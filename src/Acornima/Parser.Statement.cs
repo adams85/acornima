@@ -258,7 +258,7 @@ public partial class Parser
 
                     if (startType == TokenType.Import)
                     {
-                        return ExitRecursion(ParseImport(startMarker));
+                        return ExitRecursion(ParseImportDeclaration(startMarker));
                     }
                     else
                     {
@@ -285,7 +285,7 @@ public partial class Parser
             Next();
             return ExitRecursion(ParseFunctionStatement(startMarker, isAsync: true, declarationPosition: !hasContext));
         }
-        else if (startType == TokenType.At && _tokenizerOptions.EcmaVersion >= EcmaVersion.Experimental)
+        else if (startType == TokenType.At && _tokenizerOptions.EcmaVersion == EcmaVersion.Experimental)
         {
             return ExitRecursion(ParseDecoratedClassStatement(startMarker));
         }
@@ -1105,8 +1105,8 @@ public partial class Parser
 
         var startMarker = StartNode();
 
-        var hasDecorators = _tokenizer._type == TokenType.At && _tokenizerOptions.EcmaVersion >= EcmaVersion.Experimental;
-        var decorators = hasDecorators ? ParseDecorators() : new ArrayList<Decorator>();
+        var hasDecorators = _tokenizer._type == TokenType.At && _tokenizerOptions.EcmaVersion == EcmaVersion.Experimental;
+        var decorators = hasDecorators ? ParseDecorators() : default;
 
         string? keyName = null;
         string keyword;
@@ -1175,7 +1175,7 @@ public partial class Parser
                     keyName = keyword;
                 }
             }
-            else if (_tokenizerOptions.EcmaVersion >= EcmaVersion.Experimental && EatContextual(keyword = "accessor"))
+            else if (_tokenizerOptions.EcmaVersion == EcmaVersion.Experimental && EatContextual(keyword = "accessor"))
             {
                 if (IsClassElementNameStart())
                 {
@@ -1527,6 +1527,7 @@ public partial class Parser
         Declaration? declaration;
         NodeList<ExportSpecifier> specifiers;
         Literal? source;
+        ArrayList<ImportAttribute> attributes;
 
         if (ShouldParseExportStatement())
         {
@@ -1548,6 +1549,7 @@ public partial class Parser
 
             specifiers = default;
             source = null;
+            attributes = default;
         }
         else
         {
@@ -1562,6 +1564,9 @@ public partial class Parser
                 }
 
                 source = (Literal)ParseExprAtom(ref NullRef<DestructuringErrors>());
+                attributes = _tokenizerOptions._ecmaVersion == EcmaVersion.Experimental
+                    ? ParseImportAttributes()
+                    : default;
             }
             else
             {
@@ -1585,6 +1590,7 @@ public partial class Parser
                 }
 
                 source = null;
+                attributes = default;
             }
 
             Semicolon();
@@ -1592,8 +1598,7 @@ public partial class Parser
             declaration = null;
         }
 
-        // TODO: import attributes
-        return FinishNode(startMarker, new ExportNamedDeclaration(declaration, specifiers, source, new NodeList<ImportAttribute>()));
+        return FinishNode(startMarker, new ExportNamedDeclaration(declaration, specifiers, source, NodeList.From(ref attributes)));
     }
 
     private ExportDefaultDeclaration ParseExportDefaultDeclaration(in Marker startMarker, HashSet<string>? exports)
@@ -1622,7 +1627,7 @@ public partial class Parser
             Next();
             declaration = ParseClass(declarationStartMarker, FunctionOrClassFlags.Statement | FunctionOrClassFlags.NullableId);
         }
-        else if (_tokenizer._type == TokenType.At && _tokenizerOptions.EcmaVersion >= EcmaVersion.Experimental)
+        else if (_tokenizer._type == TokenType.At && _tokenizerOptions.EcmaVersion == EcmaVersion.Experimental)
         {
             declarationStartMarker = StartNode();
             declaration = ParseDecoratedClassStatement(declarationStartMarker, FunctionOrClassFlags.Statement | FunctionOrClassFlags.NullableId);
@@ -1659,10 +1664,13 @@ public partial class Parser
         }
 
         var source = (Literal)ParseExprAtom(ref NullRef<DestructuringErrors>());
+        var attributes = _tokenizerOptions._ecmaVersion == EcmaVersion.Experimental
+            ? ParseImportAttributes()
+            : default;
+
         Semicolon();
 
-        // TODO: import attributes
-        return FinishNode(startMarker, new ExportAllDeclaration(source, exported, new NodeList<ImportAttribute>()));
+        return FinishNode(startMarker, new ExportAllDeclaration(source, exported, NodeList.From(ref attributes)));
     }
 
     private void CheckExport(HashSet<string>? exports, object name, int pos)
@@ -1804,13 +1812,14 @@ public partial class Parser
     }
 
     // Parses import declaration.
-    private ImportDeclaration ParseImport(in Marker startMarker)
+    private ImportDeclaration ParseImportDeclaration(in Marker startMarker)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseImport = function`
 
         Next();
 
         NodeList<ImportDeclarationSpecifier> specifiers;
+
         if (_tokenizer._type == TokenType.String)
         {
             // import '...'
@@ -1825,12 +1834,15 @@ public partial class Parser
                 Unexpected();
             }
         }
+
         var source = (Literal)ParseExprAtom(ref NullRef<DestructuringErrors>());
+        var attributes = _tokenizerOptions._ecmaVersion == EcmaVersion.Experimental
+            ? ParseImportAttributes()
+            : default;
 
         Semicolon();
 
-        // TODO: import attributes
-        return FinishNode(startMarker, new ImportDeclaration(specifiers, source, new NodeList<ImportAttribute>()));
+        return FinishNode(startMarker, new ImportDeclaration(specifiers, source, NodeList.From(ref attributes)));
     }
 
     private ImportSpecifier ParseImportSpecifier()
@@ -2026,5 +2038,74 @@ public partial class Parser
         _decorators = previousDecorators;
 
         return FinishNode(startMarker, declaration);
+    }
+
+    private ArrayList<ImportAttribute> ParseImportAttributes()
+    {
+        if (!Eat(TokenType.With))
+        {
+            return default;
+        }
+
+        Expect(TokenType.BraceLeft);
+
+        var attributes = new ArrayList<ImportAttribute>();
+        var first = true;
+        var parameterSet = new HashSet<string>();
+
+        while (!Eat(TokenType.BraceRight))
+        {
+            if (!first)
+            {
+                Expect(TokenType.Comma);
+                if (AfterTrailingComma(TokenType.BraceRight))
+                {
+                    break;
+                }
+            }
+            else
+            {
+                first = false;
+            }
+
+            var importAttribute = ParseImportAttribute();
+
+            var key = importAttribute.Key is Identifier identifier
+                ? identifier.Name
+                : importAttribute.Key.As<StringLiteral>().Value;
+
+            if (!parameterSet.Add(key))
+            {
+                Raise(importAttribute.Start, $"Import attributes has duplicate key '{key}'");
+            }
+
+            attributes.Add(importAttribute);
+        }
+
+        return attributes;
+    }
+
+    private ImportAttribute ParseImportAttribute()
+    {
+        var startMarker = StartNode();
+
+        var key = ParsePropertyName(out var computed);
+        if (computed || key is not (Identifier or StringLiteral))
+        {
+            Unexpected(startMarker.Index);
+        }
+
+        if (!Eat(TokenType.Colon) || _tokenizer._type != TokenType.String)
+        {
+            Unexpected();
+        }
+
+        var valueStartMarker = StartNode();
+        var raw = Tokenizer.DeduplicateString(_tokenizer._input.SliceBetween(_tokenizer._start, _tokenizer._end), ref _tokenizer._stringPool, Tokenizer.NonIdentifierDeduplicationThreshold);
+        var value = new StringLiteral((string)_tokenizer._value.Value!, raw);
+        Next();
+        value = FinishNode(valueStartMarker, value);
+
+        return FinishNode(startMarker, new ImportAttribute(key, value));
     }
 }

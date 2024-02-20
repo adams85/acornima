@@ -99,11 +99,11 @@ public partial class Parser
         }
     }
 
-    private bool AfterTrailingComma(TokenType tokType, bool notNext = false)
+    private bool AfterTrailingComma(TokenType type, bool notNext = false)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/parseutil.js > `pp.afterTrailingComma = function`
 
-        if (_tokenizer._type == tokType)
+        if (_tokenizer._type == type)
         {
             _options._onTrailingComma?.Invoke(_tokenizer._lastTokenStart, _tokenizer._lastTokenStartLocation);
 
