@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using Acornima.Helpers;
 
 namespace Acornima.Ast;
@@ -72,12 +74,23 @@ public abstract class Node : INode
         return visitor.VisitExtension(this);
     }
 
-    // TODO
-    // private static readonly AstToJavaScriptOptions s_toStringOptions = AstToJavaScriptOptions.Default with { IgnoreExtensions = true };
-    // public override string ToString() => this.ToJavaScriptString(KnRJavaScriptTextFormatterOptions.Default, s_toStringOptions);
+    private static Func<Node, string>? s_getDebugDisplayText;
 
     private protected virtual string GetDebuggerDisplay()
     {
-        return $"/*{Type}*/  {this}";
+        var getDebugDisplayText = LazyInitializer.EnsureInitialized(ref s_getDebugDisplayText, () =>
+        {
+            var astToJavaScriptType = System.Type.GetType("Acornima.AstToJavaScript, Acornima.Extras", throwOnError: false, ignoreCase: false);
+            if (astToJavaScriptType is not null
+                && astToJavaScriptType.GetMethod("ToDebugDisplayText", BindingFlags.Static | BindingFlags.NonPublic, binder: null, new[] { typeof(Node) }, modifiers: null) is { } toDebugDisplayTextMethod)
+            {
+                try { return (Func<Node, string>)Delegate.CreateDelegate(typeof(Func<Node, string>), toDebugDisplayTextMethod); }
+                catch { /* intentional no-op */ }
+            }
+
+            return node => node.ToString()!;
+        });
+
+        return $"/*{Type}*/  {getDebugDisplayText!(this)}";
     }
 }

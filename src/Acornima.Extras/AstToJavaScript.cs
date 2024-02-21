@@ -15,6 +15,10 @@ public record class AstToJavaScriptOptions
 
 public static class AstToJavaScript
 {
+    private static readonly AstToJavaScriptOptions s_nodeToDebugDisplayTextOptions = AstToJavaScriptOptions.Default with { IgnoreExtensions = true };
+
+    internal static string ToDebugDisplayText(this Node node) => node.ToJavaScriptString(KnRJavaScriptTextFormatterOptions.Default, s_nodeToDebugDisplayTextOptions);
+
     public static string ToJavaScriptString(this Node node)
     {
         return ToJavaScriptString(node, JavaScriptTextWriterOptions.Default, AstToJavaScriptOptions.Default);
