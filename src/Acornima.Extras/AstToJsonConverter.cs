@@ -93,12 +93,12 @@ public class AstToJsonConverter : AstVisitor
         _writer.EndObject();
     }
 
-    protected readonly struct NodeObjectDisposable : IDisposable
+    protected readonly struct NodeObject : IDisposable
     {
         private readonly AstToJsonConverter _converter;
         private readonly Node _node;
 
-        public NodeObjectDisposable(AstToJsonConverter converter, Node node)
+        public NodeObject(AstToJsonConverter converter, Node node)
         {
             _converter = converter;
             _node = node;
@@ -110,11 +110,11 @@ public class AstToJsonConverter : AstVisitor
         }
     }
 
-    protected NodeObjectDisposable StartNodeObject(Node node)
+    protected NodeObject StartNodeObject(Node node)
     {
         OnStartNodeObject(node);
         Member("type", GetNodeType(node));
-        return new NodeObjectDisposable(this, node);
+        return new NodeObject(this, node);
     }
 
     protected void EmptyNodeObject(Node node)

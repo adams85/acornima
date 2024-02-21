@@ -840,7 +840,8 @@ public partial class Parser
                     _ => CreateRegExpLiteral(_tokenizer._value, raw)
                 };
 
-                static RegExpLiteral CreateRegExpLiteral(TokenValue value, string raw)
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                static RegExpLiteral CreateRegExpLiteral(in TokenValue value, string raw)
                 {
                     var tuple = (Tuple<RegExpValue, RegExpParseResult>)value.Value!;
                     return new RegExpLiteral(tuple.Item1, tuple.Item2, raw);

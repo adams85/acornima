@@ -107,7 +107,7 @@ public readonly struct NodeList<T> : IReadOnlyList<T> where T : Node?
 
     IEnumerator<T> IEnumerable<T>.GetEnumerator()
     {
-        return GetEnumerator();
+        return new Enumerator(_items, Count);
     }
 
     IEnumerator IEnumerable.GetEnumerator()
