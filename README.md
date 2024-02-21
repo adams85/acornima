@@ -1,6 +1,6 @@
 # Acorn + Esprima = Acornima 
 
-This project is an interbreeding of the [acornjs](https://github.com/acornjs/) and the [Esprima.NET](https://github.com/sebastienros/esprima-dotnet) parsers, with the intention of creating an even more complete and performant ECMAScript (a.k.a JavaScript) parser library by combining the best bits of those.
+This project is an interbreeding of the [acornjs](https://github.com/acornjs/) and the [Esprima.NET](https://github.com/sebastienros/esprima-dotnet) parsers, with the intention of creating an even more complete and performant ECMAScript (a.k.a JavaScript) parser library for .NET by combining the best bits of those.
 
 It should also be mentioned that there is an earlier .NET port of acornjs, [AcornSharp](https://github.com/MatthewSmit/AcornSharp), which though is unmaintained for a long time, served as a good starting point. If it weren't for AcornSharp, this project probably have never started.
 
@@ -177,9 +177,11 @@ Legend:
 | Esprima-v3.0.4 | .NET Framework 4.8 | yui-3.12.0          | 12.365 ms | 2624.92 KB |
  
 ### What's missing currently:
-* Implementation of some experimental features (decorators, import attributes)
-* Moving messages into resources and replacing acorn messages with V8 messages
-* AST to JSON, AST to JS code conversion
-* Support for JSX
-* Porting additional tests from acornjs and Esprima.NET
-* CI
+* [x] Implementation of some experimental features (decorators, import attributes)
+* [ ] Moving messages into resources and replacing acorn messages with V8 messages
+* [x] AST to JSON conversion
+* [x] AST to JS conversion
+* [ ] Support for JSX
+* [x] Porting additional tests from Esprima.NET
+* [ ] Porting additional tests from acornjs
+* [x] CI
