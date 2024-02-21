@@ -1,3 +1,6 @@
+[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/adams85/acornima/build.yml)](https://github.com/adams85/acornima/actions/workflows/build.yml)
+[![Feedz Version](https://img.shields.io/feedz/v/acornima/acornima/Acornima)](https://feedz.io/org/acornima/repository/acornima/packages/Acornima)
+
 # Acorn + Esprima = Acornima 
 
 This project is an interbreeding of the [acornjs](https://github.com/acornjs/) and the [Esprima.NET](https://github.com/sebastienros/esprima-dotnet) parsers, with the intention of creating an even more complete and performant ECMAScript (a.k.a JavaScript) parser library for .NET by combining the best bits of those.
@@ -185,3 +188,4 @@ Legend:
 * [x] Porting additional tests from Esprima.NET
 * [ ] Porting additional tests from acornjs
 * [x] CI
+* [ ] Docs
