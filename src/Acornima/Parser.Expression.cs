@@ -478,8 +478,6 @@ public partial class Parser
                 case Identifier:
                     return true;
 
-                // Original acornjs implementation doesn't handle the ParenthesizedExpression case.
-                // TODO: report bug
                 case ParenthesizedExpression parenthesizedExpression:
                     expr = parenthesizedExpression.Expression;
                     continue;
@@ -504,8 +502,6 @@ public partial class Parser
                     expr = chainExpression.Expression;
                     continue;
 
-                // Original acornjs implementation doesn't handle the ParenthesizedExpression case.
-                // TODO: report bug
                 case ParenthesizedExpression parenthesizedExpression:
                     expr = parenthesizedExpression.Expression;
                     continue;

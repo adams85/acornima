@@ -972,6 +972,7 @@ public sealed partial class Tokenizer
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readString = function`
 
+        Unsafe.SkipInit(out bool normalizeRaw);
         _legacyOctalPosition = -1;
         AcquireStringBuilder(out var sb);
         try
@@ -994,7 +995,7 @@ public sealed partial class Tokenizer
                 {
                     case '\\':
                         sb.Append(_input, chunkStart, _position - chunkStart);
-                        if (ReadEscapedChar(sb, inTemplate: false) is null)
+                        if (ReadEscapedChar(sb, inTemplate: false, ref normalizeRaw) is null)
                         {
                             return false;
                         }
@@ -1071,8 +1072,9 @@ public sealed partial class Tokenizer
 
         _inTemplateElement = true;
 
-        var success = ReadTemplateToken(out var invalidTemplate)
-            && (!invalidTemplate || ReadInvalidTemplateToken());
+        var normalizeRaw = false;
+        var success = ReadTemplateToken(ref normalizeRaw, out var invalidTemplate)
+            && (!invalidTemplate || ReadInvalidTemplateToken(ref normalizeRaw));
 
         _inTemplateElement = false;
 
@@ -1100,7 +1102,7 @@ public sealed partial class Tokenizer
         Raise(pos, message);
     }
 
-    private bool ReadTemplateToken(out bool invalidTemplate)
+    private bool ReadTemplateToken(ref bool normalizeRaw, out bool invalidTemplate)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readTmplToken = function`
 
@@ -1138,13 +1140,13 @@ public sealed partial class Tokenizer
                         var templateCooked = DeduplicateString(value, ref _stringPool, NonIdentifierDeduplicationThreshold);
 
                         sb.Clear();
-                        var templateRaw = DeduplicateString(ReadTemplateRaw(sb), ref _stringPool, NonIdentifierDeduplicationThreshold);
+                        var templateRaw = DeduplicateString(ReadTemplateRaw(sb, normalizeRaw), ref _stringPool, NonIdentifierDeduplicationThreshold);
 
                         return FinishToken(TokenType.Template, new TemplateValue(templateCooked, templateRaw));
 
                     case '\\':
                         sb.Append(_input, chunkStart, _position - chunkStart);
-                        if (ReadEscapedChar(sb, inTemplate: true) is null)
+                        if (ReadEscapedChar(sb, inTemplate: true, ref normalizeRaw) is null)
                         {
                             invalidTemplate = true;
                             return true;
@@ -1153,6 +1155,8 @@ public sealed partial class Tokenizer
                         break;
 
                     case '\r':
+                        normalizeRaw = true;
+
                         ++_position;
                         sb.Append(_input, chunkStart, _position - chunkStart);
                         sb[sb.Length - 1] = '\n';
@@ -1188,11 +1192,11 @@ public sealed partial class Tokenizer
     }
 
     // Reads a template token to search for the end, without validating any escape sequences
-    private bool ReadInvalidTemplateToken()
+    private bool ReadInvalidTemplateToken(ref bool normalizeRaw)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readInvalidTemplateToken = function`
 
-        for (int ch; (ch = CharCodeAtPosition()) >= 0; _position++)
+        for (int ch; (ch = CharCodeAtPosition()) >= 0;)
         {
             switch (ch)
             {
@@ -1210,45 +1214,67 @@ public sealed partial class Tokenizer
                     goto case '`';
 
                 case '`':
-                    // Original acornjs implementation doesn't normalize line endings in invalid raw strings.
-                    // TODO: report bug
-
                     AcquireStringBuilder(out var sb);
                     try
                     {
-                        var templateRaw = DeduplicateString(ReadTemplateRaw(sb), ref _stringPool, NonIdentifierDeduplicationThreshold);
+                        var templateRaw = DeduplicateString(ReadTemplateRaw(sb, normalizeRaw), ref _stringPool, NonIdentifierDeduplicationThreshold);
 
                         return FinishToken(TokenType.InvalidTemplate, new TemplateValue(null, templateRaw));
                     }
                     finally { ReleaseStringBuilder(ref sb); }
+
+                case '\r':
+                    normalizeRaw = true;
+
+                    if (CharCodeAtPosition(1) == '\n')
+                    {
+                        ++_position;
+                    }
+
+                    goto case '\n';
+
+                case '\n':
+                case '\u2028' or '\u2029':
+                    ++_position;
+                    ++_currentLine;
+                    _lineStart = _position;
+                    continue;
             }
+
+            _position++;
         }
 
         return Raise<bool>(_start, "Unterminated template");
     }
 
-    private ReadOnlySpan<char> ReadTemplateRaw(StringBuilder sb)
+    private ReadOnlySpan<char> ReadTemplateRaw(StringBuilder sb, bool normalizeRaw)
     {
         var chunkStart = _start;
-        for (int index; (index = _input.IndexOf('\r', chunkStart, _position - chunkStart)) >= 0;)
+        if (normalizeRaw)
         {
-            sb.Append(_input, chunkStart, index - chunkStart).Append('\n');
-            chunkStart = index + 1;
-            if (_input.CharCodeAt(index + 1) == '\n')
+            for (int index; (index = _input.IndexOf('\r', chunkStart, _position - chunkStart)) >= 0;)
             {
-                chunkStart++;
+                sb.Append(_input, chunkStart, index - chunkStart).Append('\n');
+                chunkStart = index + 1;
+                if (_input.CharCodeAt(index + 1) == '\n')
+                {
+                    chunkStart++;
+                }
+            }
+
+            if (chunkStart != _start)
+            {
+                return sb.Append(_input, chunkStart, _position - chunkStart).ToString().AsSpan();
             }
         }
-
-        return chunkStart == _start
-            ? _input.SliceBetween(chunkStart, _position)
-            : sb.Append(_input, chunkStart, _position - chunkStart).ToString().AsSpan();
+        return _input.SliceBetween(chunkStart, _position);
     }
 
     // Used to read escaped characters
-    private StringBuilder? ReadEscapedChar(StringBuilder sb, bool inTemplate)
+    private StringBuilder? ReadEscapedChar(StringBuilder sb, bool inTemplate, ref bool normalizeRaw)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readEscapedChar = function`
+
         ++_position;
         var ch = CharCodeAtPosition();
         ++_position;
@@ -1264,6 +1290,8 @@ public sealed partial class Tokenizer
             case 'f': return sb.Append('\f');
 
             case '\r':
+                normalizeRaw = true;
+
                 if (CharCodeAtPosition() == '\n') // '\r\n'
                 {
                     ++_position;
@@ -1274,7 +1302,6 @@ public sealed partial class Tokenizer
             case '\n':
             // Unicode new line characters after \ get removed from output in both
             // template literals and strings
-            // TODO: looks like LineStart and CurrentLine update is missing from Acorn - report bug
             case '\u2028' or '\u2029':
                 ++_currentLine;
                 _lineStart = _position;

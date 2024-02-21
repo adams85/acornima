@@ -59,7 +59,7 @@ public partial class Parser
         // is allowed. However, `let [` is an explicit negative lookahead for
         // ExpressionStatement, so special-case it first.
 
-        if (nextCh is '[' or '\\') // TODO: Acorn comment says '/' - report bug
+        if (nextCh is '[' or '\\')
         {
             return true;
         }
@@ -1965,10 +1965,6 @@ public partial class Parser
 
     private ArrayList<Statement> ParseDirectivePrologue(bool allowStrictDirective)
     {
-        // NOTE: Original acornjs implementation of strict mode detection is fragile and buggy at the moment
-        // (e.g.: `() => { 'a'[0]; 'use strict'; 00 }` is rejected while valid).
-        // TODO: report bug
-
         if (_tokenizerOptions._ecmaVersion < EcmaVersion.ES5)
         {
             return new ArrayList<Statement>();
