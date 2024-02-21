@@ -184,7 +184,7 @@ public partial class Parser
         "arguments" /* => ReservedWordKind.StrictBind */
     )]
     [MethodImpl((MethodImplOptions)512 /* AggressiveOptimization */)]
-    private static partial ReservedWordKind IsReservedWordES6Strict(ReadOnlySpan<char> word);
+    internal static partial ReservedWordKind IsReservedWordES6Strict(ReadOnlySpan<char> word);
 
     #endregion
 

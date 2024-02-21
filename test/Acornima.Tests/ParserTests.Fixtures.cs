@@ -21,7 +21,7 @@ public partial class ParserTests
 
     private static JsonSerializerSettings JsonDeserializationSettings { get; } = new() { MaxDepth = 256 };
 
-    private static Lazy<Dictionary<string, FixtureMetadata>> Metadata { get; } = new(FixtureMetadata.ReadMetadata);
+    internal static Lazy<Dictionary<string, FixtureMetadata>> Metadata { get; } = new(FixtureMetadata.ReadMetadata);
 
     internal static string GetFixturesPath()
     {
@@ -253,7 +253,7 @@ public partial class ParserTests
         }
     }
 
-    private sealed class FixtureMetadata
+    internal sealed class FixtureMetadata
     {
         public static readonly FixtureMetadata Default = new()
         {

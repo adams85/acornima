@@ -1,4 +1,4 @@
-namespace Acornima.Json;
+namespace Acornima;
 
 public abstract class JsonWriter
 {

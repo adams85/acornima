@@ -6,7 +6,6 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Acornima.Ast;
-using Acornima.Json;
 
 namespace Acornima;
 
@@ -285,7 +284,7 @@ public class AstToJsonConverter : AstVisitor
     {
         using (StartNodeObject(node))
         {
-            Member("operator", node is LogicalExpression
+            Member("operator", node.Type == NodeType.LogicalExpression
                 ? LogicalExpression.OperatorToString(node.Operator)
                 : NonLogicalBinaryExpression.OperatorToString(node.Operator));
             Member("left", node.Left);
@@ -1037,7 +1036,7 @@ public class AstToJsonConverter : AstVisitor
     {
         using (StartNodeObject(node))
         {
-            Member("operator", node is UpdateExpression
+            Member("operator", node.Type == NodeType.UpdateExpression
                 ? UpdateExpression.OperatorToString(node.Operator)
                 : NonUpdateUnaryExpression.OperatorToString(node.Operator));
             Member("argument", node.Argument);

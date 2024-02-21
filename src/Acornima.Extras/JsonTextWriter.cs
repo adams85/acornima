@@ -22,7 +22,7 @@ using System.Globalization;
 using System.IO;
 using Acornima.Helpers;
 
-namespace Acornima.Json;
+namespace Acornima;
 
 /// <summary>
 /// Represents a writer that provides a fast, non-cached, forward-only
