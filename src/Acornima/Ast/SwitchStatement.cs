@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 
 namespace Acornima.Ast;
 
@@ -16,7 +16,6 @@ public sealed partial class SwitchStatement : Statement
     public Expression Discriminant { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public ref readonly NodeList<SwitchCase> Cases { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref _cases; }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private SwitchStatement Rewrite(Expression discriminant, in NodeList<SwitchCase> cases)
     {
         return new SwitchStatement(discriminant, cases);

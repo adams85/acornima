@@ -26,7 +26,6 @@ public sealed partial class MethodDefinition : ClassProperty
 
     public ref readonly NodeList<Decorator> Decorators { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref _decorators; }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private MethodDefinition Rewrite(in NodeList<Decorator> decorators, Expression key, FunctionExpression value)
     {
         return new MethodDefinition(Kind, key, value, Computed, Static, decorators);

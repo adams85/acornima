@@ -25,7 +25,6 @@ public sealed partial class ForOfStatement : Statement
     public Statement Body { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public bool Await { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private ForOfStatement Rewrite(Node left, Expression right, Statement body)
     {
         return new ForOfStatement(left, right, body, Await);

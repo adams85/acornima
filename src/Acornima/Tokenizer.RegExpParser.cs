@@ -192,7 +192,6 @@ public partial class Tokenizer
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal string? ParseCore(out ArrayList<RegExpCapturingGroup> capturingGroups, out ParseError? conversionError)
         {
             _tokenizer.AcquireStringBuilder(out var sb);

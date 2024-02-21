@@ -22,7 +22,7 @@ public abstract class Node : INode
 
     public NodeType Type { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-    public ChildNodes ChildNodes => new ChildNodes(this);
+    public ChildNodes ChildNodes { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => new ChildNodes(this); }
 
     /// <remarks>
     /// Inheritors who extend the AST with custom node types should override this method and provide an actual implementation.

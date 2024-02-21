@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 
 namespace Acornima.Ast;
 
@@ -19,7 +19,6 @@ public sealed partial class NewExpression : Expression
     public Expression Callee { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public ref readonly NodeList<Expression> Arguments { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref _arguments; }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private NewExpression Rewrite(Expression callee, in NodeList<Expression> arguments)
     {
         return new NewExpression(callee, arguments);

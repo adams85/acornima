@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 
 namespace Acornima.Ast;
 
@@ -12,7 +12,6 @@ public sealed partial class ReturnStatement : Statement
 
     public Expression? Argument { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private ReturnStatement Rewrite(Expression? argument)
     {
         return new ReturnStatement(argument);

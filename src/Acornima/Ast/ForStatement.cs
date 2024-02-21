@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 
 namespace Acornima.Ast;
 
@@ -26,7 +26,6 @@ public sealed partial class ForStatement : Statement
     public Expression? Update { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public Statement Body { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private ForStatement Rewrite(StatementOrExpression? init, Expression? test, Expression? update, Statement body)
     {
         return new ForStatement(init, test, update, body);

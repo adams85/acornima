@@ -86,6 +86,7 @@ internal struct ArrayList<T> : IList<T>
     private int _localVersion;
 #endif
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ArrayList(int initialCapacity)
     {
         Debug.Assert(initialCapacity >= 0);
@@ -102,6 +103,7 @@ internal struct ArrayList<T> : IList<T>
     /// <remarks>
     /// WARNING: Expects ownership of the array.
     /// </remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal ArrayList(T[] items)
     {
         _items = items;

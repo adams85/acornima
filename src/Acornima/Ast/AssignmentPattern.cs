@@ -17,7 +17,6 @@ public sealed partial class AssignmentPattern : Node, IBindingPattern
     public Node Left { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public Expression Right { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private AssignmentPattern Rewrite(Node left, Expression right)
     {
         return new AssignmentPattern(left, right);

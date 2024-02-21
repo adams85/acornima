@@ -137,19 +137,15 @@ public readonly struct Range : IEquatable<Range>
         return false;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool TryParse(ReadOnlySpan<char> s, out Range result) => TryParseCore(s, throwIfInvalid: false, out result);
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool TryParse(string s, out Range result) => TryParse(s.AsSpan(), out result);
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Range Parse(ReadOnlySpan<char> s)
     {
         return TryParseCore(s, throwIfInvalid: true, out var result) ? result : ThrowFormatException<Range>("Input string was not in a correct format.");
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Range Parse(string s) => Parse(s.AsSpan());
 
     [EditorBrowsable(EditorBrowsableState.Never)]

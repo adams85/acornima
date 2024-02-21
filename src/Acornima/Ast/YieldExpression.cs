@@ -14,7 +14,6 @@ public sealed partial class YieldExpression : Expression
     public Expression? Argument { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public bool Delegate { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private YieldExpression Rewrite(Expression? argument)
     {
         return new YieldExpression(argument, Delegate);

@@ -71,7 +71,6 @@ public sealed partial class AssignmentExpression : Expression
     public Node Left { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public Expression Right { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private AssignmentExpression Rewrite(Node left, Expression right)
     {
         return new AssignmentExpression(Operator, left, right);

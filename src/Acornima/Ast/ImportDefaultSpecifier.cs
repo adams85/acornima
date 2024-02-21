@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 
 namespace Acornima.Ast;
 
@@ -9,7 +9,6 @@ public sealed partial class ImportDefaultSpecifier : ImportDeclarationSpecifier
     {
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private ImportDefaultSpecifier Rewrite(Identifier local)
     {
         return new ImportDefaultSpecifier(local);

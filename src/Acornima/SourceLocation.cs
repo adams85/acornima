@@ -223,19 +223,15 @@ public readonly struct SourceLocation : IEquatable<SourceLocation>
         return false;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool TryParse(ReadOnlySpan<char> s, out SourceLocation result) => TryParseCore(s, throwIfInvalid: false, out result);
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool TryParse(string s, out SourceLocation result) => TryParse(s.AsSpan(), out result);
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static SourceLocation Parse(ReadOnlySpan<char> s)
     {
         return TryParseCore(s, throwIfInvalid: true, out var result) ? result : ThrowFormatException<SourceLocation>("Input string was not in a correct format.");
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static SourceLocation Parse(string s) => Parse(s.AsSpan());
 
     [EditorBrowsable(EditorBrowsableState.Never)]

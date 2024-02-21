@@ -17,7 +17,6 @@ public sealed partial class ClassBody : Node
     /// </remarks>
     public ref readonly NodeList<Node> Body { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref _body; }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private ClassBody Rewrite(in NodeList<Node> body)
     {
         return new ClassBody(body);

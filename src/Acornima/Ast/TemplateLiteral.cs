@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 
 namespace Acornima.Ast;
 
@@ -22,7 +22,6 @@ public sealed partial class TemplateLiteral : Expression
 
     internal override Node? NextChildNode(ref ChildNodes.Enumerator enumerator) => enumerator.MoveNextTemplateLiteral(Quasis, Expressions);
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private TemplateLiteral Rewrite(in NodeList<TemplateElement> quasis, in NodeList<Expression> expressions)
     {
         return new TemplateLiteral(quasis, expressions);

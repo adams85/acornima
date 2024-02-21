@@ -9,7 +9,6 @@ public sealed partial class ImportNamespaceSpecifier : ImportDeclarationSpecifie
     {
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private ImportNamespaceSpecifier Rewrite(Identifier local)
     {
         return new ImportNamespaceSpecifier(local);

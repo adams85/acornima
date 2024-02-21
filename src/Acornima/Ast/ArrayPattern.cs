@@ -17,7 +17,6 @@ public sealed partial class ArrayPattern : Node, IBindingPattern
     /// </remarks>
     public ref readonly NodeList<Node?> Elements { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref _elements; }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private ArrayPattern Rewrite(in NodeList<Node?> elements)
     {
         return new ArrayPattern(elements);

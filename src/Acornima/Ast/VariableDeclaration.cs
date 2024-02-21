@@ -31,7 +31,6 @@ public sealed partial class VariableDeclaration : Declaration
     public VariableDeclarationKind Kind { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public ref readonly NodeList<VariableDeclarator> Declarations { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref _declarations; }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private VariableDeclaration Rewrite(in NodeList<VariableDeclarator> declarations)
     {
         return new VariableDeclaration(Kind, declarations);

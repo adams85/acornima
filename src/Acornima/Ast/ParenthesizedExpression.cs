@@ -12,7 +12,6 @@ public sealed partial class ParenthesizedExpression : Expression
 
     public Expression Expression { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private ParenthesizedExpression Rewrite(Expression expression)
     {
         return new ParenthesizedExpression(expression);

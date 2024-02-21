@@ -12,7 +12,6 @@ public sealed partial class Decorator : Node
 
     public Expression Expression { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private Decorator Rewrite(Expression expression)
     {
         return new Decorator(expression);

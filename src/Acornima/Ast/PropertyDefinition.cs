@@ -25,7 +25,6 @@ public sealed partial class PropertyDefinition : ClassProperty
 
     public ref readonly NodeList<Decorator> Decorators { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref _decorators; }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private PropertyDefinition Rewrite(in NodeList<Decorator> decorators, Expression key, Expression? value)
     {
         return new PropertyDefinition(key, value, Computed, Static, decorators);

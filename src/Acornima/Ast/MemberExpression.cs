@@ -22,7 +22,6 @@ public sealed partial class MemberExpression : Expression, IBindingPattern, ICha
     public bool Computed { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public bool Optional { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private MemberExpression Rewrite(Expression @object, Expression property)
     {
         return new MemberExpression(@object, property, Computed, Optional);

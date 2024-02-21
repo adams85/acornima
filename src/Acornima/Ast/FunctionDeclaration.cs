@@ -41,7 +41,6 @@ public sealed partial class FunctionDeclaration : Declaration, IFunction
     public bool Strict { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public bool Async { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private FunctionDeclaration Rewrite(Identifier? id, in NodeList<Node> @params, FunctionBody body)
     {
         return new FunctionDeclaration(id, @params, body, Generator, Strict, Async);

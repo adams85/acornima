@@ -18,7 +18,6 @@ public sealed partial class CatchClause : Node
     public Node? Param { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public BlockStatement Body { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private CatchClause Rewrite(Node? param, BlockStatement body)
     {
         return new CatchClause(param, body);

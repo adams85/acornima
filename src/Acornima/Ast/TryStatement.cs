@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 
 namespace Acornima.Ast;
 
@@ -20,7 +20,6 @@ public sealed partial class TryStatement : Statement
     public CatchClause? Handler { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public BlockStatement? Finalizer { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private TryStatement Rewrite(BlockStatement block, CatchClause? handler, BlockStatement? finalizer)
     {
         return new TryStatement(block, handler, finalizer);

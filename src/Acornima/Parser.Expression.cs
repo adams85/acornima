@@ -677,7 +677,7 @@ public partial class Parser
                 _yieldPosition = oldYieldPos;
                 _awaitPosition = oldAwaitPos;
                 _awaitIdentifierPosition = oldAwaitIdentPos;
-                return ParseArrowExpression(startMarker, exprList.As<Node>(), isAsync: true, context);
+                return ParseArrowExpression(startMarker, exprList.AsNodes()!, isAsync: true, context);
             }
 
             CheckExpressionErrors(ref destructuringErrors, andThrow: true);

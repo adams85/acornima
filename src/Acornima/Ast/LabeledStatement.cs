@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 
 namespace Acornima.Ast;
 
@@ -15,7 +15,6 @@ public sealed partial class LabeledStatement : Statement
     public Identifier Label { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public Statement Body { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private LabeledStatement Rewrite(Identifier label, Statement body)
     {
         return new LabeledStatement(label, body);

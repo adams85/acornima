@@ -73,7 +73,7 @@ public partial class Parser
                         CheckPatternErrors(ref destructuringErrors, isAssign: true);
                     }
 
-                    convertedNodes = ToAssignableList(node.As<ArrayExpression>().Elements.As<Node?>(), isBinding);
+                    convertedNodes = ToAssignableList(node.As<ArrayExpression>().Elements.AsNodes(), isBinding);
 
                     node = ReinterpretNode(node, new ArrayPattern(elements: convertedNodes));
                     break;

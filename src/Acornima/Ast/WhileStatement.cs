@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 
 namespace Acornima.Ast;
 
@@ -14,7 +14,6 @@ public sealed partial class WhileStatement : Statement
     public Expression Test { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public Statement Body { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private WhileStatement Rewrite(Expression test, Statement body)
     {
         return new WhileStatement(test, body);

@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 
 namespace Acornima.Ast;
 
@@ -18,7 +18,6 @@ public sealed partial class ImportExpression : Expression
     public Expression Source { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public Expression? Options { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private ImportExpression Rewrite(Expression source, Expression? options)
     {
         return new ImportExpression(source, options);

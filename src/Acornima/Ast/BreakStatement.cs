@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 
 namespace Acornima.Ast;
 
@@ -12,7 +12,6 @@ public sealed partial class BreakStatement : Statement
 
     public Identifier? Label { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private BreakStatement Rewrite(Identifier? label)
     {
         return new BreakStatement(label);

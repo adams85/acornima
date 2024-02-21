@@ -15,7 +15,6 @@ public sealed partial class RestElement : Node, IBindingPattern
     /// </remarks>
     public Node Argument { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private RestElement Rewrite(Node argument)
     {
         return new RestElement(argument);

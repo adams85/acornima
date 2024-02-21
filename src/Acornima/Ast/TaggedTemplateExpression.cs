@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 
 namespace Acornima.Ast;
 
@@ -14,7 +14,6 @@ public sealed partial class TaggedTemplateExpression : Expression
     public Expression Tag { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public TemplateLiteral Quasi { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private TaggedTemplateExpression Rewrite(Expression tag, TemplateLiteral quasi)
     {
         return new TaggedTemplateExpression(tag, quasi);

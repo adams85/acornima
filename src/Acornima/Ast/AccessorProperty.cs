@@ -24,7 +24,6 @@ public sealed partial class AccessorProperty : ClassProperty
 
     public ref readonly NodeList<Decorator> Decorators { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref _decorators; }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private AccessorProperty Rewrite(in NodeList<Decorator> decorators, Expression key, Expression? value)
     {
         return new AccessorProperty(key, value, Computed, Static, decorators);

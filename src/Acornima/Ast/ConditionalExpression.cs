@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 
 namespace Acornima.Ast;
 
@@ -19,7 +19,6 @@ public sealed partial class ConditionalExpression : Expression
     public Expression Consequent { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public Expression Alternate { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private ConditionalExpression Rewrite(Expression test, Expression consequent, Expression alternate)
     {
         return new ConditionalExpression(test, consequent, alternate);

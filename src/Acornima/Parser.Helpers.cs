@@ -198,8 +198,8 @@ public partial class Parser
             Position = position;
         }
 
-        public int Index { get; }
-        public Position Position { get; }
+        public readonly int Index;
+        public readonly Position Position;
     }
 
     // Used in checkLVal and declareName to determine the type of a binding

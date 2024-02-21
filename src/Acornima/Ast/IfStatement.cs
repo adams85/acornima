@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 
 namespace Acornima.Ast;
 
@@ -20,7 +20,6 @@ public sealed partial class IfStatement : Statement
     public Statement Consequent { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public Statement? Alternate { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private IfStatement Rewrite(Expression test, Statement consequent, Statement? alternate)
     {
         return new IfStatement(test, consequent, alternate);

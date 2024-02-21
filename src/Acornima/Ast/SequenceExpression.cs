@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 
 namespace Acornima.Ast;
 
@@ -14,7 +14,6 @@ public sealed partial class SequenceExpression : Expression
 
     public ref readonly NodeList<Expression> Expressions { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref _expressions; }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private SequenceExpression Rewrite(in NodeList<Expression> expressions)
     {
         return new SequenceExpression(expressions);

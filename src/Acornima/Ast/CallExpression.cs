@@ -21,7 +21,6 @@ public sealed partial class CallExpression : Expression, IChainElement
     public ref readonly NodeList<Expression> Arguments { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref _arguments; }
     public bool Optional { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private CallExpression Rewrite(Expression callee, in NodeList<Expression> arguments)
     {
         return new CallExpression(callee, arguments, Optional);
