@@ -338,7 +338,7 @@ public partial class AstToJavaScriptConverter : AstVisitor
             ?? throw new InvalidOperationException("Invalid binary operator.");
 
         _writeContext.SetNodeProperty(nameof(node.Operator), static node => node.As<BinaryExpression>().Operator);
-        if (char.IsLetter(op[0]))
+        if (op[0].IsBasicLatinLetter())
         {
             Writer.WriteKeyword(op, TokenFlags.SurroundingSpaceRecommended, ref _writeContext);
         }
@@ -1699,7 +1699,7 @@ public partial class AstToJavaScriptConverter : AstVisitor
         if (node.Prefix)
         {
             _writeContext.SetNodeProperty(nameof(node.Operator), static node => node.As<UnaryExpression>().Operator);
-            if (char.IsLetter(op[0]))
+            if (op[0].IsBasicLatinLetter())
             {
                 Writer.WriteKeyword(op, TokenFlags.TrailingSpaceRecommended, ref _writeContext);
             }

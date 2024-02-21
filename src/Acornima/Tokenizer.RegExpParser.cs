@@ -921,10 +921,10 @@ public partial class Tokenizer
                         cp = ch;
                         ++i;
 
-                        if (allowAstral && char.IsHighSurrogate((char)ch) && i + 1 < endIndex && _pattern[i] == '\\' && _pattern[i + 1] == 'u')
+                        if (allowAstral && ((char)ch).IsHighSurrogate() && i + 1 < endIndex && _pattern[i] == '\\' && _pattern[i + 1] == 'u')
                         {
                             escStart = i++;
-                            if (TryReadHexEscape(_pattern, ref i, endIndex, charCodeLength: 4, out var ch2) && char.IsLowSurrogate((char)ch2))
+                            if (TryReadHexEscape(_pattern, ref i, endIndex, charCodeLength: 4, out var ch2) && ((char)ch2).IsLowSurrogate())
                             {
                                 ++i;
                                 cp = (int)UnicodeHelper.GetCodePoint((char)ch, (char)ch2);

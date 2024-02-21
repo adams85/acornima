@@ -29,11 +29,11 @@ public partial class Tokenizer
                 ref readonly var pattern = ref parser._pattern;
                 ref var i = ref context.Index;
 
-                if (!char.IsSurrogate(ch))
+                if (!ch.IsSurrogate())
                 {
                     appender?.Invoke(sb!, ch);
                 }
-                else if (char.IsHighSurrogate(ch) && char.IsLowSurrogate((char)pattern.CharCodeAt(i + 1)))
+                else if (ch.IsHighSurrogate() && ((char)pattern.CharCodeAt(i + 1)).IsLowSurrogate())
                 {
                     // Surrogate pairs should be surrounded by a non-capturing group to act as one character (because of cases like /💩+/u).
                     sb?.Append("(?:").Append(ch).Append(pattern[i + 1]).Append(')');
@@ -64,7 +64,7 @@ public partial class Tokenizer
 
             private static void AppendUnicodeCharSafe(StringBuilder sb, char ch)
             {
-                if (!char.IsSurrogate(ch))
+                if (!ch.IsSurrogate())
                 {
                     AppendCharSafe(sb, ch);
                 }
@@ -83,7 +83,7 @@ public partial class Tokenizer
                     // We can simulate this using negative lookbehind/lookahead.
 
                     sb.Append("(?:");
-                    _ = char.IsHighSurrogate(ch)
+                    _ = ch.IsHighSurrogate()
                         ? sb.Append(ch).Append("(?![\uDC00-\uDFFF])")
                         : sb.Append("(?<![\uD800-\uDBFF])").Append(ch);
                     sb.Append(')');
@@ -97,7 +97,7 @@ public partial class Tokenizer
                 ref readonly var pattern = ref parser._pattern;
                 ref var i = ref context.Index;
 
-                if (char.IsHighSurrogate(ch) && char.IsLowSurrogate((char)pattern.CharCodeAt(i + 1)))
+                if (ch.IsHighSurrogate() && ((char)pattern.CharCodeAt(i + 1)).IsLowSurrogate())
                 {
                     // Surrogate pairs should be surrounded by a non-capturing group to act as one character.
                     AddSetCodePoint(ref context, char.ConvertToUtf32(ch, pattern[i + 1]), ref parser, startIndex);
@@ -667,10 +667,10 @@ public partial class Tokenizer
                     case 'x':
                         if (TryReadHexEscape(pattern, ref i, endIndex: pattern.Length, charCodeLength: ch == 'u' ? 4 : 2, out charCode))
                         {
-                            if (ch == 'u' && char.IsHighSurrogate((char)charCode) && i + 2 < pattern.Length && pattern[i + 1] == '\\' && pattern[i + 2] == 'u')
+                            if (ch == 'u' && ((char)charCode).IsHighSurrogate() && i + 2 < pattern.Length && pattern[i + 1] == '\\' && pattern[i + 2] == 'u')
                             {
                                 endIndex = i + 2;
-                                if (TryReadHexEscape(pattern, ref endIndex, endIndex: pattern.Length, charCodeLength: 4, out charCode2) && char.IsLowSurrogate((char)charCode2))
+                                if (TryReadHexEscape(pattern, ref endIndex, endIndex: pattern.Length, charCodeLength: 4, out charCode2) && ((char)charCode2).IsLowSurrogate())
                                 {
                                     codePoint = char.ConvertToUtf32((char)charCode, (char)charCode2);
                                     if (!context.WithinSet)
