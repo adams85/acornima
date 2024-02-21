@@ -53,7 +53,6 @@ public enum NodeType
     ObjectExpression,
     ObjectPattern,
     ParenthesizedExpression,
-    ParenthesizedPattern,
     PrivateIdentifier,
     Program,
     Property,

@@ -830,16 +830,6 @@ public class AstToJsonConverter : AstVisitor
         return node;
     }
 
-    protected internal override object? VisitParenthesizedPattern(ParenthesizedPattern node)
-    {
-        using (StartNodeObject(node))
-        {
-            Member("pattern", node.Pattern);
-        }
-
-        return node;
-    }
-
     protected internal override object? VisitProgram(Program node)
     {
         using (StartNodeObject(node))

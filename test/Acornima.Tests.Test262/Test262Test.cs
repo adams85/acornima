@@ -18,6 +18,7 @@ public abstract partial class Test262Test
         {
             Tolerant = false,
             EcmaVersion = TestsExperimentalFeature(file) ? EcmaVersion.Experimental : EcmaVersion.Latest,
+            PreserveParens = true,
         };
         return new Parser(options);
     }

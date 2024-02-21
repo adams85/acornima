@@ -1345,24 +1345,6 @@ public partial class AstToJavaScriptConverter : AstVisitor
         return node;
     }
 
-    protected internal override object? VisitParenthesizedPattern(ParenthesizedPattern node)
-    {
-        _writeContext.SetNodeProperty(nameof(node.Pattern), static node => node.As<ParenthesizedPattern>().Pattern);
-
-        Writer.WritePunctuator("(", TokenFlags.Leading, ref _writeContext);
-        if (node.Pattern is Expression expression)
-        {
-            VisitSubExpression(expression, SubExpressionFlags(needsParens: false, isLeftMost: true));
-        }
-        else
-        {
-            VisitAuxiliaryNode(node.Pattern, static delegate { return s_bindingPatternAllowsExpressionsFlag; });
-        }
-        Writer.WritePunctuator(")", TokenFlags.Trailing, ref _writeContext);
-
-        return node;
-    }
-
     protected internal override object? VisitPrivateIdentifier(PrivateIdentifier node)
     {
         _writeContext.SetNodeProperty(nameof(node.Name), static node => node.As<PrivateIdentifier>().Name);

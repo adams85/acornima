@@ -402,7 +402,7 @@ public partial class Parser
             {
                 if (op == Operator.Delete)
                 {
-                    if (_strict && argument.Type == NodeType.Identifier)
+                    if (_strict && IsLocalVariableAccess(argument))
                     {
                         RaiseRecoverable(startMarker.Index, "Deleting local variable in strict mode");
                     }
@@ -469,6 +469,26 @@ public partial class Parser
         return expr;
     }
 
+    private static bool IsLocalVariableAccess(Expression expr)
+    {
+        for (; ; )
+        {
+            switch (expr)
+            {
+                case Identifier:
+                    return true;
+
+                // Original acornjs implementation doesn't handle the ParenthesizedExpression case.
+                // TODO: report bug
+                case ParenthesizedExpression parenthesizedExpression:
+                    expr = parenthesizedExpression.Expression;
+                    continue;
+            }
+
+            return false;
+        }
+    }
+
     private static bool IsPrivateFieldAccess(Expression expr)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/expression.js > `function isPrivateFieldAccess`
@@ -482,6 +502,12 @@ public partial class Parser
 
                 case ChainExpression chainExpression:
                     expr = chainExpression.Expression;
+                    continue;
+
+                // Original acornjs implementation doesn't handle the ParenthesizedExpression case.
+                // TODO: report bug
+                case ParenthesizedExpression parenthesizedExpression:
+                    expr = parenthesizedExpression.Expression;
                     continue;
             }
 

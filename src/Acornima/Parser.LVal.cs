@@ -41,7 +41,6 @@ public partial class Parser
                 case NodeType.AssignmentPattern:
                 case NodeType.RestElement:
                 case NodeType.MemberExpression when !isBinding:
-                case NodeType.ParenthesizedPattern:
                     break;
 
                 case NodeType.ObjectExpression:
@@ -105,9 +104,7 @@ public partial class Parser
                     break;
 
                 case NodeType.ParenthesizedExpression:
-                    convertedNode = ToAssignable(node.As<ParenthesizedExpression>().Expression, isBinding, ref destructuringErrors);
-
-                    node = ReinterpretNode(node, new ParenthesizedPattern(pattern: convertedNode));
+                    ToAssignable(node.As<ParenthesizedExpression>().Expression, isBinding, ref destructuringErrors);
                     break;
 
                 case NodeType.ChainExpression:

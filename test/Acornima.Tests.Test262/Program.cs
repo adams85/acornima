@@ -70,6 +70,7 @@ public static class Program
                         {
                             Tolerant = false,
                             EcmaVersion = Test262Test.TestsExperimentalFeature(file) ? EcmaVersion.Experimental : EcmaVersion.Latest,
+                            PreserveParens = true,
                         };
                         var parser = new Parser(parserOptions);
                         if (file.Type == ProgramType.Script)
