@@ -13,6 +13,7 @@ public partial class Tokenizer
 {
     internal string _input;
     internal int _startPosition, _endPosition;
+    private SourceType _sourceType;
     internal string? _sourceFile;
 
     // Used to signal to callers of `ReadWord1` whether the word
@@ -81,6 +82,7 @@ public partial class Tokenizer
         _endPosition = 0 <= length && length <= input.Length - start
             ? _startPosition + length
             : throw new ArgumentOutOfRangeException(nameof(length), length, null);
+        _sourceType = sourceType;
         _sourceFile = sourceFile;
 
         _containsEscape = false;

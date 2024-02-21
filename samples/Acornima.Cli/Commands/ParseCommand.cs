@@ -9,8 +9,7 @@ internal enum JavaScriptCodeType
 {
     Script,
     Module,
-    ExpressionInScript,
-    ExpressionInModule,
+    Expression,
 }
 
 [Command(CommandName, Description = "Parse JS code and print resulting AST in JSON format.")]
@@ -69,8 +68,7 @@ internal sealed class ParseCommand
         {
             JavaScriptCodeType.Script => parser.ParseScript(code),
             JavaScriptCodeType.Module => parser.ParseModule(code),
-            JavaScriptCodeType.ExpressionInScript => parser.ParseExpression(code, sourceType: SourceType.Script),
-            JavaScriptCodeType.ExpressionInModule => parser.ParseExpression(code, sourceType: SourceType.Module),
+            JavaScriptCodeType.Expression => parser.ParseExpression(code),
             _ => throw new InvalidOperationException()
         };
 

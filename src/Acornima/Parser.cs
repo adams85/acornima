@@ -84,22 +84,14 @@ public sealed partial class Parser
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Expression ParseExpression(string input, string? sourceFile = null, SourceType sourceType = SourceType.Script, bool strict = false)
+    public Expression ParseExpression(string input, string? sourceFile = null, bool strict = false)
     {
-        return ParseExpression(input ?? throw new ArgumentNullException(nameof(input)), 0, input.Length, sourceFile, sourceType, strict);
+        return ParseExpression(input ?? throw new ArgumentNullException(nameof(input)), 0, input.Length, sourceFile, strict);
     }
 
-    public Expression ParseExpression(string input, int start, int length, string? sourceFile = null, SourceType sourceType = SourceType.Script, bool strict = false)
+    public Expression ParseExpression(string input, int start, int length, string? sourceFile = null, bool strict = false)
     {
-        if (sourceType == SourceType.Module)
-        {
-            if (_tokenizerOptions._ecmaVersion < EcmaVersion.ES6)
-            {
-                throw new InvalidOperationException($"To parse input as module code, you need to configure the parser to use {EcmaVersion.ES6} or newer.");
-            }
-        }
-
-        Reset(input, start, length, sourceType, sourceFile, strict);
+        Reset(input, start, length, SourceType.Unknown, sourceFile, strict);
 
         try
         {

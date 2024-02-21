@@ -414,11 +414,19 @@ public partial class ParserTests
     }
 
     [Theory]
-    [InlineData(EcmaVersion.ES2023, null, false)]
-    [InlineData(EcmaVersion.ES2023, false, true)]
-    [InlineData(EcmaVersion.ES2022, null, true)]
-    [InlineData(EcmaVersion.ES2022, true, false)]
-    public void ShouldParseHashBangComment(EcmaVersion ecmaVersion, bool? allowHashBang, bool expectSyntaxError)
+    [InlineData("script", EcmaVersion.ES2023, null, false)]
+    [InlineData("script", EcmaVersion.ES2023, false, true)]
+    [InlineData("script", EcmaVersion.ES2022, null, true)]
+    [InlineData("script", EcmaVersion.ES2022, true, false)]
+    [InlineData("module", EcmaVersion.ES2023, null, false)]
+    [InlineData("module", EcmaVersion.ES2023, false, true)]
+    [InlineData("module", EcmaVersion.ES2022, null, true)]
+    [InlineData("module", EcmaVersion.ES2022, true, false)]
+    [InlineData("expression", EcmaVersion.ES2023, null, true)]
+    [InlineData("expression", EcmaVersion.ES2023, false, true)]
+    [InlineData("expression", EcmaVersion.ES2023, true, true)]
+    [InlineData("expression", EcmaVersion.ES2022, true, true)]
+    public void ShouldParseHashBangComment(string sourceType, EcmaVersion ecmaVersion, bool? allowHashBang, bool expectSyntaxError)
     {
         var comments = new List<Comment>();
         var parserOptions = allowHashBang is not null
@@ -435,6 +443,7 @@ public partial class ParserTests
             };
 
         var parser = new Parser(parserOptions);
+        var parseAction = GetParseActionFor(sourceType);
 
         var code =
             """
@@ -445,7 +454,7 @@ public partial class ParserTests
 
         if (!expectSyntaxError)
         {
-            var script = parser.ParseScript(code);
+            var script = parseAction(parser, code);
 
             var comment = Assert.Single(comments);
 
@@ -457,7 +466,7 @@ public partial class ParserTests
         }
         else
         {
-            Assert.Throws<SyntaxErrorException>(() => parser.ParseScript(code));
+            Assert.Throws<SyntaxErrorException>(() => parseAction(parser, code));
         }
     }
 
@@ -1128,8 +1137,7 @@ public partial class ParserTests
     [Theory]
     [InlineData("script", true)]
     [InlineData("module", false)]
-    [InlineData("expression/script", true)]
-    [InlineData("expression/module", false)]
+    [InlineData("expression", false)]
     public void ShouldParseTopLevelAwait(string sourceType, bool shouldThrow)
     {
         const string code = "await import('x')";
@@ -1539,8 +1547,7 @@ public partial class ParserTests
         {
             "script" => (parser, code) => parser.ParseScript(code),
             "module" => (parser, code) => parser.ParseModule(code),
-            "expression" or "expression/script" => (parser, code) => parser.ParseExpression(code, sourceType: SourceType.Script),
-            "expression/module" => (parser, code) => parser.ParseExpression(code, sourceType: SourceType.Module),
+            "expression" => (parser, code) => parser.ParseExpression(code),
             _ => throw new InvalidOperationException()
         };
     }

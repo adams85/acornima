@@ -67,7 +67,7 @@ public partial class Parser
         }
         else
         {
-            _topLevelAwaitAllowed = false;
+            _topLevelAwaitAllowed = sourceType == SourceType.Unknown && ecmaVersion >= EcmaVersion.ES8;
             // The spec says:
             // > At the top level of a function, or script, function declarations are
             // > treated like var declarations rather than like lexical declarations.

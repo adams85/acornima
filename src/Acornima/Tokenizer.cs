@@ -347,6 +347,7 @@ public sealed partial class Tokenizer
                         goto default;
 
                     case '#' when _position == 0
+                        && _sourceType != SourceType.Unknown
                         && (_options._allowHashBang ?? _options._ecmaVersion >= EcmaVersion.ES14)
                         && 1 < _endPosition && _input[0] == '#' && _input[1] == '!':
 
