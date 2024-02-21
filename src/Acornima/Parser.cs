@@ -91,6 +91,11 @@ public sealed partial class Parser
 
     public Expression ParseExpression(string input, int start, int length, string? sourceFile = null, bool strict = false)
     {
+        if (strict && _tokenizerOptions._ecmaVersion < EcmaVersion.ES5)
+        {
+            throw new InvalidOperationException($"To parse input in strict mode, you need to configure the parser to use {EcmaVersion.ES5} or newer.");
+        }
+
         Reset(input, start, length, SourceType.Unknown, sourceFile, strict);
 
         try
