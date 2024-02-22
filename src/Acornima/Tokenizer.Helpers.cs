@@ -193,14 +193,14 @@ public partial class Tokenizer
         int i;
         for (i = 0; i < slice.Length; i++)
         {
-            var code = slice[i];
-            if (code == '_')
+            var ch = slice[i];
+            if (ch == '_')
             {
                 continue;
             }
 
-            var digitValue = GetDigitValue(code);
-            Debug.Assert(digitValue < radix, $"Invalid digit in number: U+{(ushort)code:X4}");
+            var digitValue = GetDigitValue(ch);
+            Debug.Assert(digitValue < radix, $"Invalid digit in number: U+{(ushort)ch:X4}");
 
             value = value * radix + digitValue;
         }
@@ -217,14 +217,14 @@ public partial class Tokenizer
         int i;
         for (i = slice.Length; i > 0;)
         {
-            var code = slice[--i];
-            if (code == '_')
+            var ch = slice[--i];
+            if (ch == '_')
             {
                 continue;
             }
 
-            var digitValue = GetDigitValue(code);
-            Debug.Assert(digitValue < radix, $"Invalid digit in number: U+{(ushort)code:X4}");
+            var digitValue = GetDigitValue(ch);
+            Debug.Assert(digitValue < radix, $"Invalid digit in number: U+{(ushort)ch:X4}");
 
             value += modulo * digitValue;
             modulo *= radix;

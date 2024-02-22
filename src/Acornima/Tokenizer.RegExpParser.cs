@@ -678,21 +678,21 @@ public partial class Tokenizer
             return false;
         }
 
-        private static bool TryReadCodePoint(string pattern, ref int i, int endIndex, out int codePoint)
+        private static bool TryReadCodePoint(string pattern, ref int i, int endIndex, out int cp)
         {
             var escapeEndIndex = pattern.IndexOf('}', i + 2, endIndex - (i + 2));
             if (escapeEndIndex < 0)
             {
-                codePoint = default;
+                cp = default;
                 return false;
             }
 
             var slice = pattern.AsSpan(i + 2, escapeEndIndex - (i + 2));
-            if (!int.TryParse(slice.ToParsable(), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture, out codePoint)
+            if (!int.TryParse(slice.ToParsable(), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture, out cp)
                 // NOTE: int.TryParse with NumberStyles.AllowHexSpecifier may return a negative number (e.g. '80000000' -> -2147483648)!
-                || (uint)codePoint > UnicodeHelper.LastCodePoint)
+                || (uint)cp > UnicodeHelper.LastCodePoint)
             {
-                codePoint = default;
+                cp = default;
                 return false;
             }
 

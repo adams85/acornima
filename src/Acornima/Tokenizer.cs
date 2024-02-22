@@ -107,16 +107,16 @@ public sealed partial class Tokenizer
 
     private void ReadToken(TokenContext currentContext)
     {
-        int code, start = _position;
+        int cp, start = _position;
         if (currentContext != TokenContext.QuoteInTemplate
-            ? !TryReadToken(code = FullCharCodeAtPosition())
-            : !TryReadTemplateToken() && (code = FullCharCodeAtPosition()) is { })
+            ? !TryReadToken(cp = FullCharCodeAtPosition())
+            : !TryReadTemplateToken() && (cp = FullCharCodeAtPosition()) is { })
         {
-            Raise(start, $"Unexpected character '{UnicodeHelper.CodePointToString(code)}'");
+            Raise(start, $"Unexpected character '{UnicodeHelper.CodePointToString(cp)}'");
         }
     }
 
-    private bool TryReadToken(int code)
+    private bool TryReadToken(int cp)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readToken = function`, `pp.getTokenFromCode = function`
 
@@ -125,54 +125,54 @@ public sealed partial class Tokenizer
 
         // Identifier or keyword. '\uXXXX' sequences are allowed in
         // identifiers, so '\' also dispatches to that.
-        if (IsIdentifierStart(code, allowAstral: _options._ecmaVersion >= EcmaVersion.ES6) || code == '\\')
+        if (IsIdentifierStart(cp, allowAstral: _options._ecmaVersion >= EcmaVersion.ES6) || cp == '\\')
         {
             return ReadWord();
         }
 
-        switch (code)
+        switch (cp)
         {
             // The interpretation of a dot depends on whether it is followed
             // by a digit or another two do
             case '.':
-                return ReadToken_Dot(code);
+                return ReadToken_Dot(cp);
 
             // Punctuation tokens.
             case '(':
                 ++_position;
-                return FinishToken(TokenType.ParenLeft, ((char)code).ToStringCached());
+                return FinishToken(TokenType.ParenLeft, ((char)cp).ToStringCached());
 
             case ')':
                 ++_position;
-                return FinishToken(TokenType.ParenRight, ((char)code).ToStringCached());
+                return FinishToken(TokenType.ParenRight, ((char)cp).ToStringCached());
 
             case ';':
                 ++_position;
-                return FinishToken(TokenType.Semicolon, ((char)code).ToStringCached());
+                return FinishToken(TokenType.Semicolon, ((char)cp).ToStringCached());
 
             case ',':
                 ++_position;
-                return FinishToken(TokenType.Comma, ((char)code).ToStringCached());
+                return FinishToken(TokenType.Comma, ((char)cp).ToStringCached());
 
             case '[':
                 ++_position;
-                return FinishToken(TokenType.BracketLeft, ((char)code).ToStringCached());
+                return FinishToken(TokenType.BracketLeft, ((char)cp).ToStringCached());
 
             case ']':
                 ++_position;
-                return FinishToken(TokenType.BracketRight, ((char)code).ToStringCached());
+                return FinishToken(TokenType.BracketRight, ((char)cp).ToStringCached());
 
             case '{':
                 ++_position;
-                return FinishToken(TokenType.BraceLeft, ((char)code).ToStringCached());
+                return FinishToken(TokenType.BraceLeft, ((char)cp).ToStringCached());
 
             case '}':
                 ++_position;
-                return FinishToken(TokenType.BraceRight, ((char)code).ToStringCached());
+                return FinishToken(TokenType.BraceRight, ((char)cp).ToStringCached());
 
             case ':':
                 ++_position;
-                return FinishToken(TokenType.Colon, ((char)code).ToStringCached());
+                return FinishToken(TokenType.Colon, ((char)cp).ToStringCached());
 
             case '`':
                 if (_options._ecmaVersion < EcmaVersion.ES6)
@@ -181,23 +181,23 @@ public sealed partial class Tokenizer
                 }
 
                 ++_position;
-                return FinishToken(TokenType.BackQuote, ((char)code).ToStringCached());
+                return FinishToken(TokenType.BackQuote, ((char)cp).ToStringCached());
 
             case '0':
-                var next = CharCodeAtPosition(1);
-                if (next is 'x' or 'X')
+                var nextCh = CharCodeAtPosition(1);
+                if (nextCh is 'x' or 'X')
                 {
                     return ReadRadixNumber(16); // '0x', '0X' - hex number
                 }
 
                 if (_options._ecmaVersion >= EcmaVersion.ES6)
                 {
-                    if (next is 'o' or 'O')
+                    if (nextCh is 'o' or 'O')
                     {
                         return ReadRadixNumber(8); // '0o', '0O' - octal number
                     }
 
-                    if (next is 'b' or 'B')
+                    if (nextCh is 'b' or 'B')
                     {
                         return ReadRadixNumber(2); // '0b', '0B' - binary number
                     }
@@ -212,7 +212,7 @@ public sealed partial class Tokenizer
 
             // Quotes produce strings.
             case '"' or '\'':
-                return ReadString(quote: code);
+                return ReadString(quote: cp);
 
             // Operators are parsed inline in tiny state machines. '=' (61) is
             // often referred to. `finishOp` simply skips the amount of
@@ -220,38 +220,38 @@ public sealed partial class Tokenizer
             // of the type given by its first argument.
 
             case '/':
-                return ReadToken_Slash(code);
+                return ReadToken_Slash(cp);
 
             case '%' or '*':
-                return ReadToken_Mult_Modulo_Exp(code);
+                return ReadToken_Mult_Modulo_Exp(cp);
 
             case '|' or '&':
-                return ReadToken_PipeAmp(code);
+                return ReadToken_PipeAmp(cp);
 
             case '^':
-                return ReadToken_Caret(code);
+                return ReadToken_Caret(cp);
 
             case '+' or '-':
-                return ReadToken_PlusMinus(code);
+                return ReadToken_PlusMinus(cp);
 
             case '<' or '>':
-                return ReadToken_Lt_Gt(code);
+                return ReadToken_Lt_Gt(cp);
 
             case '=' or '!':
-                return ReadToken_Eq_Excl(code);
+                return ReadToken_Eq_Excl(cp);
 
             case '?':
-                return ReadToken_Question(code);
+                return ReadToken_Question(cp);
 
             case '~':
-                return FinishOp(TokenType.PrefixOp, ((char)code).ToStringCached());
+                return FinishOp(TokenType.PrefixOp, ((char)cp).ToStringCached());
 
             case '#':
-                return ReadToken_NumberSign(code);
+                return ReadToken_NumberSign(cp);
 
             case '@' when _options._ecmaVersion == EcmaVersion.Experimental:
                 _position++;
-                return FinishToken(TokenType.At, ((char)code).ToStringCached());
+                return FinishToken(TokenType.At, ((char)cp).ToStringCached());
         }
 
         return false;
@@ -417,30 +417,30 @@ public sealed partial class Tokenizer
     //
     // All in the name of speed.
 
-    private bool ReadToken_Dot(int code)
+    private bool ReadToken_Dot(int ch)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readToken_dot = function`
 
-        var next = CharCodeAtPosition(1);
-        if (((char)next).IsDecimalDigit())
+        var nextCh = CharCodeAtPosition(1);
+        if (((char)nextCh).IsDecimalDigit())
         {
             return ReadNumber(startsWithZero: false, startsWithDot: true);
         }
-        else if (_options._ecmaVersion >= EcmaVersion.ES6 && next == '.' && CharCodeAtPosition(2) == '.')
+        else if (_options._ecmaVersion >= EcmaVersion.ES6 && nextCh == '.' && CharCodeAtPosition(2) == '.')
         {
             return FinishOp(TokenType.Ellipsis, "...");
         }
         else
         {
-            return FinishOp(TokenType.Dot, ((char)code).ToStringCached());
+            return FinishOp(TokenType.Dot, ((char)ch).ToStringCached());
         }
     }
 
-    private bool ReadToken_Slash(int code)
+    private bool ReadToken_Slash(int ch)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readToken_slash = function`
 
-        var next = CharCodeAtPosition(1);
+        var nextCh = CharCodeAtPosition(1);
 
         Debug.Assert(_trackRegExpContext || !_expressionAllowed);
         if (_expressionAllowed)
@@ -448,26 +448,26 @@ public sealed partial class Tokenizer
             ++_position;
             return ReadRegExp();
         }
-        else if (next == '=')
+        else if (nextCh == '=')
         {
             return FinishOp(TokenType.Assign, "/=");
         }
         else
         {
-            return FinishOp(TokenType.Slash, ((char)code).ToStringCached());
+            return FinishOp(TokenType.Slash, ((char)ch).ToStringCached());
         }
     }
 
-    private bool ReadToken_Mult_Modulo_Exp(int code)
+    private bool ReadToken_Mult_Modulo_Exp(int ch)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readToken_mult_modulo_exp = function`
 
-        var next = CharCodeAtPosition(1);
-        if (next == '=')
+        var nextCh = CharCodeAtPosition(1);
+        if (nextCh == '=')
         {
-            return FinishOp(TokenType.Assign, code == '*' ? "*=" : "%=");
+            return FinishOp(TokenType.Assign, ch == '*' ? "*=" : "%=");
         }
-        else if (_options._ecmaVersion >= EcmaVersion.ES7 && next == '*')
+        else if (_options._ecmaVersion >= EcmaVersion.ES7 && nextCh == '*')
         {
             // exponentiation operator ** and **=
             return CharCodeAtPosition(2) == '='
@@ -476,61 +476,61 @@ public sealed partial class Tokenizer
         }
         else
         {
-            return FinishOp(code == '*' ? TokenType.Star : TokenType.Modulo, ((char)code).ToStringCached());
+            return FinishOp(ch == '*' ? TokenType.Star : TokenType.Modulo, ((char)ch).ToStringCached());
         }
     }
 
-    private bool ReadToken_PipeAmp(int code)
+    private bool ReadToken_PipeAmp(int ch)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readToken_pipe_amp = function`
 
-        var next = CharCodeAtPosition(1);
-        if (next == code)
+        var nextCh = CharCodeAtPosition(1);
+        if (nextCh == ch)
         {
             if (_options._ecmaVersion >= EcmaVersion.ES12 && CharCodeAtPosition(2) == '=')
             {
-                return FinishOp(TokenType.Assign, code == '&' ? "&&=" : "||=");
+                return FinishOp(TokenType.Assign, ch == '&' ? "&&=" : "||=");
             }
             else
             {
-                return code == '&'
+                return ch == '&'
                     ? FinishOp(TokenType.LogicalAnd, "&&")
                     : FinishOp(TokenType.LogicalOr, "||");
             }
         }
-        else if (next == '=')
+        else if (nextCh == '=')
         {
-            return FinishOp(TokenType.Assign, code == '&' ? "&=" : "|=");
+            return FinishOp(TokenType.Assign, ch == '&' ? "&=" : "|=");
         }
         else
         {
-            return FinishOp(code == '&' ? TokenType.BitwiseAnd : TokenType.BitwiseOr, ((char)code).ToStringCached());
+            return FinishOp(ch == '&' ? TokenType.BitwiseAnd : TokenType.BitwiseOr, ((char)ch).ToStringCached());
         }
     }
 
-    private bool ReadToken_Caret(int code)
+    private bool ReadToken_Caret(int ch)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readToken_caret = function`
 
-        var next = CharCodeAtPosition(1);
-        if (next == '=')
+        var nextCh = CharCodeAtPosition(1);
+        if (nextCh == '=')
         {
             return FinishOp(TokenType.Assign, "^=");
         }
         else
         {
-            return FinishOp(TokenType.BitwiseXor, ((char)code).ToStringCached());
+            return FinishOp(TokenType.BitwiseXor, ((char)ch).ToStringCached());
         }
     }
 
-    private bool ReadToken_PlusMinus(int code)
+    private bool ReadToken_PlusMinus(int ch)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readToken_plus_min = function`
 
-        var next = CharCodeAtPosition(1);
-        if (next == code)
+        var nextCh = CharCodeAtPosition(1);
+        if (nextCh == ch)
         {
-            if (!_inModule && next == '-'
+            if (!_inModule && nextCh == '-'
                 && CharCodeAtPosition(2) == '>'
                 && (_lastTokenEnd == 0 || ContainsLineBreak(_input.SliceBetween(_lastTokenEnd, _position))))
             {
@@ -542,27 +542,27 @@ public sealed partial class Tokenizer
             }
             else
             {
-                return FinishOp(TokenType.IncDec, code == '+' ? "++" : "--");
+                return FinishOp(TokenType.IncDec, ch == '+' ? "++" : "--");
             }
         }
-        else if (next == '=')
+        else if (nextCh == '=')
         {
-            return FinishOp(TokenType.Assign, code == '+' ? "+=" : "-=");
+            return FinishOp(TokenType.Assign, ch == '+' ? "+=" : "-=");
         }
         else
         {
-            return FinishOp(TokenType.PlusMinus, ((char)code).ToStringCached());
+            return FinishOp(TokenType.PlusMinus, ((char)ch).ToStringCached());
         }
     }
 
-    private bool ReadToken_Lt_Gt(int code)
+    private bool ReadToken_Lt_Gt(int ch)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readToken_lt_gt = function`
 
-        var next = CharCodeAtPosition(1);
-        if (next == code)
+        var nextCh = CharCodeAtPosition(1);
+        if (nextCh == ch)
         {
-            if (code == '>' && CharCodeAtPosition(2) == '>')
+            if (ch == '>' && CharCodeAtPosition(2) == '>')
             {
                 return CharCodeAtPosition(3) == '='
                     ? FinishOp(TokenType.Assign, ">>>=")
@@ -570,14 +570,14 @@ public sealed partial class Tokenizer
             }
             else if (CharCodeAtPosition(2) == '=')
             {
-                return FinishOp(TokenType.Assign, code == '<' ? "<<=" : ">>=");
+                return FinishOp(TokenType.Assign, ch == '<' ? "<<=" : ">>=");
             }
             else
             {
-                return FinishOp(TokenType.BitShift, code == '<' ? "<<" : ">>");
+                return FinishOp(TokenType.BitShift, ch == '<' ? "<<" : ">>");
             }
         }
-        else if (!_inModule && code == '<' && next == '!' && CharCodeAtPosition(2) == '-' && CharCodeAtPosition(3) == '-')
+        else if (!_inModule && ch == '<' && nextCh == '!' && CharCodeAtPosition(2) == '-' && CharCodeAtPosition(3) == '-')
         {
             // `<!--`, an XML-style comment that should be interpreted as a line comment
             SkipLineComment(startSkip: 4, CommentKind.Line, _options._onComment);
@@ -587,42 +587,42 @@ public sealed partial class Tokenizer
         }
         else
         {
-            return FinishOp(TokenType.Relational, next == '='
-                ? (code == '<' ? "<=" : ">=")
-                : ((char)code).ToStringCached());
+            return FinishOp(TokenType.Relational, nextCh == '='
+                ? (ch == '<' ? "<=" : ">=")
+                : ((char)ch).ToStringCached());
         }
     }
 
-    private bool ReadToken_Eq_Excl(int code)
+    private bool ReadToken_Eq_Excl(int ch)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readToken_eq_excl = function`
 
-        var next = CharCodeAtPosition(1);
-        if (next == '=')
+        var nextCh = CharCodeAtPosition(1);
+        if (nextCh == '=')
         {
             return FinishOp(TokenType.Equality, CharCodeAtPosition(2) == '='
-                ? (code == '=' ? "===" : "!==")
-                : (code == '=' ? "==" : "!="));
+                ? (ch == '=' ? "===" : "!==")
+                : (ch == '=' ? "==" : "!="));
         }
-        else if (code == '=' && next == '>' && _options._ecmaVersion >= EcmaVersion.ES6)
+        else if (ch == '=' && nextCh == '>' && _options._ecmaVersion >= EcmaVersion.ES6)
         {
             return FinishOp(TokenType.Arrow, "=>");
         }
         else
         {
-            return FinishOp(code == '=' ? TokenType.Eq : TokenType.PrefixOp, ((char)code).ToStringCached());
+            return FinishOp(ch == '=' ? TokenType.Eq : TokenType.PrefixOp, ((char)ch).ToStringCached());
         }
     }
 
-    private bool ReadToken_Question(int code)
+    private bool ReadToken_Question(int ch)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readToken_question = function`
 
         var ecmaVersion = _options._ecmaVersion;
         if (ecmaVersion >= EcmaVersion.ES11)
         {
-            var next = CharCodeAtPosition(1);
-            if (next == '.')
+            var nextCh = CharCodeAtPosition(1);
+            if (nextCh == '.')
             {
                 if (!((char)CharCodeAtPosition(2)).IsDecimalDigit())
                 {
@@ -630,7 +630,7 @@ public sealed partial class Tokenizer
                 }
             }
 
-            if (next == '?')
+            if (nextCh == '?')
             {
                 if (ecmaVersion >= EcmaVersion.ES12)
                 {
@@ -643,10 +643,10 @@ public sealed partial class Tokenizer
             }
         }
 
-        return FinishOp(TokenType.Question, ((char)code).ToStringCached());
+        return FinishOp(TokenType.Question, ((char)ch).ToStringCached());
     }
 
-    private bool ReadToken_NumberSign(int code)
+    private bool ReadToken_NumberSign(int ch)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readToken_numberSign = function`
 
@@ -654,14 +654,14 @@ public sealed partial class Tokenizer
         if (ecmaVersion >= EcmaVersion.ES13)
         {
             ++_position;
-            code = FullCharCodeAtPosition();
-            if (IsIdentifierStart(code, allowAstral: true) || code == '\\')
+            ch = FullCharCodeAtPosition();
+            if (IsIdentifierStart(ch, allowAstral: true) || ch == '\\')
             {
                 return FinishToken(TokenType.PrivateId, DeduplicateString(ReadWord1(), ref _stringPool));
             }
         }
 
-        return Raise<bool>(_position, $"Unexpected character '{UnicodeHelper.CodePointToString(code)}'");
+        return Raise<bool>(_position, $"Unexpected character '{UnicodeHelper.CodePointToString(ch)}'");
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -748,20 +748,20 @@ public sealed partial class Tokenizer
 
         value = 0;
         overflow = hasSeparator = false;
-        char lastCode = default;
+        char lastCh = default;
         int i, e;
         for (i = 0, e = len ?? int.MaxValue; i < e; i++, _position++)
         {
-            var code = CharCodeAtPosition();
+            var ch = CharCodeAtPosition();
 
-            if (allowSeparators && code == '_')
+            if (allowSeparators && ch == '_')
             {
                 hasSeparator = true;
                 if (isLegacyOctalNumericLiteral)
                 {
                     RaiseRecoverable(_position, "Numeric separator is not allowed in legacy octal numeric literals");
                 }
-                if (lastCode == '_')
+                if (lastCh == '_')
                 {
                     RaiseRecoverable(_position, "Numeric separator must be exactly one underscore");
                 }
@@ -769,17 +769,17 @@ public sealed partial class Tokenizer
                 {
                     RaiseRecoverable(_position, "Numeric separator is not allowed at the first of digits");
                 }
-                lastCode = (char)code;
+                lastCh = (char)ch;
                 continue;
             }
 
-            var digitValue = GetDigitValue(code);
+            var digitValue = GetDigitValue(ch);
             if (digitValue >= radix)
             {
                 break;
             }
 
-            lastCode = (char)code;
+            lastCh = (char)ch;
             if (!overflow)
             {
                 try { value = checked(value * radix + digitValue); }
@@ -791,7 +791,7 @@ public sealed partial class Tokenizer
             }
         }
 
-        if (allowSeparators && lastCode == '_')
+        if (allowSeparators && lastCh == '_')
         {
             RaiseRecoverable(_position - 1, "Numeric separator is not allowed at the last of digits");
         }
@@ -872,9 +872,9 @@ public sealed partial class Tokenizer
         switch (octal)
         {
             case false:
-                var next = CharCodeAtPosition();
+                var nextCh = CharCodeAtPosition();
 
-                if (!octal && !startsWithDot && _options._ecmaVersion >= EcmaVersion.ES11 && next == 'n')
+                if (!octal && !startsWithDot && _options._ecmaVersion >= EcmaVersion.ES11 && nextCh == 'n')
                 {
                     if (!overflow)
                     {
@@ -893,19 +893,19 @@ public sealed partial class Tokenizer
                 bool hasSeparator2;
                 var integerPartEnd = _position;
 
-                if (next == '.')
+                if (nextCh == '.')
                 {
                     ++_position;
                     ReadInt(out _, out _, out hasSeparator2, radix: 10);
                     hasSeparator |= hasSeparator2;
-                    next = CharCodeAtPosition();
+                    nextCh = CharCodeAtPosition();
                 }
 
-                if (next is 'e' or 'E')
+                if (nextCh is 'e' or 'E')
                 {
                     ++_position;
-                    next = CharCodeAtPosition();
-                    if (next is '+' or '-')
+                    nextCh = CharCodeAtPosition();
+                    if (nextCh is '+' or '-')
                     {
                         ++_position;
                     }
@@ -1042,21 +1042,21 @@ public sealed partial class Tokenizer
                 Unexpected();
             }
 
-            var codePos = ++_position;
-            var code = ReadHexChar(_input.IndexOf('}', _position, _endPosition - _position) - _position);
-            if (code < 0)
+            var errorPos = ++_position;
+            var cp = ReadHexChar(_input.IndexOf('}', _position, _endPosition - _position) - _position);
+            if (cp < 0)
             {
                 // Propagate escape sequence error to caller when parsing a template literal.
                 return -1;
             }
 
             ++_position;
-            if (code > 0x10FFFF)
+            if (cp > 0x10FFFF)
             {
-                InvalidStringToken(codePos, "Code point out of bounds");
+                InvalidStringToken(errorPos, "Code point out of bounds");
                 return -1;
             }
-            return code;
+            return cp;
         }
         else
         {
@@ -1372,10 +1372,10 @@ public sealed partial class Tokenizer
     private int ReadHexChar(int len)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readHexChar = function`
-        var codePos = _position;
+        var errorPos = _position;
         if (!ReadInt(out var n, out var overflow, out _, radix: 16, len: len) || overflow) // TODO: error msg when overflow?
         {
-            InvalidStringToken(codePos, "Bad character escape sequence");
+            InvalidStringToken(errorPos, "Bad character escape sequence");
             return -1;
         }
 
@@ -1400,13 +1400,13 @@ public sealed partial class Tokenizer
             var chunkStart = start;
             var astral = _options._ecmaVersion >= EcmaVersion.ES6;
 
-            for (int ch; (ch = FullCharCodeAtPosition()) >= 0;)
+            for (int cp; (cp = FullCharCodeAtPosition()) >= 0;)
             {
-                if (IsIdentifierChar(ch, astral))
+                if (IsIdentifierChar(cp, astral))
                 {
-                    _position += UnicodeHelper.GetCodePointLength((uint)ch);
+                    _position += UnicodeHelper.GetCodePointLength((uint)cp);
                 }
-                else if (ch == '\\')
+                else if (cp == '\\')
                 {
                     _containsEscape = true;
                     sb.Append(_input, chunkStart, _position - chunkStart);

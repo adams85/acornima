@@ -84,17 +84,17 @@ internal static class StringExtensions
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/util.js > `export function codePointToString`
 
-        var code = s.CharCodeAt(index, endIndex);
-        if (((char)code).IsHighSurrogate())
+        var ch = s.CharCodeAt(index, endIndex);
+        if (((char)ch).IsHighSurrogate())
         {
-            var next = s.CharCodeAt(index + 1, endIndex);
-            if (((char)next).IsLowSurrogate())
+            var nextCh = s.CharCodeAt(index + 1, endIndex);
+            if (((char)nextCh).IsLowSurrogate())
             {
-                return (code << 10) + next - 0x35FDC00;
+                return (ch << 10) + nextCh - 0x35FDC00;
             }
         }
 
-        return code;
+        return ch;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

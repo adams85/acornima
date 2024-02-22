@@ -626,7 +626,7 @@ public partial class Tokenizer
                 ref var i = ref context.Index;
 
                 ushort charCode, charCode2;
-                int codePoint;
+                int cp;
                 var startIndex = i++;
                 int endIndex;
                 var ch = pattern[i];
@@ -640,24 +640,24 @@ public partial class Tokenizer
                         // * /\u{1F4A9}/u --> "\uD83D\uDCA9"
 
                         if (parser._tokenizer._options._ecmaVersion < EcmaVersion.ES6
-                            || !TryReadCodePoint(pattern, ref i, endIndex: pattern.Length, out codePoint))
+                            || !TryReadCodePoint(pattern, ref i, endIndex: pattern.Length, out cp))
                         {
                             parser.ReportSyntaxError(startIndex, SyntaxErrorMessages.RegExpInvalidUnicodeEscape);
-                            codePoint = default; // keeps the compiler happy
+                            cp = default; // keeps the compiler happy
                         }
 
                         if (!context.WithinSet)
                         {
                             if (sb is not null)
                             {
-                                AppendCodePointSafe(sb, codePoint);
+                                AppendCodePointSafe(sb, cp);
                             }
 
                             context.FollowingQuantifierError = null;
                         }
                         else
                         {
-                            AddSetCodePoint(ref context, codePoint, ref parser, startIndex);
+                            AddSetCodePoint(ref context, cp, ref parser, startIndex);
                         }
                         break;
 
@@ -672,19 +672,19 @@ public partial class Tokenizer
                                 endIndex = i + 2;
                                 if (TryReadHexEscape(pattern, ref endIndex, endIndex: pattern.Length, charCodeLength: 4, out charCode2) && ((char)charCode2).IsLowSurrogate())
                                 {
-                                    codePoint = (int)UnicodeHelper.GetCodePoint((char)charCode, (char)charCode2);
+                                    cp = (int)UnicodeHelper.GetCodePoint((char)charCode, (char)charCode2);
                                     if (!context.WithinSet)
                                     {
                                         if (sb is not null)
                                         {
-                                            AppendCodePointSafe(sb, codePoint);
+                                            AppendCodePointSafe(sb, cp);
                                         }
 
                                         context.FollowingQuantifierError = null;
                                     }
                                     else
                                     {
-                                        AddSetCodePoint(ref context, codePoint, ref parser, startIndex);
+                                        AddSetCodePoint(ref context, cp, ref parser, startIndex);
                                     }
 
                                     i = endIndex;
