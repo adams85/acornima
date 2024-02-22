@@ -100,7 +100,7 @@ public partial class Tokenizer
                 if (ch.IsHighSurrogate() && ((char)pattern.CharCodeAt(i + 1)).IsLowSurrogate())
                 {
                     // Surrogate pairs should be surrounded by a non-capturing group to act as one character.
-                    AddSetCodePoint(ref context, char.ConvertToUtf32(ch, pattern[i + 1]), ref parser, startIndex);
+                    AddSetCodePoint(ref context, (int)UnicodeHelper.GetCodePoint(ch, pattern[i + 1]), ref parser, startIndex);
                     i++;
                 }
                 else
@@ -672,7 +672,7 @@ public partial class Tokenizer
                                 endIndex = i + 2;
                                 if (TryReadHexEscape(pattern, ref endIndex, endIndex: pattern.Length, charCodeLength: 4, out charCode2) && ((char)charCode2).IsLowSurrogate())
                                 {
-                                    codePoint = char.ConvertToUtf32((char)charCode, (char)charCode2);
+                                    codePoint = (int)UnicodeHelper.GetCodePoint((char)charCode, (char)charCode2);
                                     if (!context.WithinSet)
                                     {
                                         if (sb is not null)

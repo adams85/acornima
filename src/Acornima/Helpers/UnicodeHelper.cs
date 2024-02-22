@@ -99,7 +99,7 @@ internal static class UnicodeHelper
 #else
         return codePoint <= char.MaxValue
             ? CharUnicodeInfo.GetUnicodeCategory((char)codePoint)
-            : CharUnicodeInfo.GetUnicodeCategory(char.ConvertFromUtf32(codePoint), 0);
+            : CharUnicodeInfo.GetUnicodeCategory(CodePointToString(codePoint), 0);
 #endif
     }
 }
