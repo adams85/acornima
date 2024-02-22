@@ -11,6 +11,68 @@ namespace Acornima.Tests;
 
 public partial class ParserTests
 {
+    [Theory]
+    [InlineData("script", null, 0, 0, typeof(ArgumentNullException))]
+    [InlineData("script", "", 0, 0, null)]
+    [InlineData("script", "", 0, 1, typeof(ArgumentOutOfRangeException))]
+    [InlineData("script", "", -1, 0, typeof(ArgumentOutOfRangeException))]
+    [InlineData("script", "", -1, 1, typeof(ArgumentOutOfRangeException))]
+    [InlineData("script", " ", 0, 0, null)]
+    [InlineData("script", " ", 0, 1, null)]
+    [InlineData("script", " ", 1, 0, null)]
+    [InlineData("script", " ", 1, 1, typeof(ArgumentOutOfRangeException))]
+    [InlineData("script", " ", -1, 0, typeof(ArgumentOutOfRangeException))]
+    [InlineData("script", " ", -1, 1, typeof(ArgumentOutOfRangeException))]
+    [InlineData("module", null, 0, 0, typeof(ArgumentNullException))]
+    [InlineData("module", "", 0, 0, null)]
+    [InlineData("module", "", 0, 1, typeof(ArgumentOutOfRangeException))]
+    [InlineData("module", "", -1, 0, typeof(ArgumentOutOfRangeException))]
+    [InlineData("module", "", -1, 1, typeof(ArgumentOutOfRangeException))]
+    [InlineData("module", " ", 0, 0, null)]
+    [InlineData("module", " ", 0, 1, null)]
+    [InlineData("module", " ", 1, 0, null)]
+    [InlineData("module", " ", 1, 1, typeof(ArgumentOutOfRangeException))]
+    [InlineData("module", " ", -1, 0, typeof(ArgumentOutOfRangeException))]
+    [InlineData("module", " ", -1, 1, typeof(ArgumentOutOfRangeException))]
+    [InlineData("expression", null, 0, 0, typeof(ArgumentNullException))]
+    [InlineData("expression", "", 0, 0, typeof(SyntaxErrorException))]
+    [InlineData("expression", "", 0, 1, typeof(ArgumentOutOfRangeException))]
+    [InlineData("expression", "", -1, 0, typeof(ArgumentOutOfRangeException))]
+    [InlineData("expression", "", -1, 1, typeof(ArgumentOutOfRangeException))]
+    [InlineData("expression", " ", 0, 0, typeof(SyntaxErrorException))]
+    [InlineData("expression", " ", 0, 1, typeof(SyntaxErrorException))]
+    [InlineData("expression", " ", 1, 0, typeof(SyntaxErrorException))]
+    [InlineData("expression", " ", 1, 1, typeof(ArgumentOutOfRangeException))]
+    [InlineData("expression", " ", -1, 0, typeof(ArgumentOutOfRangeException))]
+    [InlineData("expression", " ", -1, 1, typeof(ArgumentOutOfRangeException))]
+    [InlineData("expression", " x", 0, 1, typeof(SyntaxErrorException))]
+    [InlineData("expression", " x ", 2, 1, typeof(SyntaxErrorException))]
+    [InlineData("expression", " x ", 1, 1, null)]
+    [InlineData("expression", " x ", 0, 3, null)]
+    public void ShouldValidateParseArgs(string sourceType, string? input, int start, int length, Type? expectedExceptionType)
+    {
+        var parser = new Parser();
+        var parseAction = GetSliceParseActionFor(sourceType);
+
+        if (expectedExceptionType is null)
+        {
+            var root = parseAction(parser, input!, start, length);
+            if (sourceType != "expression")
+            {
+                Assert.IsAssignableFrom<Program>(root);
+                Assert.Empty(root.As<Program>().Body);
+            }
+            else
+            {
+                Assert.IsAssignableFrom<Expression>(root);
+            }
+        }
+        else
+        {
+            Assert.Throws(expectedExceptionType, () => parseAction(parser, input!, start, length));
+        }
+    }
+
 #if NET8_0_OR_GREATER
     /// <summary>
     /// Ensures that we don't regress in stack handling, only test in modern runtime for now
@@ -1548,6 +1610,17 @@ public partial class ParserTests
             "script" => (parser, code) => parser.ParseScript(code),
             "module" => (parser, code) => parser.ParseModule(code),
             "expression" => (parser, code) => parser.ParseExpression(code),
+            _ => throw new InvalidOperationException()
+        };
+    }
+
+    private static Func<Parser, string, int, int, Node> GetSliceParseActionFor(string sourceType)
+    {
+        return sourceType switch
+        {
+            "script" => (parser, code, start, length) => parser.ParseScript(code, start, length),
+            "module" => (parser, code, start, length) => parser.ParseModule(code, start, length),
+            "expression" => (parser, code, start, length) => parser.ParseExpression(code, start, length),
             _ => throw new InvalidOperationException()
         };
     }
