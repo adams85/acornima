@@ -52,7 +52,7 @@ public partial class Parser
         }
 
         var next = _tokenizer.NextTokenPosition();
-        var nextCh = _tokenizer._input.CharCodeAt(next);
+        var nextCh = _tokenizer._input.CharCodeAt(next, _tokenizer._endPosition);
 
         // For ambiguous cases, determine if a LexicalDeclaration (or only a
         // Statement) is allowed here. If context is not empty then only a Statement
@@ -77,7 +77,7 @@ public partial class Parser
         if (Tokenizer.IsIdentifierStart(nextCh, allowAstral: true))
         {
             var pos = next + 1;
-            while (Tokenizer.IsIdentifierChar(nextCh = _tokenizer._input.CharCodeAt(pos), allowAstral: true))
+            while (Tokenizer.IsIdentifierChar(nextCh = _tokenizer._input.CharCodeAt(pos, _tokenizer._endPosition), allowAstral: true))
             {
                 ++pos;
             }
@@ -114,12 +114,13 @@ public partial class Parser
         if (!Tokenizer.ContainsLineBreak(_tokenizer._input.SliceBetween(_tokenizer._position, next)))
         {
             var keyword = TokenType.Function.Label;
+            var endIndex = next + keyword.Length;
 
-            if (next + keyword.Length <= _tokenizer._endPosition
+            if (endIndex <= _tokenizer._endPosition
                 && _tokenizer._input.AsSpan(next, keyword.Length).SequenceEqual(keyword.AsSpan()))
             {
-                return next + keyword.Length == _tokenizer._endPosition
-                    || !(Tokenizer.IsIdentifierChar(after = _tokenizer._input.CharCodeAt(next + keyword.Length)) || ((char)after).IsHighSurrogate());
+                return endIndex == _tokenizer._endPosition
+                    || !(Tokenizer.IsIdentifierChar(after = _tokenizer._input.CharCodeAt(endIndex)) || ((char)after).IsHighSurrogate());
             }
         }
 
@@ -236,7 +237,7 @@ public partial class Parser
                     if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES10 && startType.Keyword.Value == Keyword.Import)
                     {
                         var next = _tokenizer.NextTokenPosition();
-                        var nextCh = _tokenizer._input.CharCodeAt(next);
+                        var nextCh = _tokenizer._input.CharCodeAt(next, _tokenizer._endPosition);
                         if (nextCh is '(' or '.')
                         {
                             return ExitRecursion(ParseExpressionStatement(startMarker, ParseExpression(ref NullRef<DestructuringErrors>())));
