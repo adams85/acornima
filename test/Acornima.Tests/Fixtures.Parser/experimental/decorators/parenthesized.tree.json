@@ -53,6 +53,7 @@
               "body": {
                 "type": "BlockStatement",
                 "body": [],
+                "strict": true,
                 "range": [
                   71,
                   73
@@ -70,7 +71,6 @@
               },
               "generator": false,
               "expression": false,
-              "strict": true,
               "async": false,
               "range": [
                 68,
@@ -206,6 +206,7 @@
               "body": {
                 "type": "BlockStatement",
                 "body": [],
+                "strict": true,
                 "range": [
                   100,
                   102
@@ -223,7 +224,6 @@
               },
               "generator": false,
               "expression": false,
-              "strict": true,
               "async": false,
               "range": [
                 97,
@@ -358,6 +358,7 @@
               "body": {
                 "type": "BlockStatement",
                 "body": [],
+                "strict": true,
                 "range": [
                   133,
                   135
@@ -375,7 +376,6 @@
               },
               "generator": false,
               "expression": false,
-              "strict": true,
               "async": false,
               "range": [
                 130,
@@ -548,6 +548,7 @@
               "body": {
                 "type": "BlockStatement",
                 "body": [],
+                "strict": true,
                 "range": [
                   171,
                   174
@@ -565,7 +566,6 @@
               },
               "generator": false,
               "expression": false,
-              "strict": true,
               "async": false,
               "range": [
                 168,

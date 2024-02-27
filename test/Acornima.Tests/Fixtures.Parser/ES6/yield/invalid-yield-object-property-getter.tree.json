@@ -94,6 +94,7 @@
                           }
                         }
                       ],
+                      "strict": false,
                       "range": [
                         23,
                         30
@@ -111,7 +112,6 @@
                     },
                     "generator": false,
                     "expression": false,
-                    "strict": false,
                     "async": false,
                     "range": [
                       21,
@@ -178,6 +178,7 @@
             }
           }
         ],
+        "strict": false,
         "range": [
           13,
           33
@@ -195,7 +196,6 @@
       },
       "generator": true,
       "expression": false,
-      "strict": false,
       "async": false,
       "range": [
         0,

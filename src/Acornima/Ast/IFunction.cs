@@ -10,6 +10,5 @@ public interface IFunction : INode
     StatementOrExpression Body { get; }
     bool Generator { get; }
     bool Expression { get; }
-    bool Strict { get; }
     bool Async { get; }
 }

@@ -1,13 +1,18 @@
+using System.Runtime.CompilerServices;
+
 namespace Acornima.Ast;
 
-public sealed class FunctionBody : BlockStatement
+public sealed class FunctionBody : BlockStatement, IVarScope
 {
-    public FunctionBody(in NodeList<Statement> body) : base(NodeType.BlockStatement, body)
+    public FunctionBody(in NodeList<Statement> body, bool strict) : base(NodeType.BlockStatement, body)
     {
+        Strict = strict;
     }
+
+    public bool Strict { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
     protected override BlockStatement Rewrite(in NodeList<Statement> body)
     {
-        return new FunctionBody(body);
+        return new FunctionBody(body, Strict);
     }
 }

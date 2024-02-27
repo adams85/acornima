@@ -105,7 +105,6 @@
               },
               "generator": false,
               "expression": true,
-              "strict": false,
               "async": true,
               "range": [
                 22,

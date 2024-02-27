@@ -12,7 +12,6 @@ public sealed partial class FunctionDeclaration : Declaration, IFunction
         in NodeList<Node> parameters,
         FunctionBody body,
         bool generator,
-        bool strict,
         bool async)
         : base(NodeType.FunctionDeclaration)
     {
@@ -20,7 +19,6 @@ public sealed partial class FunctionDeclaration : Declaration, IFunction
         _params = parameters;
         Body = body;
         Generator = generator;
-        Strict = strict;
         Async = async;
     }
 
@@ -38,11 +36,10 @@ public sealed partial class FunctionDeclaration : Declaration, IFunction
 
     public bool Generator { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     bool IFunction.Expression => false;
-    public bool Strict { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public bool Async { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
     private FunctionDeclaration Rewrite(Identifier? id, in NodeList<Node> @params, FunctionBody body)
     {
-        return new FunctionDeclaration(id, @params, body, Generator, Strict, Async);
+        return new FunctionDeclaration(id, @params, body, Generator, Async);
     }
 }

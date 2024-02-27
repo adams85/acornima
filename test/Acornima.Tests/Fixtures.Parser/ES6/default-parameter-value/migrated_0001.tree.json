@@ -80,6 +80,7 @@
       "body": {
         "type": "BlockStatement",
         "body": [],
+        "strict": false,
         "range": [
           18,
           20
@@ -97,7 +98,6 @@
       },
       "generator": false,
       "expression": false,
-      "strict": false,
       "async": false,
       "range": [
         0,

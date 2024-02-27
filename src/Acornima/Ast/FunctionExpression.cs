@@ -12,7 +12,6 @@ public sealed partial class FunctionExpression : Expression, IFunction
         in NodeList<Node> parameters,
         FunctionBody body,
         bool generator,
-        bool strict,
         bool async) :
         base(NodeType.FunctionExpression)
     {
@@ -20,7 +19,6 @@ public sealed partial class FunctionExpression : Expression, IFunction
         _params = parameters;
         Body = body;
         Generator = generator;
-        Strict = strict;
         Async = async;
     }
 
@@ -35,11 +33,10 @@ public sealed partial class FunctionExpression : Expression, IFunction
 
     public bool Generator { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     bool IFunction.Expression => false;
-    public bool Strict { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public bool Async { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
     private FunctionExpression Rewrite(Identifier? id, in NodeList<Node> @params, FunctionBody body)
     {
-        return new FunctionExpression(id, @params, body, Generator, Strict, Async);
+        return new FunctionExpression(id, @params, body, Generator, Async);
     }
 }

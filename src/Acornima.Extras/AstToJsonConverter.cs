@@ -240,7 +240,6 @@ public class AstToJsonConverter : AstVisitor
             Member("body", node.Body);
             Member("generator", ((IFunction)node).Generator);
             Member("expression", node.Expression);
-            Member("strict", node.Strict);
             Member("async", node.Async);
         }
 
@@ -299,6 +298,11 @@ public class AstToJsonConverter : AstVisitor
         using (StartNodeObject(node))
         {
             Member("body", node.Body);
+
+            if (node is FunctionBody functionBody)
+            {
+                Member("strict", functionBody.Strict);
+            }
         }
 
         return node;
@@ -559,7 +563,6 @@ public class AstToJsonConverter : AstVisitor
             Member("body", node.Body);
             Member("generator", node.Generator);
             Member("expression", ((IFunction)node).Expression);
-            Member("strict", node.Strict);
             Member("async", node.Async);
         }
 
@@ -575,7 +578,6 @@ public class AstToJsonConverter : AstVisitor
             Member("body", node.Body);
             Member("generator", node.Generator);
             Member("expression", ((IFunction)node).Expression);
-            Member("strict", node.Strict);
             Member("async", node.Async);
         }
 

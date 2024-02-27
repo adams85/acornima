@@ -1015,15 +1015,15 @@ public partial class Parser
         }
 
         var parameters = ParseFunctionParams();
-        var body = (FunctionBody)ParseFunctionBody(id, parameters, isArrowFunction: false, isMethod: false, context, out _, out var strict);
+        var body = (FunctionBody)ParseFunctionBody(id, parameters, isArrowFunction: false, isMethod: false, context, out _);
 
         _yieldPosition = oldYieldPos;
         _awaitPosition = oldAwaitPos;
         _awaitIdentifierPosition = oldAwaitIdentPos;
 
         return FinishNode<StatementOrExpression>(startMarker, isStatement
-            ? new FunctionDeclaration(id, parameters, body, generator, strict, isAsync)
-            : new FunctionExpression(id, parameters, body, generator, strict, isAsync));
+            ? new FunctionDeclaration(id, parameters, body, generator, isAsync)
+            : new FunctionExpression(id, parameters, body, generator, isAsync));
     }
 
     private NodeList<Node> ParseFunctionParams()

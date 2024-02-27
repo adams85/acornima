@@ -1,6 +1,7 @@
 namespace Acornima.Ast;
 
-public interface IBlock : INode
+public interface IVarScope : INode
 {
     ref readonly NodeList<Statement> Body { get; }
+    bool Strict { get; }
 }

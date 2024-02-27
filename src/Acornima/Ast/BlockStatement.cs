@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 namespace Acornima.Ast;
 
 [VisitableNode(ChildProperties = new[] { nameof(Body) })]
-public abstract partial class BlockStatement : Statement, IBlock
+public abstract partial class BlockStatement : Statement
 {
     private readonly NodeList<Statement> _body;
 

@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 namespace Acornima.Ast;
 
 [VisitableNode(ChildProperties = new[] { nameof(Body) }, SealOverrideMethods = true)]
-public abstract partial class Program : Node, IBlock
+public abstract partial class Program : Node, IVarScope
 {
     private readonly NodeList<Statement> _body;
 

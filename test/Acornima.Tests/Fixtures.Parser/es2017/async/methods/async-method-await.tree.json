@@ -106,6 +106,7 @@
                     }
                   }
                 ],
+                "strict": false,
                 "range": [
                   14,
                   25
@@ -123,7 +124,6 @@
               },
               "generator": false,
               "expression": false,
-              "strict": false,
               "async": true,
               "range": [
                 10,

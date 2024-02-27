@@ -92,6 +92,7 @@
                   "body": {
                     "type": "BlockStatement",
                     "body": [],
+                    "strict": true,
                     "range": [
                       32,
                       34
@@ -109,7 +110,6 @@
                   },
                   "generator": false,
                   "expression": false,
-                  "strict": true,
                   "async": false,
                   "range": [
                     29,
@@ -172,6 +172,7 @@
                   "body": {
                     "type": "BlockStatement",
                     "body": [],
+                    "strict": true,
                     "range": [
                       44,
                       46
@@ -189,7 +190,6 @@
                   },
                   "generator": false,
                   "expression": false,
-                  "strict": true,
                   "async": false,
                   "range": [
                     41,

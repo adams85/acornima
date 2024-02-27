@@ -632,7 +632,7 @@ public partial class ParserTests
         var program = parser.ParseScript("function p() {}");
         var function = program.Body.First().As<FunctionDeclaration>();
 
-        Assert.False(function.Strict);
+        Assert.False(function.Body.Strict);
     }
 
     [Fact]
@@ -642,7 +642,7 @@ public partial class ParserTests
         var program = parser.ParseScript("function p() { 'use strict'; }");
         var function = program.Body.First().As<FunctionDeclaration>();
 
-        Assert.True(function.Strict);
+        Assert.True(function.Body.Strict);
     }
 
     [Fact]
@@ -652,7 +652,7 @@ public partial class ParserTests
         var program = parser.ParseScript("'use strict'; function p() {}");
         var function = program.Body.Skip(1).First().As<FunctionDeclaration>();
 
-        Assert.True(function.Strict);
+        Assert.True(function.Body.Strict);
     }
 
     [Fact]
@@ -662,7 +662,7 @@ public partial class ParserTests
         var program = parser.ParseScript("function p() {'use strict'; return false;}");
         var function = program.Body.First().As<FunctionDeclaration>();
 
-        Assert.True(function.Strict);
+        Assert.True(function.Body.Strict);
     }
 
     [Fact]
@@ -676,8 +676,8 @@ public partial class ParserTests
         Assert.Equal("p", p.Id?.Name);
         Assert.Equal("q", q.Id?.Name);
 
-        Assert.True(p.Strict);
-        Assert.True(q.Strict);
+        Assert.True(p.Body.Strict);
+        Assert.True(q.Body.Strict);
     }
 
     [Theory]

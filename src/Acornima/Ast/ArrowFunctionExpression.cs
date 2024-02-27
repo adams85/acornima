@@ -11,14 +11,12 @@ public sealed partial class ArrowFunctionExpression : Expression, IFunction
         in NodeList<Node> parameters,
         StatementOrExpression body,
         bool expression,
-        bool strict,
         bool async)
         : base(NodeType.ArrowFunctionExpression)
     {
         _params = parameters;
         Body = body;
         Expression = expression;
-        Strict = strict;
         Async = async;
     }
 
@@ -33,11 +31,10 @@ public sealed partial class ArrowFunctionExpression : Expression, IFunction
     public StatementOrExpression Body { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     bool IFunction.Generator => false;
     public bool Expression { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
-    public bool Strict { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public bool Async { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
     private ArrowFunctionExpression Rewrite(in NodeList<Node> @params, StatementOrExpression body)
     {
-        return new ArrowFunctionExpression(@params, body, Expression, Strict, Async);
+        return new ArrowFunctionExpression(@params, body, Expression, Async);
     }
 }
