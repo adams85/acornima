@@ -11,7 +11,7 @@ public static class NodeExtensions
 {
     [DebuggerStepThrough]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T As<T>(this INode node) where T : Node
+    public static T As<T>(this INode node) where T : INode
     {
         return (T)node;
     }
@@ -124,14 +124,14 @@ public static class NodeExtensions
         return AncestorNodesAndSelf(node, parentAccessor).Skip(1);
     }
 
-    public static IEnumerable<Node> DescendantNodesAndSelf(this Node node)
+    public static IEnumerable<Node> DescendantNodesAndSelf(this Node node, Func<Node, bool>? descendIntoChildren = null)
     {
         if (node is null)
         {
             throw new ArgumentNullException(nameof(node));
         }
 
-        return Impl(node);
+        return descendIntoChildren is null ? Impl(node) : ImplWithFilter(node, descendIntoChildren);
 
         static IEnumerable<Node> Impl(Node node)
         {
@@ -153,10 +153,35 @@ public static class NodeExtensions
             }
             while (nodes.Count > 0);
         }
+
+
+        static IEnumerable<Node> ImplWithFilter(Node node, Func<Node, bool> descendIntoChildren)
+        {
+            var nodes = new ArrayList<Node>() { node };
+            do
+            {
+                node = nodes.Pop();
+
+                yield return node;
+
+                if (descendIntoChildren(node))
+                {
+                    var lastIndex = nodes.Count;
+
+                    foreach (var childNode in node.ChildNodes)
+                    {
+                        nodes.Push(childNode);
+                    }
+
+                    nodes.AsSpan().Slice(lastIndex, nodes.Count - lastIndex).Reverse();
+                }
+            }
+            while (nodes.Count > 0);
+        }
     }
 
-    public static IEnumerable<Node> DescendantNodes(this Node node)
+    public static IEnumerable<Node> DescendantNodes(this Node node, Func<Node, bool>? descendIntoChildren = null)
     {
-        return DescendantNodesAndSelf(node).Skip(1);
+        return DescendantNodesAndSelf(node, descendIntoChildren).Skip(1);
     }
 }

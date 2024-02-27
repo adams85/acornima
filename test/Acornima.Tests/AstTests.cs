@@ -94,6 +94,21 @@ public class AstTests
         Assert.Equal(expectedNodes, actualNodes);
     }
 
+    [Theory]
+    [InlineData("let x = a + 1", false, NodeType.Program, new NodeType[0])]
+    [InlineData("let x = a + 1", true, NodeType.Program, new[] { NodeType.Program })]
+    [InlineData("let x = a + 1", false, NodeType.BinaryExpression, new[] { NodeType.VariableDeclaration, NodeType.VariableDeclarator, NodeType.Identifier, NodeType.BinaryExpression })]
+    [InlineData("let x = a + 1", true, NodeType.BinaryExpression, new[] { NodeType.Program, NodeType.VariableDeclaration, NodeType.VariableDeclarator, NodeType.Identifier, NodeType.BinaryExpression })]
+    public void DescendantNodesDescendIntoChildrenShouldWork(string input, bool includeSelf, NodeType filterType, NodeType[] expectedNodeTypes)
+    {
+        var parser = new Parser();
+        var program = parser.ParseScript(input);
+
+        var descendIntoChildren = (Node node) => node.Type != filterType;
+        var actualNodes = (includeSelf ? program.DescendantNodesAndSelf(descendIntoChildren) : program.DescendantNodes(descendIntoChildren)).ToArray();
+        Assert.Equal(expectedNodeTypes, actualNodes.Select(node => node.Type));
+    }
+
     [Fact]
     public void DescendantNodesShouldHandleNullNodes()
     {
