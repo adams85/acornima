@@ -86,7 +86,7 @@ public partial class Parser
         StrictBind = unchecked((sbyte)(1 << 7 | Strict)) // same as Strict but with the sign bit set
     }
 
-    #region Reserved words (sloppy mode)
+    #region Reserved words (non-strict mode)
 
     [StringMatcher(
         "abstract" /* => ReservedWordKind.Optional */,
@@ -120,7 +120,7 @@ public partial class Parser
         "volatile" /* => ReservedWordKind.Optional */
     )]
     [MethodImpl((MethodImplOptions)512 /* AggressiveOptimization */)]
-    private static partial ReservedWordKind IsReservedWordES3Sloppy(ReadOnlySpan<char> word);
+    private static partial ReservedWordKind IsReservedWordES3NonStrict(ReadOnlySpan<char> word);
 
     [StringMatcher(
         "class" /* => ReservedWordKind.Optional */,
@@ -132,14 +132,14 @@ public partial class Parser
         "import" /* => ReservedWordKind.Optional */
     )]
     [MethodImpl((MethodImplOptions)512 /* AggressiveOptimization */)]
-    private static partial ReservedWordKind IsReservedWordES5Sloppy(ReadOnlySpan<char> word);
+    private static partial ReservedWordKind IsReservedWordES5NonStrict(ReadOnlySpan<char> word);
 
     [StringMatcher(
         "await" /* => ReservedWordKind.OptionalModule */,
         "enum" /* => ReservedWordKind.Optional */
     )]
     [MethodImpl((MethodImplOptions)512 /* AggressiveOptimization */)]
-    private static partial ReservedWordKind IsReservedWordES6Sloppy(ReadOnlySpan<char> word);
+    private static partial ReservedWordKind IsReservedWordES6NonStrict(ReadOnlySpan<char> word);
 
     #endregion
 

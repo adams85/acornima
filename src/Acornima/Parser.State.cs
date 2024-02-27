@@ -108,7 +108,7 @@ public partial class Parser
                         _isReservedWord = static (word, strict) =>
                         {
                             Debug.Assert(!strict, "Invalid combination of options");
-                            return IsReservedWordES3Sloppy(word) != ReservedWordKind.None;
+                            return IsReservedWordES3NonStrict(word) != ReservedWordKind.None;
                         };
                     }
                     else
@@ -137,12 +137,12 @@ public partial class Parser
                 {
                     if (allowReserved != AllowReservedOption.Yes)
                     {
-                        _isReservedWord = static (word, strict) => (strict ? IsReservedWordES5Strict(word) : IsReservedWordES5Sloppy(word)) >= ReservedWordKind.Optional;
+                        _isReservedWord = static (word, strict) => (strict ? IsReservedWordES5Strict(word) : IsReservedWordES5NonStrict(word)) >= ReservedWordKind.Optional;
                         _isReservedWordBind = static (word, strict) => strict && (IsReservedWordES5Strict(word) & (ReservedWordKind.Optional | ReservedWordKind.Strict)) != 0;
                     }
                     else
                     {
-                        _isReservedWord = static (word, strict) => (strict ? IsReservedWordES5Strict(word) : IsReservedWordES5Sloppy(word)) == ReservedWordKind.Strict;
+                        _isReservedWord = static (word, strict) => (strict ? IsReservedWordES5Strict(word) : IsReservedWordES5NonStrict(word)) == ReservedWordKind.Strict;
                         _isReservedWordBind = static (word, strict) => strict && (IsReservedWordES5Strict(word) & ReservedWordKind.Strict) != 0;
                     }
                 }
@@ -158,12 +158,12 @@ public partial class Parser
                 {
                     if (allowReserved != AllowReservedOption.Yes)
                     {
-                        _isReservedWord = static (word, strict) => (strict ? IsReservedWordES6Strict(word) : IsReservedWordES6Sloppy(word)) >= ReservedWordKind.Optional;
+                        _isReservedWord = static (word, strict) => (strict ? IsReservedWordES6Strict(word) : IsReservedWordES6NonStrict(word)) >= ReservedWordKind.Optional;
                         _isReservedWordBind = static (word, strict) => strict && (IsReservedWordES6Strict(word) & (ReservedWordKind.Optional | ReservedWordKind.Strict)) != 0;
                     }
                     else
                     {
-                        _isReservedWord = static (word, strict) => (strict ? IsReservedWordES6Strict(word) : IsReservedWordES6Sloppy(word)) == ReservedWordKind.Strict;
+                        _isReservedWord = static (word, strict) => (strict ? IsReservedWordES6Strict(word) : IsReservedWordES6NonStrict(word)) == ReservedWordKind.Strict;
                         _isReservedWordBind = static (word, strict) => strict && (IsReservedWordES6Strict(word) & ReservedWordKind.Strict) != 0;
                     }
                 }
