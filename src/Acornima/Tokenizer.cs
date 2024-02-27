@@ -1811,14 +1811,13 @@ public sealed partial class Tokenizer
         return true;
     }
 
-    // TODO: revise XML docs
     /// <summary>
     /// Parses an ECMAScript regular expression and tries to construct a <see cref="Regex"/> instance with the equivalent behavior.
     /// </summary>
     /// <remarks>
     /// Please note that, because of some fundamental differences between the ECMAScript and .NET regular expression engines,
     /// not every ECMAScript regular expression can be converted to an equivalent <see cref="Regex"/> (or can be converted with compromises only).
-    /// You can read more about the known issues of the conversion <see href="https://github.com/sebastienros/esprima-dotnet/pull/364#issuecomment-1606045259">here</see>.
+    /// You can read more about the known issues of the conversion <see href="https://github.com/adams85/acornima#regular-expressions">here</see>.
     /// </remarks>
     /// <returns>
     /// An instance of <see cref="RegExpParseResult"/>, whose <see cref="RegExpParseResult.Regex"/> property contains the equivalent <see cref="Regex"/> if the conversion was possible,
