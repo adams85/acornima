@@ -52,7 +52,7 @@ public partial class Tokenizer
                         if (context.SetRangeStart <= UnicodeHelper.LastCodePoint)
                         {
                             // Cases like /[z-a]/ are syntax error.
-                            parser.ReportSyntaxError(startIndex, SyntaxErrorMessages.RegExpRangeOutOfOrderInCharacterClass);
+                            parser.ReportSyntaxError(startIndex, SyntaxErrorMessages.RegExpRangeOutOfOrderCharacterClass);
                         }
                         else
                         {

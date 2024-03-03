@@ -59,5 +59,77 @@ namespace Acornima.Properties {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to create {0} from the adapted pattern ({1}) and options ({2}).
+        /// </summary>
+        internal static string RegexCreationFailed {
+            get {
+                return ResourceManager.GetString("RegexCreationFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot convert regular expression to an equivalent {0}: /{1}/{2}: {3}.
+        /// </summary>
+        internal static string RegExpConversionFailed {
+            get {
+                return ResourceManager.GetString("RegExpConversionFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Inconvertible forward reference.
+        /// </summary>
+        internal static string RegExpInconvertibleForwardReference {
+            get {
+                return ResourceManager.GetString("RegExpInconvertibleForwardReference", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Inconvertible named forward reference.
+        /// </summary>
+        internal static string RegExpInconvertibleNamedForwardReference {
+            get {
+                return ResourceManager.GetString("RegExpInconvertibleNamedForwardReference", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Inconvertible {} quantifier.
+        /// </summary>
+        internal static string RegExpInconvertibleRangeQuantifier {
+            get {
+                return ResourceManager.GetString("RegExpInconvertibleRangeQuantifier", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Inconvertible Unicode property escape.
+        /// </summary>
+        internal static string RegExpInconvertibleUnicodePropertyEscape {
+            get {
+                return ResourceManager.GetString("RegExpInconvertibleUnicodePropertyEscape", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unicode sets mode (flag v) is not supported currently.
+        /// </summary>
+        internal static string RegExpUnicodeSetsModeNotSupported {
+            get {
+                return ResourceManager.GetString("RegExpUnicodeSetsModeNotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot map group name &apos;{0}&apos; to a unique group name in the adapted regex.
+        /// </summary>
+        internal static string RegExpUnmappableGroupName {
+            get {
+                return ResourceManager.GetString("RegExpUnmappableGroupName", resourceCulture);
+            }
+        }
     }
 }

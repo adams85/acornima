@@ -99,7 +99,7 @@ public class TokenizerTests
         {
             var tokenizer = new Tokenizer(s);
             var ex = Assert.Throws<SyntaxErrorException>(() => tokenizer.Next());
-            Assert.StartsWith("Unexpected character", ex.Error.Description);
+            Assert.StartsWith("Invalid or unexpected token", ex.Error.Description);
         }
     }
 
@@ -124,8 +124,7 @@ public class TokenizerTests
                 tokenizer.Next();
                 tokenizer.Next();
             });
-            // TODO: error message
-            Assert.StartsWith("Unexpected character", ex.Error.Description);
+            Assert.StartsWith("Invalid or unexpected token", ex.Error.Description);
         }
     }
 
@@ -140,8 +139,7 @@ public class TokenizerTests
     {
         var tokenizer = new Tokenizer(s);
         var ex = Assert.Throws<SyntaxErrorException>(() => tokenizer.Next());
-        // TODO: error message
-        Assert.StartsWith("Invalid Unicode escape", ex.Error.Description);
+        Assert.StartsWith("Invalid or unexpected token", ex.Error.Description);
     }
 
     [InlineData(@"a\ud800")]
@@ -155,8 +153,7 @@ public class TokenizerTests
     {
         var tokenizer = new Tokenizer(s);
         var ex = Assert.Throws<SyntaxErrorException>(() => tokenizer.Next());
-        // TODO: error message
-        Assert.StartsWith("Invalid Unicode escape", ex.Error.Description);
+        Assert.StartsWith("Invalid or unexpected token", ex.Error.Description);
     }
 
     [Fact]
@@ -290,50 +287,83 @@ public class TokenizerTests
     [Theory]
     [InlineData("0", false, "0")]
     [InlineData("0", true, "0")]
+    [InlineData("0.", false, "0")]
+    [InlineData("0.", true, "0")]
+    [InlineData("0_", false, "<Numeric separator can not be used after leading 0>")]
+    [InlineData("0_", true, "<Numeric separator can not be used after leading 0>")]
+    [InlineData("0e", false, "<Invalid or unexpected token>")]
+    [InlineData("0e", true, "<Invalid or unexpected token>")]
     [InlineData("0n", false, "0")]
     [InlineData("0n", true, "0")]
+    [InlineData("00", false, "0")]
+    [InlineData("00", true, "<Octal literals are not allowed in strict mode>")]
+    [InlineData("00.", false, "0")]
+    [InlineData("00.", true, "<Octal literals are not allowed in strict mode>")]
+    [InlineData("00_", false, "<Invalid or unexpected token>")]
+    [InlineData("00_", true, "<Invalid or unexpected token>")]
+    [InlineData("00e", false, "<Invalid or unexpected token>")]
+    [InlineData("00e", true, "<Invalid or unexpected token>")]
+    [InlineData("00n", false, "<Invalid or unexpected token>")]
+    [InlineData("00n", true, "<Invalid or unexpected token>")]
+    [InlineData("00.1", false, "0")]
+    [InlineData("00.1e-324", false, "0")]
     [InlineData("07", false, "7")]
-    [InlineData("07", true, "<Octal literals are not allowed in strict mode.>")]
+    [InlineData("07", true, "<Octal literals are not allowed in strict mode>")]
     [InlineData("07n", false, "<Invalid or unexpected token>")]
     [InlineData("08", false, "8")]
-    [InlineData("08", true, "<Decimals with leading zeros are not allowed in strict mode.>")]
+    [InlineData("08", true, "<Decimals with leading zeros are not allowed in strict mode>")]
     [InlineData("08n", false, "<Invalid or unexpected token>")]
+    [InlineData("09", false, "9")]
+    [InlineData("09", true, "<Decimals with leading zeros are not allowed in strict mode>")]
+    [InlineData("09n", false, "<Invalid or unexpected token>")]
     [InlineData("017", false, "15")]
-    [InlineData("017", true, "<Octal literals are not allowed in strict mode.>")]
+    [InlineData("017", true, "<Octal literals are not allowed in strict mode>")]
     [InlineData("017n", false, "<Invalid or unexpected token>")]
     [InlineData("017.", false, "15")] // TODO: test parse error `var x = 017.;` vs `function f() {   return 017.; }()` 
-    [InlineData("017.", true, "<Octal literals are not allowed in strict mode.>")]
+    [InlineData("017.", true, "<Octal literals are not allowed in strict mode>")]
     [InlineData("017.1", false, "15")]
-    [InlineData("017.1", true, "<Octal literals are not allowed in strict mode.>")]
+    [InlineData("017.1", true, "<Octal literals are not allowed in strict mode>")]
+    [InlineData("017.e1", false, "15")]
+    [InlineData("017.e1", true, "<Octal literals are not allowed in strict mode>")]
     [InlineData("017e", false, "<Invalid or unexpected token>")]
     [InlineData("017e", true, "<Invalid or unexpected token>")]
     [InlineData("018", false, "18")]
-    [InlineData("018", true, "<Decimals with leading zeros are not allowed in strict mode.>")]
+    [InlineData("018", true, "<Decimals with leading zeros are not allowed in strict mode>")]
     [InlineData("018n", false, "<Invalid or unexpected token>")]
     [InlineData("018.", false, "18")] // TODO: test parse error `var x = 018.;` vs `function f() {   return 018.; }()` 
-    [InlineData("018.", true, "<Decimals with leading zeros are not allowed in strict mode.>")]
+    [InlineData("018.", true, "<Decimals with leading zeros are not allowed in strict mode>")]
     [InlineData("018.1", false, "18.1")]
-    [InlineData("018.1", true, "<Decimals with leading zeros are not allowed in strict mode.>")]
+    [InlineData("018.1", true, "<Decimals with leading zeros are not allowed in strict mode>")]
+    [InlineData("018.e1", false, "180")]
+    [InlineData("018.e1", true, "<Decimals with leading zeros are not allowed in strict mode>")]
+    [InlineData("018_1", false, "<Invalid or unexpected token>")]
+    [InlineData("018_1", true, "<Invalid or unexpected token>")]
     [InlineData("018e", false, "<Invalid or unexpected token>")]
-    [InlineData("018e", true, "<Invalid or unexpected token.>")]
+    [InlineData("018e", true, "<Invalid or unexpected token>")]
     [InlineData("018.e", false, "<Invalid or unexpected token>")]
     [InlineData("018.e", true, "<Invalid or unexpected token>")]
     [InlineData("018e2", false, "1800")]
-    [InlineData("018e2", true, "<Decimals with leading zeros are not allowed in strict mode.>")]
+    [InlineData("018e2", true, "<Decimals with leading zeros are not allowed in strict mode>")]
     [InlineData("018e+", false, "<Invalid or unexpected token>")]
     [InlineData("018e+", true, "<Invalid or unexpected token>")]
     [InlineData("018e+2", false, "1800")]
-    [InlineData("018e+2", true, "<Decimals with leading zeros are not allowed in strict mode.>")]
+    [InlineData("018e+2", true, "<Decimals with leading zeros are not allowed in strict mode>")]
     [InlineData("018e-", false, "<Invalid or unexpected token>")]
     [InlineData("018e-", true, "<Invalid or unexpected token>")]
     [InlineData("018e-1", false, "1.8")]
-    [InlineData("018e-1", true, "<Decimals with leading zeros are not allowed in strict mode.>")]
+    [InlineData("018e-1", true, "<Decimals with leading zeros are not allowed in strict mode>")]
     [InlineData("018.1e2", false, "1810")]
-    [InlineData("018.1e2", true, "<Decimals with leading zeros are not allowed in strict mode.>")]
+    [InlineData("018.1e2", true, "<Decimals with leading zeros are not allowed in strict mode>")]
     [InlineData("018.1e+2", false, "1810")]
-    [InlineData("018.1e+2", true, "<Decimals with leading zeros are not allowed in strict mode.>")]
+    [InlineData("018.1e+2", true, "<Decimals with leading zeros are not allowed in strict mode>")]
     [InlineData("018.1e-1", false, "1.81")]
-    [InlineData("018.1e-1", true, "<Decimals with leading zeros are not allowed in strict mode.>")]
+    [InlineData("018.1e-1", true, "<Decimals with leading zeros are not allowed in strict mode>")]
+    [InlineData("019", false, "19")]
+    [InlineData("019", true, "<Decimals with leading zeros are not allowed in strict mode>")]
+    [InlineData("019.e1", false, "190")]
+    [InlineData("019.e1", true, "<Decimals with leading zeros are not allowed in strict mode>")]
+    [InlineData("019_1", false, "<Invalid or unexpected token>")]
+    [InlineData("019_1", true, "<Invalid or unexpected token>")]
     [InlineData("7", true, "7")]
     [InlineData("7n", true, "7")]
     [InlineData("17", true, "17")]
@@ -400,8 +430,6 @@ public class TokenizerTests
     [InlineData("036811502618202616336", false, "3.6811502618202616E+19")]
     [InlineData("011235582092889474423308157442431404585112356118389416079589380072358292237843810195794279832650471001320007117491962084853674360550901038905802964414967132773610493339054092829768888725077880882465817684505312860552384417646403930092119569408801702322709406917786643639996702871154982269052209770601514008575", false, ValueOf_255_F_HexDigits)]
     [InlineData("0179769313486231590772930519078902473361797697894230657273430081157732675805500963132708477322407536021120113879871393357658789768814416622492847430639474124377767893424865485276302219601246094119453082952085005768838150682342462881473913110540827237163350510684586298239947245938479716304835356329624224137215", false, "Infinity")]
-    [InlineData("00.1", false, "0")]
-    [InlineData("00.1e-324", false, "0")]
     public void CanReadNumber(string input, bool strict, string expectedValue)
     {
         var tokenizer = new Tokenizer(input);
@@ -424,8 +452,10 @@ public class TokenizerTests
         }
         else
         {
-            Assert.Throws<SyntaxErrorException>(() => tokenizer.GetToken(tokenizerContext));
-            // TODO: check error messages
+            var ex = Assert.Throws<SyntaxErrorException>(() => tokenizer.GetToken(tokenizerContext));
+
+            var expectedMessage = expectedValue.Substring(1, expectedValue.Length - 2);
+            Assert.Equal(expectedMessage, ex.Error.Description);
         }
     }
 
@@ -460,26 +490,26 @@ public class TokenizerTests
     [InlineData(@"'\0'", false, "\0")]
     [InlineData(@"'\0'", true, "\0")]
     [InlineData(@"'\00'", false, "\0")]
-    [InlineData(@"'\00'", true, "<Octal escape sequences are not allowed in strict mode.>")]
+    [InlineData(@"'\00'", true, "<Octal escape sequences are not allowed in strict mode>")]
     [InlineData(@"'\000'", false, "\0")]
-    [InlineData(@"'\000'", true, "<Octal escape sequences are not allowed in strict mode.>")]
+    [InlineData(@"'\000'", true, "<Octal escape sequences are not allowed in strict mode>")]
     [InlineData(@"'\0000'", false, "\00")]
     [InlineData(@"'\7'", false, "\x07")]
-    [InlineData(@"'\7'", true, "<Octal escape sequences are not allowed in strict mode.>")]
+    [InlineData(@"'\7'", true, "<Octal escape sequences are not allowed in strict mode>")]
     [InlineData(@"'\07'", false, "\x07")]
-    [InlineData(@"'\07'", true, "<Octal escape sequences are not allowed in strict mode.>")]
+    [InlineData(@"'\07'", true, "<Octal escape sequences are not allowed in strict mode>")]
     [InlineData(@"'\007'", false, "\x07")]
     [InlineData(@"'\0007'", false, "\07")]
     [InlineData(@"'\8'", false, "8")]
-    [InlineData(@"'\8'", true, "<\\8 and \\9 are not allowed in strict mode.>")]
+    [InlineData(@"'\8'", true, "<\\8 and \\9 are not allowed in strict mode>")]
     [InlineData(@"'\08'", false, "\08")]
-    [InlineData(@"'\08'", true, "<Octal escape sequences are not allowed in strict mode.>")]
+    [InlineData(@"'\08'", true, "<Octal escape sequences are not allowed in strict mode>")]
     [InlineData(@"'\008'", false, "\08")]
     [InlineData(@"'\0008'", false, "\08")]
     [InlineData(@"'\9'", false, "9")]
-    [InlineData(@"'\9'", true, "<\\8 and \\9 are not allowed in strict mode.>")]
+    [InlineData(@"'\9'", true, "<\\8 and \\9 are not allowed in strict mode>")]
     [InlineData(@"'\09'", false, "\09")]
-    [InlineData(@"'\09'", true, "<Octal escape sequences are not allowed in strict mode.>")]
+    [InlineData(@"'\09'", true, "<Octal escape sequences are not allowed in strict mode>")]
     [InlineData(@"'\77'", false, "\x3F")]
     [InlineData(@"'\077'", false, "\x3F")]
     [InlineData(@"'\0077'", false, "\x07\x37")]
@@ -572,8 +602,10 @@ public class TokenizerTests
         }
         else
         {
-            Assert.Throws<SyntaxErrorException>(() => tokenizer.GetToken(tokenizerContext));
-            // TODO: check error messages
+            var ex = Assert.Throws<SyntaxErrorException>(() => tokenizer.GetToken(tokenizerContext));
+
+            var expectedMessage = expectedValue.Substring(1, expectedValue.Length - 2);
+            Assert.Equal(expectedMessage, ex.Error.Description);
         }
     }
 
@@ -605,12 +637,12 @@ public class TokenizerTests
     // Octal escape sequences
     [InlineData(@"`\0`", false, "\0", "\\0")]
     [InlineData(@"`\0`", true, "\0", "\\0")]
-    [InlineData(@"`\00`", false, "<Octal escape sequences are not allowed in template strings.>", null)]
-    [InlineData(@"`\00`", true, "<Octal escape sequences are not allowed in template strings.>", null)]
-    [InlineData(@"`\8`", false, "<\\8 and \\9 are not allowed in template strings.>", null)]
-    [InlineData(@"`\08`", false, "<Octal escape sequences are not allowed in template strings.>", null)]
-    [InlineData(@"`\9`", false, "<\\8 and \\9 are not allowed in template strings.>", null)]
-    [InlineData(@"`\09`", false, "<Octal escape sequences are not allowed in template strings.>", null)]
+    [InlineData(@"`\00`", false, "<Octal escape sequences are not allowed in template strings>", null)]
+    [InlineData(@"`\00`", true, "<Octal escape sequences are not allowed in template strings>", null)]
+    [InlineData(@"`\8`", false, "<\\8 and \\9 are not allowed in template strings>", null)]
+    [InlineData(@"`\08`", false, "<Octal escape sequences are not allowed in template strings>", null)]
+    [InlineData(@"`\9`", false, "<\\8 and \\9 are not allowed in template strings>", null)]
+    [InlineData(@"`\09`", false, "<Octal escape sequences are not allowed in template strings>", null)]
     // Hexadecimal escape sequences (2 digits)
     [InlineData(@"`\x", false, "<Invalid hexadecimal escape sequence>", null)]
     [InlineData(@"`\x`", false, "<Invalid hexadecimal escape sequence>", null)]
@@ -618,7 +650,7 @@ public class TokenizerTests
     [InlineData(@"`\xA`", false, "<Invalid hexadecimal escape sequence>", null)]
     [InlineData(@"`\xf`", false, "<Invalid hexadecimal escape sequence>", null)]
     [InlineData(@"`\x0$`", false, "<Invalid hexadecimal escape sequence>", null)]
-    [InlineData(@"`\x00", false, "<Invalid or unexpected token>", null)]
+    [InlineData(@"`\x00", false, "<Unexpected end of input>", null)]
     [InlineData(@"`\x00`", true, "\0", "\\x00")]
     [InlineData(@"`\x09`", true, "\x09", "\\x09")]
     [InlineData(@"`\x0A`", true, "\x0A", "\\x0A")]
@@ -644,7 +676,7 @@ public class TokenizerTests
     [InlineData(@"`\u00A`", false, "<Invalid Unicode escape sequence>", null)]
     [InlineData(@"`\u00f`", false, "<Invalid Unicode escape sequence>", null)]
     [InlineData(@"`\u000$`", false, "<Invalid Unicode escape sequence>", null)]
-    [InlineData(@"`\u0000", false, "<Invalid or unexpected token>", null)]
+    [InlineData(@"`\u0000", false, "<Unexpected end of input>", null)]
     [InlineData(@"`\u0000`", true, "\0", "\\u0000")]
     [InlineData(@"`\u0009`", true, "\x09", "\\u0009")]
     [InlineData(@"`\u000A`", true, "\x0A", "\\u000A")]
@@ -666,7 +698,7 @@ public class TokenizerTests
     [InlineData(@"`\u{ }`", false, "<Invalid Unicode escape sequence>", null)]
     [InlineData(@"`\u{-1}`", false, "<Invalid Unicode escape sequence>", null)]
     [InlineData(@"`\u{-0}`", false, "<Invalid Unicode escape sequence>", null)]
-    [InlineData(@"`\u{0}", false, "<Invalid or unexpected token>", null)]
+    [InlineData(@"`\u{0}", false, "<Unexpected end of input>", null)]
     [InlineData(@"`\u{10FFFF}`", true, "\udbff\udfff", "\\u{10FFFF}")]
     [InlineData(@"`\u{110000}`", false, "<Undefined Unicode code-point>", null)]
     [InlineData(@"`\u{80000000}`", false, "<Undefined Unicode code-point>", null)]
@@ -684,9 +716,6 @@ public class TokenizerTests
     [InlineData(@"`\u{0}\u{9}\u{d}\u{a}\u{b}\u{C}\u{00000000000000008}`", true, "\0\t\r\n\v\f\b", "\\u{0}\\u{9}\\u{d}\\u{a}\\u{b}\\u{C}\\u{00000000000000008}")]
     public void CanReadTemplate(string input, bool strict, string expectedCookedValue, string? expectedRawValue)
     {
-        var tokenizer = new Tokenizer(input);
-        var tokenizerContext = new TokenizerContext(strict, requireValidEscapeSequenceInTemplate: true);
-
         var tokens = new List<Token>();
 
         if (!(expectedCookedValue.StartsWith("<", StringComparison.OrdinalIgnoreCase) && expectedCookedValue.EndsWith(">", StringComparison.OrdinalIgnoreCase)))
@@ -706,18 +735,14 @@ public class TokenizerTests
         }
         else
         {
-            Assert.Throws<SyntaxErrorException>(() =>
+            var ex = Assert.Throws<SyntaxErrorException>(() =>
             {
                 var parser = new Parser(new ParserOptions { OnToken = (in Token t) => tokens!.Add(t) });
                 parser.ParseExpression(input, strict: strict);
-
-                var token = tokens[0];
-                Assert.Equal(TokenKind.Punctuator, token.Kind);
-                Assert.Equal("`", token.StringValue);
             });
-            // TODO: check error messages
+
+            var expectedMessage = expectedCookedValue.Substring(1, expectedCookedValue.Length - 2);
+            Assert.Equal(expectedMessage, ex.Error.Description);
         }
     }
-
-
 }

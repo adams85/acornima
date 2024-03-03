@@ -137,14 +137,14 @@ public partial class Tokenizer
         private readonly ParseError ReportConversionFailure(int index, string reason)
         {
             return _tokenizer.RaiseRecoverable(_patternStartIndex + index,
-                $"Cannot convert regular expression to an equivalent {typeof(Regex).ToString()}: /{_pattern}/{_flagsOriginal}: {reason}",
-                ParseError.s_factory); // TODO: introduce dedicated Exception class?
+                string.Format(ParseErrorMessages.RegExpConversionFailed, typeof(Regex), _pattern, _flagsOriginal, reason),
+                ParseError.s_factory);
         }
 
         [DoesNotReturn]
         private readonly void ReportSyntaxError(int index, string messageFormat)
         {
-            _tokenizer.Raise(_patternStartIndex + index, string.Format(CultureInfo.InvariantCulture, messageFormat, _pattern, _flagsOriginal));
+            _tokenizer.Raise(_patternStartIndex + index, string.Format(messageFormat, _pattern, _flagsOriginal));
         }
 
         public RegExpParseResult Parse()
@@ -153,14 +153,13 @@ public partial class Tokenizer
 
             if ((_flags & RegExpFlags.UnicodeSets) != 0)
             {
-                const string unicodeSetsModeNotSupported = "Unicode sets mode (flag v) is not supported currently";
                 if (_tokenizer._options._regExpParseMode == RegExpParseMode.Validate)
                 {
-                    _tokenizer.Raise(_patternStartIndex, unicodeSetsModeNotSupported, ParseError.s_factory);
+                    _tokenizer.Raise(_patternStartIndex, ParseErrorMessages.RegExpUnicodeSetsModeNotSupported, ParseError.s_factory);
                 }
                 else
                 {
-                    conversionError = ReportConversionFailure(0, unicodeSetsModeNotSupported);
+                    conversionError = ReportConversionFailure(0, ParseErrorMessages.RegExpUnicodeSetsModeNotSupported);
                     return new RegExpParseResult(conversionError);
                 }
             }
@@ -187,7 +186,7 @@ public partial class Tokenizer
             }
             catch
             {
-                conversionError = ReportConversionFailure(0, "Failed to adapt regular expression");
+                conversionError = ReportConversionFailure(0, string.Format(ParseErrorMessages.RegexCreationFailed, typeof(Regex), adaptedPattern, options));
                 return new RegExpParseResult(conversionError);
             }
         }
@@ -307,7 +306,7 @@ public partial class Tokenizer
 
                         if (inGroup == 0)
                         {
-                            ReportSyntaxError(i, SyntaxErrorMessages.RegExpUnmatchedOpenParen);
+                            ReportSyntaxError(i, SyntaxErrorMessages.RegExpUnmatchedParen);
                         }
 
                         inGroup--;
@@ -479,7 +478,7 @@ public partial class Tokenizer
                                 groupName = AdjustCapturingGroupName(groupName!, context.CapturingGroupNames!);
                                 if (groupName is null)
                                 {
-                                    conversionError = ReportConversionFailure(i + 3, $"Cannot map group name '{groupName}' to a unique group name in the adapted regex.");
+                                    conversionError = ReportConversionFailure(i + 3, string.Format(ParseErrorMessages.RegExpUnmappableGroupName, groupName));
                                     return null;
                                 }
 
@@ -525,7 +524,7 @@ public partial class Tokenizer
                         break;
 
                     case ')' when !context.WithinSet:
-                        Debug.Assert(context.GroupStack.Count > (context.CapturingGroupNames is not null ? 1 : 0), SyntaxErrorMessages.RegExpUnmatchedOpenParen); // CheckBracesBalance should ensure this.
+                        Debug.Assert(context.GroupStack.Count > (context.CapturingGroupNames is not null ? 1 : 0), SyntaxErrorMessages.RegExpUnmatchedParen); // CheckBracesBalance should ensure this.
 
                         if (context.CapturingGroupNames is not null)
                         {
@@ -796,7 +795,7 @@ public partial class Tokenizer
             {
                 if (min > max)
                 {
-                    ReportSyntaxError(i, SyntaxErrorMessages.RegExpNumbersOutOfOrderInQuantifier);
+                    ReportSyntaxError(i, SyntaxErrorMessages.RegExpRangeOutOfOrder);
                 }
 
                 if (context.FollowingQuantifierError is not null)
@@ -812,7 +811,7 @@ public partial class Tokenizer
                 // number of occurrences can be an arbitrarily big number, however implementations (incl. V8) seems to ignore numbers greater than int.MaxValue.
                 // (e.g. /x{2147483647,2147483646}/ is syntax error while /x{2147483648,2147483647}/ is not!)
                 // We report failure in this case because .NET regex engine doesn't allow numbers greater than int.MaxValue.
-                conversionError = ReportConversionFailure(i, "Inconvertible {} quantifier");
+                conversionError = ReportConversionFailure(i, ParseErrorMessages.RegExpInconvertibleRangeQuantifier);
                 return true;
             }
 
@@ -1071,7 +1070,7 @@ public partial class Tokenizer
             {
                 // RegexOptions.ECMAScript treats forward references like /\1(A)/ differently than JS,
                 // so we don't make an attempt at rewriting them.
-                conversionError = ReportConversionFailure(startIndex, "Inconvertible forward reference");
+                conversionError = ReportConversionFailure(startIndex, ParseErrorMessages.RegExpInconvertibleForwardReference);
                 return true;
             }
 
@@ -1101,13 +1100,13 @@ public partial class Tokenizer
                         {
                             // RegexOptions.ECMAScript treats forward references like /\k<a>(?<a>A)/ differently than JS,
                             // so we don't make an attempt at rewriting them.
-                            conversionError = ReportConversionFailure(startIndex, "Inconvertible named forward reference");
+                            conversionError = ReportConversionFailure(startIndex, ParseErrorMessages.RegExpInconvertibleNamedForwardReference);
                         }
                     }
                 }
                 else
                 {
-                    ReportSyntaxError(startIndex, SyntaxErrorMessages.RegExpInvalidNamedCaptureReferenced);
+                    ReportSyntaxError(startIndex, SyntaxErrorMessages.RegExpInvalidNamedCaptureReference);
                 }
             }
             else

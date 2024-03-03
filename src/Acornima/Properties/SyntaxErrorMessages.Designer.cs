@@ -61,11 +61,56 @@ namespace Acornima.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Only one underscore is allowed as numeric separator.
+        /// </summary>
+        internal static string ContinuousNumericSeparator {
+            get {
+                return ResourceManager.GetString("ContinuousNumericSeparator", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Keyword must not contain escaped characters.
+        /// </summary>
+        internal static string InvalidEscapedReservedWord {
+            get {
+                return ResourceManager.GetString("InvalidEscapedReservedWord", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid hexadecimal escape sequence.
+        /// </summary>
+        internal static string InvalidHexEscapeSequence {
+            get {
+                return ResourceManager.GetString("InvalidHexEscapeSequence", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid or unexpected token.
+        /// </summary>
+        internal static string InvalidOrUnexpectedToken {
+            get {
+                return ResourceManager.GetString("InvalidOrUnexpectedToken", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid regular expression flags.
         /// </summary>
         internal static string InvalidRegExpFlags {
             get {
                 return ResourceManager.GetString("InvalidRegExpFlags", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid Unicode escape sequence.
+        /// </summary>
+        internal static string InvalidUnicodeEscapeSequence {
+            get {
+                return ResourceManager.GetString("InvalidUnicodeEscapeSequence", resourceCulture);
             }
         }
         
@@ -115,6 +160,15 @@ namespace Acornima.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid regular expression: /{0}/{1}: Invalid property name in character class.
+        /// </summary>
+        internal static string RegExpInvalidClassPropertyName {
+            get {
+                return ResourceManager.GetString("RegExpInvalidClassPropertyName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid regular expression: /{0}/{1}: Invalid decimal escape.
         /// </summary>
         internal static string RegExpInvalidDecimalEscape {
@@ -144,9 +198,9 @@ namespace Acornima.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Invalid regular expression: /{0}/{1}: Invalid named capture referenced.
         /// </summary>
-        internal static string RegExpInvalidNamedCaptureReferenced {
+        internal static string RegExpInvalidNamedCaptureReference {
             get {
-                return ResourceManager.GetString("RegExpInvalidNamedCaptureReferenced", resourceCulture);
+                return ResourceManager.GetString("RegExpInvalidNamedCaptureReference", resourceCulture);
             }
         }
         
@@ -165,15 +219,6 @@ namespace Acornima.Properties {
         internal static string RegExpInvalidPropertyName {
             get {
                 return ResourceManager.GetString("RegExpInvalidPropertyName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Invalid regular expression: /{0}/{1}: Invalid property name in character class.
-        /// </summary>
-        internal static string RegExpInvalidPropertyNameInCharacterClass {
-            get {
-                return ResourceManager.GetString("RegExpInvalidPropertyNameInCharacterClass", resourceCulture);
             }
         }
         
@@ -216,27 +261,27 @@ namespace Acornima.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Invalid regular expression: /{0}/{1}: numbers out of order in {{}} quantifier.
         /// </summary>
-        internal static string RegExpNumbersOutOfOrderInQuantifier {
+        internal static string RegExpRangeOutOfOrder {
             get {
-                return ResourceManager.GetString("RegExpNumbersOutOfOrderInQuantifier", resourceCulture);
+                return ResourceManager.GetString("RegExpRangeOutOfOrder", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Invalid regular expression: /{0}/{1}: Range out of order in character class.
         /// </summary>
-        internal static string RegExpRangeOutOfOrderInCharacterClass {
+        internal static string RegExpRangeOutOfOrderCharacterClass {
             get {
-                return ResourceManager.GetString("RegExpRangeOutOfOrderInCharacterClass", resourceCulture);
+                return ResourceManager.GetString("RegExpRangeOutOfOrderCharacterClass", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Invalid regular expression: /{0}/{1}: Unmatched &apos;)&apos;.
         /// </summary>
-        internal static string RegExpUnmatchedOpenParen {
+        internal static string RegExpUnmatchedParen {
             get {
-                return ResourceManager.GetString("RegExpUnmatchedOpenParen", resourceCulture);
+                return ResourceManager.GetString("RegExpUnmatchedParen", resourceCulture);
             }
         }
         
@@ -255,6 +300,168 @@ namespace Acornima.Properties {
         internal static string RegExpUnterminatedGroup {
             get {
                 return ResourceManager.GetString("RegExpUnterminatedGroup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to \8 and \9 are not allowed in strict mode.
+        /// </summary>
+        internal static string Strict8Or9Escape {
+            get {
+                return ResourceManager.GetString("Strict8Or9Escape", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Decimals with leading zeros are not allowed in strict mode.
+        /// </summary>
+        internal static string StrictDecimalWithLeadingZero {
+            get {
+                return ResourceManager.GetString("StrictDecimalWithLeadingZero", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Octal escape sequences are not allowed in strict mode.
+        /// </summary>
+        internal static string StrictOctalEscape {
+            get {
+                return ResourceManager.GetString("StrictOctalEscape", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Octal literals are not allowed in strict mode.
+        /// </summary>
+        internal static string StrictOctalLiteral {
+            get {
+                return ResourceManager.GetString("StrictOctalLiteral", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to \8 and \9 are not allowed in template strings.
+        /// </summary>
+        internal static string Template8Or9Escape {
+            get {
+                return ResourceManager.GetString("Template8Or9Escape", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Octal escape sequences are not allowed in template strings.
+        /// </summary>
+        internal static string TemplateOctalLiteral {
+            get {
+                return ResourceManager.GetString("TemplateOctalLiteral", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Numeric separators are not allowed at the end of numeric literals.
+        /// </summary>
+        internal static string TrailingNumericSeparator {
+            get {
+                return ResourceManager.GetString("TrailingNumericSeparator", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Undefined Unicode code-point.
+        /// </summary>
+        internal static string UndefinedUnicodeCodePoint {
+            get {
+                return ResourceManager.GetString("UndefinedUnicodeCodePoint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unexpected end of input.
+        /// </summary>
+        internal static string UnexpectedEOS {
+            get {
+                return ResourceManager.GetString("UnexpectedEOS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unexpected template string.
+        /// </summary>
+        internal static string UnexpectedTemplateString {
+            get {
+                return ResourceManager.GetString("UnexpectedTemplateString", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unexpected token &apos;{0}&apos;.
+        /// </summary>
+        internal static string UnexpectedToken {
+            get {
+                return ResourceManager.GetString("UnexpectedToken", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unexpected identifier &apos;{0}&apos;.
+        /// </summary>
+        internal static string UnexpectedTokenIdentifier {
+            get {
+                return ResourceManager.GetString("UnexpectedTokenIdentifier", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unexpected number.
+        /// </summary>
+        internal static string UnexpectedTokenNumber {
+            get {
+                return ResourceManager.GetString("UnexpectedTokenNumber", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unexpected regular expression.
+        /// </summary>
+        internal static string UnexpectedTokenRegExp {
+            get {
+                return ResourceManager.GetString("UnexpectedTokenRegExp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unexpected string.
+        /// </summary>
+        internal static string UnexpectedTokenString {
+            get {
+                return ResourceManager.GetString("UnexpectedTokenString", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid regular expression: missing /.
+        /// </summary>
+        internal static string UnterminatedRegExp {
+            get {
+                return ResourceManager.GetString("UnterminatedRegExp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Missing } in template expression.
+        /// </summary>
+        internal static string UnterminatedTemplateExpr {
+            get {
+                return ResourceManager.GetString("UnterminatedTemplateExpr", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Numeric separator can not be used after leading 0.
+        /// </summary>
+        internal static string ZeroDigitNumericSeparator {
+            get {
+                return ResourceManager.GetString("ZeroDigitNumericSeparator", resourceCulture);
             }
         }
     }

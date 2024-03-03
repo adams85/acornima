@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Acornima.Ast;
 using Acornima.Helpers;
+using Acornima.Properties;
 
 namespace Acornima;
 
@@ -2002,8 +2003,9 @@ public partial class Parser
                         // TODO: fix error reporting order?
                         if (firstRestrictedPos >= 0)
                         {
-                            // TODO: error message may differ for \08 and \8
-                            RaiseRecoverable(firstRestrictedPos, "Octal literal in strict mode");
+                            RaiseRecoverable(firstRestrictedPos, _tokenizer._input[firstRestrictedPos + 1] is '8' or '9'
+                                ? SyntaxErrorMessages.Strict8Or9Escape
+                                : SyntaxErrorMessages.StrictOctalEscape);
                         }
 
                         _strict = true;

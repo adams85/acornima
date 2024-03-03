@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Acornima.Ast;
+using Acornima.Properties;
 
 namespace Acornima;
 
@@ -131,10 +132,65 @@ public partial class Parser
     }
 
     [DoesNotReturn]
-    private void Unexpected(int? pos = null) => _tokenizer.Unexpected(pos);
+    private void Unexpected(int? pos = null)
+    {
+        string message;
+        switch (_tokenizer._type.Kind)
+        {
+            case TokenKind.Punctuator when _tokenizer._type == TokenType.BackQuote:
+                message = SyntaxErrorMessages.UnexpectedTemplateString;
+                break;
+
+            case TokenKind.Punctuator:
+                message = string.Format(SyntaxErrorMessages.UnexpectedToken, (string)_tokenizer._value.Value!);
+                break;
+
+            case TokenKind.Keyword:
+            case TokenKind.NullLiteral:
+            case TokenKind.BooleanLiteral:
+                if (_tokenizer._containsEscape)
+                {
+                    RaiseRecoverable(_tokenizer._start, SyntaxErrorMessages.InvalidEscapedReservedWord);
+                }
+
+                message = string.Format(SyntaxErrorMessages.UnexpectedToken, _tokenizer._type.Label);
+                break;
+
+            case TokenKind.Identifier:
+                // TODO: reserved words
+
+                message = string.Format(SyntaxErrorMessages.UnexpectedTokenIdentifier, _tokenizer._type == TokenType.PrivateId
+                    ? "#" + (string)_tokenizer._value.Value!
+                    : (string)_tokenizer._value.Value!);
+                break;
+
+            case TokenKind.NumericLiteral:
+            case TokenKind.BigIntLiteral:
+                message = SyntaxErrorMessages.UnexpectedTokenNumber;
+                break;
+
+            case TokenKind.StringLiteral:
+                message = SyntaxErrorMessages.UnexpectedTokenString;
+                break;
+
+            case TokenKind.EOF:
+                message = SyntaxErrorMessages.UnexpectedEOS;
+                break;
+
+            default:
+                message = SyntaxErrorMessages.InvalidOrUnexpectedToken;
+                break;
+        }
+
+        Raise(pos ?? _tokenizer._start, message);
+    }
 
     [DoesNotReturn]
-    private T Unexpected<T>(int? pos = null) => _tokenizer.Unexpected<T>(pos);
+    private T Unexpected<T>(int? pos = null)
+    {
+        Unexpected(pos);
+        return default!;
+    }
 
     [DoesNotReturn]
     private void Raise(int pos, string message, ParseError.Factory? errorFactory = null) => _tokenizer.Raise(pos, message, errorFactory);

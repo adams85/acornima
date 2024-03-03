@@ -132,7 +132,7 @@ public partial class Tokenizer
                     if (context.SetRangeStart > cp)
                     {
                         parser.ReportSyntaxError(startIndex, context.SetRangeStart <= UnicodeHelper.LastCodePoint
-                            ? SyntaxErrorMessages.RegExpRangeOutOfOrderInCharacterClass
+                            ? SyntaxErrorMessages.RegExpRangeOutOfOrderCharacterClass
                             : SyntaxErrorMessages.RegExpInvalidCharacterClass);
                     }
 
@@ -862,7 +862,7 @@ public partial class Tokenizer
                                 {
                                     parser.ReportSyntaxError(startIndex, !context.WithinSet
                                         ? SyntaxErrorMessages.RegExpInvalidPropertyName
-                                        : SyntaxErrorMessages.RegExpInvalidPropertyNameInCharacterClass);
+                                        : SyntaxErrorMessages.RegExpInvalidClassPropertyName);
                                 }
 
                                 ReadOnlySpan<CodePointRange> codePointRangeSpan;
@@ -880,7 +880,7 @@ public partial class Tokenizer
 
                                     if (codePointRanges is null)
                                     {
-                                        conversionError = parser.ReportConversionFailure(startIndex, "Inconvertible Unicode property escape");
+                                        conversionError = parser.ReportConversionFailure(startIndex, ParseErrorMessages.RegExpInconvertibleUnicodePropertyEscape);
                                         return false;
                                     }
 
@@ -923,7 +923,7 @@ public partial class Tokenizer
                             {
                                 parser.ReportSyntaxError(startIndex, !context.WithinSet
                                     ? SyntaxErrorMessages.RegExpInvalidPropertyName
-                                    : SyntaxErrorMessages.RegExpInvalidPropertyNameInCharacterClass);
+                                    : SyntaxErrorMessages.RegExpInvalidClassPropertyName);
                             }
                         }
                         else

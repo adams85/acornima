@@ -117,70 +117,184 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ContinuousNumericSeparator" xml:space="preserve">
+    <value>Only one underscore is allowed as numeric separator</value>
+    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+  </data>
+  <data name="InvalidEscapedReservedWord" xml:space="preserve">
+    <value>Keyword must not contain escaped characters</value>
+    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+  </data>
+  <data name="InvalidHexEscapeSequence" xml:space="preserve">
+    <value>Invalid hexadecimal escape sequence</value>
+    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+  </data>
+  <data name="InvalidOrUnexpectedToken" xml:space="preserve">
+    <value>Invalid or unexpected token</value>
+    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+  </data>
   <data name="InvalidRegExpFlags" xml:space="preserve">
     <value>Invalid regular expression flags</value>
+    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+  </data>
+  <data name="InvalidUnicodeEscapeSequence" xml:space="preserve">
+    <value>Invalid Unicode escape sequence</value>
+    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
   </data>
   <data name="RegExpDuplicateCaptureGroupName" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Duplicate capture group name</value>
+    <comment>https://github.com/v8/v8/blob/main/src/regexp/regexp-error.h</comment>
   </data>
   <data name="RegExpIncompleteQuantifier" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Incomplete quantifier</value>
+    <comment>https://github.com/v8/v8/blob/main/src/regexp/regexp-error.h</comment>
   </data>
   <data name="RegExpInvalidCaptureGroupName" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Invalid capture group name</value>
+    <comment>https://github.com/v8/v8/blob/main/src/regexp/regexp-error.h</comment>
   </data>
   <data name="RegExpInvalidCharacterClass" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Invalid character class</value>
+    <comment>https://github.com/v8/v8/blob/main/src/regexp/regexp-error.h</comment>
   </data>
   <data name="RegExpInvalidClassEscape" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Invalid class escape</value>
+    <comment>https://github.com/v8/v8/blob/main/src/regexp/regexp-error.h</comment>
+  </data>
+  <data name="RegExpInvalidClassPropertyName" xml:space="preserve">
+    <value>Invalid regular expression: /{0}/{1}: Invalid property name in character class</value>
+    <comment>https://github.com/v8/v8/blob/main/src/regexp/regexp-error.h</comment>
   </data>
   <data name="RegExpInvalidDecimalEscape" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Invalid decimal escape</value>
+    <comment>https://github.com/v8/v8/blob/main/src/regexp/regexp-error.h</comment>
   </data>
   <data name="RegExpInvalidEscape" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Invalid escape</value>
+    <comment>https://github.com/v8/v8/blob/main/src/regexp/regexp-error.h</comment>
   </data>
   <data name="RegExpInvalidGroup" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Invalid group</value>
+    <comment>https://github.com/v8/v8/blob/main/src/regexp/regexp-error.h</comment>
   </data>
-  <data name="RegExpInvalidNamedCaptureReferenced" xml:space="preserve">
+  <data name="RegExpInvalidNamedCaptureReference" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Invalid named capture referenced</value>
+    <comment>https://github.com/v8/v8/blob/main/src/regexp/regexp-error.h</comment>
   </data>
   <data name="RegExpInvalidNamedReference" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Invalid named reference</value>
+    <comment>https://github.com/v8/v8/blob/main/src/regexp/regexp-error.h</comment>
   </data>
   <data name="RegExpInvalidPropertyName" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Invalid property name</value>
-  </data>
-  <data name="RegExpInvalidPropertyNameInCharacterClass" xml:space="preserve">
-    <value>Invalid regular expression: /{0}/{1}: Invalid property name in character class</value>
+    <comment>https://github.com/v8/v8/blob/main/src/regexp/regexp-error.h</comment>
   </data>
   <data name="RegExpInvalidQuantifier" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Invalid quantifier</value>
+    <comment>https://github.com/v8/v8/blob/main/src/regexp/regexp-error.h</comment>
   </data>
   <data name="RegExpInvalidUnicodeEscape" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Invalid Unicode escape</value>
+    <comment>https://github.com/v8/v8/blob/main/src/regexp/regexp-error.h</comment>
   </data>
   <data name="RegExpLoneQuantifierBrackets" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Lone quantifier brackets</value>
+    <comment>https://github.com/v8/v8/blob/main/src/regexp/regexp-error.h</comment>
   </data>
   <data name="RegExpNothingToRepeat" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Nothing to repeat</value>
+    <comment>https://github.com/v8/v8/blob/main/src/regexp/regexp-error.h</comment>
   </data>
-  <data name="RegExpNumbersOutOfOrderInQuantifier" xml:space="preserve">
+  <data name="RegExpRangeOutOfOrder" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: numbers out of order in {{}} quantifier</value>
+    <comment>https://github.com/v8/v8/blob/main/src/regexp/regexp-error.h</comment>
   </data>
-  <data name="RegExpRangeOutOfOrderInCharacterClass" xml:space="preserve">
+  <data name="RegExpRangeOutOfOrderCharacterClass" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Range out of order in character class</value>
+    <comment>https://github.com/v8/v8/blob/main/src/regexp/regexp-error.h</comment>
   </data>
-  <data name="RegExpUnmatchedOpenParen" xml:space="preserve">
+  <data name="RegExpUnmatchedParen" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Unmatched ')'</value>
+    <comment>https://github.com/v8/v8/blob/main/src/regexp/regexp-error.h</comment>
   </data>
   <data name="RegExpUnterminatedCharacterClass" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Unterminated character class</value>
+    <comment>https://github.com/v8/v8/blob/main/src/regexp/regexp-error.h</comment>
   </data>
   <data name="RegExpUnterminatedGroup" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Unterminated group</value>
+    <comment>https://github.com/v8/v8/blob/main/src/regexp/regexp-error.h</comment>
+  </data>
+  <data name="Strict8Or9Escape" xml:space="preserve">
+    <value>\8 and \9 are not allowed in strict mode</value>
+    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+  </data>
+  <data name="StrictDecimalWithLeadingZero" xml:space="preserve">
+    <value>Decimals with leading zeros are not allowed in strict mode</value>
+    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+  </data>
+  <data name="StrictOctalEscape" xml:space="preserve">
+    <value>Octal escape sequences are not allowed in strict mode</value>
+    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+  </data>
+  <data name="StrictOctalLiteral" xml:space="preserve">
+    <value>Octal literals are not allowed in strict mode</value>
+    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+  </data>
+  <data name="Template8Or9Escape" xml:space="preserve">
+    <value>\8 and \9 are not allowed in template strings</value>
+    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+  </data>
+  <data name="TemplateOctalLiteral" xml:space="preserve">
+    <value>Octal escape sequences are not allowed in template strings</value>
+    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+  </data>
+  <data name="TrailingNumericSeparator" xml:space="preserve">
+    <value>Numeric separators are not allowed at the end of numeric literals</value>
+    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+  </data>
+  <data name="UndefinedUnicodeCodePoint" xml:space="preserve">
+    <value>Undefined Unicode code-point</value>
+    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+  </data>
+  <data name="UnexpectedEOS" xml:space="preserve">
+    <value>Unexpected end of input</value>
+    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+  </data>
+  <data name="UnexpectedTemplateString" xml:space="preserve">
+    <value>Unexpected template string</value>
+    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+  </data>
+  <data name="UnexpectedToken" xml:space="preserve">
+    <value>Unexpected token '{0}'</value>
+    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+  </data>
+  <data name="UnexpectedTokenIdentifier" xml:space="preserve">
+    <value>Unexpected identifier '{0}'</value>
+    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+  </data>
+  <data name="UnexpectedTokenNumber" xml:space="preserve">
+    <value>Unexpected number</value>
+    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+  </data>
+  <data name="UnexpectedTokenRegExp" xml:space="preserve">
+    <value>Unexpected regular expression</value>
+    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+  </data>
+  <data name="UnexpectedTokenString" xml:space="preserve">
+    <value>Unexpected string</value>
+    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+  </data>
+  <data name="UnterminatedRegExp" xml:space="preserve">
+    <value>Invalid regular expression: missing /</value>
+    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+  </data>
+  <data name="UnterminatedTemplateExpr" xml:space="preserve">
+    <value>Missing } in template expression</value>
+    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+  </data>
+  <data name="ZeroDigitNumericSeparator" xml:space="preserve">
+    <value>Numeric separator can not be used after leading 0</value>
+    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
   </data>
 </root>

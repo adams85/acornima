@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using Acornima.Helpers;
+using Acornima.Properties;
 
 namespace Acornima;
 
@@ -62,7 +63,8 @@ public sealed partial class Tokenizer
 
         if (!context.IgnoreEscapeSequenceInKeyword && _type.Keyword is not null && _containsEscape)
         {
-            RaiseRecoverable(_start, "Escape sequence in keyword " + _type.Label);
+            // RaiseRecoverable(_start, "Escape sequence in keyword " + _type.Label); // original acornjs error reporting
+            RaiseRecoverable(_start, SyntaxErrorMessages.InvalidEscapedReservedWord);
         }
 
         _strict = _inModule || context.Strict;
@@ -107,12 +109,12 @@ public sealed partial class Tokenizer
 
     private void ReadToken(TokenContext currentContext)
     {
-        int cp, start = _position;
         if (currentContext != TokenContext.QuoteInTemplate
-            ? !TryReadToken(cp = FullCharCodeAtPosition())
-            : !TryReadTemplateToken() && (cp = FullCharCodeAtPosition()) is { })
+            ? !TryReadToken(FullCharCodeAtPosition())
+            : !TryReadTemplateToken())
         {
-            Raise(start, $"Unexpected character '{UnicodeHelper.CodePointToString(cp)}'");
+            // Raise(start, $"Unexpected character '{UnicodeHelper.CodePointToString(cp)}'"); // original acornjs error reporting
+            Unexpected();
         }
     }
 
@@ -266,7 +268,8 @@ public sealed partial class Tokenizer
         var end = _input.IndexOf("*/", _position += 2, _endPosition - _position, StringComparison.Ordinal);
         if (end == -1)
         {
-            Raise(_position - 2, "Unterminated comment");
+            // Raise(_position - 2, "Unterminated comment"); // original acornjs error reporting
+            Unexpected(start);
         }
 
         _position = end + 2;
@@ -530,7 +533,7 @@ public sealed partial class Tokenizer
         var nextCh = CharCodeAtPosition(1);
         if (nextCh == ch)
         {
-            if (!_inModule && nextCh == '-'
+            if (_sourceType == SourceType.Script && nextCh == '-'
                 && CharCodeAtPosition(2) == '>'
                 && (_lastTokenEnd == 0 || ContainsLineBreak(_input.SliceBetween(_lastTokenEnd, _position))))
             {
@@ -577,7 +580,7 @@ public sealed partial class Tokenizer
                 return FinishOp(TokenType.BitShift, ch == '<' ? "<<" : ">>");
             }
         }
-        else if (!_inModule && ch == '<' && nextCh == '!' && CharCodeAtPosition(2) == '-' && CharCodeAtPosition(3) == '-')
+        else if (_sourceType == SourceType.Script && ch == '<' && nextCh == '!' && CharCodeAtPosition(2) == '-' && CharCodeAtPosition(3) == '-')
         {
             // `<!--`, an XML-style comment that should be interpreted as a line comment
             SkipLineComment(startSkip: 4, CommentKind.Line, _options._onComment);
@@ -661,7 +664,8 @@ public sealed partial class Tokenizer
             }
         }
 
-        return Raise<bool>(_position, $"Unexpected character '{UnicodeHelper.CodePointToString(ch)}'");
+        // return Raise<bool>(_position, $"Unexpected character '{UnicodeHelper.CodePointToString(ch)}'"); // original acornjs error reporting
+        return false;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -706,7 +710,8 @@ public sealed partial class Tokenizer
                         var flags = ReadWord1();
                         if (_containsEscape)
                         {
-                            Unexpected(flagsStart);
+                            // Unexpected(flagsStart); // original acornjs error reporting
+                            Raise(flagsStart, SyntaxErrorMessages.InvalidRegExpFlags);
                         }
 
                         var patternCached = DeduplicateString(pattern, ref _stringPool, NonIdentifierDeduplicationThreshold);
@@ -728,47 +733,49 @@ public sealed partial class Tokenizer
         }
 
     Unterminated:
-        return Raise<bool>(start, "Unterminated regular expression");
+        // return Raise<bool>(start, "Unterminated regular expression"); // original acornjs error reporting
+        return Raise<bool>(start - 1, SyntaxErrorMessages.UnterminatedRegExp);
     }
 
-    // Read an integer in the given radix. Return null if zero digits
-    // were read, the integer value otherwise. When `len` is given, this
-    // will return `null` unless the integer has exactly `len` digi
-    private bool ReadInt(out ulong value, out bool overflow, out bool hasSeparator, byte radix, bool maybeLegacyOctalNumericLiteral = false, int? len = null)
+    // Read an integer in the given radix. Return the number of digits read,
+    // excluding the potential separators.
+    private int ReadInt(out ulong value, out bool overflow, out bool hasSeparator, byte radix, bool startsWithZero = false, int? len = null)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readInt = function`
 
         // `len` is used for character escape sequences. In that case, disallow separators.
-        var allowSeparators = _options._ecmaVersion >= EcmaVersion.ES12 && len is null;
-
-        // `maybeLegacyOctalNumericLiteral` is true if it doesn't have prefix (0x,0o,0b)
-        // and isn't fraction part nor exponent part. In that case, if the first digit
-        // is zero then disallow separators.
-        var isLegacyOctalNumericLiteral = maybeLegacyOctalNumericLiteral && CharCodeAtPosition() == '0';
+        var allowSeparators = len is null && _options._ecmaVersion >= EcmaVersion.ES12;
 
         value = 0;
         overflow = hasSeparator = false;
         char lastCh = default;
-        int i, e;
-        for (i = 0, e = len ?? int.MaxValue; i < e; i++, _position++)
+        var numDigits = 0;
+        for (int i = 0, e = len ?? int.MaxValue; i < e; i++, _position++)
         {
             var ch = CharCodeAtPosition();
 
             if (allowSeparators && ch == '_')
             {
                 hasSeparator = true;
-                if (isLegacyOctalNumericLiteral)
+                if (startsWithZero)
                 {
-                    RaiseRecoverable(_position, "Numeric separator is not allowed in legacy octal numeric literals");
+                    // RaiseRecoverable(_position, "Numeric separator is not allowed in legacy octal numeric literals"); // original acornjs error reporting
+                    RaiseRecoverable(_position, i > 1
+                        ? SyntaxErrorMessages.InvalidOrUnexpectedToken
+                        : SyntaxErrorMessages.ZeroDigitNumericSeparator);
                 }
+                else if (i == 0)
+                {
+                    // RaiseRecoverable(_position, "Numeric separator is not allowed at the first of digits"); // original acornjs error reporting
+                    RaiseRecoverable(_start, SyntaxErrorMessages.InvalidOrUnexpectedToken);
+                }
+
                 if (lastCh == '_')
                 {
-                    RaiseRecoverable(_position, "Numeric separator must be exactly one underscore");
+                    // RaiseRecoverable(_position, "Numeric separator must be exactly one underscore"); // original acornjs error reporting
+                    RaiseRecoverable(_position, SyntaxErrorMessages.ContinuousNumericSeparator);
                 }
-                if (i == 0)
-                {
-                    RaiseRecoverable(_position, "Numeric separator is not allowed at the first of digits");
-                }
+
                 lastCh = (char)ch;
                 continue;
             }
@@ -789,14 +796,17 @@ public sealed partial class Tokenizer
             {
                 value = value * radix + digitValue;
             }
+
+            numDigits++;
         }
 
         if (allowSeparators && lastCh == '_')
         {
-            RaiseRecoverable(_position - 1, "Numeric separator is not allowed at the last of digits");
+            // RaiseRecoverable(_position - 1, "Numeric separator is not allowed at the last of digits"); // original acornjs error reporting
+            RaiseRecoverable(_position - 1, SyntaxErrorMessages.TrailingNumericSeparator);
         }
 
-        return !(i == 0 || len is not null && i != len.Value);
+        return numDigits;
     }
 
     private bool ReadRadixNumber(byte radix)
@@ -804,9 +814,10 @@ public sealed partial class Tokenizer
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readRadixNumber = function`
 
         _position += 2; // 0x
-        if (!ReadInt(out var intValue, out var overflow, out _, radix))
+        if (!(ReadInt(out var intValue, out var overflow, out _, radix) > 0))
         {
-            Raise(_start + 2, "Expected number in radix " + radix);
+            // Raise(_start + 2, "Expected number in radix " + radix); // original acornjs error reporting
+            Unexpected();
         }
 
         TokenType tokenType;
@@ -829,7 +840,8 @@ public sealed partial class Tokenizer
         {
             if (IsIdentifierStart(FullCharCodeAtPosition()))
             {
-                Raise(_position, "Identifier directly after number");
+                // Raise(_position, "Identifier directly after number"); // original acornjs error reporting
+                Unexpected();
             }
 
             if (!overflow)
@@ -853,98 +865,46 @@ public sealed partial class Tokenizer
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readNumber = function`
 
         var start = _position;
+
+        int numDigits, nextCh;
         ulong intValue;
         bool overflow, hasSeparator;
-
-        if (startsWithDot)
-        {
-            intValue = 0; // NOTE: To keep the compiler happy.
-            overflow = hasSeparator = false;
-        }
-        else if (!ReadInt(out intValue, out overflow, out hasSeparator, radix: 10, maybeLegacyOctalNumericLiteral: true))
-        {
-            Raise(start, "Invalid number");
-        }
-
-        TokenType tokenType;
         TokenValue val;
-        var octal = startsWithZero && _position - start >= 2;
-        switch (octal)
+        ReadOnlySpan<char> slice;
+
+        if (startsWithZero)
         {
-            case false:
-                var nextCh = CharCodeAtPosition();
+            numDigits = ReadInt(out intValue, out overflow, out hasSeparator, startsWithZero: true, radix: 8);
+            Debug.Assert(numDigits > 0);
 
-                if (!octal && !startsWithDot && _options._ecmaVersion >= EcmaVersion.ES11 && nextCh == 'n')
+            nextCh = CharCodeAtPosition();
+            if (nextCh is '8' or '9') // literals like 08 are valid in non-strict mode, so reparse them as a decimal number
+            {
+                _position = start;
+                numDigits = ReadInt(out intValue, out overflow, out hasSeparator, startsWithZero: true, radix: 10);
+                Debug.Assert(numDigits > 0);
+
+                nextCh = CharCodeAtPosition();
+                if (nextCh == 'n')
                 {
-                    if (!overflow)
-                    {
-                        val = new BigInteger(intValue);
-                    }
-                    else
-                    {
-                        var slice = _input.SliceBetween(start, _position);
-                        val = ParseIntToBigInteger(slice, radix: 10);
-                    }
-                    tokenType = TokenType.BigInt;
-                    ++_position;
-                    break;
+                    Unexpected<bool>(start);
                 }
 
-                bool hasSeparator2;
-                var integerPartEnd = _position;
-
-                if (nextCh == '.')
+                goto ParseDecimal;
+            }
+            else if (numDigits > 1) // actual octal number
+            {
+                if (IsIdentifierStart(FullCharCodeAtPosition()))
                 {
-                    ++_position;
-                    ReadInt(out _, out _, out hasSeparator2, radix: 10);
-                    hasSeparator |= hasSeparator2;
-                    nextCh = CharCodeAtPosition();
+                    // Raise(_position, "Identifier directly after number"); // original acornjs error reporting
+                    Unexpected(start);
                 }
 
-                if (nextCh is 'e' or 'E')
-                {
-                    ++_position;
-                    nextCh = CharCodeAtPosition();
-                    if (nextCh is '+' or '-')
-                    {
-                        ++_position;
-                    }
-                    if (!ReadInt(out _, out _, out hasSeparator2, radix: 10))
-                    {
-                        Raise(start, "Invalid number");
-                    }
-                    hasSeparator |= hasSeparator2;
-                }
-
-                if (!overflow && _position == integerPartEnd)
-                {
-                    val = (double)intValue;
-                }
-                else
-                {
-                    var slice = _input.SliceBetween(start, _position);
-                    val = ParseFloatToDouble(slice, hasSeparator, this);
-                }
-                tokenType = TokenType.Number;
-                break;
-
-            case true:
                 if (_strict)
                 {
-                    Raise(start, "Invalid number");
+                    // Raise(start, "Invalid number"); // original acornjs error reporting
+                    Raise(start, SyntaxErrorMessages.StrictOctalLiteral);
                 }
-
-                if (_input.SliceBetween(start, _position).IndexOfAny("89".AsSpan()) >= 0)
-                {
-                    goto case false;
-                }
-
-                // TODO: invalid bigint syntax error message ? (e.g. 077n)
-
-                var e = _position;
-                _position = start;
-                var success = ReadInt(out intValue, out overflow, out _, radix: 8);
-                Debug.Assert(success && _position == e);
 
                 if (!overflow)
                 {
@@ -952,19 +912,101 @@ public sealed partial class Tokenizer
                 }
                 else
                 {
-                    var slice = _input.SliceBetween(start, _position);
+                    slice = _input.SliceBetween(start, _position);
                     val = ParseIntToDouble(slice, radix: 10);
                 }
-                tokenType = TokenType.Number;
-                break;
+
+                return FinishToken(TokenType.Number, val);
+            }
+        }
+        else if (startsWithDot)
+        {
+            numDigits = 0;
+            intValue = 0;
+            overflow = hasSeparator = false;
+            nextCh = CharCodeAtPosition();
+
+            goto ParseDecimal;
+        }
+        else
+        {
+            numDigits = ReadInt(out intValue, out overflow, out hasSeparator, radix: 10);
+            Debug.Assert(numDigits > 0);
+            nextCh = CharCodeAtPosition();
+        }
+
+        if (_options._ecmaVersion >= EcmaVersion.ES11 && nextCh == 'n')
+        {
+            if (!overflow)
+            {
+                val = new BigInteger(intValue);
+            }
+            else
+            {
+                slice = _input.SliceBetween(start, _position);
+                val = ParseIntToBigInteger(slice, radix: 10);
+            }
+            ++_position;
+
+            if (IsIdentifierStart(FullCharCodeAtPosition()))
+            {
+                // Raise(_position, "Identifier directly after number"); // original acornjs error reporting
+                Unexpected(start);
+            }
+
+            return FinishToken(TokenType.BigInt, val);
+        }
+
+    ParseDecimal:
+        bool hasSeparator2;
+        var integerPartEnd = _position;
+
+        if (nextCh == '.')
+        {
+            ++_position;
+            ReadInt(out _, out _, out hasSeparator2, radix: 10);
+            hasSeparator = hasSeparator || hasSeparator2;
+            nextCh = CharCodeAtPosition();
+        }
+
+        if (nextCh is 'e' or 'E')
+        {
+            ++_position;
+            nextCh = CharCodeAtPosition();
+            if (nextCh is '+' or '-')
+            {
+                ++_position;
+            }
+            if (!(ReadInt(out _, out _, out hasSeparator2, radix: 10) > 0))
+            {
+                // Raise(start, "Invalid number"); // original acornjs error reporting
+                Unexpected(start);
+            }
+            hasSeparator = hasSeparator || hasSeparator2;
+        }
+
+        if (startsWithZero && _strict && numDigits > 1)
+        {
+            Raise(start, SyntaxErrorMessages.StrictDecimalWithLeadingZero);
+        }
+
+        if (!overflow && _position - integerPartEnd <= 1) // no need to reparse literals like 10.
+        {
+            val = (double)intValue;
+        }
+        else
+        {
+            slice = _input.SliceBetween(start, _position);
+            val = ParseFloatToDouble(slice, hasSeparator, this);
         }
 
         if (IsIdentifierStart(FullCharCodeAtPosition()))
         {
-            Raise(_position, "Identifier directly after number");
+            // Raise(_position, "Identifier directly after number"); // original acornjs error reporting
+            Unexpected(start);
         }
 
-        return FinishToken(tokenType, val);
+        return FinishToken(TokenType.Number, val);
     }
 
     // Read a string value, interpreting backslash-escapes.
@@ -1025,7 +1067,8 @@ public sealed partial class Tokenizer
         finally { ReleaseStringBuilder(ref sb); }
 
     Unterminated:
-        return Raise<bool>(_start, "Unterminated string constant");
+        // return Raise<bool>(_start, "Unterminated string constant"); // original acornjs error reporting
+        return Unexpected<bool>();
     }
 
     // Read a string value, interpreting backslash-escapes.
@@ -1036,31 +1079,34 @@ public sealed partial class Tokenizer
         var ch = CharCodeAtPosition();
         if (ch == '{')
         {
+            var start = _position;
             if (_options._ecmaVersion < EcmaVersion.ES6)
             {
-                // TODO: make error message and position consistent with Tokenizer.ReadIdentifier
-                Unexpected();
+                // Unexpected(); // original acornjs error reporting
+                Raise(start - 2, SyntaxErrorMessages.InvalidUnicodeEscapeSequence);
             }
 
-            var errorPos = ++_position;
-            var cp = ReadHexChar(_input.IndexOf('}', _position, _endPosition - _position) - _position);
-            if (cp < 0)
+            ++_position;
+            var len = _input.IndexOf('}', _position, _endPosition - _position) - _position;
+            var cp = ReadHexChar(len > 0 ? len : -1, start, isVariableLength: true);
+            if ((uint)cp > UnicodeHelper.LastCodePoint)
             {
+                if (cp > 0)
+                {
+                    // InvalidStringToken(errorPos, "Code point out of bounds"); // original acornjs error reporting
+                    InvalidStringToken(start - 2, SyntaxErrorMessages.UndefinedUnicodeCodePoint);
+                }
+
                 // Propagate escape sequence error to caller when parsing a template literal.
                 return -1;
             }
 
             ++_position;
-            if (cp > 0x10FFFF)
-            {
-                InvalidStringToken(errorPos, "Code point out of bounds");
-                return -1;
-            }
             return cp;
         }
         else
         {
-            return ReadHexChar(4);
+            return ReadHexChar(4, _position);
         }
     }
 
@@ -1094,7 +1140,7 @@ public sealed partial class Tokenizer
 
             // NOTE: Original acornjs implementation uses a custom exception (INVALID_TEMPLATE_ESCAPE_ERROR) to
             // propagate escape sequence error in template literals up the call stack to ReadTemplateToken.
-            // Exceptions are expensive in .NET and generally considered an antipattern for flow control,
+            // Exceptions are expensive in .NET and generally considered an antipattern to control flow,
             // so the implementation was changed to propagate the error using method returns.
             return;
         }
@@ -1188,7 +1234,8 @@ public sealed partial class Tokenizer
         }
         finally { ReleaseStringBuilder(ref sb); }
 
-        return Raise<bool>(_start, "Unterminated template");
+        // return Raise<bool>(_start, "Unterminated template"); // original acornjs error reporting
+        return Raise<bool>(_position, SyntaxErrorMessages.UnexpectedEOS);
     }
 
     // Reads a template token to search for the end, without validating any escape sequences
@@ -1244,7 +1291,8 @@ public sealed partial class Tokenizer
             _position++;
         }
 
-        return Raise<bool>(_start, "Unterminated template");
+        // return Raise<bool>(_start, "Unterminated template"); // original acornjs error reporting
+        return Raise<bool>(_position, SyntaxErrorMessages.UnexpectedEOS);
     }
 
     private ReadOnlySpan<char> ReadTemplateRaw(StringBuilder sb, bool normalizeRaw)
@@ -1282,7 +1330,7 @@ public sealed partial class Tokenizer
         {
             case 'n': return sb.Append('\n');
             case 'r': return sb.Append('\r');
-            case 'x': return (ch = ReadHexChar(2)) >= 0 ? sb.Append((char)ch) : null;
+            case 'x': return (ch = ReadHexChar(2, _position)) >= 0 ? sb.Append((char)ch) : null;
             case 'u': return (ch = ReadCodePoint()) >= 0 ? sb.AppendCodePoint(ch) : null;
             case 't': return sb.Append('\t');
             case 'b': return sb.Append('\b');
@@ -1329,14 +1377,17 @@ public sealed partial class Tokenizer
                 {
                     if (_legacyOctalPosition < 0)
                     {
-                        _legacyOctalPosition = start;
+                        _legacyOctalPosition = start - 1;
                     }
 
                     if (_strict || inTemplate)
                     {
-                        InvalidStringToken(start, inTemplate
-                            ? "Octal literal in template string"
-                            : "Octal literal in strict mode");
+                        //InvalidStringToken(_position - 1, inTemplate
+                        //    ? "Octal literal in template string"
+                        //    : "Octal literal in strict mode"); // original acornjs error reporting
+                        InvalidStringToken(start - 1, inTemplate
+                            ? SyntaxErrorMessages.TemplateOctalLiteral
+                            : SyntaxErrorMessages.StrictOctalEscape);
                         return null;
                     }
                 }
@@ -1344,21 +1395,20 @@ public sealed partial class Tokenizer
                 return sb.Append((char)octal);
 
             case '8' or '9':
-                if (_strict)
+                if (_strict || inTemplate)
                 {
-                    InvalidStringToken(_position - 1, "Invalid escape sequence");
-                    return null;
-                }
-
-                if (inTemplate)
-                {
-                    InvalidStringToken(_position - 1, "Invalid escape sequence in template string");
+                    //InvalidStringToken(_position - 1, inTemplate
+                    //    ? "Invalid escape sequence in template string"
+                    //    : "Invalid escape sequence"); // original acornjs error reporting
+                    InvalidStringToken(_position - 2, inTemplate
+                        ? SyntaxErrorMessages.Template8Or9Escape
+                        : SyntaxErrorMessages.Strict8Or9Escape);
                     return null;
                 }
 
                 if (_legacyOctalPosition < 0)
                 {
-                    _legacyOctalPosition = _position - 1;
+                    _legacyOctalPosition = _position - 2;
                 }
 
                 goto default;
@@ -1368,18 +1418,24 @@ public sealed partial class Tokenizer
         }
     }
 
-    // Used to read character escape sequences ('\x', '\u', '\U').
-    private int ReadHexChar(int len)
+    // Used to read character escape sequences ('\x', '\u', '\u{').
+    private int ReadHexChar(int len, int start, bool isVariableLength = false)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readHexChar = function`
-        var errorPos = _position;
-        if (!ReadInt(out var n, out var overflow, out _, radix: 16, len: len) || overflow) // TODO: error msg when overflow?
+        if (ReadInt(out var n, out var overflow, out _, radix: 16, len: len) != len)
         {
-            InvalidStringToken(errorPos, "Bad character escape sequence");
+            // InvalidStringToken(errorPos, "Bad character escape sequence"); // original acornjs error reporting
+            InvalidStringToken(start - 2, !isVariableLength && len == 2
+                ? SyntaxErrorMessages.InvalidHexEscapeSequence
+                : SyntaxErrorMessages.InvalidUnicodeEscapeSequence);
             return -1;
         }
+        else if (overflow || n > int.MaxValue)
+        {
+            return int.MaxValue;
+        }
 
-        return n <= int.MaxValue ? (int)n : int.MaxValue;
+        return (int)n;
     }
 
     // Read an identifier, and return it as a string. Sets `ContainsEscape`
@@ -1396,8 +1452,7 @@ public sealed partial class Tokenizer
         try
         {
             var first = true;
-            var start = _position;
-            var chunkStart = start;
+            var chunkStart = _position;
             var astral = _options._ecmaVersion >= EcmaVersion.ES6;
 
             for (int cp; (cp = FullCharCodeAtPosition()) >= 0;)
@@ -1410,11 +1465,11 @@ public sealed partial class Tokenizer
                 {
                     _containsEscape = true;
                     sb.Append(_input, chunkStart, _position - chunkStart);
-                    var escStart = _position++;
+                    ++_position;
                     if (CharCodeAtPosition() != 'u')
                     {
-                        InvalidStringToken(_position, "Expecting Unicode escape sequence \\uXXXX");
-                        throw new InvalidOperationException();
+                        // InvalidStringToken(_position, "Expecting Unicode escape sequence \\uXXXX"); // original acornjs error reporting
+                        Unexpected();
                     }
 
                     ++_position;
@@ -1423,8 +1478,8 @@ public sealed partial class Tokenizer
                         ? !IsIdentifierStart(esc, astral)
                         : !IsIdentifierChar(esc, astral))
                     {
-                        InvalidStringToken(escStart, "Invalid Unicode escape");
-                        throw new InvalidOperationException();
+                        // InvalidStringToken(escStart, "Invalid Unicode escape"); // original acornjs error reporting
+                        Unexpected();
                     }
 
                     sb.AppendCodePoint(esc);
@@ -1726,7 +1781,7 @@ public sealed partial class Tokenizer
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/parseutil.js > `pp.unexpected = function`
 
-        Raise(pos ?? _start, "Unexpected token");
+        Raise(pos ?? _start, SyntaxErrorMessages.InvalidOrUnexpectedToken);
     }
 
     [DoesNotReturn]

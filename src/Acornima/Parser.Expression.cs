@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using Acornima.Ast;
 using Acornima.Helpers;
+using Acornima.Properties;
 
 namespace Acornima;
 
@@ -1192,9 +1193,10 @@ public partial class Parser
         {
             if (_tokenizer._type == TokenType.EOF)
             {
-                Raise(_tokenizer._position, "Unterminated template literal");
+                Raise(_tokenizer._position, SyntaxErrorMessages.UnexpectedEOS);
             }
 
+            var errorPos = _tokenizer._start;
             Expect(TokenType.DollarBraceLeft);
             expressions.Add(ParseExpression(ref NullRef<DestructuringErrors>()));
             if (_tokenizer._type == TokenType.BraceRight)
@@ -1203,7 +1205,8 @@ public partial class Parser
             }
             else
             {
-                Unexpected();
+                // Unexpected(); // original acornjs error reporting
+                Raise(errorPos, SyntaxErrorMessages.UnterminatedTemplateExpr);
             }
             quasis.Add(currentElement = ParseTemplateElement());
         }

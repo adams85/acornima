@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -117,4 +117,28 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="RegexCreationFailed" xml:space="preserve">
+    <value>Failed to create {0} from the adapted pattern ({1}) and options ({2})</value>
+  </data>
+  <data name="RegExpConversionFailed" xml:space="preserve">
+    <value>Cannot convert regular expression to an equivalent {0}: /{1}/{2}: {3}</value>
+  </data>
+  <data name="RegExpInconvertibleForwardReference" xml:space="preserve">
+    <value>Inconvertible forward reference</value>
+  </data>
+  <data name="RegExpInconvertibleNamedForwardReference" xml:space="preserve">
+    <value>Inconvertible named forward reference</value>
+  </data>
+  <data name="RegExpInconvertibleRangeQuantifier" xml:space="preserve">
+    <value>Inconvertible {} quantifier</value>
+  </data>
+  <data name="RegExpInconvertibleUnicodePropertyEscape" xml:space="preserve">
+    <value>Inconvertible Unicode property escape</value>
+  </data>
+  <data name="RegExpUnicodeSetsModeNotSupported" xml:space="preserve">
+    <value>Unicode sets mode (flag v) is not supported currently</value>
+  </data>
+  <data name="RegExpUnmappableGroupName" xml:space="preserve">
+    <value>Cannot map group name '{0}' to a unique group name in the adapted regex</value>
+  </data>
 </root>
