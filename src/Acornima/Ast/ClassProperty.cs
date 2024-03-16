@@ -14,7 +14,7 @@ public abstract class ClassProperty : Node, IProperty, IClassElement
 
     public PropertyKind Kind { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     /// <remarks>
-    /// <see cref="Identifier"/> | <see cref="Literal"/> (string or numeric) | '[' <see cref="Expression"/> ']' | <see cref="PrivateIdentifier"/>
+    /// <see cref="Identifier"/> | <see cref="StringLiteral"/> | <see cref="NumericLiteral"/> | <see cref="BigIntLiteral"/> | '[' <see cref="Expression"/> ']' | <see cref="PrivateIdentifier"/>
     /// </remarks>
     public Expression Key { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public bool Computed { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }

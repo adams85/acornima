@@ -68,6 +68,7 @@
       $(PolySharpIncludeGeneratedTypes);
       System.Diagnostics.CodeAnalysis.NotNullAttribute;
       System.Diagnostics.CodeAnalysis.NotNullIfNotNullAttribute;
+      System.Diagnostics.CodeAnalysis.NotNullWhenAttribute;
       System.Diagnostics.CodeAnalysis.DoesNotReturnAttribute;
     </PolySharpIncludeGeneratedTypes>
   </PropertyGroup>

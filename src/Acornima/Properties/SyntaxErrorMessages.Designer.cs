@@ -61,11 +61,344 @@ namespace Acornima.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &apos;arguments&apos; is not allowed in class field initializer or static initialization block.
+        /// </summary>
+        internal static string ArgumentsDisallowedInInitializerAndStaticBlock {
+            get {
+                return ResourceManager.GetString("ArgumentsDisallowedInInitializerAndStaticBlock", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Async functions can only be declared at the top level or inside a block.
+        /// </summary>
+        internal static string AsyncFunctionInSingleStatementContext {
+            get {
+                return ResourceManager.GetString("AsyncFunctionInSingleStatementContext", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;await&apos; is not a valid identifier name in an async function.
+        /// </summary>
+        internal static string AwaitBindingIdentifier {
+            get {
+                return ResourceManager.GetString("AwaitBindingIdentifier", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Illegal await-expression in formal parameters of async function.
+        /// </summary>
+        internal static string AwaitExpressionFormalParameter {
+            get {
+                return ResourceManager.GetString("AwaitExpressionFormalParameter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to await is only valid in async functions and the top level bodies of modules.
+        /// </summary>
+        internal static string AwaitNotInAsyncContext {
+            get {
+                return ResourceManager.GetString("AwaitNotInAsyncContext", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Getter must not have any formal parameters.
+        /// </summary>
+        internal static string BadGetterArity {
+            get {
+                return ResourceManager.GetString("BadGetterArity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Setter must have exactly one formal parameter.
+        /// </summary>
+        internal static string BadSetterArity {
+            get {
+                return ResourceManager.GetString("BadSetterArity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Setter function argument must not be a rest parameter.
+        /// </summary>
+        internal static string BadSetterRestParameter {
+            get {
+                return ResourceManager.GetString("BadSetterRestParameter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Classes may not have a field named &apos;constructor&apos;.
+        /// </summary>
+        internal static string ConstructorClassField {
+            get {
+                return ResourceManager.GetString("ConstructorClassField", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Class constructor may not be an accessor.
+        /// </summary>
+        internal static string ConstructorIsAccessor {
+            get {
+                return ResourceManager.GetString("ConstructorIsAccessor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Class constructor may not be an async method.
+        /// </summary>
+        internal static string ConstructorIsAsync {
+            get {
+                return ResourceManager.GetString("ConstructorIsAsync", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Class constructor may not be a generator.
+        /// </summary>
+        internal static string ConstructorIsGenerator {
+            get {
+                return ResourceManager.GetString("ConstructorIsGenerator", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Class constructor may not be a private method.
+        /// </summary>
+        internal static string ConstructorIsPrivate {
+            get {
+                return ResourceManager.GetString("ConstructorIsPrivate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Only one underscore is allowed as numeric separator.
         /// </summary>
         internal static string ContinuousNumericSeparator {
             get {
                 return ResourceManager.GetString("ContinuousNumericSeparator", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Missing initializer in const declaration.
+        /// </summary>
+        internal static string DeclarationMissingInitializer_Const {
+            get {
+                return ResourceManager.GetString("DeclarationMissingInitializer_Const", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Missing initializer in destructuring declaration.
+        /// </summary>
+        internal static string DeclarationMissingInitializer_Destructuring {
+            get {
+                return ResourceManager.GetString("DeclarationMissingInitializer_Destructuring", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Decorators cannot be applied to static initialization blocks.
+        /// </summary>
+        internal static string DecoratorAppliedToStaticBlock {
+            get {
+                return ResourceManager.GetString("DecoratorAppliedToStaticBlock", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Private fields can not be deleted.
+        /// </summary>
+        internal static string DeletePrivateField {
+            get {
+                return ResourceManager.GetString("DeletePrivateField", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A class may only have one constructor.
+        /// </summary>
+        internal static string DuplicateConstructor {
+            get {
+                return ResourceManager.GetString("DuplicateConstructor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Duplicate export of &apos;{0}&apos;.
+        /// </summary>
+        internal static string DuplicateExport {
+            get {
+                return ResourceManager.GetString("DuplicateExport", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Import attributes has duplicate key &apos;{0}&apos;.
+        /// </summary>
+        internal static string DuplicateImportAttribute {
+            get {
+                return ResourceManager.GetString("DuplicateImportAttribute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Duplicate __proto__ fields are not allowed in object literals.
+        /// </summary>
+        internal static string DuplicateProto {
+            get {
+                return ResourceManager.GetString("DuplicateProto", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Rest element must be last element.
+        /// </summary>
+        internal static string ElementAfterRest {
+            get {
+                return ResourceManager.GetString("ElementAfterRest", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} loop variable declaration may not have an initializer.
+        /// </summary>
+        internal static string ForInOfLoopInitializer {
+            get {
+                return ResourceManager.GetString("ForInOfLoopInitializer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid left-hand side in {0} loop: Must have a single binding.
+        /// </summary>
+        internal static string ForInOfLoopMultiBindings {
+            get {
+                return ResourceManager.GetString("ForInOfLoopMultiBindings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The left-hand side of a for-of loop may not be &apos;async&apos;.
+        /// </summary>
+        internal static string ForOfAsync {
+            get {
+                return ResourceManager.GetString("ForOfAsync", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The left-hand side of a for-of loop may not start with &apos;let&apos;.
+        /// </summary>
+        internal static string ForOfLet {
+            get {
+                return ResourceManager.GetString("ForOfLet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Generators can only be declared at the top level or inside a block.
+        /// </summary>
+        internal static string GeneratorInSingleStatementContext {
+            get {
+                return ResourceManager.GetString("GeneratorInSingleStatementContext", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Illegal break statement.
+        /// </summary>
+        internal static string IllegalBreak {
+            get {
+                return ResourceManager.GetString("IllegalBreak", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; does not denote an iteration statement.
+        /// </summary>
+        internal static string IllegalContinue {
+            get {
+                return ResourceManager.GetString("IllegalContinue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Illegal &apos;{0}&apos; directive in function with non-simple parameter list.
+        /// </summary>
+        internal static string IllegalLanguageModeDirective {
+            get {
+                return ResourceManager.GetString("IllegalLanguageModeDirective", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Illegal return statement.
+        /// </summary>
+        internal static string IllegalReturn {
+            get {
+                return ResourceManager.GetString("IllegalReturn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot use &apos;import.meta&apos; outside a module.
+        /// </summary>
+        internal static string ImportMetaOutsideModule {
+            get {
+                return ResourceManager.GetString("ImportMetaOutsideModule", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot use import statement outside a module.
+        /// </summary>
+        internal static string ImportOutsideModule {
+            get {
+                return ResourceManager.GetString("ImportOutsideModule", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid shorthand property initializer.
+        /// </summary>
+        internal static string InvalidCoverInitializedName {
+            get {
+                return ResourceManager.GetString("InvalidCoverInitializedName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid decorator member expression.
+        /// </summary>
+        internal static string InvalidDecoratorMemberExpr {
+            get {
+                return ResourceManager.GetString("InvalidDecoratorMemberExpr", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid destructuring assignment target.
+        /// </summary>
+        internal static string InvalidDestructuringTarget {
+            get {
+                return ResourceManager.GetString("InvalidDestructuringTarget", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; must not contain escaped characters.
+        /// </summary>
+        internal static string InvalidEscapedMetaProperty {
+            get {
+                return ResourceManager.GetString("InvalidEscapedMetaProperty", resourceCulture);
             }
         }
         
@@ -88,11 +421,74 @@ namespace Acornima.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid left-hand side in assignment.
+        /// </summary>
+        internal static string InvalidLhsInAssignment {
+            get {
+                return ResourceManager.GetString("InvalidLhsInAssignment", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid left-hand side in for-loop.
+        /// </summary>
+        internal static string InvalidLhsInFor {
+            get {
+                return ResourceManager.GetString("InvalidLhsInFor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid left-hand side expression in postfix operation.
+        /// </summary>
+        internal static string InvalidLhsInPostfixOp {
+            get {
+                return ResourceManager.GetString("InvalidLhsInPostfixOp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid left-hand side expression in prefix operation.
+        /// </summary>
+        internal static string InvalidLhsInPrefixOp {
+            get {
+                return ResourceManager.GetString("InvalidLhsInPrefixOp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid module export name: contains unpaired surrogate.
+        /// </summary>
+        internal static string InvalidModuleExportName {
+            get {
+                return ResourceManager.GetString("InvalidModuleExportName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid or unexpected token.
         /// </summary>
         internal static string InvalidOrUnexpectedToken {
             get {
                 return ResourceManager.GetString("InvalidOrUnexpectedToken", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Private field &apos;{0}&apos; must be declared in an enclosing class.
+        /// </summary>
+        internal static string InvalidPrivateFieldResolution {
+            get {
+                return ResourceManager.GetString("InvalidPrivateFieldResolution", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Illegal property in declaration context.
+        /// </summary>
+        internal static string InvalidPropertyBindingPattern {
+            get {
+                return ResourceManager.GetString("InvalidPropertyBindingPattern", resourceCulture);
             }
         }
         
@@ -106,11 +502,137 @@ namespace Acornima.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to `...` must be followed by an assignable reference in assignment contexts.
+        /// </summary>
+        internal static string InvalidRestAssignmentPattern {
+            get {
+                return ResourceManager.GetString("InvalidRestAssignmentPattern", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid Unicode escape sequence.
         /// </summary>
         internal static string InvalidUnicodeEscapeSequence {
             get {
                 return ResourceManager.GetString("InvalidUnicodeEscapeSequence", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Label &apos;{0}&apos; has already been declared.
+        /// </summary>
+        internal static string LabelRedeclaration {
+            get {
+                return ResourceManager.GetString("LabelRedeclaration", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to let is disallowed as a lexically bound name.
+        /// </summary>
+        internal static string LetInLexicalBinding {
+            get {
+                return ResourceManager.GetString("LetInLexicalBinding", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to String literal module export names must be followed by a &apos;from&apos; clause.
+        /// </summary>
+        internal static string ModuleExportNameWithoutFromClause {
+            get {
+                return ResourceManager.GetString("ModuleExportNameWithoutFromClause", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Export &apos;{0}&apos; is not defined in module.
+        /// </summary>
+        internal static string ModuleExportUndefined {
+            get {
+                return ResourceManager.GetString("ModuleExportUndefined", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to More than one default clause in switch statement.
+        /// </summary>
+        internal static string MultipleDefaultsInSwitch {
+            get {
+                return ResourceManager.GetString("MultipleDefaultsInSwitch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Illegal newline after throw.
+        /// </summary>
+        internal static string NewlineAfterThrow {
+            get {
+                return ResourceManager.GetString("NewlineAfterThrow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Missing catch or finally after try.
+        /// </summary>
+        internal static string NoCatchOrFinally {
+            get {
+                return ResourceManager.GetString("NoCatchOrFinally", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Illegal continue statement: no surrounding iteration statement.
+        /// </summary>
+        internal static string NoIterationStatement {
+            get {
+                return ResourceManager.GetString("NoIterationStatement", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid optional chain from new expression.
+        /// </summary>
+        internal static string OptionalChainingNoNew {
+            get {
+                return ResourceManager.GetString("OptionalChainingNoNew", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid tagged template on optional chain.
+        /// </summary>
+        internal static string OptionalChainingNoTemplate {
+            get {
+                return ResourceManager.GetString("OptionalChainingNoTemplate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Rest parameter must be last formal parameter.
+        /// </summary>
+        internal static string ParamAfterRest {
+            get {
+                return ResourceManager.GetString("ParamAfterRest", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Duplicate parameter name not allowed in this context.
+        /// </summary>
+        internal static string ParamDupe {
+            get {
+                return ResourceManager.GetString("ParamDupe", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Redefinition of property &apos;{0}&apos;.
+        /// </summary>
+        internal static string RedefinedProperty {
+            get {
+                return ResourceManager.GetString("RedefinedProperty", resourceCulture);
             }
         }
         
@@ -304,6 +826,33 @@ namespace Acornima.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Rest parameter may not have a default initializer.
+        /// </summary>
+        internal static string RestDefaultInitializer {
+            get {
+                return ResourceManager.GetString("RestDefaultInitializer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement.
+        /// </summary>
+        internal static string SloppyFunction {
+            get {
+                return ResourceManager.GetString("SloppyFunction", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Classes may not have a static property named &apos;prototype&apos;.
+        /// </summary>
+        internal static string StaticPrototype {
+            get {
+                return ResourceManager.GetString("StaticPrototype", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to \8 and \9 are not allowed in strict mode.
         /// </summary>
         internal static string Strict8Or9Escape {
@@ -322,6 +871,33 @@ namespace Acornima.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Delete of an unqualified identifier in strict mode.
+        /// </summary>
+        internal static string StrictDelete {
+            get {
+                return ResourceManager.GetString("StrictDelete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unexpected eval or arguments in strict mode.
+        /// </summary>
+        internal static string StrictEvalArguments {
+            get {
+                return ResourceManager.GetString("StrictEvalArguments", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to In strict mode code, functions can only be declared at top level or inside a block.
+        /// </summary>
+        internal static string StrictFunction {
+            get {
+                return ResourceManager.GetString("StrictFunction", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Octal escape sequences are not allowed in strict mode.
         /// </summary>
         internal static string StrictOctalEscape {
@@ -336,6 +912,15 @@ namespace Acornima.Properties {
         internal static string StrictOctalLiteral {
             get {
                 return ResourceManager.GetString("StrictOctalLiteral", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Strict mode code may not include a with statement.
+        /// </summary>
+        internal static string StrictWith {
+            get {
+                return ResourceManager.GetString("StrictWith", resourceCulture);
             }
         }
         
@@ -381,6 +966,42 @@ namespace Acornima.Properties {
         internal static string UnexpectedEOS {
             get {
                 return ResourceManager.GetString("UnexpectedEOS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to new.target expression is not allowed here.
+        /// </summary>
+        internal static string UnexpectedNewTarget {
+            get {
+                return ResourceManager.GetString("UnexpectedNewTarget", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unexpected reserved word.
+        /// </summary>
+        internal static string UnexpectedReserved {
+            get {
+                return ResourceManager.GetString("UnexpectedReserved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unexpected strict mode reserved word.
+        /// </summary>
+        internal static string UnexpectedStrictReserved {
+            get {
+                return ResourceManager.GetString("UnexpectedStrictReserved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;super&apos; keyword unexpected here.
+        /// </summary>
+        internal static string UnexpectedSuper {
+            get {
+                return ResourceManager.GetString("UnexpectedSuper", resourceCulture);
             }
         }
         
@@ -439,6 +1060,24 @@ namespace Acornima.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unary operator used immediately before exponentiation expression. Parenthesis must be used to disambiguate operator precedence.
+        /// </summary>
+        internal static string UnexpectedTokenUnaryExponentiation {
+            get {
+                return ResourceManager.GetString("UnexpectedTokenUnaryExponentiation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Undefined label &apos;{0}&apos;.
+        /// </summary>
+        internal static string UnknownLabel {
+            get {
+                return ResourceManager.GetString("UnknownLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid regular expression: missing /.
         /// </summary>
         internal static string UnterminatedRegExp {
@@ -453,6 +1092,24 @@ namespace Acornima.Properties {
         internal static string UnterminatedTemplateExpr {
             get {
                 return ResourceManager.GetString("UnterminatedTemplateExpr", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Identifier &apos;{0}&apos; has already been declared.
+        /// </summary>
+        internal static string VarRedeclaration {
+            get {
+                return ResourceManager.GetString("VarRedeclaration", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Yield expression not allowed in formal parameter.
+        /// </summary>
+        internal static string YieldInParameter {
+            get {
+                return ResourceManager.GetString("YieldInParameter", resourceCulture);
             }
         }
         

@@ -19,7 +19,7 @@ public abstract partial class Property : Node, IProperty
 
     public PropertyKind Kind { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     /// <remarks>
-    /// <see cref="Identifier"/> | <see cref="Literal"/> (string or numeric) | '[' <see cref="Expression"/> ']'
+    /// <see cref="Identifier"/> | <see cref="StringLiteral"/> | <see cref="NumericLiteral"/> | <see cref="BigIntLiteral"/> | '[' <see cref="Expression"/> ']'
     /// </remarks>
     public Expression Key { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 

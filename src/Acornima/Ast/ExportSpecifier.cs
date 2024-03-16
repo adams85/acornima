@@ -12,13 +12,13 @@ public sealed partial class ExportSpecifier : ModuleSpecifier
     }
 
     /// <remarks>
-    /// <see cref="Identifier"/> | <see cref="Literal"/> (string)
+    /// <see cref="Identifier"/> | <see cref="StringLiteral"/>
     /// </remarks>
     public new Expression Local { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     protected override Expression GetLocal() => Local;
 
     /// <remarks>
-    /// <see cref="Identifier"/> | <see cref="Literal"/> (string)
+    /// <see cref="Identifier"/> | <see cref="StringLiteral"/>
     /// </remarks>
     public Expression Exported { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 

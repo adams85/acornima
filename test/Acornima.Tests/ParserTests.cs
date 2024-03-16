@@ -736,10 +736,10 @@ public partial class ParserTests
     [InlineData("(x = 0) => {'use strict'; 0 }; 00", true, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
 
     [InlineData("'use strict';\r\nfunction f(arguments){}", false, EcmaVersion.ES3, null)]
-    [InlineData("'use strict';\r\nfunction f(arguments){}", false, EcmaVersion.ES5, "Binding arguments in strict mode")]
-    [InlineData("'use strict';\r\n(arguments)=>{}", false, EcmaVersion.ES6, "Binding arguments in strict mode")]
+    [InlineData("'use strict';\r\nfunction f(arguments){}", false, EcmaVersion.ES5, "Unexpected eval or arguments in strict mode")]
+    [InlineData("'use strict';\r\n(arguments)=>{}", false, EcmaVersion.ES6, "Unexpected eval or arguments in strict mode")]
     [InlineData("'use strict'\r\nfunction f(eval){}", false, EcmaVersion.ES3, null)]
-    [InlineData("'use strict'\r\nfunction f(eval){}", false, EcmaVersion.ES5, "Binding eval in strict mode")]
+    [InlineData("'use strict'\r\nfunction f(eval){}", false, EcmaVersion.ES5, "Unexpected eval or arguments in strict mode")]
     [InlineData("'use strict'\r\n(eval)=>{}", false, EcmaVersion.ES6, "Unexpected token '=>'")] // due to implementation differences V8 reports 'Malformed arrow function parameter list'
     public void ShouldHandleStrictModeDetectionEdgeCases(string input, bool isModule, EcmaVersion ecmaVersion, string? expectedError)
     {
@@ -766,6 +766,726 @@ public partial class ParserTests
         else
         {
             var ex = Assert.Throws<SyntaxErrorException>(() => isModule ? parser.ParseModule(input) : parser.ParseScript(input));
+            Assert.Equal(expectedError, ex.Description);
+        }
+    }
+
+    [Theory]
+    [InlineData("script", "await", EcmaVersion.Latest, null)]
+    [InlineData("script", "await", EcmaVersion.ES13, null)]
+    [InlineData("script", "await", EcmaVersion.ES8, null)]
+    [InlineData("script", "await", EcmaVersion.ES7, null)]
+    [InlineData("module", "await", EcmaVersion.Latest, "Unexpected end of input")]
+    [InlineData("module", "await", EcmaVersion.ES13, "Unexpected end of input")]
+    [InlineData("module", "await", EcmaVersion.ES12, "Unexpected reserved word")]
+    [InlineData("module", "await", EcmaVersion.ES6, "Unexpected reserved word")]
+    [InlineData("script", "await 0", EcmaVersion.Latest, "await is only valid in async functions and the top level bodies of modules")]
+    [InlineData("script", "await 0", EcmaVersion.ES13, "await is only valid in async functions and the top level bodies of modules")]
+    [InlineData("script", "await 0", EcmaVersion.ES8, "await is only valid in async functions and the top level bodies of modules")]
+    [InlineData("script", "await 0", EcmaVersion.ES7, "Unexpected number")]
+    [InlineData("module", "await 0", EcmaVersion.Latest, null)]
+    [InlineData("module", "await 0", EcmaVersion.ES13, null)]
+    [InlineData("module", "await 0", EcmaVersion.ES12, "Unexpected reserved word")]
+    [InlineData("module", "await 0", EcmaVersion.ES6, "Unexpected reserved word")]
+    [InlineData("script", "{ await 0 }", EcmaVersion.Latest, "await is only valid in async functions and the top level bodies of modules")]
+    [InlineData("script", "{ await 0 }", EcmaVersion.ES13, "await is only valid in async functions and the top level bodies of modules")]
+    [InlineData("script", "{ await 0 }", EcmaVersion.ES8, "await is only valid in async functions and the top level bodies of modules")]
+    [InlineData("script", "{ await 0 }", EcmaVersion.ES7, "Unexpected number")]
+    [InlineData("module", "{ await 0 }", EcmaVersion.Latest, null)]
+    [InlineData("module", "{ await 0 }", EcmaVersion.ES13, null)]
+    [InlineData("module", "{ await 0 }", EcmaVersion.ES12, "Unexpected reserved word")]
+    [InlineData("module", "{ await 0 }", EcmaVersion.ES6, "Unexpected reserved word")]
+    [InlineData("script", "for await (x of a) {}", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "for await (x of a) {}", EcmaVersion.ES13, "Unexpected reserved word")]
+    [InlineData("script", "for await (x of a) {}", EcmaVersion.ES12, "Unexpected reserved word")]
+    [InlineData("script", "for await (x of a) {}", EcmaVersion.ES9, "Unexpected reserved word")]
+    [InlineData("script", "for await (x of a) {}", EcmaVersion.ES8, "Unexpected identifier 'await'")]
+    [InlineData("module", "for await (x of a) {}", EcmaVersion.Latest, null)]
+    [InlineData("module", "for await (x of a) {}", EcmaVersion.ES13, null)]
+    [InlineData("module", "for await (x of a) {}", EcmaVersion.ES12, "Unexpected reserved word")]
+    [InlineData("module", "for await (x of a) {}", EcmaVersion.ES9, "Unexpected reserved word")]
+    [InlineData("module", "for await (x of a) {}", EcmaVersion.ES8, "Unexpected identifier 'await'")]
+    public void ShouldHandleAwaitOutsideFunction(string sourceType, string input, EcmaVersion ecmaVersion, string? expectedError)
+    {
+        var parser = new Parser(new ParserOptions { EcmaVersion = ecmaVersion });
+        var parseAction = GetParseActionFor(sourceType);
+
+        if (expectedError is null)
+        {
+            Assert.NotNull(parseAction(parser, input));
+        }
+        else
+        {
+            var ex = Assert.Throws<SyntaxErrorException>(() => parseAction(parser, input));
+            Assert.Equal(expectedError, ex.Description);
+        }
+    }
+
+    [Theory]
+    [InlineData("script", "async function f() { var await = 0 }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("module", "async function f() { var await = 0 }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async function f() { var [await] = [] }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token ']'"
+    [InlineData("module", "async function f() { var [await] = [] }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token ']'"
+    [InlineData("script", "async function f() { var [x = await] = [] }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("module", "async function f() { var [x = await] = [] }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("script", "async function f() { var [...await] = [] }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token ']'"
+    [InlineData("module", "async function f() { var [...await] = [] }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token ']'"
+    [InlineData("script", "async function f() { var {await} = {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("module", "async function f() { var {await} = {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async function f() { var {x: await} = {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token '}'"
+    [InlineData("module", "async function f() { var {x: await} = {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token '}'"
+    [InlineData("script", "async function f() { var {x = await} = {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("module", "async function f() { var {x = await} = {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("script", "async function f() { var {...await} = {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token '}'"
+    [InlineData("module", "async function f() { var {...await} = {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token '}'"
+    [InlineData("script", "async function f() { var [{await}] = [] }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("module", "async function f() { var [{await}] = [] }", EcmaVersion.Latest, "Unexpected reserved word")]
+
+    [InlineData("script", "async function f() { fn = await => 1 }", EcmaVersion.Latest, "Unexpected token '=>'")]
+    [InlineData("module", "async function f() { fn = await => 1 }", EcmaVersion.Latest, "Unexpected token '=>'")]
+    [InlineData("script", "async function f() { (await) => {} }", EcmaVersion.Latest, "Unexpected token ')'")]
+    [InlineData("module", "async function f() { (await) => {} }", EcmaVersion.Latest, "Unexpected token ')'")]
+    [InlineData("script", "async function f() { (...await) => {} }", EcmaVersion.Latest, "Unexpected token ')'")] // V8 reports "Unexpected reserved word"
+    [InlineData("module", "async function f() { (...await) => {} }", EcmaVersion.Latest, "Unexpected token ')'")] // V8 reports "Unexpected reserved word"
+    [InlineData("script", "async function f() { ([await]) => {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("module", "async function f() { ([await]) => {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("script", "async function f() { ([x = await]) => {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("module", "async function f() { ([x = await]) => {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("script", "async function f() { ([...await]) => {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("module", "async function f() { ([...await]) => {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("script", "async function f() { ({await}) => {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("module", "async function f() { ({await}) => {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async function f() { ({x: await}) => {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("module", "async function f() { ({x: await}) => {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("script", "async function f() { ({x = await}) => {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("module", "async function f() { ({x = await}) => {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("script", "async function f() { ({...await}) => {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("module", "async function f() { ({...await}) => {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("script", "async function f() { ([{await}]) => {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("module", "async function f() { ([{await}]) => {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+
+    [InlineData("script", "async function f() { fn = async await => 1 }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("module", "async function f() { fn = async await => 1 }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async function f() { async (await) => {} }", EcmaVersion.Latest, "Unexpected token ')'")]
+    [InlineData("module", "async function f() { async (await) => {} }", EcmaVersion.Latest, "Unexpected token ')'")]
+    [InlineData("script", "async function f() { async (...await) => {} }", EcmaVersion.Latest, "Unexpected token ')'")]
+    [InlineData("module", "async function f() { async (...await) => {} }", EcmaVersion.Latest, "Unexpected token ')'")]
+    [InlineData("script", "async function f() { async ([await]) => {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("module", "async function f() { async ([await]) => {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("script", "async function f() { async ([x = await]) => {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("module", "async function f() { async ([x = await]) => {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("script", "async function f() { async ([...await]) => {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("module", "async function f() { async ([...await]) => {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("script", "async function f() { async ({await}) => {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("module", "async function f() { async ({await}) => {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async function f() { async ({x: await}) => {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("module", "async function f() { async ({x: await}) => {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("script", "async function f() { async ({x = await}) => {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("module", "async function f() { async ({x = await}) => {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("script", "async function f() { async ({...await}) => {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("module", "async function f() { async ({...await}) => {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("script", "async function f() { async ([{await}]) => {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("module", "async function f() { async ([{await}]) => {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+
+    [InlineData("script", "fn = async await => 1", EcmaVersion.Latest, "'await' is not a valid identifier name in an async function")]
+    [InlineData("module", "fn = async await => 1", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async (await) => {}", EcmaVersion.Latest, "'await' is not a valid identifier name in an async function")]
+    [InlineData("module", "async (await) => {}", EcmaVersion.Latest, "Unexpected token ')'")]
+    [InlineData("script", "async (...await) => {}", EcmaVersion.Latest, "'await' is not a valid identifier name in an async function")]
+    [InlineData("module", "async (...await) => {}", EcmaVersion.Latest, "Unexpected token ')'")]
+    [InlineData("script", "async ([await]) => {}", EcmaVersion.Latest, "'await' is not a valid identifier name in an async function")]
+    [InlineData("module", "async ([await]) => {}", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("script", "async ([x = await]) => {}", EcmaVersion.Latest, "'await' is not a valid identifier name in an async function")]
+    [InlineData("module", "async ([x = await]) => {}", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("script", "async ([...await]) => {}", EcmaVersion.Latest, "'await' is not a valid identifier name in an async function")]
+    [InlineData("module", "async ([...await]) => {}", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("script", "async ({await}) => {}", EcmaVersion.Latest, "'await' is not a valid identifier name in an async function")]
+    [InlineData("module", "async ({await}) => {}", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async ({x: await}) => {}", EcmaVersion.Latest, "'await' is not a valid identifier name in an async function")]
+    [InlineData("module", "async ({x: await}) => {}", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("script", "async ({x = await}) => {}", EcmaVersion.Latest, "'await' is not a valid identifier name in an async function")]
+    [InlineData("module", "async ({x = await}) => {}", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("script", "async ({...await}) => {}", EcmaVersion.Latest, "'await' is not a valid identifier name in an async function")]
+    [InlineData("module", "async ({...await}) => {}", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("script", "async ([{await}]) => {}", EcmaVersion.Latest, "'await' is not a valid identifier name in an async function")]
+    [InlineData("module", "async ([{await}]) => {}", EcmaVersion.Latest, "Unexpected reserved word")]
+
+    [InlineData("script", "async function f() { function await() {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("module", "async function f() { function await() {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async function f() { (function await() {}) }", EcmaVersion.Latest, null)]
+    [InlineData("module", "async function f() { (function await() {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async function f() { (function (await) {}) }", EcmaVersion.Latest, null)]
+    [InlineData("module", "async function f() { (function (await) {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async function f() { (function (...await) {}) }", EcmaVersion.Latest, null)]
+    [InlineData("module", "async function f() { (function (...await) {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async function f() { (function ([await]) {}) }", EcmaVersion.Latest, null)]
+    [InlineData("module", "async function f() { (function ([await]) {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async function f() { (function ([x = await]) {}) }", EcmaVersion.Latest, null)]
+    [InlineData("module", "async function f() { (function ([x = await]) {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async function f() { (function ([...await]) {}) }", EcmaVersion.Latest, null)]
+    [InlineData("module", "async function f() { (function ([...await]) {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async function f() { (function ({await}) {}) }", EcmaVersion.Latest, null)]
+    [InlineData("module", "async function f() { (function ({await}) {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async function f() { (function ({x: await}) {}) }", EcmaVersion.Latest, null)]
+    [InlineData("module", "async function f() { (function ({x: await}) {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async function f() { (function ({x = await}) {}) }", EcmaVersion.Latest, null)]
+    [InlineData("module", "async function f() { (function ({x = await}) {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async function f() { (function ({...await}) {}) }", EcmaVersion.Latest, null)]
+    [InlineData("module", "async function f() { (function ({...await}) {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async function f() { (function ([{await}]) {}) }", EcmaVersion.Latest, null)]
+    [InlineData("module", "async function f() { (function ([{await}]) {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
+
+    [InlineData("script", "async function f() { async function await() {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("module", "async function f() { async function await() {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async function f() { fn = async function await() {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("module", "async function f() { fn = async function await() {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async function f() { fn = async function (await) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("module", "async function f() { fn = async function (await) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async function f() { fn = async function (...await) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("module", "async function f() { fn = async function (...await) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async function f() { fn = async function ([await]) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Illegal await-expression in formal parameters of async function"
+    [InlineData("module", "async function f() { fn = async function ([await]) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Illegal await-expression in formal parameters of async function"
+    [InlineData("script", "async function f() { fn = async function ([x = await]) {} }", EcmaVersion.Latest, "Unexpected token ']'")] // V8 reports "Illegal await-expression in formal parameters of async function"
+    [InlineData("module", "async function f() { fn = async function ([x = await]) {} }", EcmaVersion.Latest, "Unexpected token ']'")] // V8 reports "Illegal await-expression in formal parameters of async function"
+    [InlineData("script", "async function f() { fn = async function ([...await]) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Illegal await-expression in formal parameters of async function"
+    [InlineData("module", "async function f() { fn = async function ([...await]) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Illegal await-expression in formal parameters of async function"
+    [InlineData("script", "async function f() { fn = async function ({await}) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("module", "async function f() { fn = async function ({await}) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async function f() { fn = async function ({x: await}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Illegal await-expression in formal parameters of async function"
+    [InlineData("module", "async function f() { fn = async function ({x: await}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Illegal await-expression in formal parameters of async function"
+    [InlineData("script", "async function f() { fn = async function ({x = await}) {} }", EcmaVersion.Latest, "Unexpected token '}'")] // V8 reports "Illegal await-expression in formal parameters of async function"
+    [InlineData("module", "async function f() { fn = async function ({x = await}) {} }", EcmaVersion.Latest, "Unexpected token '}'")] // V8 reports "Illegal await-expression in formal parameters of async function"
+    [InlineData("script", "async function f() { fn = async function ({...await}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Illegal await-expression in formal parameters of async function"
+    [InlineData("module", "async function f() { fn = async function ({...await}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Illegal await-expression in formal parameters of async function"
+    [InlineData("script", "async function f() { fn = async function ([{await}]) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("module", "async function f() { fn = async function ([{await}]) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+
+    [InlineData("script", "async function f() { class await {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("module", "async function f() { class await {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async function f() { (class await {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("module", "async function f() { (class await {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async function f() { (class { await = 0 }) }", EcmaVersion.Latest, null)]
+    [InlineData("module", "async function f() { (class { await = 0 }) }", EcmaVersion.Latest, null)]
+    [InlineData("script", "async function f() { (class { x = await }) }", EcmaVersion.Latest, null)]
+    [InlineData("module", "async function f() { (class { x = await }) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async function f() { (class { await() {} }) }", EcmaVersion.Latest, null)]
+    [InlineData("module", "async function f() { (class { await() {} }) }", EcmaVersion.Latest, null)]
+    [InlineData("script", "async function f() { (class { m(await) {} }) }", EcmaVersion.Latest, null)]
+    [InlineData("module", "async function f() { (class { m(await) {} }) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async function f() { (class { m(...await) {} }) }", EcmaVersion.Latest, null)]
+    [InlineData("module", "async function f() { (class { m(...await) {} }) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async function f() { (class { m({m({x: [await]}) {} }) }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [InlineData("module", "async function f() { (class { m({m({x: [await]}) {} }) }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+
+    [InlineData("script", "async function f() { ({await: 0}) }", EcmaVersion.Latest, null)]
+    [InlineData("module", "async function f() { ({await: 0}) }", EcmaVersion.Latest, null)]
+    [InlineData("script", "async function f() { ({x: await}) }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("module", "async function f() { ({x: await}) }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("script", "function f() { ({x: await}) }", EcmaVersion.Latest, null)]
+    [InlineData("module", "function f() { ({x: await}) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async function f() { ({await() {} }) }", EcmaVersion.Latest, null)]
+    [InlineData("module", "async function f() { ({await() {} }) }", EcmaVersion.Latest, null)]
+    [InlineData("script", "async function f() { ({m(await) {} }) }", EcmaVersion.Latest, null)]
+    [InlineData("module", "async function f() { ({m(await) {} }) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async function f() { ({m(...await) {} }) }", EcmaVersion.Latest, null)]
+    [InlineData("module", "async function f() { ({m(...await) {} }) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async function f() { ({m({x: [await]}) {} }) }", EcmaVersion.Latest, null)]
+    [InlineData("module", "async function f() { ({m({x: [await]}) {} }) }", EcmaVersion.Latest, "Unexpected reserved word")]
+
+    [InlineData("script", "async function f() { try {} catch (await) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("module", "async function f() { try {} catch (await) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async function f() { try {} catch (...await) {} }", EcmaVersion.Latest, "Unexpected token '...'")]
+    [InlineData("module", "async function f() { try {} catch (...await) {} }", EcmaVersion.Latest, "Unexpected token '...'")]
+    [InlineData("script", "async function f() { try {} catch ([await]) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token ']'"
+    [InlineData("module", "async function f() { try {} catch ([await]) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token ']'"
+    [InlineData("script", "async function f() { try {} catch ([x = await]) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("module", "async function f() { try {} catch ([x = await]) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("script", "async function f() { try {} catch ([...await]) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token ']'"
+    [InlineData("module", "async function f() { try {} catch ([...await]) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token ']'"
+    [InlineData("script", "async function f() { try {} catch ({await}) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("module", "async function f() { try {} catch ({await}) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async function f() { try {} catch ({x: await}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token '}'"
+    [InlineData("module", "async function f() { try {} catch ({x: await}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token '}'"
+    [InlineData("script", "async function f() { try {} catch ({x = await}) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("module", "async function f() { try {} catch ({x = await}) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("script", "async function f() { try {} catch ({...await}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token '}'"
+    [InlineData("module", "async function f() { try {} catch ({...await}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token '}'"
+    [InlineData("script", "async function f() { try {} catch ([{await}]) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("module", "async function f() { try {} catch ([{await}]) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+
+    [InlineData("script", "async function f() { await: { break await } }", EcmaVersion.Latest, "Unexpected token ':'")]
+    [InlineData("module", "async function f() { await: { break await } }", EcmaVersion.Latest, "Unexpected token ':'")]
+    [InlineData("script", "async function f() { { break await } }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("module", "async function f() { { break await } }", EcmaVersion.Latest, "Unexpected reserved word")]
+
+    [InlineData("script", "function* g() { var yield = 0 }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [InlineData("module", "function* g() { var yield = 0 }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "function* g() { var [yield] = [] }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [InlineData("module", "function* g() { var [yield] = [] }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [InlineData("script", "function* g() { var [x = yield] = [] }", EcmaVersion.Latest, null)]
+    [InlineData("module", "function* g() { var [x = yield] = [] }", EcmaVersion.Latest, null)]
+    [InlineData("script", "function* g() { var [...yield] = [] }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [InlineData("module", "function* g() { var [...yield] = [] }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [InlineData("script", "function* g() { var {yield} = {} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [InlineData("module", "function* g() { var {yield} = {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "function* g() { var {x: yield} = {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [InlineData("module", "function* g() { var {x: yield} = {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [InlineData("script", "function* g() { var {x = yield} = {} }", EcmaVersion.Latest, null)]
+    [InlineData("module", "function* g() { var {x = yield} = {} }", EcmaVersion.Latest, null)]
+    [InlineData("script", "function* g() { var {...yield} = {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [InlineData("module", "function* g() { var {...yield} = {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [InlineData("script", "function* g() { var [{yield}] = [] }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [InlineData("module", "function* g() { var [{yield}] = [] }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+
+    [InlineData("script", "function* g() { fn = yield => 1 }", EcmaVersion.Latest, "Unexpected token '=>'")]
+    [InlineData("module", "function* g() { fn = yield => 1 }", EcmaVersion.Latest, "Unexpected token '=>'")]
+    [InlineData("script", "function* g() { (yield) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")] // V8 reports "Invalid destructuring assignment target"
+    [InlineData("module", "function* g() { (yield) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")] // V8 reports "Invalid destructuring assignment target"
+    [InlineData("script", "function* g() { (...yield) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")] // V8 reports "Unexpected identifier 'yield'"
+    [InlineData("module", "function* g() { (...yield) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")] // V8 reports "Unexpected strict mode reserved word"
+    [InlineData("script", "function* g() { ([yield]) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
+    [InlineData("module", "function* g() { ([yield]) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
+    [InlineData("script", "function* g() { ([x = yield]) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
+    [InlineData("module", "function* g() { ([x = yield]) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
+    [InlineData("script", "function* g() { ([...yield]) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
+    [InlineData("module", "function* g() { ([...yield]) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
+    [InlineData("script", "function* g() { ({yield}) => {} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [InlineData("module", "function* g() { ({yield}) => {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "function* g() { ({x: yield}) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
+    [InlineData("module", "function* g() { ({x: yield}) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
+    [InlineData("script", "function* g() { ({x = yield}) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
+    [InlineData("module", "function* g() { ({x = yield}) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
+    [InlineData("script", "function* g() { ({...yield}) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")] // V8 reports "`...` must be followed by an identifier in declaration contexts"
+    [InlineData("module", "function* g() { ({...yield}) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")] // V8 reports "`...` must be followed by an identifier in declaration contexts"
+    [InlineData("script", "function* g() { ([{yield}]) => {} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [InlineData("module", "function* g() { ([{yield}]) => {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+
+    [InlineData("script", "function* g() { fn = async yield => 1 }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [InlineData("module", "function* g() { fn = async yield => 1 }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "function* g() { async (yield) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")] // V8 reports "Invalid destructuring assignment target"
+    [InlineData("module", "function* g() { async (yield) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")] // V8 reports "Invalid destructuring assignment target"
+    [InlineData("script", "function* g() { async (...yield) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")] // V8 reports "Invalid destructuring assignment target"
+    [InlineData("module", "function* g() { async (...yield) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")] // V8 reports "Invalid destructuring assignment target"
+    [InlineData("script", "function* g() { async ([yield]) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
+    [InlineData("module", "function* g() { async ([yield]) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
+    [InlineData("script", "function* g() { async ([x = yield]) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
+    [InlineData("module", "function* g() { async ([x = yield]) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
+    [InlineData("script", "function* g() { async ([...yield]) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
+    [InlineData("module", "function* g() { async ([...yield]) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
+    [InlineData("script", "function* g() { async ({yield}) => {} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [InlineData("module", "function* g() { async ({yield}) => {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "function* g() { async ({x: yield}) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
+    [InlineData("module", "function* g() { async ({x: yield}) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
+    [InlineData("script", "function* g() { async ({x = yield}) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
+    [InlineData("module", "function* g() { async ({x = yield}) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
+    [InlineData("script", "function* g() { async ({...yield}) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")] // V8 reports "`...` must be followed by an identifier in declaration contexts"
+    [InlineData("module", "function* g() { async ({...yield}) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")] // V8 reports "`...` must be followed by an identifier in declaration contexts"
+    [InlineData("script", "function* g() { async ([{yield}]) => {} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [InlineData("module", "function* g() { async ([{yield}]) => {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+
+    [InlineData("script", "function* g() { function yield() {} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [InlineData("module", "function* g() { function yield() {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "function* g() { (function yield() {}) }", EcmaVersion.Latest, null)]
+    [InlineData("module", "function* g() { (function yield() {}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "function* g() { (function (yield) {}) }", EcmaVersion.Latest, null)]
+    [InlineData("module", "function* g() { (function (yield) {}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "function* g() { (function (...yield) {}) }", EcmaVersion.Latest, null)]
+    [InlineData("module", "function* g() { (function (...yield) {}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "function* g() { (function ([yield]) {}) }", EcmaVersion.Latest, null)]
+    [InlineData("module", "function* g() { (function ([yield]) {}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "function* g() { (function ([x = yield]) {}) }", EcmaVersion.Latest, null)]
+    [InlineData("module", "function* g() { (function ([x = yield]) {}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "function* g() { (function ([...yield]) {}) }", EcmaVersion.Latest, null)]
+    [InlineData("module", "function* g() { (function ([...yield]) {}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "function* g() { (function ({yield}) {}) }", EcmaVersion.Latest, null)]
+    [InlineData("module", "function* g() { (function ({yield}) {}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "function* g() { (function ({x: yield}) {}) }", EcmaVersion.Latest, null)]
+    [InlineData("module", "function* g() { (function ({x: yield}) {}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "function* g() { (function ({x = yield}) {}) }", EcmaVersion.Latest, null)]
+    [InlineData("module", "function* g() { (function ({x = yield}) {}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "function* g() { (function ({...yield}) {}) }", EcmaVersion.Latest, null)]
+    [InlineData("module", "function* g() { (function ({...yield}) {}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "function* g() { (function ([{yield}]) {}) }", EcmaVersion.Latest, null)]
+    [InlineData("module", "function* g() { (function ([{yield}]) {}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+
+    [InlineData("script", "function* g() { async function yield() {} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [InlineData("module", "function* g() { async function yield() {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "function* g() { fn = async function yield() {} }", EcmaVersion.Latest, null)]
+    [InlineData("module", "function* g() { fn = async function yield() {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "function* g() { fn = async function (yield) {} }", EcmaVersion.Latest, null)]
+    [InlineData("module", "function* g() { fn = async function (yield) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "function* g() { fn = async function (...yield) {} }", EcmaVersion.Latest, null)]
+    [InlineData("module", "function* g() { fn = async function (...yield) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "function* g() { fn = async function ([yield]) {} }", EcmaVersion.Latest, null)]
+    [InlineData("module", "function* g() { fn = async function ([yield]) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "function* g() { fn = async function ([x = yield]) {} }", EcmaVersion.Latest, null)]
+    [InlineData("module", "function* g() { fn = async function ([x = yield]) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "function* g() { fn = async function ([...yield]) {} }", EcmaVersion.Latest, null)]
+    [InlineData("module", "function* g() { fn = async function ([...yield]) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "function* g() { fn = async function ({yield}) {} }", EcmaVersion.Latest, null)]
+    [InlineData("module", "function* g() { fn = async function ({yield}) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "function* g() { fn = async function ({x: yield}) {} }", EcmaVersion.Latest, null)]
+    [InlineData("module", "function* g() { fn = async function ({x: yield}) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "function* g() { fn = async function ({x = yield}) {} }", EcmaVersion.Latest, null)]
+    [InlineData("module", "function* g() { fn = async function ({x = yield}) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "function* g() { fn = async function ({...yield}) {} }", EcmaVersion.Latest, null)]
+    [InlineData("module", "function* g() { fn = async function ({...yield}) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "function* g() { fn = async function ([{yield}]) {} }", EcmaVersion.Latest, null)]
+    [InlineData("module", "function* g() { fn = async function ([{yield}]) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+
+    [InlineData("script", "function* g() { class yield {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")] // V8 reports "Unexpected identifier 'yield'" (even though class id should be parsed in strict mode and yield is a strict mode identifier)
+    [InlineData("module", "function* g() { class yield {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "function* g() { (class yield {}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")] // V8 reports "Unexpected identifier 'yield'" (even though class id should be parsed in strict mode and yield is a strict mode identifier)
+    [InlineData("module", "function* g() { (class yield {}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "function* g() { (class { yield = 0 }) }", EcmaVersion.Latest, null)]
+    [InlineData("module", "function* g() { (class { yield = 0 }) }", EcmaVersion.Latest, null)]
+    [InlineData("script", "function* g() { (class { x = yield }) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("module", "function* g() { (class { x = yield }) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "function* g() { (class { yield() {} }) }", EcmaVersion.Latest, null)]
+    [InlineData("module", "function* g() { (class { yield() {} }) }", EcmaVersion.Latest, null)]
+    [InlineData("script", "function* g() { (class { m(yield) {} }) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("module", "function* g() { (class { m(yield) {} }) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "function* g() { (class { m(...yield) {} }) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("module", "function* g() { (class { m(...yield) {} }) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "function* g() { (class { m({m({x: [yield]}) {} }) }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [InlineData("module", "function* g() { (class { m({m({x: [yield]}) {} }) }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+
+    [InlineData("script", "function* g() { ({yield: 0}) }", EcmaVersion.Latest, null)]
+    [InlineData("module", "function* g() { ({yield: 0}) }", EcmaVersion.Latest, null)]
+    [InlineData("script", "function* g() { ({x: yield}) }", EcmaVersion.Latest, null)]
+    [InlineData("module", "function* g() { ({x: yield}) }", EcmaVersion.Latest, null)]
+    [InlineData("script", "function g() { ({x: yield}) }", EcmaVersion.Latest, null)]
+    [InlineData("module", "function g() { ({x: yield}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "function* g() { ({yield() {} }) }", EcmaVersion.Latest, null)]
+    [InlineData("module", "function* g() { ({yield() {} }) }", EcmaVersion.Latest, null)]
+    [InlineData("script", "function* g() { ({m(yield) {} }) }", EcmaVersion.Latest, null)]
+    [InlineData("module", "function* g() { ({m(yield) {} }) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "function* g() { ({m(...yield) {} }) }", EcmaVersion.Latest, null)]
+    [InlineData("module", "function* g() { ({m(...yield) {} }) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "function* g() { ({m({x: [yield]}) {} }) }", EcmaVersion.Latest, null)]
+    [InlineData("module", "function* g() { ({m({x: [yield]}) {} }) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+
+    [InlineData("script", "function* g() { try {} catch (yield) {} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [InlineData("module", "function* g() { try {} catch (yield) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "function* g() { try {} catch (...yield) {} }", EcmaVersion.Latest, "Unexpected token '...'")]
+    [InlineData("module", "function* g() { try {} catch (...yield) {} }", EcmaVersion.Latest, "Unexpected token '...'")]
+    [InlineData("script", "function* g() { try {} catch ([yield]) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [InlineData("module", "function* g() { try {} catch ([yield]) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [InlineData("script", "function* g() { try {} catch ([x = yield]) {} }", EcmaVersion.Latest, null)]
+    [InlineData("module", "function* g() { try {} catch ([x = yield]) {} }", EcmaVersion.Latest, null)]
+    [InlineData("script", "function* g() { try {} catch ([...yield]) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [InlineData("module", "function* g() { try {} catch ([...yield]) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [InlineData("script", "function* g() { try {} catch ({yield}) {} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [InlineData("module", "function* g() { try {} catch ({yield}) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "function* g() { try {} catch ({x: yield}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [InlineData("module", "function* g() { try {} catch ({x: yield}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [InlineData("script", "function* g() { try {} catch ({x = yield}) {} }", EcmaVersion.Latest, null)]
+    [InlineData("module", "function* g() { try {} catch ({x = yield}) {} }", EcmaVersion.Latest, null)]
+    [InlineData("script", "function* g() { try {} catch ({...yield}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [InlineData("module", "function* g() { try {} catch ({...yield}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [InlineData("script", "function* g() { try {} catch ([{yield}]) {} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [InlineData("module", "function* g() { try {} catch ([{yield}]) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+
+    [InlineData("script", "function* g() { yield: { break yield } }", EcmaVersion.Latest, "Unexpected token ':'")]
+    [InlineData("module", "function* g() { yield: { break yield } }", EcmaVersion.Latest, "Unexpected token ':'")]
+    [InlineData("script", "function* g() { { break yield } }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [InlineData("module", "function* g() { { break yield } }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    public void ShouldHandleVariableBindingEdgeCases(string sourceType, string input, EcmaVersion ecmaVersion, string? expectedError)
+    {
+        var parser = new Parser(new ParserOptions { EcmaVersion = ecmaVersion });
+        var parseAction = GetParseActionFor(sourceType);
+
+        if (expectedError is null)
+        {
+            Assert.NotNull(parseAction(parser, input));
+        }
+        else
+        {
+            var ex = Assert.Throws<SyntaxErrorException>(() => parseAction(parser, input));
+            Assert.Equal(expectedError, ex.Description);
+        }
+    }
+
+    [Theory]
+    [InlineData("script", "async function f() { await = 0 }", EcmaVersion.Latest, "Unexpected token '='")]
+    [InlineData("module", "async function f() { await = 0 }", EcmaVersion.Latest, "Unexpected token '='")]
+    [InlineData("script", "async function f() { (await) = 0 }", EcmaVersion.Latest, "Unexpected token ')'")]
+    [InlineData("module", "async function f() { (await) = 0 }", EcmaVersion.Latest, "Unexpected token ')'")]
+    [InlineData("script", "async function f() { [await] = [] }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("module", "async function f() { [await] = [] }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("script", "async function f() { [x = await] = [] }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("module", "async function f() { [x = await] = [] }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("script", "async function f() { [...await] = [] }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("module", "async function f() { [...await] = [] }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("script", "async function f() { ({await} = {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("module", "async function f() { ({await} = {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async function f() { ({x: await} = {}) }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("module", "async function f() { ({x: await} = {}) }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("script", "async function f() { ({x = await} = {}) }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("module", "async function f() { ({x = await} = {}) }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("script", "async function f() { ({...await} = {}) }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("module", "async function f() { ({...await} = {}) }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("script", "async function f() { [{await}] = [] }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("module", "async function f() { [{await}] = [] }", EcmaVersion.Latest, "Unexpected reserved word")]
+
+    [InlineData("script", "async function f() { for (await in {}) {} }", EcmaVersion.Latest, "Unexpected token 'in'")]
+    [InlineData("module", "async function f() { for (await in {}) {} }", EcmaVersion.Latest, "Unexpected token 'in'")]
+    [InlineData("script", "async function f() { for ((await) in {}) {} }", EcmaVersion.Latest, "Unexpected token ')'")]
+    [InlineData("module", "async function f() { for ((await) in {}) {} }", EcmaVersion.Latest, "Unexpected token ')'")]
+    [InlineData("script", "async function f() { for ([await] in {}) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("module", "async function f() { for ([await] in {}) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("script", "async function f() { for ([x = await] in {}) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("module", "async function f() { for ([x = await] in {}) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("script", "async function f() { for ([...await] in {}) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("module", "async function f() { for ([...await] in {}) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("script", "async function f() { for ({await} in {})) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("module", "async function f() { for ({await} in {})) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async function f() { for ({x: await} in {}) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("module", "async function f() { for ({x: await} in {}) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("script", "async function f() { for ({x = await} in {}) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("module", "async function f() { for ({x = await} in {}) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("script", "async function f() { for ({...await} in {}) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("module", "async function f() { for ({...await} in {}) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("script", "async function f() { for ([{await}] in {}) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("module", "async function f() { for ([{await}] in {}) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+
+    [InlineData("script", "async function f() { for (await of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("module", "async function f() { for (await of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("script", "async function f() { for ((await) of []) {} }", EcmaVersion.Latest, "Unexpected token ')'")]
+    [InlineData("module", "async function f() { for ((await) of []) {} }", EcmaVersion.Latest, "Unexpected token ')'")]
+    [InlineData("script", "async function f() { for ([await] of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("module", "async function f() { for ([await] of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("script", "async function f() { for ([x = await] of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("module", "async function f() { for ([x = await] of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("script", "async function f() { for ([...await] of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("module", "async function f() { for ([...await] of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("script", "async function f() { for ({await} of [])) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("module", "async function f() { for ({await} of [])) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async function f() { for ({x: await} of []) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("module", "async function f() { for ({x: await} of []) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("script", "async function f() { for ({x = await} of []) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("module", "async function f() { for ({x = await} of []) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("script", "async function f() { for ({...await} of []) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("module", "async function f() { for ({...await} of []) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("script", "async function f() { for ([{await}] of []) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("module", "async function f() { for ([{await}] of []) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+
+    [InlineData("script", "async function f() { for await (await of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")] // V8 reports "Unexpected reserved word"
+    [InlineData("module", "async function f() { for await (await of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")] // V8 reports "Unexpected reserved word"
+    [InlineData("script", "async function f() { for await ((await) of []) {} }", EcmaVersion.Latest, "Unexpected token ')'")]
+    [InlineData("module", "async function f() { for await ((await) of []) {} }", EcmaVersion.Latest, "Unexpected token ')'")]
+    [InlineData("script", "async function f() { for await ([await] of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("module", "async function f() { for await ([await] of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("script", "async function f() { for await ([x = await] of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("module", "async function f() { for await ([x = await] of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("script", "async function f() { for await ([...await] of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("module", "async function f() { for await ([...await] of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("script", "async function f() { for await ({await} of [])) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("module", "async function f() { for await ({await} of [])) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async function f() { for await ({x: await} of []) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("module", "async function f() { for await ({x: await} of []) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("script", "async function f() { for await ({x = await} of []) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("module", "async function f() { for await ({x = await} of []) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("script", "async function f() { for await ({...await} of []) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("module", "async function f() { for await ({...await} of []) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("script", "async function f() { for await ([{await}] of []) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("module", "async function f() { for await ([{await}] of []) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+
+    [InlineData("script", "async function f() { await += 1 }", EcmaVersion.Latest, "Unexpected token '+='")]
+    [InlineData("module", "async function f() { await += 1 }", EcmaVersion.Latest, "Unexpected token '+='")]
+    [InlineData("script", "async function f() { (await) += 1 }", EcmaVersion.Latest, "Unexpected token ')'")]
+    [InlineData("module", "async function f() { (await) += 1 }", EcmaVersion.Latest, "Unexpected token ')'")]
+    [InlineData("script", "async function f() { [await] += 1 }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("module", "async function f() { [await] += 1 }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("script", "async function f() { [x = await] += 1 }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("module", "async function f() { [x = await] += 1 }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("script", "async function f() { [...await] += 1 }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("module", "async function f() { [...await] += 1 }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("script", "async function f() { ({await} += 1) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("module", "async function f() { ({await} += 1) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async function f() { ({x: await} += 1) }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("module", "async function f() { ({x: await} += 1) }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("script", "async function f() { ({x = await} += 1) }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("module", "async function f() { ({x = await} += 1) }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("script", "async function f() { ({...await} += 1) }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("module", "async function f() { ({...await} += 1) }", EcmaVersion.Latest, "Unexpected token '}'")]
+
+    [InlineData("script", "async function f() { ++await }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("module", "async function f() { ++await }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("script", "async function f() { ++(await) }", EcmaVersion.Latest, "Unexpected token ')'")]
+    [InlineData("module", "async function f() { ++(await) }", EcmaVersion.Latest, "Unexpected token ')'")]
+    [InlineData("script", "async function f() { ++[await] }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("module", "async function f() { ++[await] }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("script", "async function f() { ++[x = await] }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("module", "async function f() { ++[x = await] }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("script", "async function f() { ++[...await] }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("module", "async function f() { ++[...await] }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("script", "async function f() { ++{await} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("module", "async function f() { ++{await} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async function f() { ++{x: await} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("module", "async function f() { ++{x: await} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("script", "async function f() { ++{x = await} }", EcmaVersion.Latest, "Unexpected token '='")] // V8 reports "Unexpected token '}'"
+    [InlineData("module", "async function f() { ++{x = await} }", EcmaVersion.Latest, "Unexpected token '='")] // V8 reports "Unexpected token '}'"
+    [InlineData("script", "async function f() { ++{...await} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("module", "async function f() { ++{...await} }", EcmaVersion.Latest, "Unexpected token '}'")]
+
+    [InlineData("script", "async function f() { await++ }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("module", "async function f() { await++ }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("script", "async function f() { (await)++ }", EcmaVersion.Latest, "Unexpected token ')'")]
+    [InlineData("module", "async function f() { (await)++ }", EcmaVersion.Latest, "Unexpected token ')'")]
+    [InlineData("script", "async function f() { [await]++ }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("module", "async function f() { [await]++ }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("script", "async function f() { [x = await]++ }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("module", "async function f() { [x = await]++ }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("script", "async function f() { [...await]++ }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("module", "async function f() { [...await]++ }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("script", "async function f() { ({await}++) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("module", "async function f() { ({await}++) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async function f() { ({x: await}++) }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("module", "async function f() { ({x: await}++) }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("script", "async function f() { ({x = await}++) }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("module", "async function f() { ({x = await}++) }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("script", "async function f() { ({...await}++) }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("module", "async function f() { ({...await}++) }", EcmaVersion.Latest, "Unexpected token '}'")]
+
+    [InlineData("script", "function* g() { yield = 0 }", EcmaVersion.Latest, "Unexpected token '='")]
+    [InlineData("module", "function* g() { yield = 0 }", EcmaVersion.Latest, "Unexpected token '='")]
+    [InlineData("script", "function* g() { (yield) = 0 }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
+    [InlineData("module", "function* g() { (yield) = 0 }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
+    [InlineData("script", "function* g() { [yield] = [] }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [InlineData("module", "function* g() { [yield] = [] }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [InlineData("script", "function* g() { [x = yield] = [] }", EcmaVersion.Latest, null)]
+    [InlineData("module", "function* g() { [x = yield] = [] }", EcmaVersion.Latest, null)]
+    [InlineData("script", "function* g() { [...yield] = [] }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [InlineData("module", "function* g() { [...yield] = [] }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [InlineData("script", "function* g() { ({yield} = {}) }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [InlineData("module", "function* g() { ({yield} = {}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "function* g() { ({x: yield} = {}) }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [InlineData("module", "function* g() { ({x: yield} = {}) }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [InlineData("script", "function* g() { ({x = yield} = {}) }", EcmaVersion.Latest, null)]
+    [InlineData("module", "function* g() { ({x = yield} = {}) }", EcmaVersion.Latest, null)]
+    [InlineData("script", "function* g() { ({...yield} = {}) }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [InlineData("module", "function* g() { ({...yield} = {}) }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [InlineData("script", "function* g() { [{yield}] = [] }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [InlineData("module", "function* g() { [{yield}] = [] }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+
+    [InlineData("script", "function* g() { for (yield in {}) {} }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "Invalid left-hand side in assignment"
+    [InlineData("module", "function* g() { for (yield in {}) {} }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "Invalid left-hand side in assignment"
+    [InlineData("script", "function* g() { for ((yield) in {}) {} }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "Invalid left-hand side in assignment"
+    [InlineData("module", "function* g() { for ((yield) in {}) {} }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "Invalid left-hand side in assignment"
+    [InlineData("script", "function* g() { for ([yield] in {}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [InlineData("module", "function* g() { for ([yield] in {}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [InlineData("script", "function* g() { for ([x = yield] in {}) {} }", EcmaVersion.Latest, null)]
+    [InlineData("module", "function* g() { for ([x = yield] in {}) {} }", EcmaVersion.Latest, null)]
+    [InlineData("script", "function* g() { for ([...yield] in {}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [InlineData("module", "function* g() { for ([...yield] in {}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [InlineData("script", "function* g() { for ({yield} in {})) {} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [InlineData("module", "function* g() { for ({yield} in {})) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "function* g() { for ({x: yield} in {}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [InlineData("module", "function* g() { for ({x: yield} in {}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [InlineData("script", "function* g() { for ({x = yield} in {}) {} }", EcmaVersion.Latest, null)]
+    [InlineData("module", "function* g() { for ({x = yield} in {}) {} }", EcmaVersion.Latest, null)]
+    [InlineData("script", "function* g() { for ({...yield} in {}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [InlineData("module", "function* g() { for ({...yield} in {}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [InlineData("script", "function* g() { for ([{yield}] in {}) {} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [InlineData("module", "function* g() { for ([{yield}] in {}) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+
+    [InlineData("script", "function* g() { for (yield of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("module", "function* g() { for (yield of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [InlineData("script", "function* g() { for ((yield) of []) {} }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "Invalid left-hand side of assignment"
+    [InlineData("module", "function* g() { for ((yield) of []) {} }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "Invalid left-hand side of assignment"
+    [InlineData("script", "function* g() { for ([yield] of []) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [InlineData("module", "function* g() { for ([yield] of []) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [InlineData("script", "function* g() { for ([x = yield] of []) {} }", EcmaVersion.Latest, null)]
+    [InlineData("module", "function* g() { for ([x = yield] of []) {} }", EcmaVersion.Latest, null)]
+    [InlineData("script", "function* g() { for ([...yield] of []) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [InlineData("module", "function* g() { for ([...yield] of []) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [InlineData("script", "function* g() { for ({yield} of [])) {} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [InlineData("module", "function* g() { for ({yield} of [])) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "function* g() { for ({x: yield} of []) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [InlineData("module", "function* g() { for ({x: yield} of []) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [InlineData("script", "function* g() { for ({x = yield} of []) {} }", EcmaVersion.Latest, null)]
+    [InlineData("module", "function* g() { for ({x = yield} of []) {} }", EcmaVersion.Latest, null)]
+    [InlineData("script", "function* g() { for ({...yield} of []) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [InlineData("module", "function* g() { for ({...yield} of []) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [InlineData("script", "function* g() { for ([{yield}] of []) {} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [InlineData("module", "function* g() { for ([{yield}] of []) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+
+    [InlineData("script", "function* g() { yield += 1 }", EcmaVersion.Latest, "Unexpected token '+='")]
+    [InlineData("module", "function* g() { yield += 1 }", EcmaVersion.Latest, "Unexpected token '+='")]
+    [InlineData("script", "function* g() { (yield) += 1 }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
+    [InlineData("module", "function* g() { (yield) += 1 }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
+    [InlineData("script", "function* g() { [yield] += 1 }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
+    [InlineData("module", "function* g() { [yield] += 1 }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
+    [InlineData("script", "function* g() { [x = yield] += 1 }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
+    [InlineData("module", "function* g() { [x = yield] += 1 }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
+    [InlineData("script", "function* g() { [...yield] += 1 }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
+    [InlineData("module", "function* g() { [...yield] += 1 }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
+    [InlineData("script", "function* g() { ({yield} += 1) }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [InlineData("module", "function* g() { ({yield} += 1) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "function* g() { ({x: yield} += 1) }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
+    [InlineData("module", "function* g() { ({x: yield} += 1) }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
+    [InlineData("script", "function* g() { ({x = yield} += 1) }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
+    [InlineData("module", "function* g() { ({x = yield} += 1) }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
+    [InlineData("script", "function* g() { ({...yield} += 1) }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
+    [InlineData("module", "function* g() { ({...yield} += 1) }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
+
+    [InlineData("script", "function* g() { ++yield }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [InlineData("module", "function* g() { ++yield }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "function* g() { ++(yield) }", EcmaVersion.Latest, "Invalid left-hand side expression in prefix operation")]
+    [InlineData("module", "function* g() { ++(yield) }", EcmaVersion.Latest, "Invalid left-hand side expression in prefix operation")]
+    [InlineData("script", "function* g() { ++[yield] }", EcmaVersion.Latest, "Invalid left-hand side expression in prefix operation")]
+    [InlineData("module", "function* g() { ++[yield] }", EcmaVersion.Latest, "Invalid left-hand side expression in prefix operation")]
+    [InlineData("script", "function* g() { ++[x = yield] }", EcmaVersion.Latest, "Invalid left-hand side expression in prefix operation")]
+    [InlineData("module", "function* g() { ++[x = yield] }", EcmaVersion.Latest, "Invalid left-hand side expression in prefix operation")]
+    [InlineData("script", "function* g() { ++[...yield] }", EcmaVersion.Latest, "Invalid left-hand side expression in prefix operation")]
+    [InlineData("module", "function* g() { ++[...yield] }", EcmaVersion.Latest, "Invalid left-hand side expression in prefix operation")]
+    [InlineData("script", "function* g() { ++{yield} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [InlineData("module", "function* g() { ++{yield} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "function* g() { ++{x: yield} }", EcmaVersion.Latest, "Invalid left-hand side expression in prefix operation")]
+    [InlineData("module", "function* g() { ++{x: yield} }", EcmaVersion.Latest, "Invalid left-hand side expression in prefix operation")]
+    [InlineData("script", "function* g() { ++{x = yield} }", EcmaVersion.Latest, "Unexpected token '='")] // V8 reports "Invalid left-hand side expression in prefix operation"
+    [InlineData("module", "function* g() { ++{x = yield} }", EcmaVersion.Latest, "Unexpected token '='")] // V8 reports "Invalid left-hand side expression in prefix operation"
+    [InlineData("script", "function* g() { ++{...yield} }", EcmaVersion.Latest, "Invalid left-hand side expression in prefix operation")]
+    [InlineData("module", "function* g() { ++{...yield} }", EcmaVersion.Latest, "Invalid left-hand side expression in prefix operation")]
+
+    [InlineData("script", "function* g() { yield++ }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("module", "function* g() { yield++ }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("script", "function* g() { (yield)++ }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
+    [InlineData("module", "function* g() { (yield)++ }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
+    [InlineData("script", "function* g() { [yield]++ }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
+    [InlineData("module", "function* g() { [yield]++ }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
+    [InlineData("script", "function* g() { [x = yield]++ }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
+    [InlineData("module", "function* g() { [x = yield]++ }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
+    [InlineData("script", "function* g() { [...yield]++ }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
+    [InlineData("module", "function* g() { [...yield]++ }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
+    [InlineData("script", "function* g() { ({yield}++) }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [InlineData("module", "function* g() { ({yield}++) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "function* g() { ({x: yield}++) }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
+    [InlineData("module", "function* g() { ({x: yield}++) }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
+    [InlineData("script", "function* g() { ({x = yield}++) }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
+    [InlineData("module", "function* g() { ({x = yield}++) }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
+    [InlineData("script", "function* g() { ({x = yield}\n++) }", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("module", "function* g() { ({x = yield}\n++) }", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("script", "function* g() { ({...yield}++) }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
+    [InlineData("module", "function* g() { ({...yield}++) }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
+
+    [InlineData("script", "({__proto__: x, __proto__: y}++)", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
+    [InlineData("module", "({__proto__: x, __proto__: y}++)", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
+    [InlineData("script", "({__proto__: x, __proto__: y}\n++)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [InlineData("module", "({__proto__: x, __proto__: y}\n++)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    public void ShouldHandleVariableAssignmentEdgeCases(string sourceType, string input, EcmaVersion ecmaVersion, string? expectedError)
+    {
+        var parser = new Parser(new ParserOptions { EcmaVersion = ecmaVersion });
+        var parseAction = GetParseActionFor(sourceType);
+
+        if (expectedError is null)
+        {
+            Assert.NotNull(parseAction(parser, input));
+        }
+        else
+        {
+            var ex = Assert.Throws<SyntaxErrorException>(() => parseAction(parser, input));
             Assert.Equal(expectedError, ex.Description);
         }
     }
@@ -1307,7 +2027,7 @@ public partial class ParserTests
     [InlineData("import", EcmaVersion.ES6, true)]
     public void IsKeyword_Works(string word, EcmaVersion ecmaVersion, bool isKeyword)
     {
-        Assert.Equal(isKeyword, Parser.IsKeyword(word.AsSpan(), ecmaVersion));
+        Assert.Equal(isKeyword, Parser.IsKeyword(word.AsSpan(), ecmaVersion, out _));
     }
 
     [Theory]

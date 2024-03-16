@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -117,184 +117,472 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ArgumentsDisallowedInInitializerAndStaticBlock" xml:space="preserve">
+    <value>'arguments' is not allowed in class field initializer or static initialization block</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="AsyncFunctionInSingleStatementContext" xml:space="preserve">
+    <value>Async functions can only be declared at the top level or inside a block</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="AwaitBindingIdentifier" xml:space="preserve">
+    <value>'await' is not a valid identifier name in an async function</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="AwaitExpressionFormalParameter" xml:space="preserve">
+    <value>Illegal await-expression in formal parameters of async function</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="AwaitNotInAsyncContext" xml:space="preserve">
+    <value>await is only valid in async functions and the top level bodies of modules</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="BadGetterArity" xml:space="preserve">
+    <value>Getter must not have any formal parameters</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="BadSetterArity" xml:space="preserve">
+    <value>Setter must have exactly one formal parameter</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="BadSetterRestParameter" xml:space="preserve">
+    <value>Setter function argument must not be a rest parameter</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="ConstructorClassField" xml:space="preserve">
+    <value>Classes may not have a field named 'constructor'</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="ConstructorIsAccessor" xml:space="preserve">
+    <value>Class constructor may not be an accessor</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="ConstructorIsAsync" xml:space="preserve">
+    <value>Class constructor may not be an async method</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="ConstructorIsGenerator" xml:space="preserve">
+    <value>Class constructor may not be a generator</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="ConstructorIsPrivate" xml:space="preserve">
+    <value>Class constructor may not be a private method</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
   <data name="ContinuousNumericSeparator" xml:space="preserve">
     <value>Only one underscore is allowed as numeric separator</value>
-    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="DeclarationMissingInitializer_Const" xml:space="preserve">
+    <value>Missing initializer in const declaration</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="DeclarationMissingInitializer_Destructuring" xml:space="preserve">
+    <value>Missing initializer in destructuring declaration</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="DecoratorAppliedToStaticBlock" xml:space="preserve">
+    <value>Decorators cannot be applied to static initialization blocks</value>
+  </data>
+  <data name="DeletePrivateField" xml:space="preserve">
+    <value>Private fields can not be deleted</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="DuplicateConstructor" xml:space="preserve">
+    <value>A class may only have one constructor</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="DuplicateExport" xml:space="preserve">
+    <value>Duplicate export of '{0}'</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="DuplicateImportAttribute" xml:space="preserve">
+    <value>Import attributes has duplicate key '{0}'</value>
+  </data>
+  <data name="DuplicateProto" xml:space="preserve">
+    <value>Duplicate __proto__ fields are not allowed in object literals</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="ElementAfterRest" xml:space="preserve">
+    <value>Rest element must be last element</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="ForInOfLoopInitializer" xml:space="preserve">
+    <value>{0} loop variable declaration may not have an initializer</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="ForInOfLoopMultiBindings" xml:space="preserve">
+    <value>Invalid left-hand side in {0} loop: Must have a single binding</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="ForOfAsync" xml:space="preserve">
+    <value>The left-hand side of a for-of loop may not be 'async'</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="ForOfLet" xml:space="preserve">
+    <value>The left-hand side of a for-of loop may not start with 'let'</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="GeneratorInSingleStatementContext" xml:space="preserve">
+    <value>Generators can only be declared at the top level or inside a block</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="IllegalBreak" xml:space="preserve">
+    <value>Illegal break statement</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="IllegalContinue" xml:space="preserve">
+    <value>'{0}' does not denote an iteration statement</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="IllegalLanguageModeDirective" xml:space="preserve">
+    <value>Illegal '{0}' directive in function with non-simple parameter list</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="IllegalReturn" xml:space="preserve">
+    <value>Illegal return statement</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="ImportMetaOutsideModule" xml:space="preserve">
+    <value>Cannot use 'import.meta' outside a module</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="ImportOutsideModule" xml:space="preserve">
+    <value>Cannot use import statement outside a module</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="InvalidCoverInitializedName" xml:space="preserve">
+    <value>Invalid shorthand property initializer</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="InvalidDecoratorMemberExpr" xml:space="preserve">
+    <value>Invalid decorator member expression</value>
+  </data>
+  <data name="InvalidDestructuringTarget" xml:space="preserve">
+    <value>Invalid destructuring assignment target</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="InvalidEscapedMetaProperty" xml:space="preserve">
+    <value>'{0}' must not contain escaped characters</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
   </data>
   <data name="InvalidEscapedReservedWord" xml:space="preserve">
     <value>Keyword must not contain escaped characters</value>
-    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
   </data>
   <data name="InvalidHexEscapeSequence" xml:space="preserve">
     <value>Invalid hexadecimal escape sequence</value>
-    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="InvalidLhsInAssignment" xml:space="preserve">
+    <value>Invalid left-hand side in assignment</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="InvalidLhsInFor" xml:space="preserve">
+    <value>Invalid left-hand side in for-loop</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="InvalidLhsInPostfixOp" xml:space="preserve">
+    <value>Invalid left-hand side expression in postfix operation</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="InvalidLhsInPrefixOp" xml:space="preserve">
+    <value>Invalid left-hand side expression in prefix operation</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="InvalidModuleExportName" xml:space="preserve">
+    <value>Invalid module export name: contains unpaired surrogate</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
   </data>
   <data name="InvalidOrUnexpectedToken" xml:space="preserve">
     <value>Invalid or unexpected token</value>
-    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="InvalidPrivateFieldResolution" xml:space="preserve">
+    <value>Private field '{0}' must be declared in an enclosing class</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="InvalidPropertyBindingPattern" xml:space="preserve">
+    <value>Illegal property in declaration context</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
   </data>
   <data name="InvalidRegExpFlags" xml:space="preserve">
     <value>Invalid regular expression flags</value>
-    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="InvalidRestAssignmentPattern" xml:space="preserve">
+    <value>`...` must be followed by an assignable reference in assignment contexts</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
   </data>
   <data name="InvalidUnicodeEscapeSequence" xml:space="preserve">
     <value>Invalid Unicode escape sequence</value>
-    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="LabelRedeclaration" xml:space="preserve">
+    <value>Label '{0}' has already been declared</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="LetInLexicalBinding" xml:space="preserve">
+    <value>let is disallowed as a lexically bound name</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="ModuleExportNameWithoutFromClause" xml:space="preserve">
+    <value>String literal module export names must be followed by a 'from' clause</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="ModuleExportUndefined" xml:space="preserve">
+    <value>Export '{0}' is not defined in module</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="MultipleDefaultsInSwitch" xml:space="preserve">
+    <value>More than one default clause in switch statement</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="NewlineAfterThrow" xml:space="preserve">
+    <value>Illegal newline after throw</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="NoCatchOrFinally" xml:space="preserve">
+    <value>Missing catch or finally after try</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="NoIterationStatement" xml:space="preserve">
+    <value>Illegal continue statement: no surrounding iteration statement</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="OptionalChainingNoNew" xml:space="preserve">
+    <value>Invalid optional chain from new expression</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="OptionalChainingNoTemplate" xml:space="preserve">
+    <value>Invalid tagged template on optional chain</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="ParamAfterRest" xml:space="preserve">
+    <value>Rest parameter must be last formal parameter</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="ParamDupe" xml:space="preserve">
+    <value>Duplicate parameter name not allowed in this context</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="RedefinedProperty" xml:space="preserve">
+    <value>Redefinition of property '{0}'</value>
   </data>
   <data name="RegExpDuplicateCaptureGroupName" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Duplicate capture group name</value>
-    <comment>https://github.com/v8/v8/blob/main/src/regexp/regexp-error.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/regexp/regexp-error.h</comment>
   </data>
   <data name="RegExpIncompleteQuantifier" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Incomplete quantifier</value>
-    <comment>https://github.com/v8/v8/blob/main/src/regexp/regexp-error.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/regexp/regexp-error.h</comment>
   </data>
   <data name="RegExpInvalidCaptureGroupName" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Invalid capture group name</value>
-    <comment>https://github.com/v8/v8/blob/main/src/regexp/regexp-error.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/regexp/regexp-error.h</comment>
   </data>
   <data name="RegExpInvalidCharacterClass" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Invalid character class</value>
-    <comment>https://github.com/v8/v8/blob/main/src/regexp/regexp-error.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/regexp/regexp-error.h</comment>
   </data>
   <data name="RegExpInvalidClassEscape" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Invalid class escape</value>
-    <comment>https://github.com/v8/v8/blob/main/src/regexp/regexp-error.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/regexp/regexp-error.h</comment>
   </data>
   <data name="RegExpInvalidClassPropertyName" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Invalid property name in character class</value>
-    <comment>https://github.com/v8/v8/blob/main/src/regexp/regexp-error.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/regexp/regexp-error.h</comment>
   </data>
   <data name="RegExpInvalidDecimalEscape" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Invalid decimal escape</value>
-    <comment>https://github.com/v8/v8/blob/main/src/regexp/regexp-error.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/regexp/regexp-error.h</comment>
   </data>
   <data name="RegExpInvalidEscape" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Invalid escape</value>
-    <comment>https://github.com/v8/v8/blob/main/src/regexp/regexp-error.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/regexp/regexp-error.h</comment>
   </data>
   <data name="RegExpInvalidGroup" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Invalid group</value>
-    <comment>https://github.com/v8/v8/blob/main/src/regexp/regexp-error.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/regexp/regexp-error.h</comment>
   </data>
   <data name="RegExpInvalidNamedCaptureReference" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Invalid named capture referenced</value>
-    <comment>https://github.com/v8/v8/blob/main/src/regexp/regexp-error.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/regexp/regexp-error.h</comment>
   </data>
   <data name="RegExpInvalidNamedReference" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Invalid named reference</value>
-    <comment>https://github.com/v8/v8/blob/main/src/regexp/regexp-error.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/regexp/regexp-error.h</comment>
   </data>
   <data name="RegExpInvalidPropertyName" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Invalid property name</value>
-    <comment>https://github.com/v8/v8/blob/main/src/regexp/regexp-error.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/regexp/regexp-error.h</comment>
   </data>
   <data name="RegExpInvalidQuantifier" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Invalid quantifier</value>
-    <comment>https://github.com/v8/v8/blob/main/src/regexp/regexp-error.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/regexp/regexp-error.h</comment>
   </data>
   <data name="RegExpInvalidUnicodeEscape" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Invalid Unicode escape</value>
-    <comment>https://github.com/v8/v8/blob/main/src/regexp/regexp-error.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/regexp/regexp-error.h</comment>
   </data>
   <data name="RegExpLoneQuantifierBrackets" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Lone quantifier brackets</value>
-    <comment>https://github.com/v8/v8/blob/main/src/regexp/regexp-error.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/regexp/regexp-error.h</comment>
   </data>
   <data name="RegExpNothingToRepeat" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Nothing to repeat</value>
-    <comment>https://github.com/v8/v8/blob/main/src/regexp/regexp-error.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/regexp/regexp-error.h</comment>
   </data>
   <data name="RegExpRangeOutOfOrder" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: numbers out of order in {{}} quantifier</value>
-    <comment>https://github.com/v8/v8/blob/main/src/regexp/regexp-error.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/regexp/regexp-error.h</comment>
   </data>
   <data name="RegExpRangeOutOfOrderCharacterClass" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Range out of order in character class</value>
-    <comment>https://github.com/v8/v8/blob/main/src/regexp/regexp-error.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/regexp/regexp-error.h</comment>
   </data>
   <data name="RegExpUnmatchedParen" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Unmatched ')'</value>
-    <comment>https://github.com/v8/v8/blob/main/src/regexp/regexp-error.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/regexp/regexp-error.h</comment>
   </data>
   <data name="RegExpUnterminatedCharacterClass" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Unterminated character class</value>
-    <comment>https://github.com/v8/v8/blob/main/src/regexp/regexp-error.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/regexp/regexp-error.h</comment>
   </data>
   <data name="RegExpUnterminatedGroup" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Unterminated group</value>
-    <comment>https://github.com/v8/v8/blob/main/src/regexp/regexp-error.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/regexp/regexp-error.h</comment>
+  </data>
+  <data name="RestDefaultInitializer" xml:space="preserve">
+    <value>Rest parameter may not have a default initializer</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="SloppyFunction" xml:space="preserve">
+    <value>In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="StaticPrototype" xml:space="preserve">
+    <value>Classes may not have a static property named 'prototype'</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
   </data>
   <data name="Strict8Or9Escape" xml:space="preserve">
     <value>\8 and \9 are not allowed in strict mode</value>
-    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
   </data>
   <data name="StrictDecimalWithLeadingZero" xml:space="preserve">
     <value>Decimals with leading zeros are not allowed in strict mode</value>
-    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="StrictDelete" xml:space="preserve">
+    <value>Delete of an unqualified identifier in strict mode</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="StrictEvalArguments" xml:space="preserve">
+    <value>Unexpected eval or arguments in strict mode</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="StrictFunction" xml:space="preserve">
+    <value>In strict mode code, functions can only be declared at top level or inside a block</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
   </data>
   <data name="StrictOctalEscape" xml:space="preserve">
     <value>Octal escape sequences are not allowed in strict mode</value>
-    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
   </data>
   <data name="StrictOctalLiteral" xml:space="preserve">
     <value>Octal literals are not allowed in strict mode</value>
-    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="StrictWith" xml:space="preserve">
+    <value>Strict mode code may not include a with statement</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
   </data>
   <data name="Template8Or9Escape" xml:space="preserve">
     <value>\8 and \9 are not allowed in template strings</value>
-    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
   </data>
   <data name="TemplateOctalLiteral" xml:space="preserve">
     <value>Octal escape sequences are not allowed in template strings</value>
-    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
   </data>
   <data name="TrailingNumericSeparator" xml:space="preserve">
     <value>Numeric separators are not allowed at the end of numeric literals</value>
-    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
   </data>
   <data name="UndefinedUnicodeCodePoint" xml:space="preserve">
     <value>Undefined Unicode code-point</value>
-    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
   </data>
   <data name="UnexpectedEOS" xml:space="preserve">
     <value>Unexpected end of input</value>
-    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="UnexpectedNewTarget" xml:space="preserve">
+    <value>new.target expression is not allowed here</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="UnexpectedReserved" xml:space="preserve">
+    <value>Unexpected reserved word</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="UnexpectedStrictReserved" xml:space="preserve">
+    <value>Unexpected strict mode reserved word</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="UnexpectedSuper" xml:space="preserve">
+    <value>'super' keyword unexpected here</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
   </data>
   <data name="UnexpectedTemplateString" xml:space="preserve">
     <value>Unexpected template string</value>
-    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
   </data>
   <data name="UnexpectedToken" xml:space="preserve">
     <value>Unexpected token '{0}'</value>
-    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
   </data>
   <data name="UnexpectedTokenIdentifier" xml:space="preserve">
     <value>Unexpected identifier '{0}'</value>
-    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
   </data>
   <data name="UnexpectedTokenNumber" xml:space="preserve">
     <value>Unexpected number</value>
-    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
   </data>
   <data name="UnexpectedTokenRegExp" xml:space="preserve">
     <value>Unexpected regular expression</value>
-    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
   </data>
   <data name="UnexpectedTokenString" xml:space="preserve">
     <value>Unexpected string</value>
-    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="UnexpectedTokenUnaryExponentiation" xml:space="preserve">
+    <value>Unary operator used immediately before exponentiation expression. Parenthesis must be used to disambiguate operator precedence</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="UnknownLabel" xml:space="preserve">
+    <value>Undefined label '{0}'</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
   </data>
   <data name="UnterminatedRegExp" xml:space="preserve">
     <value>Invalid regular expression: missing /</value>
-    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
   </data>
   <data name="UnterminatedTemplateExpr" xml:space="preserve">
     <value>Missing } in template expression</value>
-    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="VarRedeclaration" xml:space="preserve">
+    <value>Identifier '{0}' has already been declared</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+  <data name="YieldInParameter" xml:space="preserve">
+    <value>Yield expression not allowed in formal parameter</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
   </data>
   <data name="ZeroDigitNumericSeparator" xml:space="preserve">
     <value>Numeric separator can not be used after leading 0</value>
-    <comment>https://github.com/v8/v8/blob/main/src/common/message-template.h</comment>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
   </data>
 </root>

@@ -36,7 +36,8 @@ public partial class Parser
         {
             foreach (var kvp in undefinedExports)
             {
-                RaiseRecoverable(kvp.Value, $"Export '{kvp.Key}' is not defined");
+                // RaiseRecoverable(kvp.Value, $"Export '{kvp.Key}' is not defined"); // original acornjs error reporting
+                RaiseRecoverable(kvp.Value, string.Format(SyntaxErrorMessages.ModuleExportUndefined, kvp.Key));
             }
         }
 
@@ -183,11 +184,19 @@ public partial class Parser
                     // body of an if statement.
 
                     hasContext = context != StatementContext.Default;
-                    if (hasContext
-                        && _tokenizerOptions._ecmaVersion >= EcmaVersion.ES6
-                        && (_strict || context is not (StatementContext.If or StatementContext.Label)))
+                    if (hasContext && _tokenizerOptions._ecmaVersion >= EcmaVersion.ES6)
                     {
-                        Unexpected();
+                        if (_strict)
+                        {
+                            // Unexpected(); // original acornjs error reporting
+                            Raise(_tokenizer._start, SyntaxErrorMessages.StrictFunction);
+                        }
+                        else if (context is not (StatementContext.If or StatementContext.Label))
+                        {
+                            // Unexpected(); // original acornjs error reporting
+                            Raise(_tokenizer._start, SyntaxErrorMessages.SloppyFunction);
+
+                        }
                     }
 
                     return ExitRecursion(ParseFunctionStatement(startMarker, isAsync: false, declarationPosition: !hasContext));
@@ -249,12 +258,21 @@ public partial class Parser
                     {
                         if (!topLevel)
                         {
-                            Raise(_tokenizer._start, "'import' and 'export' may only appear at the top level");
+                            // Raise(_tokenizer._start, "'import' and 'export' may only appear at the top level"); // original acornjs error reporting
+                            Unexpected();
                         }
 
                         if (!_inModule)
                         {
-                            Raise(_tokenizer._start, "'import' and 'export' may appear only with 'sourceType: module'");
+                            // Raise(_tokenizer._start, "'import' and 'export' may appear only with 'sourceType: module'"); // original acornjs error reporting
+                            if (startType.Keyword.Value == Keyword.Import)
+                            {
+                                Raise(_tokenizer._start, SyntaxErrorMessages.ImportOutsideModule);
+                            }
+                            else
+                            {
+                                Unexpected();
+                            }
                         }
                     }
 
@@ -281,7 +299,8 @@ public partial class Parser
             hasContext = context != StatementContext.Default;
             if (hasContext)
             {
-                Unexpected();
+                // Unexpected(); // original acornjs error reporting
+                Raise(_tokenizer._start, SyntaxErrorMessages.AsyncFunctionInSingleStatementContext);
             }
 
             Next();
@@ -308,52 +327,61 @@ public partial class Parser
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseBreakContinueStatement = function`
 
-        var isBreak = keyword == TokenType.Break;
         Next();
 
+        var isBreak = keyword == TokenType.Break;
         Identifier? label;
         if (Eat(TokenType.Semicolon) || InsertSemicolon())
         {
             label = null;
+
+            // Verify that there is an actual destination to break or
+            // continue to.
+            for (var i = 0; i < _labels.Count; i++)
+            {
+                ref readonly var lab = ref _labels.GetItemRef(i);
+                if (isBreak ? lab.Kind != LabelKind.None : lab.Kind == LabelKind.Loop)
+                {
+                    goto Success;
+                }
+            }
+
+            // Raise(startMarker.Index, "Unsyntactic " + keyword.Label); // original acornjs error reporting
+            Raise(startMarker.Index, isBreak
+                ? SyntaxErrorMessages.IllegalBreak
+                : SyntaxErrorMessages.NoIterationStatement);
         }
-        else if (_tokenizer._type != TokenType.Name)
-        {
-            return Unexpected<Statement>();
-        }
-        else
+        else if (_tokenizer._type == TokenType.Name)
         {
             label = ParseIdentifier();
             Semicolon();
-        }
 
-        // Verify that there is an actual destination to break or
-        // continue to.
-        var i = 0;
-        for (; i < _labels.Count; i++)
-        {
-            ref var lab = ref _labels.GetItemRef(i);
-
-            if (label is null)
+            // Verify that there is an actual destination to break or
+            // continue to.
+            for (var i = 0; i < _labels.Count; i++)
             {
-                if (isBreak ? lab.Kind != LabelKind.None : lab.Kind == LabelKind.Loop)
+                ref readonly var lab = ref _labels.GetItemRef(i);
+                if (_labels.GetItemRef(i).Name == label.Name)
                 {
-                    break;
+                    if (!isBreak && lab.Kind != LabelKind.Loop)
+                    {
+                        // Raise(startMarker.Index, "Unsyntactic " + keyword.Label); // original acornjs error reporting
+                        Raise(startMarker.Index, string.Format(SyntaxErrorMessages.IllegalContinue, label.Name));
+                    }
+
+                    goto Success;
                 }
             }
-            else if (lab.Name == label.Name)
-            {
-                if (isBreak || lab.Kind == LabelKind.Loop)
-                {
-                    break;
-                }
-            }
-        }
 
-        if (i == _labels.Count)
+            // Raise(startMarker.Index, "Unsyntactic " + keyword.Label); // original acornjs error reporting
+            Raise(label.Start, string.Format(SyntaxErrorMessages.UnknownLabel, label.Name));
+        }
+        else
         {
-            Raise(startMarker.Index, "Unsyntactic " + keyword.Label);
+            return Unexpected<Statement>();
         }
 
+    Success:
         return FinishNode<Statement>(startMarker, isBreak ? new BreakStatement(label) : new ContinueStatement(label));
     }
 
@@ -405,7 +433,20 @@ public partial class Parser
 
         Next();
 
-        var awaitAt = _tokenizerOptions._ecmaVersion >= EcmaVersion.ES9 && CanAwait() && EatContextual("await") ? _tokenizer._lastTokenStart : -1;
+        int awaitAt;
+        if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES9 && IsContextual("await"))
+        {
+            if (!CanAwait())
+            {
+                RaiseRecoverable(_tokenizer._start, SyntaxErrorMessages.UnexpectedReserved);
+            }
+            awaitAt = _tokenizer._start;
+            Next();
+        }
+        else
+        {
+            awaitAt = -1;
+        }
 
         _labels.Push(new Label(LabelKind.Loop));
         EnterScope(ScopeFlags.None);
@@ -416,7 +457,7 @@ public partial class Parser
         {
             if (awaitAt >= 0)
             {
-                Unexpected(awaitAt);
+                Unexpected(new TokenState(awaitAt, TokenType.Name, "await"));
             }
 
             return ParseFor(startMarker, null);
@@ -435,15 +476,20 @@ public partial class Parser
 
             var initDeclaration = FinishNode(initStartMarker, ParseVar(kind, isFor: true));
 
-            if ((_tokenizer._type == TokenType.In || _tokenizerOptions._ecmaVersion >= EcmaVersion.ES6 && IsContextual("of"))
-                && initDeclaration.Declarations.Count == 1)
+            if (_tokenizer._type == TokenType.In || _tokenizerOptions._ecmaVersion >= EcmaVersion.ES6 && IsContextual("of"))
             {
-                if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES9 && _tokenizer._type == TokenType.In && awaitAt >= 0)
+                if (initDeclaration.Declarations.Count != 1)
                 {
-                    Unexpected(awaitAt);
+                    // This error is not reported by the original acornjs implementation.
+                    Raise(initDeclaration.Start, string.Format(SyntaxErrorMessages.ForInOfLoopMultiBindings, _tokenizer._type == TokenType.In ? "for-in" : "for-of"));
                 }
 
-                return ParseForIn(startMarker, await: awaitAt >= 0, initDeclaration);
+                if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES9 && _tokenizer._type == TokenType.In && awaitAt >= 0)
+                {
+                    Unexpected(new TokenState(awaitAt, TokenType.Name, "await"));
+                }
+
+                return ParseForInOf(startMarker, await: awaitAt >= 0, initDeclaration);
             }
 
             init = initDeclaration;
@@ -451,6 +497,7 @@ public partial class Parser
         else
         {
             var startsWithLet = IsContextual("let");
+            var containsEscape = _tokenizer._containsEscape;
             var destructuringErrors = new DestructuringErrors();
 
             init = ParseExpression(ref destructuringErrors, awaitAt >= 0 ? ExpressionContext.AwaitForInit : ExpressionContext.ForInit);
@@ -458,20 +505,31 @@ public partial class Parser
             var isForOf = false;
             if (_tokenizer._type == TokenType.In || (isForOf = _tokenizerOptions._ecmaVersion >= EcmaVersion.ES6 && IsContextual("of")))
             {
-                if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES9 && _tokenizer._type == TokenType.In && awaitAt >= 0)
+                if (awaitAt >= 0)
                 {
-                    Unexpected(awaitAt);
+                    if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES9 && _tokenizer._type == TokenType.In)
+                    {
+                        Unexpected(new TokenState(awaitAt, TokenType.Name, "await"));
+                    }
+                }
+                else
+                {
+                    if (isForOf && _tokenizerOptions._ecmaVersion >= EcmaVersion.ES8 && !containsEscape && init is Identifier { Name: "async" })
+                    {
+                        Raise(init.Start, SyntaxErrorMessages.ForOfAsync);
+                    }
                 }
 
                 if (startsWithLet && isForOf)
                 {
-                    Raise(init.Start, "The left-hand side of a for-of loop may not start with 'let'");
+                    // Raise(init.Start, "The left-hand side of a for-of loop may not start with 'let'"); // original acornjs error reporting
+                    Raise(init.Start, SyntaxErrorMessages.ForOfLet);
                 }
 
-                var initPattern = ToAssignable(init, isBinding: false, ref destructuringErrors);
-                CheckLValPattern(initPattern);
+                var initPattern = ToAssignable(init, ref destructuringErrors, isBinding: false, lhsKind: LeftHandSideKind.ForInOf);
+                CheckLValPattern(initPattern, lhsKind: LeftHandSideKind.ForInOf);
 
-                return ParseForIn(startMarker, await: awaitAt >= 0, initPattern);
+                return ParseForInOf(startMarker, await: awaitAt >= 0, initPattern);
             }
 
             CheckExpressionErrors(ref destructuringErrors, andThrow: true);
@@ -479,7 +537,7 @@ public partial class Parser
 
         if (awaitAt >= 0)
         {
-            Unexpected(awaitAt);
+            Unexpected(new TokenState(awaitAt, TokenType.Name, "await"));
         }
 
         return ParseFor(startMarker, init);
@@ -523,7 +581,8 @@ public partial class Parser
 
         if (!_options._allowReturnOutsideFunction && !InFunction())
         {
-            Raise(_tokenizer._start, "'return' outside of function");
+            // Raise(_tokenizer._start, "'return' outside of function"); // original acornjs error reporting
+            Raise(_tokenizer._start, SyntaxErrorMessages.IllegalReturn);
         }
 
         Next();
@@ -574,7 +633,8 @@ public partial class Parser
             {
                 if (sawDefault)
                 {
-                    RaiseRecoverable(_tokenizer._start, "Multiple default clauses");
+                    // RaiseRecoverable(_tokenizer._start, "Multiple default clauses"); // original acornjs error reporting
+                    RaiseRecoverable(_tokenizer._start, SyntaxErrorMessages.MultipleDefaultsInSwitch);
                 }
                 else
                 {
@@ -616,7 +676,8 @@ public partial class Parser
 
         if (Tokenizer.ContainsLineBreak(_tokenizer._input.SliceBetween(_tokenizer._lastTokenEnd, _tokenizer._start)))
         {
-            Raise(_tokenizer._lastTokenEnd, "Illegal newline after throw");
+            // Raise(_tokenizer._lastTokenEnd, "Illegal newline after throw"); // original acornjs error reporting
+            Raise(_tokenizer._lastTokenEnd, SyntaxErrorMessages.NewlineAfterThrow);
         }
 
         var argument = ParseExpression(ref NullRef<DestructuringErrors>());
@@ -702,7 +763,8 @@ public partial class Parser
 
         if (handler is null && finalizer is null)
         {
-            Raise(startMarker.Index, "Missing catch or finally clause");
+            // Raise(startMarker.Index, "Missing catch or finally clause"); // original acornjs error reporting
+            Raise(_tokenizer._lastTokenEnd, SyntaxErrorMessages.NoCatchOrFinally);
         }
 
         return FinishNode(startMarker, new TryStatement(block, handler, finalizer));
@@ -739,7 +801,8 @@ public partial class Parser
 
         if (_strict)
         {
-            Raise(_tokenizer._start, "'with' in strict mode");
+            // Raise(_tokenizer._start, "'with' in strict mode"); // original acornjs error reporting
+            Raise(_tokenizer._start, SyntaxErrorMessages.StrictWith);
         }
 
         Next();
@@ -767,7 +830,8 @@ public partial class Parser
             ref readonly var label = ref _labels.GetItemRef(i);
             if (label.Name == maybeName)
             {
-                Raise(expr.Start, $"Label '{maybeName}' is already declared");
+                // Raise(expr.Start, $"Label '{maybeName}' is already declared"); // original acornjs error reporting
+                Raise(expr.Start, string.Format(SyntaxErrorMessages.LabelRedeclaration, maybeName));
             }
         }
 
@@ -869,7 +933,7 @@ public partial class Parser
 
     // Parse a `for`/`in` and `for`/`of` loop, which are almost
     // same from parser's perspective.
-    private Statement ParseForIn(in Marker startMarker, bool await, Node init)
+    private Statement ParseForInOf(in Marker startMarker, bool await, Node init)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseForIn = function`
 
@@ -886,7 +950,8 @@ public partial class Parser
                 || variableDeclaration.Kind != VariableDeclarationKind.Var
                 || variableDeclarator.Id.Type != NodeType.Identifier)
             {
-                Raise(init.Start, $"{(isForIn ? "for-in" : "for-of")} loop variable declaration may not have an initializer");
+                // Raise(init.Start, $"{(isForIn ? "for-in" : "for-of")} loop variable declaration may not have an initializer"); // original acornjs error reporting
+                Raise(variableDeclarator.Id.Start, string.Format(SyntaxErrorMessages.ForInOfLoopInitializer, isForIn ? "for-in" : "for-of"));
             }
         }
 
@@ -927,11 +992,13 @@ public partial class Parser
             {
                 if (kind == VariableDeclarationKind.Const && !(_tokenizer._type == TokenType.In || _tokenizerOptions._ecmaVersion >= EcmaVersion.ES6 && IsContextual("of")))
                 {
-                    return Unexpected<VariableDeclaration>();
+                    // return Unexpected<VariableDeclaration>(); // original acornjs error reporting
+                    return Raise<VariableDeclaration>(_tokenizer._lastTokenEnd, SyntaxErrorMessages.DeclarationMissingInitializer_Const);
                 }
                 else if (id.Type != NodeType.Identifier && !(isFor && (_tokenizer._type == TokenType.In || IsContextual("of"))))
                 {
-                    return Raise<VariableDeclaration>(_tokenizer._lastTokenEnd, "Complex binding patterns require an initialization value");
+                    // return Raise<VariableDeclaration>(_tokenizer._lastTokenEnd, "Complex binding patterns require an initialization value"); // original acornjs error reporting
+                    return Raise<VariableDeclaration>(_tokenizer._lastTokenEnd, SyntaxErrorMessages.DeclarationMissingInitializer_Destructuring);
                 }
                 else
                 {
@@ -971,7 +1038,8 @@ public partial class Parser
         {
             if (_tokenizer._type == TokenType.Star && (flags & FunctionOrClassFlags.HangingStatement) != 0)
             {
-                Unexpected();
+                // Unexpected(); // original acornjs error reporting
+                Raise(startMarker.Index, SyntaxErrorMessages.GeneratorInSingleStatementContext);
             }
 
             generator = Eat(TokenType.Star);
@@ -1074,7 +1142,8 @@ public partial class Parser
             {
                 if (hadConstructor)
                 {
-                    RaiseRecoverable(element.Start, "Duplicate constructor in the same class");
+                    // RaiseRecoverable(element.Start, "Duplicate constructor in the same class"); // original acornjs error reporting
+                    RaiseRecoverable(element.Start, SyntaxErrorMessages.DuplicateConstructor);
                 }
                 else
                 {
@@ -1084,7 +1153,8 @@ public partial class Parser
             else if (element is ClassProperty { Key.Type: NodeType.PrivateIdentifier } prop
                 && IsPrivateNameConflicted(ref _privateNameStack.GetItemRef(privateNameStatusIndex), prop))
             {
-                RaiseRecoverable(prop.Key.Start, $"Identifier '#{prop.Key.As<PrivateIdentifier>().Name}' has already been declared");
+                // RaiseRecoverable(prop.Key.Start, $"Identifier '#{prop.Key.As<PrivateIdentifier>().Name}' has already been declared"); // original acornjs error reporting
+                RaiseRecoverable(prop.Key.Start, string.Format(SyntaxErrorMessages.VarRedeclaration, '#'.ToStringCached() + prop.Key.As<PrivateIdentifier>().Name));
             }
         }
 
@@ -1121,7 +1191,7 @@ public partial class Parser
             {
                 if (hasDecorators)
                 {
-                    Raise(startMarker.Index, "Decorators cannot be applied to static initialization blocks.");
+                    Raise(startMarker.Index, SyntaxErrorMessages.DecoratorAppliedToStaticBlock);
                 }
 
                 return ParseClassStaticBlock(startMarker);
@@ -1240,7 +1310,8 @@ public partial class Parser
         {
             if ("constructor".Equals(_tokenizer._value.Value))
             {
-                Raise(_tokenizer._start, "Classes can't have an element named '#constructor'");
+                // Raise(_tokenizer._start, "Classes can't have an element named '#constructor'"); // original acornjs error reporting
+                Raise(_tokenizer._start, SyntaxErrorMessages.ConstructorIsPrivate);
             }
             computed = false;
             return ParsePrivateIdentifier();
@@ -1264,22 +1335,26 @@ public partial class Parser
         {
             if (kind != PropertyKind.Method)
             {
-                Raise(key.Start, "Constructor can't have get/set modifier");
+                // Raise(key.Start, "Constructor can't have get/set modifier"); // original acornjs error reporting
+                Raise(key.Start, SyntaxErrorMessages.ConstructorIsAccessor);
             }
             if (isGenerator)
             {
-                Raise(key.Start, "Constructor can't be a generator");
+                // Raise(key.Start, "Constructor can't be a generator"); // original acornjs error reporting
+                Raise(key.Start, SyntaxErrorMessages.ConstructorIsGenerator);
             }
             if (isAsync)
             {
-                Raise(key.Start, "Constructor can't be an async method");
+                // Raise(key.Start, "Constructor can't be an async method"); // original acornjs error reporting
+                Raise(key.Start, SyntaxErrorMessages.ConstructorIsAsync);
             }
 
             kind = PropertyKind.Constructor;
         }
         else if (isStatic && CheckKeyName(key, computed, "prototype"))
         {
-            Raise(key.Start, "Classes may not have a static property named prototype");
+            // Raise(key.Start, "Classes may not have a static property named prototype"); // original acornjs error reporting
+            Raise(key.Start, SyntaxErrorMessages.StaticPrototype);
         }
 
         // Parse value
@@ -1290,18 +1365,21 @@ public partial class Parser
         {
             if (value.Params.Count != 0)
             {
-                RaiseRecoverable(value.Start, "getter should have no params");
+                // RaiseRecoverable(value.Start, "getter should have no params"); // original acornjs error reporting
+                RaiseRecoverable(value.Start, SyntaxErrorMessages.BadGetterArity);
             }
         }
         else if (kind == PropertyKind.Set)
         {
             if (value.Params.Count != 1)
             {
-                RaiseRecoverable(value.Start, "setter should have exactly one param");
+                // RaiseRecoverable(value.Start, "setter should have exactly one param"); // original acornjs error reporting
+                RaiseRecoverable(value.Start, SyntaxErrorMessages.BadSetterArity);
             }
             else if (value.Params[0] is RestElement)
             {
-                RaiseRecoverable(value.Params[0].Start, "Setter cannot use rest params");
+                // RaiseRecoverable(value.Params[0].Start, "Setter cannot use rest params"); // original acornjs error reporting
+                RaiseRecoverable(value.Start, SyntaxErrorMessages.BadSetterRestParameter);
             }
         }
 
@@ -1314,11 +1392,13 @@ public partial class Parser
 
         if (CheckKeyName(key, computed, "constructor"))
         {
-            Raise(key.Start, "Classes can't have a field named 'constructor'");
+            // Raise(key.Start, "Classes can't have a field named 'constructor'"); // original acornjs error reporting
+            Raise(key.Start, SyntaxErrorMessages.ConstructorClassField);
         }
         else if (isStatic && CheckKeyName(key, computed, "prototype"))
         {
-            Raise(key.Start, "Classes can't have a static field named 'prototype'");
+            // Raise(key.Start, "Classes can't have a static field named 'prototype'"); // original acornjs error reporting
+            Raise(key.Start, SyntaxErrorMessages.StaticPrototype);
         }
 
         Expression? value;
@@ -1434,7 +1514,8 @@ public partial class Parser
                 }
                 else
                 {
-                    RaiseRecoverable(id.Start, $"Private field '#{id.Name}' must be declared in an enclosing class");
+                    // RaiseRecoverable(id.Start, $"Private field '#{id.Name}' must be declared in an enclosing class"); // original acornjs error reporting
+                    RaiseRecoverable(id.Start, string.Format(SyntaxErrorMessages.InvalidPrivateFieldResolution, '#'.ToStringCached() + id.Name));
                 }
             }
         }
@@ -1496,7 +1577,7 @@ public partial class Parser
 
         return !computed
             && (key is Identifier identifier && identifier.Name == name
-                || key is Literal literal && name.Equals(literal.Value));
+                || key is StringLiteral literal && name.Equals(literal.Value));
     }
 
     // Parses module export declaration.
@@ -1528,7 +1609,7 @@ public partial class Parser
 
         Declaration? declaration;
         NodeList<ExportSpecifier> specifiers;
-        Literal? source;
+        StringLiteral? source;
         ArrayList<ImportAttribute> attributes;
 
         if (ShouldParseExportStatement())
@@ -1565,7 +1646,7 @@ public partial class Parser
                     Unexpected();
                 }
 
-                source = (Literal)ParseExprAtom(ref NullRef<DestructuringErrors>());
+                source = ParseExprAtom(ref NullRef<DestructuringErrors>()).As<StringLiteral>();
                 attributes = _tokenizerOptions._ecmaVersion == EcmaVersion.Experimental
                     ? ParseImportAttributes()
                     : default;
@@ -1587,7 +1668,8 @@ public partial class Parser
                     }
                     else
                     {
-                        Raise(spec.Local.Start, "A string literal cannot be used as an exported binding without `from`.");
+                        // Raise(spec.Local.Start, "A string literal cannot be used as an exported binding without `from`."); // original acornjs error reporting
+                        Raise(spec.Local.Start, SyntaxErrorMessages.ModuleExportNameWithoutFromClause);
                     }
                 }
 
@@ -1665,7 +1747,7 @@ public partial class Parser
             Unexpected();
         }
 
-        var source = (Literal)ParseExprAtom(ref NullRef<DestructuringErrors>());
+        var source = ParseExprAtom(ref NullRef<DestructuringErrors>()).As<StringLiteral>();
         var attributes = _tokenizerOptions._ecmaVersion == EcmaVersion.Experimental
             ? ParseImportAttributes()
             : default;
@@ -1687,13 +1769,14 @@ public partial class Parser
         var exportName = name switch
         {
             Identifier identifier => identifier.Name,
-            Literal literal => (string)literal.Value!,
+            StringLiteral literal => literal.Value,
             _ => (string)name
         };
 
         if (exports.Contains(exportName))
         {
-            RaiseRecoverable(pos, $"Duplicate export '{exportName}'");
+            // RaiseRecoverable(pos, $"Duplicate export '{exportName}'"); // original acornjs error reporting
+            RaiseRecoverable(pos, string.Format(SyntaxErrorMessages.DuplicateExport, exportName));
         }
         else
         {
@@ -1837,7 +1920,7 @@ public partial class Parser
             }
         }
 
-        var source = (Literal)ParseExprAtom(ref NullRef<DestructuringErrors>());
+        var source = ParseExprAtom(ref NullRef<DestructuringErrors>()).As<StringLiteral>();
         var attributes = _tokenizerOptions._ecmaVersion == EcmaVersion.Experimental
             ? ParseImportAttributes()
             : default;
@@ -1954,10 +2037,11 @@ public partial class Parser
 
         if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES13 && _tokenizer._type == TokenType.String)
         {
-            var stringLiteral = (Literal)ParseExprAtom(ref NullRef<DestructuringErrors>());
-            if (((string)stringLiteral.Value!).AsSpan().ContainsLoneSurrogate())
+            var stringLiteral = ParseExprAtom(ref NullRef<DestructuringErrors>()).As<StringLiteral>();
+            if (stringLiteral.Value.AsSpan().ContainsLoneSurrogate())
             {
-                Raise(stringLiteral.Start, "An export name cannot include a lone surrogate.");
+                // Raise(stringLiteral.Start, "An export name cannot include a lone surrogate."); // original acornjs error reporting
+                Raise(stringLiteral.Start, SyntaxErrorMessages.InvalidModuleExportName);
             }
             return stringLiteral;
         }
@@ -1993,14 +2077,11 @@ public partial class Parser
                 {
                     if (!allowStrictDirective)
                     {
-                        RaiseRecoverable(startMarker.Index, "Illegal 'use strict' directive in function with non-simple parameter list");
+                        RaiseRecoverable(startMarker.Index, string.Format(SyntaxErrorMessages.IllegalLanguageModeDirective, directive));
                     }
 
                     if (!_strict)
                     {
-                        // NOTE: V8 reports this error after checking the rest of statements (e.g.
-                        // `((a) => { "\00"; "use strict"; return 00 })()` reports for the octal number).
-                        // TODO: fix error reporting order?
                         if (firstRestrictedPos >= 0)
                         {
                             RaiseRecoverable(firstRestrictedPos, _tokenizer._input[firstRestrictedPos + 1] is '8' or '9'
@@ -2030,11 +2111,11 @@ public partial class Parser
 
     private ClassDeclaration ParseDecoratedClassStatement(in Marker startMarker, FunctionOrClassFlags flags = FunctionOrClassFlags.Statement)
     {
-        var previousDecorators = _decorators;
+        var oldDecorators = _decorators;
         _decorators = ParseDecorators();
         Expect(TokenType.Class);
         var declaration = (ClassDeclaration)ParseClass(startMarker, flags);
-        _decorators = previousDecorators;
+        _decorators = oldDecorators;
 
         return FinishNode(startMarker, declaration);
     }
@@ -2075,7 +2156,7 @@ public partial class Parser
 
             if (!parameterSet.Add(key))
             {
-                Raise(importAttribute.Start, $"Import attributes has duplicate key '{key}'");
+                Raise(importAttribute.Start, string.Format(SyntaxErrorMessages.DuplicateImportAttribute, key));
             }
 
             attributes.Add(importAttribute);
@@ -2087,11 +2168,12 @@ public partial class Parser
     private ImportAttribute ParseImportAttribute()
     {
         var startMarker = StartNode();
+        var errorState = new TokenState(_tokenizer);
 
         var key = ParsePropertyName(out var computed);
         if (computed || key is not (Identifier or StringLiteral))
         {
-            Unexpected(startMarker.Index);
+            Unexpected(errorState);
         }
 
         if (!Eat(TokenType.Colon) || _tokenizer._type != TokenType.String)

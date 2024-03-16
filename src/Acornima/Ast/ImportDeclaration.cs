@@ -10,7 +10,7 @@ public sealed partial class ImportDeclaration : ImportOrExportDeclaration
 
     public ImportDeclaration(
         in NodeList<ImportDeclarationSpecifier> specifiers,
-        Literal source,
+        StringLiteral source,
         in NodeList<ImportAttribute> attributes)
         : base(NodeType.ImportDeclaration)
     {
@@ -23,10 +23,10 @@ public sealed partial class ImportDeclaration : ImportOrExportDeclaration
     /// <see cref="ImportSpecifier"/> | <see cref="ImportDefaultSpecifier "/> | <see cref="ImportNamespaceSpecifier "/>
     /// </remarks>
     public ref readonly NodeList<ImportDeclarationSpecifier> Specifiers { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref _specifiers; }
-    public Literal Source { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
+    public StringLiteral Source { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public ref readonly NodeList<ImportAttribute> Attributes { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref _attributes; }
 
-    private ImportDeclaration Rewrite(in NodeList<ImportDeclarationSpecifier> specifiers, Literal source, in NodeList<ImportAttribute> attributes)
+    private ImportDeclaration Rewrite(in NodeList<ImportDeclarationSpecifier> specifiers, StringLiteral source, in NodeList<ImportAttribute> attributes)
     {
         return new ImportDeclaration(specifiers, source, attributes);
     }

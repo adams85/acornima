@@ -11,7 +11,7 @@ public sealed partial class ExportNamedDeclaration : ExportDeclaration
     public ExportNamedDeclaration(
         Declaration? declaration,
         in NodeList<ExportSpecifier> specifiers,
-        Literal? source,
+        StringLiteral? source,
         in NodeList<ImportAttribute> attributes)
         : base(NodeType.ExportNamedDeclaration)
     {
@@ -26,10 +26,10 @@ public sealed partial class ExportNamedDeclaration : ExportDeclaration
     /// </remarks>
     public Declaration? Declaration { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public ref readonly NodeList<ExportSpecifier> Specifiers { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref _specifiers; }
-    public Literal? Source { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
+    public StringLiteral? Source { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public ref readonly NodeList<ImportAttribute> Attributes { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref _attributes; }
 
-    private ExportNamedDeclaration Rewrite(Declaration? declaration, in NodeList<ExportSpecifier> specifiers, Literal? source, in NodeList<ImportAttribute> attributes)
+    private ExportNamedDeclaration Rewrite(Declaration? declaration, in NodeList<ExportSpecifier> specifiers, StringLiteral? source, in NodeList<ImportAttribute> attributes)
     {
         return new ExportNamedDeclaration(declaration, specifiers, source, attributes);
     }

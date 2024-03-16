@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using Acornima.Ast;
@@ -77,7 +78,8 @@ public partial class Parser
                 {
                     if (IsNullRef(ref destructuringErrors))
                     {
-                        RaiseRecoverable(key.Start, "Redefinition of __proto__ property");
+                        // RaiseRecoverable(key.Start, "Redefinition of __proto__ property"); // original acornjs error reporting
+                        RaiseRecoverable(key.Start, SyntaxErrorMessages.DuplicateProto);
                     }
                     else if (destructuringErrors.DoubleProto < 0)
                     {
@@ -105,7 +107,8 @@ public partial class Parser
 
                 if (redefinition)
                 {
-                    RaiseRecoverable(key.Start, "Redefinition of property");
+                    // RaiseRecoverable(key.Start, "Redefinition of property"); // original acornjs error reporting
+                    RaiseRecoverable(key.Start, string.Format(SyntaxErrorMessages.RedefinedProperty, name));
                 }
             }
             else
@@ -196,7 +199,9 @@ public partial class Parser
             var op = AssignmentExpression.OperatorFromString((string)_tokenizer._value.Value!);
             Debug.Assert(op != Operator.Unknown);
 
-            var leftNode = _tokenizer._type == TokenType.Eq ? ToAssignable(left, isBinding: false, ref actualDestructuringErrors) : left;
+            var leftNode = _tokenizer._type == TokenType.Eq
+                ? ToAssignable(left, ref actualDestructuringErrors, isBinding: false, lhsKind: LeftHandSideKind.Assignment)
+                : left;
 
             if (!ownsDestructuringErrors)
             {
@@ -210,11 +215,11 @@ public partial class Parser
 
             if (_tokenizer._type == TokenType.Eq)
             {
-                CheckLValPattern(leftNode);
+                CheckLValPattern(leftNode, lhsKind: LeftHandSideKind.Assignment);
             }
             else
             {
-                CheckLValSimple(leftNode);
+                CheckLValSimple(leftNode, lhsKind: LeftHandSideKind.Assignment);
             }
 
             Next();
@@ -304,7 +309,7 @@ public partial class Parser
         {
             var prec = _tokenizer._type.Precedence;
             // NOTE: TokenType.Precedence defaults to -1 for non-binary operator tokens.
-            if (prec > minPrec && (context == ExpressionContext.Default || _tokenizer._type != TokenType.In))
+            if (prec > minPrec && ((context & ExpressionContext.ForInit) == 0 || _tokenizer._type != TokenType.In))
             {
                 Operator op;
                 bool coalesce;
@@ -340,7 +345,8 @@ public partial class Parser
                 if (logical && _tokenizer._type == TokenType.Coalesce
                     || coalesce && (_tokenizer._type == TokenType.LogicalOr || _tokenizer._type == TokenType.LogicalAnd))
                 {
-                    RaiseRecoverable(_tokenizer._start, "Logical expressions and coalesce expressions cannot be mixed. Wrap either by parentheses");
+                    // RaiseRecoverable(_tokenizer._start, "Logical expressions and coalesce expressions cannot be mixed. Wrap either by parentheses"); // original acornjs error reporting
+                    RaiseRecoverable(_tokenizer._start, GetUnexpectedTokenMessage(new TokenState(_tokenizer)));
                 }
 
                 // NOTE: Original acornjs implementation does a recursive call here, but we can optimize that into a loop to keep the call stack shallow.
@@ -358,7 +364,8 @@ public partial class Parser
 
         if (right.Type == NodeType.PrivateIdentifier)
         {
-            Raise(right.Start, "Private identifier can only be left side of binary expression");
+            // Raise(right.Start, "Private identifier can only be left side of binary expression"); // original acornjs error reporting
+            Unexpected(new TokenState(right.Start, TokenType.PrivateId, right.As<PrivateIdentifier>().Name));
         }
 
         return FinishNode<BinaryExpression>(startMarker, logical
@@ -397,19 +404,21 @@ public partial class Parser
 
             if (update)
             {
-                CheckLValSimple(argument);
+                CheckLValSimple(argument, lhsKind: LeftHandSideKind.PrefixUpdate);
             }
             else
             {
                 if (op == Operator.Delete)
                 {
-                    if (_strict && IsLocalVariableAccess(argument))
+                    if (_strict && IsLocalVariableAccess(argument, out var identifier))
                     {
-                        RaiseRecoverable(startMarker.Index, "Deleting local variable in strict mode");
+                        // RaiseRecoverable(startMarker.Index, "Deleting local variable in strict mode"); // original acornjs error reporting
+                        RaiseRecoverable(identifier.Start, SyntaxErrorMessages.StrictDelete);
                     }
-                    else if (IsPrivateFieldAccess(argument))
+                    else if (IsPrivateFieldAccess(argument, out identifier))
                     {
-                        RaiseRecoverable(startMarker.Index, "Private fields can not be deleted");
+                        // RaiseRecoverable(startMarker.Index, "Private fields can not be deleted"); // original acornjs error reporting
+                        RaiseRecoverable(identifier.Start, SyntaxErrorMessages.DeletePrivateField);
                     }
                 }
 
@@ -430,24 +439,30 @@ public partial class Parser
             }
 
             expr = ParsePrivateIdentifier();
+
             // only could be private fields in 'in', such as #x in obj
             if (_tokenizer._type != TokenType.In)
             {
-                Unexpected();
+                // Unexpected(); // original acornjs error reporting
+                Unexpected(new TokenState(expr.Start, TokenType.PrivateId, expr.As<PrivateIdentifier>().Name));
             }
         }
         else
         {
             expr = ParseExprSubscripts(ref destructuringErrors, context);
-            if (CheckExpressionErrors(ref destructuringErrors))
-            {
-                return expr;
-            }
+
+            // Original acornjs implementation returns early if there is a shorthand assignment or double proto error.
+            // This is not consistent with V8 error reporting behavior, which checks for invalid left-hand side error
+            // also in these cases. Thus, we remove the early return.
+            //if (CheckExpressionErrors(ref destructuringErrors))
+            //{
+            //    return expr;
+            //}
 
             while (_tokenizer._type.Postfix && !CanInsertSemicolon())
             {
                 op = UpdateExpression.OperatorFromString((string)_tokenizer._value.Value!);
-                CheckLValSimple(expr);
+                CheckLValSimple(expr, lhsKind: LeftHandSideKind.PostfixUpdate);
                 Next();
                 expr = FinishNode(startMarker, new UpdateExpression(op, expr, prefix: false));
             }
@@ -457,7 +472,8 @@ public partial class Parser
         {
             if (sawUnary)
             {
-                Unexpected(_tokenizer._lastTokenStart);
+                // Unexpected(_tokenizer._lastTokenStart); // original acornjs error reporting
+                Raise(_tokenizer._lastTokenStart, SyntaxErrorMessages.UnexpectedTokenUnaryExponentiation);
             }
             else
             {
@@ -470,25 +486,28 @@ public partial class Parser
         return expr;
     }
 
-    private static bool IsLocalVariableAccess(Expression expr)
+    private static bool IsLocalVariableAccess(Expression expr, [NotNullWhen(true)] out Expression? identifier)
     {
         for (; ; )
         {
             switch (expr)
             {
                 case Identifier:
+                    identifier = expr;
                     return true;
 
                 case ParenthesizedExpression parenthesizedExpression:
+                    // NOTE: Original acornjs implementation does a recursive call here, but we can optimize that into a loop to keep the call stack shallow.
                     expr = parenthesizedExpression.Expression;
                     continue;
             }
 
+            identifier = default;
             return false;
         }
     }
 
-    private static bool IsPrivateFieldAccess(Expression expr)
+    private static bool IsPrivateFieldAccess(Expression expr, [NotNullWhen(true)] out Expression? identifier)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/expression.js > `function isPrivateFieldAccess`
 
@@ -496,18 +515,22 @@ public partial class Parser
         {
             switch (expr)
             {
-                case MemberExpression { Property.Type: NodeType.PrivateIdentifier }:
+                case MemberExpression { Property.Type: NodeType.PrivateIdentifier } memberExpression:
+                    identifier = memberExpression.Property;
                     return true;
 
                 case ChainExpression chainExpression:
+                    // NOTE: Original acornjs implementation does a recursive call here, but we can optimize that into a loop to keep the call stack shallow.
                     expr = chainExpression.Expression;
                     continue;
 
                 case ParenthesizedExpression parenthesizedExpression:
+                    // NOTE: Original acornjs implementation does a recursive call here, but we can optimize that into a loop to keep the call stack shallow.
                     expr = parenthesizedExpression.Expression;
                     continue;
             }
 
+            identifier = default;
             return false;
         }
     }
@@ -573,16 +596,16 @@ public partial class Parser
             && _tokenizer._lastTokenEnd == baseExpr.End && !CanInsertSemicolon() && baseExpr.End - baseExpr.Start == asyncKeyword.Length
             && _potentialArrowAt == baseExpr.Start;
 
-        var optionalChained = false;
+        var optionalChainPos = -1;
         var hasCall = false;
 
         for (; ; )
         {
-            var element = ParseSubscript(startMarker, baseExpr, noCalls, maybeAsyncArrow, ref optionalChained, ref hasCall, context);
+            var element = ParseSubscript(startMarker, baseExpr, noCalls, maybeAsyncArrow, ref optionalChainPos, ref hasCall, context);
 
-            if (element == baseExpr || element.Type == NodeType.ArrowFunctionExpression)
+            if (ReferenceEquals(element, baseExpr) || element.Type == NodeType.ArrowFunctionExpression)
             {
-                if (optionalChained)
+                if (optionalChainPos >= 0)
                 {
                     element = FinishNode(startMarker, new ChainExpression(element));
                 }
@@ -595,22 +618,27 @@ public partial class Parser
     }
 
     private Expression ParseSubscript(in Marker startMarker, Expression baseExpr, bool noCalls, bool maybeAsyncArrow,
-        ref bool optionalChained, ref bool hasCall, ExpressionContext context)
+        ref int optionalChainPos, ref bool hasCall, ExpressionContext context)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/expression.js > `pp.parseSubscript = function`
 
-        var optionalSupported = _tokenizerOptions._ecmaVersion >= EcmaVersion.ES11;
-        var optional = optionalSupported && Eat(TokenType.QuestionDot);
+        var optional = _tokenizerOptions._ecmaVersion >= EcmaVersion.ES11 && Eat(TokenType.QuestionDot);
         if (optional)
         {
             if (noCalls)
             {
-                Raise(_tokenizer._lastTokenStart, "Optional chaining cannot appear in the callee of new expressions");
+                // Raise(_tokenizer._lastTokenStart, "Optional chaining cannot appear in the callee of new expressions"); // original acornjs error reporting
+                Raise(_tokenizer._lastTokenStart, SyntaxErrorMessages.OptionalChainingNoNew);
             }
 
             if ((context & ExpressionContext.Decorator) != 0)
             {
-                Raise(_tokenizer._lastTokenStart, "Invalid decorator member expression");
+                Raise(_tokenizer._lastTokenStart, SyntaxErrorMessages.InvalidDecoratorMemberExpr);
+            }
+
+            if (optionalChainPos < 0)
+            {
+                optionalChainPos = _tokenizer._lastTokenStart;
             }
         }
 
@@ -624,7 +652,7 @@ public partial class Parser
             {
                 if ((context & ExpressionContext.Decorator) != 0)
                 {
-                    Raise(_tokenizer._lastTokenStart, "Invalid decorator member expression");
+                    Raise(_tokenizer._lastTokenStart, SyntaxErrorMessages.InvalidDecoratorMemberExpr);
                 }
 
                 property = ParseExpression(ref NullRef<DestructuringErrors>());
@@ -634,7 +662,7 @@ public partial class Parser
             {
                 if (hasCall && (context & ExpressionContext.Decorator) != 0)
                 {
-                    Raise(_tokenizer._lastTokenStart, "Invalid decorator member expression");
+                    Raise(_tokenizer._lastTokenStart, SyntaxErrorMessages.InvalidDecoratorMemberExpr);
                 }
 
                 property = _tokenizer._type == TokenType.PrivateId && baseExpr.Type != NodeType.Super
@@ -643,7 +671,6 @@ public partial class Parser
             }
 
             baseExpr = FinishNode(startMarker, new MemberExpression(obj: baseExpr, property, computed, optional));
-            optionalChained = optionalChained || optional;
         }
         else if (!noCalls && Eat(TokenType.ParenLeft))
         {
@@ -655,7 +682,7 @@ public partial class Parser
 
             if (hasCall && (context & ExpressionContext.Decorator) != 0)
             {
-                Raise(_tokenizer._lastTokenStart, "Invalid decorator member expression");
+                Raise(_tokenizer._lastTokenStart, SyntaxErrorMessages.InvalidDecoratorMemberExpr);
             }
 
             NodeList<Expression> exprList = ParseExprList(close: TokenType.ParenRight,
@@ -668,7 +695,8 @@ public partial class Parser
                 CheckYieldAwaitInDefaultParams();
                 if (_awaitIdentifierPosition > 0)
                 {
-                    Raise(_awaitIdentifierPosition, "Cannot use 'await' as identifier inside an async function");
+                    // Raise(_awaitIdentifierPosition, "Cannot use 'await' as identifier inside an async function"); // original acornjs error reporting
+                    Raise(_awaitIdentifierPosition, SyntaxErrorMessages.AwaitBindingIdentifier);
                 }
 
                 _yieldPosition = oldYieldPos;
@@ -692,19 +720,19 @@ public partial class Parser
                 _awaitIdentifierPosition = oldAwaitIdentPos;
             }
             baseExpr = FinishNode(startMarker, new CallExpression(callee: baseExpr, exprList, optional));
-            optionalChained = optionalChained || optional;
             hasCall = true;
         }
         else if (_tokenizer._type == TokenType.BackQuote)
         {
-            if (optional || optionalChained)
+            if (optionalChainPos >= 0)
             {
-                Raise(_tokenizer._start, "Optional chaining cannot appear in the tag of tagged template expressions");
+                // Raise(_tokenizer._start, "Optional chaining cannot appear in the tag of tagged template expressions"); // original acornjs error reporting
+                Raise(optionalChainPos, SyntaxErrorMessages.OptionalChainingNoTemplate);
             }
 
             if ((context & ExpressionContext.Decorator) != 0)
             {
-                Raise(_tokenizer._start, "Invalid decorator member expression");
+                Raise(_tokenizer._start, SyntaxErrorMessages.InvalidDecoratorMemberExpr);
             }
 
             var quasi = ParseTemplate(isTagged: true);
@@ -736,13 +764,15 @@ public partial class Parser
                     case Keyword.Super:
                         if (!AllowSuper())
                         {
-                            Raise(_tokenizer._start, "'super' keyword outside a method");
+                            // Raise(_tokenizer._start, "'super' keyword outside a method"); // original acornjs error reporting
+                            Raise(_tokenizer._start, SyntaxErrorMessages.UnexpectedSuper);
                         }
 
                         Next();
                         if (_tokenizer._type == TokenType.ParenLeft && !AllowDirectSuper())
                         {
-                            Raise(startMarker.Index, "super() call outside constructor of a subclass");
+                            // Raise(startMarker.Index, "super() call outside constructor of a subclass"); // original acornjs error reporting
+                            Raise(startMarker.Index, SyntaxErrorMessages.UnexpectedSuper);
                         }
 
                         // The `super` keyword can appear at below:
@@ -753,7 +783,8 @@ public partial class Parser
                         //     super ( Arguments )
                         if (_tokenizer._type != TokenType.Dot && _tokenizer._type != TokenType.BracketLeft && _tokenizer._type != TokenType.ParenLeft)
                         {
-                            Unexpected();
+                            // Unexpected(); // original acornjs error reporting
+                            Raise(startMarker.Index, SyntaxErrorMessages.UnexpectedSuper);
                         }
 
                         return FinishNode(startMarker, new Super());
@@ -783,12 +814,12 @@ public partial class Parser
             case TokenKind.Identifier when _tokenizer._type == TokenType.Name:
                 canBeArrow = _potentialArrowAt == _tokenizer._start;
                 var containsEsc = _tokenizer._containsEscape;
-                var id = ParseIdentifier(liberal: _tokenizer._type != TokenType.Name);
+                var id = ParseIdentifier(liberal: false);
 
                 if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES8 && !containsEsc && id.Name == "async" && !CanInsertSemicolon() && Eat(TokenType.Function))
                 {
                     _tokenizer.OverrideContext(TokenContext.FunctionInExpression);
-                    return (Expression)ParseFunction(startMarker, FunctionOrClassFlags.None, isAsync: true, context & ~ExpressionContext.ForNew);
+                    return (FunctionExpression)ParseFunction(startMarker, FunctionOrClassFlags.None, isAsync: true, context & ~ExpressionContext.ForNew);
                 }
 
                 if (canBeArrow && !CanInsertSemicolon())
@@ -798,13 +829,23 @@ public partial class Parser
                         return ParseArrowExpression(startMarker, parameters: new NodeList<Node>(id), isAsync: false, context & ~ExpressionContext.ForNew);
                     }
 
-                    if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES8 && id.Name == "async" && _tokenizer._type == TokenType.Name && !containsEsc
+                    if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES8 && !containsEsc && id.Name == "async" && _tokenizer._type == TokenType.Name
                         && (!_potentialArrowInForAwait || !"of".Equals(_tokenizer._value.Value) || _tokenizer._containsEscape))
                     {
+                        containsEsc = _tokenizer._containsEscape;
+
                         id = ParseIdentifier();
                         if (CanInsertSemicolon() || !Eat(TokenType.Arrow))
                         {
-                            Unexpected();
+                            // Unexpected(); // original acornjs error reporting
+                            if ((context & ExpressionContext.AwaitForInit) == ExpressionContext.ForInit && !containsEsc && id.Name == "of")
+                            {
+                                Raise(startMarker.Index, SyntaxErrorMessages.ForOfAsync);
+                            }
+                            else
+                            {
+                                Unexpected();
+                            }
                         }
 
                         return ParseArrowExpression(startMarker, parameters: new NodeList<Node>(id), isAsync: true, context & ~ExpressionContext.ForNew);
@@ -880,7 +921,7 @@ public partial class Parser
 
             case TokenKind.Punctuator when _tokenizer._type == TokenType.Slash:
                 // If a division operator appears in an expression position, the
-                // tokenizer got confused, and we force it to read a regexp instead.
+                // tokenizer got confused (or configured not to track regexps at all), and we force it to read a regexp instead.
                 _tokenizer.ReadRegExp();
                 goto case TokenKind.RegExpLiteral;
 
@@ -908,7 +949,8 @@ public partial class Parser
         // Because `ParseIdentifier(true)` doesn't check escape sequences, it needs the check of `ContainsEscape`.
         if (_tokenizer._containsEscape)
         {
-            RaiseRecoverable(_tokenizer._start, "Escape sequence in keyword import");
+            // RaiseRecoverable(_tokenizer._start, "Escape sequence in keyword import"); // original acornjs error reporting
+            RaiseRecoverable(_tokenizer._start, SyntaxErrorMessages.InvalidEscapedReservedWord);
         }
 
         Next();
@@ -952,15 +994,17 @@ public partial class Parser
         // Verify ending.
         else if (!Eat(TokenType.ParenRight))
         {
-            var errorPos = _tokenizer._start;
+            var errorState = new TokenState(_tokenizer);
+            TokenType errorTokenType = _tokenizer._type;
 
             if (Eat(TokenType.Comma) && Eat(TokenType.ParenRight))
             {
-                RaiseRecoverable(errorPos, "Trailing comma is not allowed in import()");
+                // RaiseRecoverable(errorPos, "Trailing comma is not allowed in import()"); // original acornjs error reporting
+                RaiseRecoverable(errorState.Position, GetUnexpectedTokenMessage(errorState));
             }
             else
             {
-                Unexpected(errorPos);
+                Unexpected(errorState);
             }
         }
 
@@ -978,15 +1022,18 @@ public partial class Parser
 
         if (property.Name != "meta")
         {
-            RaiseRecoverable(property.Start, "The only valid meta property for import is 'import.meta'");
+            // RaiseRecoverable(property.Start, "The only valid meta property for import is 'import.meta'"); // original acornjs error reporting
+            RaiseRecoverable(property.Start, GetUnexpectedTokenMessage(new TokenState(property.Start, TokenType.Name, property.Name)));
         }
         if (containsEsc)
         {
-            RaiseRecoverable(property.Start, "'import.meta' must not contain escaped characters");
+            // RaiseRecoverable(property.Start, "'import.meta' must not contain escaped characters"); // original acornjs error reporting
+            RaiseRecoverable(property.Start, string.Format(SyntaxErrorMessages.InvalidEscapedMetaProperty, "import.meta"));
         }
         if (!_inModule && !_options._allowImportExportEverywhere)
         {
-            RaiseRecoverable(property.Start, "Cannot use 'import.meta' outside a module");
+            //RaiseRecoverable(property.Start, "Cannot use 'import.meta' outside a module"); // original acornjs error reporting
+            RaiseRecoverable(property.Start, SyntaxErrorMessages.ImportMetaOutsideModule);
         }
 
         return FinishNode(startMarker, new MetaProperty(meta, property));
@@ -1027,30 +1074,49 @@ public partial class Parser
 
             var first = true;
             var lastIsComma = false;
+
+            // NOTE: This loop is very similar to ParseExprList, reusing that here is something to consider.
             while (_tokenizer._type != TokenType.ParenRight)
             {
                 if (!first)
                 {
-                    Expect(TokenType.Comma);
+                    // Expect(TokenType.Comma); // original acornjs error reporting
+                    if (!Eat(TokenType.Comma))
+                    {
+                        CheckExpressionErrors(ref destructuringErrors, andThrow: true);
+                        Unexpected();
+                    }
+
+                    if (allowTrailingComma && AfterTrailingComma(TokenType.ParenRight, notNext: true))
+                    {
+                        lastIsComma = true;
+                        break;
+                    }
                 }
                 else
                 {
                     first = false;
                 }
 
-                if (allowTrailingComma && AfterTrailingComma(TokenType.ParenRight, notNext: true))
-                {
-                    lastIsComma = true;
-                    break;
-                }
-                else if (_tokenizer._type == TokenType.Ellipsis)
+                if (_tokenizer._type == TokenType.Ellipsis)
                 {
                     spreadStart = _tokenizer._start;
-                    parameters.Add(ParseRestBinding());
-                    if (_tokenizer._type == TokenType.Comma)
+
+                    // We deviate a bit from the original acornjs implementation here to
+                    // make the parsing of non-async and async arrow functions consistent.
+                    // (The comma after rest element case is checked by CheckPatternErrors below.)
+                    parameters.Add(ParseSpread(ref destructuringErrors));
+                    if (_tokenizer._type == TokenType.Comma && destructuringErrors.TrailingComma < 0)
                     {
-                        Raise(_tokenizer._start, "Comma is not permitted after the rest element");
+                        destructuringErrors.TrailingComma = _tokenizer._start;
                     }
+
+                    // Original acornjs implementation:
+                    //parameters.Add(ParseRestBinding());
+                    //if (_tokenizer._type == TokenType.Comma)
+                    //{
+                    //    Raise(_tokenizer._start, "Comma is not permitted after the rest element");
+                    //}
                     break;
                 }
                 else
@@ -1060,6 +1126,7 @@ public partial class Parser
             }
 
             var innerEndMarker = new Marker(_tokenizer._lastTokenEnd, _tokenizer._lastTokenEndLocation);
+
             Expect(TokenType.ParenRight);
 
             if (canBeArrow && !CanInsertSemicolon() && Eat(TokenType.Arrow))
@@ -1074,11 +1141,11 @@ public partial class Parser
 
             if (parameters.Count == 0 || lastIsComma)
             {
-                Unexpected(_tokenizer._lastTokenStart);
+                Unexpected(new TokenState(_tokenizer._lastTokenStart, TokenType.ParenRight, ')'.ToStringCached()));
             }
             if (spreadStart >= 0)
             {
-                Unexpected(spreadStart);
+                Unexpected(new TokenState(spreadStart, TokenType.Ellipsis, "..."));
             }
             CheckExpressionErrors(ref destructuringErrors, andThrow: true);
 
@@ -1126,7 +1193,8 @@ public partial class Parser
 
         if (_tokenizer._containsEscape)
         {
-            RaiseRecoverable(_tokenizer._start, "Escape sequence in keyword new");
+            // RaiseRecoverable(_tokenizer._start, "Escape sequence in keyword new"); // original acornjs error reporting
+            RaiseRecoverable(_tokenizer._start, SyntaxErrorMessages.InvalidEscapedReservedWord);
         }
 
         var startMarker = StartNode();
@@ -1141,15 +1209,18 @@ public partial class Parser
             var property = ParseIdentifier(liberal: true);
             if (property.Name != "target")
             {
-                RaiseRecoverable(property.Start, "The only valid meta property for new is 'new.target'");
+                // RaiseRecoverable(property.Start, "The only valid meta property for new is 'new.target'"); // original acornjs error reporting
+                RaiseRecoverable(property.Start, GetUnexpectedTokenMessage(new TokenState(property.Start, TokenType.Name, property.Name)));
             }
             if (containsEsc)
             {
-                RaiseRecoverable(startMarker.Index, "'new.target' must not contain escaped characters");
+                // RaiseRecoverable(startMarker.Index, "'new.target' must not contain escaped characters"); // original acornjs error reporting
+                RaiseRecoverable(property.Start, string.Format(SyntaxErrorMessages.InvalidEscapedMetaProperty, "new.target"));
             }
             if (!AllowNewDotTarget())
             {
-                RaiseRecoverable(startMarker.Index, "'new.target' can only be used in functions and class static block");
+                // RaiseRecoverable(startMarker.Index, "'new.target' can only be used in functions and class static block"); // original acornjs error reporting
+                RaiseRecoverable(property.Start, string.Format(SyntaxErrorMessages.UnexpectedNewTarget));
             }
 
             return FinishNode(startMarker, new MetaProperty(meta, property));
@@ -1193,7 +1264,8 @@ public partial class Parser
         {
             if (_tokenizer._type == TokenType.EOF)
             {
-                Raise(_tokenizer._position, SyntaxErrorMessages.UnexpectedEOS);
+                // Raise(_tokenizer._position, "Unterminated template literal"); // original acornjs error reporting
+                Raise(_tokenizer._start, SyntaxErrorMessages.UnexpectedEOS);
             }
 
             var errorPos = _tokenizer._start;
@@ -1281,10 +1353,14 @@ public partial class Parser
         {
             if (isPattern)
             {
+                _bindingPatternDepth++;
                 var argument = ParseIdentifier(liberal: false);
+                _bindingPatternDepth--;
+
                 if (_tokenizer._type == TokenType.Comma)
                 {
-                    RaiseRecoverable(_tokenizer._start, "Comma is not permitted after the rest element");
+                    // RaiseRecoverable(_tokenizer._start, "Comma is not permitted after the rest element"); // original acornjs error reporting
+                    RaiseRecoverable(_tokenizer._start, SyntaxErrorMessages.ElementAfterRest);
                 }
 
                 return FinishNode(propertyStartMarker, new RestElement(argument));
@@ -1309,28 +1385,47 @@ public partial class Parser
         Marker startMarker;
         if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES6)
         {
-            startMarker = isPattern || !IsNullRef(ref destructuringErrors)
-                ? StartNode()
-                : default;
+            if (isPattern || !IsNullRef(ref destructuringErrors))
+            {
+                startMarker = StartNode();
+            }
+            else
+            {
+                SkipInit(out startMarker);
+            }
             isGenerator = !isPattern && Eat(TokenType.Star);
         }
         else
         {
-            startMarker = default;
+            SkipInit(out startMarker);
             isGenerator = false;
         }
 
-        var containsEsc = _tokenizer._containsEscape;
-        var key = ParsePropertyName(out var computed);
-        if (!isPattern && !containsEsc && !isGenerator && _tokenizerOptions._ecmaVersion >= EcmaVersion.ES8 && IsAsyncProperty(key, computed))
+        bool containsEsc = _tokenizer._containsEscape, computed;
+        Expression key;
+        if (isPattern)
         {
-            isAsync = true;
-            isGenerator = _tokenizerOptions._ecmaVersion >= EcmaVersion.ES9 && Eat(TokenType.Star);
+            var oldBindingPatternDepth = _bindingPatternDepth;
+            _bindingPatternDepth = 0;
             key = ParsePropertyName(out computed);
+            _bindingPatternDepth = oldBindingPatternDepth;
+
+            isAsync = false;
         }
         else
         {
-            isAsync = false;
+            key = ParsePropertyName(out computed);
+
+            if (!containsEsc && !isGenerator && _tokenizerOptions._ecmaVersion >= EcmaVersion.ES8 && IsAsyncProperty(key, computed))
+            {
+                isAsync = true;
+                isGenerator = _tokenizerOptions._ecmaVersion >= EcmaVersion.ES9 && Eat(TokenType.Star);
+                key = ParsePropertyName(out computed);
+            }
+            else
+            {
+                isAsync = false;
+            }
         }
 
         var value = ParsePropertyValue(ref key, ref computed, out var kind, out var method, out var shorthand, isPattern, isGenerator, isAsync,
@@ -1347,24 +1442,27 @@ public partial class Parser
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/expression.js > `pp.parseGetterSetter = function`
 
         key = ParsePropertyName(out computed);
-        var value = ParseMethod(false);
+        var value = ParseMethod(isGenerator: false);
 
         if (kind == PropertyKind.Get)
         {
             if (value.Params.Count != 0)
             {
-                RaiseRecoverable(value.Start, "getter should have no params");
+                // RaiseRecoverable(value.Start, "getter should have no params"); // original acornjs error reporting
+                RaiseRecoverable(value.Start, SyntaxErrorMessages.BadGetterArity);
             }
         }
         else
         {
             if (value.Params.Count != 1)
             {
-                RaiseRecoverable(value.Start, "setter should have exactly one param");
+                // RaiseRecoverable(value.Start, "setter should have exactly one param"); // original acornjs error reporting
+                RaiseRecoverable(value.Start, SyntaxErrorMessages.BadSetterArity);
             }
             else if (value.Params[0] is RestElement)
             {
-                RaiseRecoverable(value.Params[0].Start, "Setter cannot use rest params");
+                // RaiseRecoverable(value.Params[0].Start, "Setter cannot use rest params"); // original acornjs error reporting
+                RaiseRecoverable(value.Start, SyntaxErrorMessages.BadSetterRestParameter);
             }
         }
 
@@ -1393,7 +1491,8 @@ public partial class Parser
         {
             if (isPattern)
             {
-                Unexpected();
+                // Unexpected(); // original acornjs error reporting
+                Raise(key.Start, SyntaxErrorMessages.InvalidDestructuringTarget);
             }
 
             kind = PropertyKind.Init;
@@ -1401,8 +1500,8 @@ public partial class Parser
             shorthand = false;
             value = ParseMethod(isGenerator, isAsync);
         }
-        else if (!isPattern && !containsEsc
-            && !computed && _tokenizerOptions._ecmaVersion >= EcmaVersion.ES5 && key is Identifier { Name: "get" or "set" } identifier
+        else if (!isPattern && !containsEsc && !computed
+            && _tokenizerOptions._ecmaVersion >= EcmaVersion.ES5 && key is Identifier { Name: "get" or "set" } identifier
             && _tokenizer._type != TokenType.Comma && _tokenizer._type != TokenType.BraceRight && _tokenizer._type != TokenType.Eq)
         {
             if (isGenerator || isAsync)
@@ -1421,7 +1520,10 @@ public partial class Parser
                 Unexpected();
             }
 
+            var oldBindingPatternDepth = _bindingPatternDepth;
+            _bindingPatternDepth = 0;
             CheckUnreserved(keyIdentifier);
+            _bindingPatternDepth = oldBindingPatternDepth;
 
             if (keyIdentifier.Name == "await" && _awaitIdentifierPosition == 0)
             {
@@ -1528,7 +1630,7 @@ public partial class Parser
 
         EnterScope(FunctionFlags(isAsync, generator: false) | ScopeFlags.Arrow);
 
-        NodeList<Node> paramList = ToAssignableList(parameters!, isBinding: true)!;
+        NodeList<Node> paramList = ToAssignableList(parameters!, isBinding: true, isParams: true)!;
         var body = ParseFunctionBody(id: null, paramList, isArrowFunction: true, isMethod: false, context, out var expression);
 
         _yieldPosition = oldYieldPos;
@@ -1674,48 +1776,75 @@ public partial class Parser
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/expression.js > `pp.checkUnreserved = function`
 
         var name = id.Name;
+        var nameSpan = name.AsSpan();
 
         if (InGenerator() && name == "yield")
         {
-            RaiseRecoverable(id.Start, "Can not use 'yield' as identifier inside a generator");
+            // RaiseRecoverable(id.Start, "Can not use 'yield' as identifier inside a generator"); // original acornjs error reporting
+            if (_bindingPatternDepth > 1)
+            {
+                RaiseRecoverable(id.Start, SyntaxErrorMessages.InvalidDestructuringTarget);
+            }
+            else if (!_isReservedWord(nameSpan, _strict))
+            {
+                RaiseRecoverable(id.Start, GetUnexpectedTokenMessage(new TokenState(id.Start, TokenType.Name, name)));
+            }
+            else
+            {
+                goto ReservedWord;
+            }
         }
 
         if (InAsync() && name == "await")
         {
-            RaiseRecoverable(id.Start, "Can not use 'await' as identifier inside an async function");
+            // RaiseRecoverable(id.Start, "Can not use 'await' as identifier inside an async function"); // original acornjs error reporting
+            if (_bindingPatternDepth > 1)
+            {
+                RaiseRecoverable(id.Start, SyntaxErrorMessages.InvalidDestructuringTarget);
+            }
+            else
+            {
+                goto ReservedWord;
+            }
         }
 
         if (InClassFieldInit() && name == "arguments")
         {
-            RaiseRecoverable(id.Start, "Cannot use 'arguments' in class field initializer");
+            // RaiseRecoverable(id.Start, "Cannot use 'arguments' in class field initializer"); // original acornjs error reporting
+            RaiseRecoverable(id.Start, SyntaxErrorMessages.ArgumentsDisallowedInInitializerAndStaticBlock);
         }
 
         if (InClassStaticBlock() && (name is "arguments" or "await"))
         {
-            Raise(id.Start, $"Cannot use {name} in class static initialization block");
+            // Raise(id.Start, $"Cannot use {name} in class static initialization block"); // original acornjs error reporting
+            RaiseRecoverable(id.Start, name == "arguments"
+                ? SyntaxErrorMessages.ArgumentsDisallowedInInitializerAndStaticBlock
+                : SyntaxErrorMessages.UnexpectedReserved);
         }
 
-        ReadOnlySpan<char> nameSpan = name.AsSpan();
-        if (IsKeyword(nameSpan, _tokenizerOptions._ecmaVersion))
+        if (IsKeyword(nameSpan, _tokenizerOptions._ecmaVersion, out var tokenType))
         {
-            Raise(id.Start, $"Unexpected keyword '{name}'");
+            // Raise(id.Start, $"Unexpected keyword '{name}'"); // original acornjs error reporting
+            Unexpected(new TokenState(id.Start, tokenType, tokenType.Label));
         }
 
-        if (_tokenizerOptions._ecmaVersion < EcmaVersion.ES6
-            && _tokenizer._input.SliceBetween(id.Start, id.End).IndexOf('\\') >= 0)
+        if (_tokenizerOptions._ecmaVersion < EcmaVersion.ES6 && _tokenizer._input.SliceBetween(id.Start, id.End).IndexOf('\\') >= 0
+            || !_isReservedWord(nameSpan, _strict))
         {
             return;
         }
 
-        if (_isReservedWord(nameSpan, _strict))
-        {
-            if (!InAsync() && name == "await")
-            {
-                RaiseRecoverable(id.Start, "Can not use keyword 'await' outside an async function");
-            }
+#pragma warning disable format
+        // We deviate a bit from the original acornjs implementation here to match the error reporting behavior of V8.
+        //if (!InAsync() && name == "await")
+        //{
+        //    RaiseRecoverable(id.Start, "Can not use keyword 'await' outside an async function"); // original acornjs error reporting
+        //}
+#pragma warning restore format
 
-            RaiseRecoverable(id.Start, $"The keyword '{name}' is reserved");
-        }
+    ReservedWord:
+        // RaiseRecoverable(id.Start, $"The keyword '{name}' is reserved"); // original acornjs error reporting
+        HandleReservedWordError(id);
     }
 
     // Parse the next token as an identifier. If `liberal` is true (used
@@ -1738,17 +1867,24 @@ public partial class Parser
         {
             name = _tokenizer._type.Label;
 
-            // To fix https://github.com/acornjs/acorn/issues/575
-            // `class` and `function` keywords push new context into `_state.ContextStack`.
-            // But there is no chance to pop the context if the keyword is consumed as an identifier such as a property name.
-            // If the previous token is a dot, this does not apply because the context-managing code already ignored the keyword
-            if (_tokenizer._trackRegExpContext
-                && _tokenizer._type.Keyword.Value is Keyword.Class or Keyword.Function
-                && (_tokenizer._lastTokenEnd != _tokenizer._lastTokenStart + 1 || _tokenizer._input.CharCodeAt(_tokenizer._lastTokenStart) != '.'))
+            if (_tokenizer._trackRegExpContext)
             {
-                _tokenizer._contextStack.Pop();
+                if (!liberal && _tokenizer._containsEscape)
+                {
+                    RaiseRecoverable(_tokenizer._start, SyntaxErrorMessages.InvalidEscapedReservedWord);
+                }
+
+                // To fix https://github.com/acornjs/acorn/issues/575
+                // `class` and `function` keywords push new context into `_state.ContextStack`.
+                // But there is no chance to pop the context if the keyword is consumed as an identifier such as a property name.
+                // If the previous token is a dot, this does not apply because the context-managing code already ignored the keyword
+                if (_tokenizer._type.Keyword.Value is Keyword.Class or Keyword.Function
+                    && (_tokenizer._lastTokenEnd != _tokenizer._lastTokenStart + 1 || _tokenizer._input.CharCodeAt(_tokenizer._lastTokenStart) != '.'))
+                {
+                    _tokenizer._contextStack.Pop();
+                }
+                _tokenizer._type = TokenType.Name;
             }
-            _tokenizer._type = TokenType.Name;
         }
         else
         {
@@ -1778,11 +1914,6 @@ public partial class Parser
 
         var startMarker = StartNode();
 
-        if (_tokenizer._type != TokenType.PrivateId)
-        {
-            Unexpected();
-        }
-
         var name = (string)_tokenizer._value.Value!;
 
         Next();
@@ -1793,7 +1924,8 @@ public partial class Parser
         {
             if (_privateNameStack.Count == 0)
             {
-                Raise(privateIdentifier.Start, $"Private field '#{name}' must be declared in an enclosing class");
+                // Raise(privateIdentifier.Start, $"Private field '#{name}' must be declared in an enclosing class"); // original acornjs error reporting
+                Raise(privateIdentifier.Start, string.Format(SyntaxErrorMessages.InvalidPrivateFieldResolution, '#'.ToStringCached() + name));
             }
             else
             {
@@ -1852,14 +1984,14 @@ public partial class Parser
 
     private Expression ParseDecoratedClassExpression(in Marker node)
     {
-        var previousDecorators = _decorators;
+        var oldDecorators = _decorators;
         _decorators = ParseDecorators();
         if (_tokenizer._type != TokenType.Class)
         {
             Unexpected();
         }
         var expression = ParseExprAtom(ref NullRef<DestructuringErrors>());
-        _decorators = previousDecorators;
+        _decorators = oldDecorators;
 
         return FinishNode(node, expression);
     }
@@ -1884,11 +2016,6 @@ public partial class Parser
         Next();
 
         var expression = ParseExprSubscripts(ref NullRef<DestructuringErrors>(), ExpressionContext.Decorator);
-
-        if (_tokenizer._type == TokenType.Semicolon)
-        {
-            Raise(_tokenizer._start, "Decorators must not be followed by a semicolon.");
-        }
 
         return FinishNode(startMarker, new Decorator(expression));
     }

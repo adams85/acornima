@@ -11,7 +11,7 @@ public sealed partial class ImportSpecifier : ImportDeclarationSpecifier
     }
 
     /// <remarks>
-    /// <see cref="Identifier"/> | <see cref="Literal"/> (string)
+    /// <see cref="Identifier"/> | <see cref="StringLiteral"/>
     /// </remarks>
     public Expression Imported { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 

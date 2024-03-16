@@ -217,9 +217,9 @@ public partial class RegExpTests
         {
             // This parser logic must align with the shape returned by generate-matches.js.
 
-            if (expression is Literal { Kind: TokenKind.StringLiteral } literal)
+            if (expression is StringLiteral literal)
             {
-                return (null, (string)literal.Value!);
+                return (null, literal.Value);
             }
 
             return (expression.As<ArrayExpression>().Elements
@@ -235,7 +235,7 @@ public partial class RegExpTests
 
             foreach (var property in expression.Properties.Cast<Property>())
             {
-                switch ((string)property.Key.As<Literal>().Value!)
+                switch (property.Key.As<StringLiteral>().Value)
                 {
                     case "captures":
                         captures = property.Value.As<ArrayExpression>().Elements
@@ -243,12 +243,12 @@ public partial class RegExpTests
                             .ToArray();
                         break;
                     case "index":
-                        index = checked((int)(double)property.Value.As<Literal>().Value!);
+                        index = checked((int)property.Value.As<NumericLiteral>().Value);
                         break;
                     case "groups":
                         groups = property.Value.As<ObjectExpression>().Properties
                             .Cast<Property>()
-                            .ToDictionary(p => (string)p.Key.As<Literal>().Value!, p => (string)p.Value.As<Literal>().Value!);
+                            .ToDictionary(p => p.Key.As<StringLiteral>().Value, p => (string)p.Value.As<Literal>().Value!);
                         break;
                 }
             }

@@ -11,8 +11,6 @@ namespace Acornima;
 
 public partial class Parser
 {
-    internal delegate bool IsReservedWordDelegate(ReadOnlySpan<char> word, bool strict);
-
     internal IsReservedWordDelegate _isReservedWord;
     internal IsReservedWordDelegate _isReservedWordBind;
 
@@ -49,11 +47,14 @@ public partial class Parser
 
     private ArrayList<Decorator> _decorators;
 
+    private int _bindingPatternDepth;
     private int _recursionDepth;
 
     internal void Reset(string input, int start, int length, SourceType sourceType, string? sourceFile, bool strict)
     {
-        _tokenizer.Reset(input, start, length, sourceType, sourceFile, trackRegExpContext: _options.OnToken is not null);
+        _tokenizer.ResetInternal(input, start, length, sourceType, sourceFile, trackRegExpContext: _options.OnToken is not null);
+        _tokenizer._stringPool = default;
+        _tokenizerOptions._errorHandler.Reset();
 
         _inModule = _tokenizer._inModule;
         _strict = _tokenizer._strict || strict;
@@ -98,109 +99,7 @@ public partial class Parser
             allowReserved = ecmaVersion >= EcmaVersion.ES5 ? AllowReservedOption.No : AllowReservedOption.Yes;
         }
 
-        switch (ecmaVersion)
-        {
-            case EcmaVersion.ES3:
-                if (!_inModule)
-                {
-                    if (allowReserved != AllowReservedOption.Yes)
-                    {
-                        _isReservedWord = static (word, strict) =>
-                        {
-                            Debug.Assert(!strict, "Invalid combination of options");
-                            return IsReservedWordES3NonStrict(word) != ReservedWordKind.None;
-                        };
-                    }
-                    else
-                    {
-                        _isReservedWord = static (_, strict) =>
-                        {
-                            Debug.Assert(!strict, "Invalid combination of options");
-                            return false;
-                        };
-                    }
-                    _isReservedWordBind = static (_, strict) =>
-                    {
-                        Debug.Assert(!strict, "Invalid combination of options");
-                        return false;
-                    };
-                }
-                else
-                {
-                    Debug.Assert(false, "Invalid combination of options");
-                    _isReservedWord = _isReservedWordBind = default!;
-                }
-                break;
-
-            case EcmaVersion.ES5:
-                if (!_inModule)
-                {
-                    if (allowReserved != AllowReservedOption.Yes)
-                    {
-                        _isReservedWord = static (word, strict) => (strict ? IsReservedWordES5Strict(word) : IsReservedWordES5NonStrict(word)) >= ReservedWordKind.Optional;
-                        _isReservedWordBind = static (word, strict) => strict && (IsReservedWordES5Strict(word) & (ReservedWordKind.Optional | ReservedWordKind.Strict)) != 0;
-                    }
-                    else
-                    {
-                        _isReservedWord = static (word, strict) => (strict ? IsReservedWordES5Strict(word) : IsReservedWordES5NonStrict(word)) == ReservedWordKind.Strict;
-                        _isReservedWordBind = static (word, strict) => strict && (IsReservedWordES5Strict(word) & ReservedWordKind.Strict) != 0;
-                    }
-                }
-                else
-                {
-                    Debug.Assert(false, "Invalid combination of options");
-                    _isReservedWord = _isReservedWordBind = default!;
-                }
-                break;
-
-            case >= EcmaVersion.ES6:
-                if (!_inModule)
-                {
-                    if (allowReserved != AllowReservedOption.Yes)
-                    {
-                        _isReservedWord = static (word, strict) => (strict ? IsReservedWordES6Strict(word) : IsReservedWordES6NonStrict(word)) >= ReservedWordKind.Optional;
-                        _isReservedWordBind = static (word, strict) => strict && (IsReservedWordES6Strict(word) & (ReservedWordKind.Optional | ReservedWordKind.Strict)) != 0;
-                    }
-                    else
-                    {
-                        _isReservedWord = static (word, strict) => (strict ? IsReservedWordES6Strict(word) : IsReservedWordES6NonStrict(word)) == ReservedWordKind.Strict;
-                        _isReservedWordBind = static (word, strict) => strict && (IsReservedWordES6Strict(word) & ReservedWordKind.Strict) != 0;
-                    }
-                }
-                else
-                {
-                    if (allowReserved != AllowReservedOption.Yes)
-                    {
-                        _isReservedWord = static (word, strict) =>
-                        {
-                            Debug.Assert(strict, "Invalid combination of options");
-                            return IsReservedWordES6Strict(word) > ReservedWordKind.None;
-                        };
-                        _isReservedWordBind = static (word, strict) =>
-                        {
-                            Debug.Assert(strict, "Invalid combination of options");
-                            return IsReservedWordES6Strict(word) != ReservedWordKind.None;
-                        };
-                    }
-                    else
-                    {
-                        _isReservedWord = static (word, strict) =>
-                        {
-                            Debug.Assert(strict, "Invalid combination of options");
-                            return IsReservedWordES6Strict(word) == ReservedWordKind.Strict;
-                        };
-                        _isReservedWordBind = static (word, strict) =>
-                        {
-                            Debug.Assert(strict, "Invalid combination of options");
-                            return (IsReservedWordES6Strict(word) & ReservedWordKind.Strict) == ReservedWordKind.Strict;
-                        };
-                    }
-                }
-                break;
-
-            default:
-                throw new InvalidOperationException($"ECMAScript version '{ecmaVersion}' is not supported.");
-        }
+        GetIsReservedWord(_inModule, ecmaVersion, allowReserved, out _isReservedWord, out _isReservedWordBind);
 
         _potentialArrowAt = -1;
         _potentialArrowInForAwait = false;
@@ -216,7 +115,7 @@ public partial class Parser
 
         _decorators.Clear();
 
-        _recursionDepth = 0;
+        _recursionDepth = _bindingPatternDepth = 0;
     }
 
     private void ReleaseLargeBuffers()
