@@ -366,7 +366,7 @@
     <value>Duplicate parameter name not allowed in this context</value>
     <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
   </data>
-  <data name="RedefinedProperty" xml:space="preserve">
+  <data name="PropertyRedefinition" xml:space="preserve">
     <value>Redefinition of property '{0}'</value>
   </data>
   <data name="RegExpDuplicateCaptureGroupName" xml:space="preserve">

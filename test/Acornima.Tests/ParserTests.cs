@@ -88,9 +88,9 @@ public partial class ParserTests
 
         var parser = new Parser();
 #if DEBUG
-        const int depth = 370;
+        const int depth = 400;
 #else
-        const int depth = 800;
+        const int depth = 895;
 #endif
         var input = $"if ({new string('(', depth)}true{new string(')', depth)}) {{ }}";
         parser.ParseScript(input);
@@ -1190,6 +1190,20 @@ public partial class ParserTests
     [InlineData("module", "function* g() { yield: { break yield } }", EcmaVersion.Latest, "Unexpected token ':'")]
     [InlineData("script", "function* g() { { break yield } }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
     [InlineData("module", "function* g() { { break yield } }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+
+    [InlineData("script", "(...x,)=>a", EcmaVersion.Latest, "Rest parameter must be last formal parameter")]
+    [InlineData("script", "([...x,])=>a", EcmaVersion.Latest, "Rest element must be last element")]
+    [InlineData("script", "({...x,})=>a", EcmaVersion.Latest, "Rest element must be last element")]
+    [InlineData("script", "async(...x,)=>a", EcmaVersion.Latest, "Rest parameter must be last formal parameter")]
+    [InlineData("script", "async([...x,])=>a", EcmaVersion.Latest, "Rest element must be last element")]
+    [InlineData("script", "async({...x,})=>a", EcmaVersion.Latest, "Rest element must be last element")]
+    [InlineData("script", "function f(...x,){}", EcmaVersion.Latest, "Rest parameter must be last formal parameter")]
+    [InlineData("script", "function f([...x,]){}", EcmaVersion.Latest, "Rest element must be last element")]
+    [InlineData("script", "function f({...x,}){}", EcmaVersion.Latest, "Rest element must be last element")]
+    [InlineData("script", "var[...x,]=[]", EcmaVersion.Latest, "Rest element must be last element")]
+    [InlineData("script", "var{...x,}={}", EcmaVersion.Latest, "Rest element must be last element")]
+    [InlineData("script", "try{}catch([...x,]){}", EcmaVersion.Latest, "Rest element must be last element")]
+    [InlineData("script", "try{}catch({...x,}){}", EcmaVersion.Latest, "Rest element must be last element")]
     public void ShouldHandleVariableBindingEdgeCases(string sourceType, string input, EcmaVersion ecmaVersion, string? expectedError)
     {
         var parser = new Parser(new ParserOptions { EcmaVersion = ecmaVersion });
@@ -1469,6 +1483,11 @@ public partial class ParserTests
     [InlineData("module", "function* g() { ({x = yield}\n++) }", EcmaVersion.Latest, "Invalid shorthand property initializer")]
     [InlineData("script", "function* g() { ({...yield}++) }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
     [InlineData("module", "function* g() { ({...yield}++) }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
+
+    [InlineData("script", "(...x,)=a", EcmaVersion.Latest, "Unexpected token '...'")] // V8 reports "Rest parameter must be last formal parameter"
+    [InlineData("script", "[...x,]=a", EcmaVersion.Latest, "Rest element must be last element")]
+    [InlineData("script", "{...x,}=a", EcmaVersion.Latest, "Unexpected token '...'")] // V8 reports "Rest parameter must be last formal parameter"
+    [InlineData("script", "({...x,}=a)", EcmaVersion.Latest, "Rest element must be last element")]
 
     [InlineData("script", "({__proto__: x, __proto__: y}++)", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
     [InlineData("module", "({__proto__: x, __proto__: y}++)", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]

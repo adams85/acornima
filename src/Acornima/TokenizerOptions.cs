@@ -64,7 +64,8 @@ public record class TokenizerOptions
 
     internal bool _tolerant;
     /// <summary>
-    /// Gets or sets whether the tokenizer is tolerant to errors. Defaults to <see langword="false"/>.
+    /// Gets or sets whether the tokenizer should ignore minor errors that do not lead to a semantically invalid or ambiguous program.
+    /// Defaults to <see langword="false"/>.
     /// </summary>
     public bool Tolerant { get => _tolerant; init => _tolerant = value; }
 

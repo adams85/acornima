@@ -171,7 +171,8 @@ public record class ParserOptions
     public TimeSpan RegexTimeout { get => _tokenizerOptions._regexTimeout; init => _tokenizerOptions._regexTimeout = value; }
 
     /// <summary>
-    /// Gets or sets whether the parser is tolerant to errors. Defaults to <see langword="false"/>.
+    /// Gets or sets whether the parser should ignore minor errors that do not lead to a semantically invalid or ambiguous program.
+    /// Defaults to <see langword="false"/>.
     /// </summary>
     public bool Tolerant { get => _tokenizerOptions._tolerant; init => _tokenizerOptions._tolerant = value; }
 

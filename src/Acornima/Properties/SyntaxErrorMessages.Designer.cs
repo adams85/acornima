@@ -630,9 +630,9 @@ namespace Acornima.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Redefinition of property &apos;{0}&apos;.
         /// </summary>
-        internal static string RedefinedProperty {
+        internal static string PropertyRedefinition {
             get {
-                return ResourceManager.GetString("RedefinedProperty", resourceCulture);
+                return ResourceManager.GetString("PropertyRedefinition", resourceCulture);
             }
         }
         

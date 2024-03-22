@@ -325,7 +325,7 @@ public partial class Parser
 
     private void HandleReservedWordError(Identifier id)
     {
-        RaiseRecoverable(id.Start, (GetReservedWordKind(id.Name.AsSpan(), _strict, _options.EcmaVersion) & ReservedWordKind.Strict) != 0
+        Raise(id.Start, (GetReservedWordKind(id.Name.AsSpan(), _strict, _options.EcmaVersion) & ReservedWordKind.Strict) != 0
             ? SyntaxErrorMessages.UnexpectedStrictReserved
             : SyntaxErrorMessages.UnexpectedReserved);
     }
@@ -383,20 +383,32 @@ public partial class Parser
 
     private struct DestructuringErrors
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public DestructuringErrors()
         {
-            ShorthandAssign = -1;
-            TrailingComma = -1;
-            ParenthesizedAssign = -1;
-            ParenthesizedBind = -1;
-            DoubleProto = -1;
+            ShorthandAssign = TrailingComma = ParenthesizedAssign = ParenthesizedBind = DoubleProto = -1;
         }
 
         public int ShorthandAssign;
-        public int TrailingComma;
+        public int TrailingComma; // we use the sign bit to indicate whether it's a position of a rest parameter or an element (see also CheckPatternErrors)
         public int ParenthesizedAssign;
         public int ParenthesizedBind;
         public int DoubleProto;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int GetTrailingComma()
+        {
+            return TrailingComma == -1 ? -1 : TrailingComma & 0x7FFF_FFFF;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void SetTrailingComma(int index, bool isParam)
+        {
+            Debug.Assert(index >= 0);
+            // NOTE: (int.MaxValue | (1 << 31)) == -1, which value is used to indicate no error. That is, we can't use it to represent an error position,
+            // so let's resort to int.MaxValue in this extreme case as it's better to report a wrong error than not reporting the error at all.
+            TrailingComma = !isParam || index == int.MaxValue ? index : index | (1 << 31);
+        }
     }
 
     [Flags]

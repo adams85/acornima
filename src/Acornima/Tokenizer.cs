@@ -711,7 +711,7 @@ public sealed partial class Tokenizer
                         if (_containsEscape)
                         {
                             // Unexpected(flagsStart); // original acornjs error reporting
-                            Raise(flagsStart, SyntaxErrorMessages.InvalidRegExpFlags);
+                            RaiseRecoverable(flagsStart, SyntaxErrorMessages.InvalidRegExpFlags);
                         }
 
                         var patternCached = DeduplicateString(pattern, ref _stringPool, NonIdentifierDeduplicationThreshold);
@@ -903,7 +903,7 @@ public sealed partial class Tokenizer
                 if (_strict)
                 {
                     // Raise(start, "Invalid number"); // original acornjs error reporting
-                    Raise(start, SyntaxErrorMessages.StrictOctalLiteral);
+                    RaiseRecoverable(start, SyntaxErrorMessages.StrictOctalLiteral);
                 }
 
                 if (!overflow)
@@ -987,7 +987,7 @@ public sealed partial class Tokenizer
 
         if (startsWithZero && _strict && numDigits > 1)
         {
-            Raise(start, SyntaxErrorMessages.StrictDecimalWithLeadingZero);
+            RaiseRecoverable(start, SyntaxErrorMessages.StrictDecimalWithLeadingZero);
         }
 
         if (!overflow && _position - integerPartEnd <= 1) // no need to reparse literals like 10.
@@ -1375,35 +1375,50 @@ public sealed partial class Tokenizer
 
                 if (octal != 0 || _position - start != 1 || ch is '8' or '9')
                 {
+                    // Original acornjs error reporting
+                    //if (_strict || inTemplate)
+                    //{
+                    //    InvalidStringToken(_position - 1, inTemplate
+                    //        ? "Octal literal in template string"
+                    //        : "Octal literal in strict mode");
+                    //    return null;
+                    //}
+
+                    if (inTemplate)
+                    {
+                        InvalidStringToken(start - 1, SyntaxErrorMessages.TemplateOctalLiteral);
+                        return null;
+                    }
+                    else if (_strict)
+                    {
+                        RaiseRecoverable(start - 1, SyntaxErrorMessages.StrictOctalEscape);
+                    }
+
                     if (_legacyOctalPosition < 0)
                     {
                         _legacyOctalPosition = start - 1;
-                    }
-
-                    if (_strict || inTemplate)
-                    {
-                        //InvalidStringToken(_position - 1, inTemplate
-                        //    ? "Octal literal in template string"
-                        //    : "Octal literal in strict mode"); // original acornjs error reporting
-                        InvalidStringToken(start - 1, inTemplate
-                            ? SyntaxErrorMessages.TemplateOctalLiteral
-                            : SyntaxErrorMessages.StrictOctalEscape);
-                        return null;
                     }
                 }
 
                 return sb.Append((char)octal);
 
             case '8' or '9':
-                if (_strict || inTemplate)
+                // Original acornjs error reporting
+                //if (_strict || inTemplate)
+                //{
+                //    InvalidStringToken(_position - 1, inTemplate
+                //        ? "Invalid escape sequence in template string"
+                //        : "Invalid escape sequence");
+                //}
+
+                if (inTemplate)
                 {
-                    //InvalidStringToken(_position - 1, inTemplate
-                    //    ? "Invalid escape sequence in template string"
-                    //    : "Invalid escape sequence"); // original acornjs error reporting
-                    InvalidStringToken(_position - 2, inTemplate
-                        ? SyntaxErrorMessages.Template8Or9Escape
-                        : SyntaxErrorMessages.Strict8Or9Escape);
+                    InvalidStringToken(_position - 2, SyntaxErrorMessages.Template8Or9Escape);
                     return null;
+                }
+                else if (_strict)
+                {
+                    RaiseRecoverable(_position - 2, SyntaxErrorMessages.Strict8Or9Escape);
                 }
 
                 if (_legacyOctalPosition < 0)

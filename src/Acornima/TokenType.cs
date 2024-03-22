@@ -154,6 +154,7 @@ internal sealed partial class TokenType
         Action<Tokenizer, TokenType>? updateContext = null)
     {
         return new TokenType(label, TokenKind.Punctuator,
+            value: label,
             beforeExpression: beforeExpression,
             startsExpression: startsExpression,
             updateContext: updateContext);
