@@ -88,9 +88,9 @@ public partial class ParserTests
 
         var parser = new Parser();
 #if DEBUG
-        const int depth = 380;
+        const int depth = 370;
 #else
-        const int depth = 690;
+        const int depth = 800;
 #endif
         var input = $"if ({new string('(', depth)}true{new string(')', depth)}) {{ }}";
         parser.ParseScript(input);

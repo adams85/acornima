@@ -157,6 +157,7 @@ public partial class Parser
 
     // Parse an assignment expression. This includes applications of
     // operators like `+=`.
+    [MethodImpl((MethodImplOptions)512  /* AggressiveOptimization */)]
     private Expression ParseMaybeAssign(ref DestructuringErrors destructuringErrors, ExpressionContext context = ExpressionContext.Default)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/expression.js > `pp.parseMaybeAssign = function`
@@ -301,6 +302,7 @@ public partial class Parser
     // `minPrec` provides context that allows the function to stop and
     // defer further parser to one of its callers when it encounters an
     // operator that has a lower precedence than the set it is parsing.
+    [MethodImpl((MethodImplOptions)512  /* AggressiveOptimization */)]
     private Expression ParseBinaryOp(in Marker leftStartMarker, Expression left, int minPrec, ExpressionContext context)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/expression.js > `pp.parseExprOp = function`
@@ -374,6 +376,7 @@ public partial class Parser
     }
 
     // Parse unary operators, both prefix and postfix.
+    [MethodImpl((MethodImplOptions)512  /* AggressiveOptimization */)]
     private Expression ParseMaybeUnary(bool sawUnary, bool incDec, ref DestructuringErrors destructuringErrors, ExpressionContext context)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/expression.js > `pp.parseMaybeUnary = function`
@@ -410,16 +413,22 @@ public partial class Parser
             {
                 if (op == Operator.Delete)
                 {
-                    if (_strict && IsLocalVariableAccess(argument, out var identifier))
+                    [MethodImpl(MethodImplOptions.NoInlining)]
+                    void CheckDeleteErrors(Expression argument)
                     {
-                        // RaiseRecoverable(startMarker.Index, "Deleting local variable in strict mode"); // original acornjs error reporting
-                        RaiseRecoverable(identifier.Start, SyntaxErrorMessages.StrictDelete);
+                        if (_strict && IsLocalVariableAccess(argument, out var identifier))
+                        {
+                            // RaiseRecoverable(startMarker.Index, "Deleting local variable in strict mode"); // original acornjs error reporting
+                            RaiseRecoverable(identifier.Start, SyntaxErrorMessages.StrictDelete);
+                        }
+                        else if (IsPrivateFieldAccess(argument, out identifier))
+                        {
+                            // RaiseRecoverable(startMarker.Index, "Private fields can not be deleted"); // original acornjs error reporting
+                            RaiseRecoverable(identifier.Start, SyntaxErrorMessages.DeletePrivateField);
+                        }
                     }
-                    else if (IsPrivateFieldAccess(argument, out identifier))
-                    {
-                        // RaiseRecoverable(startMarker.Index, "Private fields can not be deleted"); // original acornjs error reporting
-                        RaiseRecoverable(identifier.Start, SyntaxErrorMessages.DeletePrivateField);
-                    }
+
+                    CheckDeleteErrors(argument);
                 }
 
                 // Original acornjs implementation sets this flag in an else branch.
@@ -536,6 +545,7 @@ public partial class Parser
     }
 
     // Parse call, dot, and `[]`-subscript expressions.
+    [MethodImpl((MethodImplOptions)512  /* AggressiveOptimization */)]
     private Expression ParseExprSubscripts(ref DestructuringErrors destructuringErrors, ExpressionContext context = ExpressionContext.Default)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/expression.js > `pp.parseExprSubscripts = function`
@@ -617,6 +627,7 @@ public partial class Parser
         }
     }
 
+    [MethodImpl((MethodImplOptions)512  /* AggressiveOptimization */)]
     private Expression ParseSubscript(in Marker startMarker, Expression baseExpr, bool noCalls, bool maybeAsyncArrow,
         ref int optionalChainPos, ref bool hasCall, ExpressionContext context)
     {
@@ -746,6 +757,7 @@ public partial class Parser
     // expression, an expression started by a keyword like `function` or
     // `new`, or an expression wrapped in punctuation like `()`, `[]`,
     // or `{}`.
+    [MethodImpl((MethodImplOptions)512  /* AggressiveOptimization */)]
     private Expression ParseExprAtom(ref DestructuringErrors destructuringErrors, ExpressionContext context = ExpressionContext.Default)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/expression.js > `pp.parseExprAtom = function`
