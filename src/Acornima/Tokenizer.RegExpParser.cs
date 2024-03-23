@@ -134,11 +134,11 @@ public partial class Tokenizer
             _tokenizer.Reset(pattern);
         }
 
-        private readonly ParseError ReportConversionFailure(int index, string reason)
+        private readonly RegExpConversionError ReportConversionFailure(int index, string reason)
         {
-            return _tokenizer.RaiseRecoverable(_patternStartIndex + index,
-                string.Format(ParseErrorMessages.RegExpConversionFailed, typeof(Regex), _pattern, _flagsOriginal, reason),
-                ParseError.s_factory);
+            return (RegExpConversionError)_tokenizer.RaiseRecoverable(_patternStartIndex + index,
+                string.Format(RegExpConversionErrorMessages.RegExpConversionFailed, typeof(Regex), _pattern, _flagsOriginal, reason),
+                RegExpConversionError.s_factory);
         }
 
         [DoesNotReturn]
@@ -149,17 +149,17 @@ public partial class Tokenizer
 
         public RegExpParseResult Parse()
         {
-            ParseError? conversionError;
+            RegExpConversionError? conversionError;
 
             if ((_flags & RegExpFlags.UnicodeSets) != 0)
             {
                 if (_tokenizer._options._regExpParseMode == RegExpParseMode.Validate)
                 {
-                    _tokenizer.Raise(_patternStartIndex, ParseErrorMessages.RegExpUnicodeSetsModeNotSupported, ParseError.s_factory);
+                    _tokenizer.Raise(_patternStartIndex, RegExpConversionErrorMessages.RegExpUnicodeSetsModeNotSupported, RegExpConversionError.s_factory);
                 }
                 else
                 {
-                    conversionError = ReportConversionFailure(0, ParseErrorMessages.RegExpUnicodeSetsModeNotSupported);
+                    conversionError = ReportConversionFailure(0, RegExpConversionErrorMessages.RegExpUnicodeSetsModeNotSupported);
                     return new RegExpParseResult(conversionError);
                 }
             }
@@ -186,12 +186,12 @@ public partial class Tokenizer
             }
             catch
             {
-                conversionError = ReportConversionFailure(0, string.Format(ParseErrorMessages.RegexCreationFailed, typeof(Regex), adaptedPattern, options));
+                conversionError = ReportConversionFailure(0, string.Format(RegExpConversionErrorMessages.RegexCreationFailed, typeof(Regex), adaptedPattern, options));
                 return new RegExpParseResult(conversionError);
             }
         }
 
-        internal string? ParseCore(out ArrayList<RegExpCapturingGroup> capturingGroups, out ParseError? conversionError)
+        internal string? ParseCore(out ArrayList<RegExpCapturingGroup> capturingGroups, out RegExpConversionError? conversionError)
         {
             _tokenizer.AcquireStringBuilder(out var sb);
             try
@@ -400,7 +400,7 @@ public partial class Tokenizer
         /// Otherwise, the adapted pattern or <see langword="null"/> if the pattern is syntactically correct but a .NET equivalent could not be constructed
         /// and the tokenizer is configured to tolerant mode.
         /// </returns>
-        private string? ParsePattern<TMode>(TMode mode, ref ParsePatternContext context, out ParseError? conversionError)
+        private string? ParsePattern<TMode>(TMode mode, ref ParsePatternContext context, out RegExpConversionError? conversionError)
             where TMode : IMode
         {
             ref readonly var sb = ref context.StringBuilder;
@@ -478,7 +478,7 @@ public partial class Tokenizer
                                 groupName = AdjustCapturingGroupName(groupName!, context.CapturingGroupNames!);
                                 if (groupName is null)
                                 {
-                                    conversionError = ReportConversionFailure(i + 3, string.Format(ParseErrorMessages.RegExpUnmappableGroupName, groupName));
+                                    conversionError = ReportConversionFailure(i + 3, string.Format(RegExpConversionErrorMessages.RegExpUnmappableGroupName, groupName));
                                     return null;
                                 }
 
@@ -739,7 +739,7 @@ public partial class Tokenizer
             return false;
         }
 
-        private readonly bool TryAdjustRangeQuantifier(ref ParsePatternContext context, out ParseError? conversionError)
+        private readonly bool TryAdjustRangeQuantifier(ref ParsePatternContext context, out RegExpConversionError? conversionError)
         {
             conversionError = null;
 
@@ -811,7 +811,7 @@ public partial class Tokenizer
                 // number of occurrences can be an arbitrarily big number, however implementations (incl. V8) seems to ignore numbers greater than int.MaxValue.
                 // (e.g. /x{2147483647,2147483646}/ is syntax error while /x{2147483648,2147483647}/ is not!)
                 // We report failure in this case because .NET regex engine doesn't allow numbers greater than int.MaxValue.
-                conversionError = ReportConversionFailure(i, ParseErrorMessages.RegExpInconvertibleRangeQuantifier);
+                conversionError = ReportConversionFailure(i, RegExpConversionErrorMessages.RegExpInconvertibleRangeQuantifier);
                 return true;
             }
 
@@ -1042,7 +1042,7 @@ public partial class Tokenizer
             return "__utf8_" + BitConverter.ToString(Encoding.UTF8.GetBytes(groupName)).Replace("-", "");
         }
 
-        private readonly bool TryAdjustBackreference(ref ParsePatternContext context, int startIndex, out ParseError? conversionError)
+        private readonly bool TryAdjustBackreference(ref ParsePatternContext context, int startIndex, out RegExpConversionError? conversionError)
         {
             conversionError = null;
 
@@ -1070,7 +1070,7 @@ public partial class Tokenizer
             {
                 // RegexOptions.ECMAScript treats forward references like /\1(A)/ differently than JS,
                 // so we don't make an attempt at rewriting them.
-                conversionError = ReportConversionFailure(startIndex, ParseErrorMessages.RegExpInconvertibleForwardReference);
+                conversionError = ReportConversionFailure(startIndex, RegExpConversionErrorMessages.RegExpInconvertibleForwardReference);
                 return true;
             }
 
@@ -1078,7 +1078,7 @@ public partial class Tokenizer
             return true;
         }
 
-        private void AdjustNamedBackreference(ref ParsePatternContext context, int startIndex, out ParseError? conversionError)
+        private void AdjustNamedBackreference(ref ParsePatternContext context, int startIndex, out RegExpConversionError? conversionError)
         {
             conversionError = null;
 
@@ -1100,7 +1100,7 @@ public partial class Tokenizer
                         {
                             // RegexOptions.ECMAScript treats forward references like /\k<a>(?<a>A)/ differently than JS,
                             // so we don't make an attempt at rewriting them.
-                            conversionError = ReportConversionFailure(startIndex, ParseErrorMessages.RegExpInconvertibleNamedForwardReference);
+                            conversionError = ReportConversionFailure(startIndex, RegExpConversionErrorMessages.RegExpInconvertibleNamedForwardReference);
                         }
                     }
                 }
@@ -1209,7 +1209,7 @@ public partial class Tokenizer
 
             void HandleInvalidRangeQuantifier(ref ParsePatternContext context, ref RegExpParser parser, int startIndex);
 
-            bool AdjustEscapeSequence(ref ParsePatternContext context, ref RegExpParser parser, out ParseError? conversionError);
+            bool AdjustEscapeSequence(ref ParsePatternContext context, ref RegExpParser parser, out RegExpConversionError? conversionError);
         }
     }
 

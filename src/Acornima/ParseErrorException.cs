@@ -2,10 +2,10 @@ using System;
 
 namespace Acornima;
 
-public class ParseErrorException : Exception
+public abstract class ParseErrorException : Exception
 {
-    public ParseErrorException(ParseError error, Exception? innerException = null)
-    : base((error ?? throw new ArgumentNullException(nameof(error))).ToString(), innerException)
+    protected ParseErrorException(ParseError error, Exception? innerException = null)
+        : base((error ?? throw new ArgumentNullException(nameof(error))).ToString(), innerException)
     {
         Error = error;
     }

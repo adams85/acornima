@@ -150,7 +150,7 @@ public partial class Tokenizer
                 context.FollowingQuantifierError = null;
             }
 
-            public bool AdjustEscapeSequence(ref ParsePatternContext context, ref RegExpParser parser, out ParseError? conversionError)
+            public bool AdjustEscapeSequence(ref ParsePatternContext context, ref RegExpParser parser, out RegExpConversionError? conversionError)
             {
                 // https://tc39.es/ecma262/#prod-AtomEscape
 

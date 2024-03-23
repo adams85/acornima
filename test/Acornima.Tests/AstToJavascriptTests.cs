@@ -970,7 +970,7 @@ public class AstToJavaScriptTests
         var parserOptions = parserOptionsFactory(false, RegExpParseMode.Validate, ecmaVersion, preserveParens);
 
         try { expectedAst = Parse(sourceType, script, parserOptions, parserFactory); }
-        catch (ParseErrorException) { return; }
+        catch (SyntaxErrorException) { return; }
 
         var generatedScript = convertToCode(expectedAst, false);
 

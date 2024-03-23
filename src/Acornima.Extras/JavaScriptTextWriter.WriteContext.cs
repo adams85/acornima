@@ -69,7 +69,6 @@ public partial class JavaScriptTextWriter
             get => _nodePropertyListValueHelper is not null;
         }
 
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private Delegate EnsureNodePropertyAccessor()
         {

@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All"/>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
     <PackageReference Include="PolySharp" Version="1.14.1" PrivateAssets="all" />
   </ItemGroup>
 
@@ -29,14 +29,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="../../README.md" Pack="true" PackagePath=""/>
+    <None Include="../../README.md" Pack="true" PackagePath="" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Properties\ParseErrorMessages.Designer.cs">
-      <DependentUpon>ParseErrorMessages.resx</DependentUpon>
+    <Compile Update="Properties\RegExpConversionErrorMessages.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
+      <DependentUpon>RegExpConversionErrorMessages.resx</DependentUpon>
     </Compile>
     <Compile Update="Properties\SyntaxErrorMessages.Designer.cs">
       <DesignTime>True</DesignTime>
@@ -46,8 +46,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Update="Properties\ParseErrorMessages.resx">
-      <LastGenOutput>ParseErrorMessages.Designer.cs</LastGenOutput>
+    <EmbeddedResource Update="Properties\RegExpConversionErrorMessages.resx">
+      <LastGenOutput>RegExpConversionErrorMessages.Designer.cs</LastGenOutput>
       <Generator>ResXFileCodeGenerator</Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="Properties\SyntaxErrorMessages.resx">

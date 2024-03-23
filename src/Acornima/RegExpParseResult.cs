@@ -14,17 +14,17 @@ public readonly struct RegExpParseResult
         _capturingGroups = capturingGroups;
     }
 
-    internal RegExpParseResult(ParseError? conversionError)
+    internal RegExpParseResult(RegExpConversionError? conversionError)
     {
-        // NOTE: We can't use null to represent success for validation-only parsing (RegExpParseMode.Validation)
+        // NOTE: We can't use null to represent success for validation-only parsing (RegExpParseMode.Validate)
         // because in that case default(RegExpParseResult) would indicate success.
-        // However, we can do that by using an instance of whatever type except for Regex and ParseError.
+        // However, we can do that by using an instance of whatever type except for Regex and RegExpConversionError.
         _regexOrConversionError = conversionError ?? (object)nameof(Success);
     }
 
-    public bool Success => _regexOrConversionError is not (null or ParseError);
+    public bool Success => _regexOrConversionError is not (null or RegExpConversionError);
 
-    public ParseError? ConversionError => _regexOrConversionError as ParseError;
+    public RegExpConversionError? ConversionError => _regexOrConversionError as RegExpConversionError;
 
     public Regex? Regex => _regexOrConversionError as Regex;
 

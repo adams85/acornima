@@ -205,7 +205,7 @@ public partial class RegExpTests
             }
             else
             {
-                // TODO: check for exception type?
+                Assert.IsType<RegExpConversionErrorException>(ex);
                 Assert.StartsWith("Cannot convert regular expression", ex.Error?.Description, StringComparison.Ordinal);
             }
         }

@@ -2,11 +2,9 @@ using System;
 
 namespace Acornima;
 
-public class ParseError
+public abstract class ParseError
 {
     internal delegate ParseError Factory(string description, int index, Position position, string? sourceFile);
-
-    internal static readonly Factory s_factory = (description, index, position, sourceFile) => new ParseError(description, index, position, sourceFile);
 
     public string Description { get; }
 
@@ -48,8 +46,5 @@ public class ParseError
             : (IsPositionDefined ? $"{Description} ({SourceFile}:{LineNumber}:{Column + 1})" : $"{Description} ({SourceFile})");
     }
 
-    public virtual ParseErrorException ToException()
-    {
-        return new ParseErrorException(this);
-    }
+    public abstract ParseErrorException ToException();
 }

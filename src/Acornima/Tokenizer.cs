@@ -1852,7 +1852,7 @@ public sealed partial class Tokenizer
     /// Unicode sets mode (flag v) is not supported currently, for such patterns the method returns <see langword="false"/>.
     /// </remarks>
     /// <returns><see langword="true"/> if the regular expression is syntactically correct, otherwise <see langword="false"/>.</returns>
-    public static bool ValidateRegExp(string pattern, string flags, out ParseError? error)
+    public static bool ValidateRegExp(string pattern, string flags, out SyntaxError? error)
     {
         if (pattern is null)
         {
@@ -1896,7 +1896,7 @@ public sealed partial class Tokenizer
     /// <exception cref="SyntaxErrorException">
     /// <paramref name="pattern"/> is an invalid regular expression pattern (if <paramref name="throwIfNotAdaptable"/> is <see langword="true"/>).
     /// </exception>
-    /// <exception cref="ParseErrorException">
+    /// <exception cref="RegExpConversionErrorException">
     /// <paramref name="pattern"/> cannot be converted to an equivalent <see cref="Regex"/> (if <paramref name="throwIfNotAdaptable"/> is <see langword="true"/>).
     /// </exception>
     public static RegExpParseResult AdaptRegExp(string pattern, string flags, bool compiled = false, TimeSpan? matchTimeout = null, bool throwIfNotAdaptable = false)

@@ -155,7 +155,7 @@ public partial class ParserTests
                 {
                     ParseAndFormat(sourceType, script, parserOptions, parserFactory, conversionOptions);
                 }
-                catch (ParseErrorException ex)
+                catch (SyntaxErrorException ex)
                 {
                     var expectedJsonObject = JObject.Parse(expected);
 

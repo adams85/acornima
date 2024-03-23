@@ -22,14 +22,14 @@ namespace Acornima.Properties {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class ParseErrorMessages {
+    internal class RegExpConversionErrorMessages {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
         private static global::System.Globalization.CultureInfo resourceCulture;
         
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal ParseErrorMessages() {
+        internal RegExpConversionErrorMessages() {
         }
         
         /// <summary>
@@ -39,7 +39,7 @@ namespace Acornima.Properties {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Acornima.Properties.ParseErrorMessages", typeof(ParseErrorMessages).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Acornima.Properties.RegExpConversionErrorMessages", typeof(RegExpConversionErrorMessages).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;

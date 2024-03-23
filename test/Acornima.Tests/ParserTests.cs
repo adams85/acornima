@@ -120,7 +120,7 @@ public partial class ParserTests
     {
         var parser = new Parser();
         const int depth = 100_000;
-        var input = new string('+', depth) + "x";
+        var input = string.Join("", Enumerable.Range(0, depth).Select(_ => "+-")) + "x";
         Assert.Throws<InsufficientExecutionStackException>(() => parser.ParseScript(input));
     }
 

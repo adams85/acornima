@@ -28,7 +28,7 @@ public abstract class JavaScriptTextFormatter : JavaScriptTextWriter
     private readonly string _indent;
     private int _indentionLevel;
 
-    public JavaScriptTextFormatter(TextWriter writer, JavaScriptTextFormatterOptions options) : base(writer, options)
+    protected JavaScriptTextFormatter(TextWriter writer, JavaScriptTextFormatterOptions options) : base(writer, options)
     {
         if (!string.IsNullOrWhiteSpace(options.Indent))
         {

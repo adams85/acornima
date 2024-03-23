@@ -617,7 +617,7 @@ public partial class Tokenizer
                 parser.ReportSyntaxError(startIndex, SyntaxErrorMessages.RegExpIncompleteQuantifier);
             }
 
-            public bool AdjustEscapeSequence(ref ParsePatternContext context, ref RegExpParser parser, out ParseError? conversionError)
+            public bool AdjustEscapeSequence(ref ParsePatternContext context, ref RegExpParser parser, out RegExpConversionError? conversionError)
             {
                 // https://tc39.es/ecma262/#prod-AtomEscape
 
@@ -880,7 +880,7 @@ public partial class Tokenizer
 
                                     if (codePointRanges is null)
                                     {
-                                        conversionError = parser.ReportConversionFailure(startIndex, ParseErrorMessages.RegExpInconvertibleUnicodePropertyEscape);
+                                        conversionError = parser.ReportConversionFailure(startIndex, RegExpConversionErrorMessages.RegExpInconvertibleUnicodePropertyEscape);
                                         return false;
                                     }
 
