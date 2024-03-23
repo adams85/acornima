@@ -1,6 +1,1 @@
-{
-    "index": 3,
-    "lineNumber": 1,
-    "column": 4,
-    "message": "Error: Line 1: Unexpected token ILLEGAL"
-}
+{"index":0,"lineNumber":1,"column":0,"message":"Invalid Unicode escape sequence (1:1)","description":"Invalid Unicode escape sequence"}

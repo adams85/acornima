@@ -1,1 +1,1 @@
-{"index":11,"lineNumber":1,"column":12,"message":"Binding eval in strict mode (1:12)","description":"Binding eval in strict mode"}
+{"index":11,"lineNumber":1,"column":11,"message":"Unexpected eval or arguments in strict mode (1:12)","description":"Unexpected eval or arguments in strict mode"}

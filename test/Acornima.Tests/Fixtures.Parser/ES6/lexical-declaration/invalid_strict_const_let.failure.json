@@ -1,1 +1,1 @@
-{"index":20,"lineNumber":1,"column":21,"message":"Error: Line 1: let is disallowed as a lexically bound name","description":"let is disallowed as a lexically bound name"}
+{"index":20,"lineNumber":1,"column":20,"message":"Unexpected strict mode reserved word (1:21)","description":"Unexpected strict mode reserved word"}

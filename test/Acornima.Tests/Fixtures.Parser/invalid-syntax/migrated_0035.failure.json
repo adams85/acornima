@@ -1,6 +1,1 @@
-{
-    "index": 13,
-    "lineNumber": 1,
-    "column": 14,
-    "message": "Error: Line 1: Invalid regular expression"
-}
+{"index":11,"lineNumber":1,"column":11,"message":"Invalid regular expression: /(s/g: Unterminated group (1:12)","description":"Invalid regular expression: /(s/g: Unterminated group"}

@@ -1,1 +1,1 @@
-{"index":12,"lineNumber":1,"column":13,"message":"Error: Line 1: Unexpected token =>","description":"Unexpected token =>"}
+{"index":6,"lineNumber":1,"column":6,"message":"'await' is not a valid identifier name in an async function (1:7)","description":"'await' is not a valid identifier name in an async function"}

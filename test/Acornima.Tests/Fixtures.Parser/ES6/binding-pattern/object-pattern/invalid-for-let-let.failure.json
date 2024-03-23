@@ -1,1 +1,1 @@
-{"index":21,"lineNumber":1,"column":22,"message":"Complex binding patterns require an initialization value (1:22)","description":"Complex binding patterns require an initialization value"}
+{"index":21,"lineNumber":1,"column":21,"message":"Missing initializer in destructuring declaration (1:22)","description":"Missing initializer in destructuring declaration"}

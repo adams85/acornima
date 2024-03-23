@@ -1,1 +1,1 @@
-{"index":9,"lineNumber":1,"column":10,"message":"Error: Line 1: Unexpected token **","description":"Unexpected token **"}
+{"index":9,"lineNumber":1,"column":9,"message":"Unary operator used immediately before exponentiation expression. Parenthesis must be used to disambiguate operator precedence (1:10)","description":"Unary operator used immediately before exponentiation expression. Parenthesis must be used to disambiguate operator precedence"}

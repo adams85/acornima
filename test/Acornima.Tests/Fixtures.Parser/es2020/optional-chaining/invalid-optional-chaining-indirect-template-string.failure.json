@@ -1,1 +1,1 @@
-{"index":4,"lineNumber":1,"column":5,"message":"Error: Line 1: Invalid tagged template on optional chain","description":"Invalid tagged template on optional chain"}
+{"index":1,"lineNumber":1,"column":1,"message":"Invalid tagged template on optional chain (1:2)","description":"Invalid tagged template on optional chain"}

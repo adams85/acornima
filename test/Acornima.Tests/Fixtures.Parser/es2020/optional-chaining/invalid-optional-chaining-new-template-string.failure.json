@@ -1,1 +1,1 @@
-{"index":7,"lineNumber":1,"column":8,"message":"Error: Line 1: Unexpected quasi b","description":"Unexpected quasi b"}
+{"index":5,"lineNumber":1,"column":5,"message":"Invalid optional chain from new expression (1:6)","description":"Invalid optional chain from new expression"}

@@ -1,1 +1,1 @@
-{"index":20,"lineNumber":1,"column":21,"message":"Illegal 'use strict' directive in function with non-simple parameter list (1:21)","description":"Illegal 'use strict' directive in function with non-simple parameter list"}
+{"index":20,"lineNumber":1,"column":20,"message":"Illegal 'use strict' directive in function with non-simple parameter list (1:21)","description":"Illegal 'use strict' directive in function with non-simple parameter list"}

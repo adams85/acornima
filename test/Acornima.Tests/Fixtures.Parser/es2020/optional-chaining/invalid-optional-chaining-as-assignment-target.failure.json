@@ -1,1 +1,1 @@
-{"index":4,"lineNumber":1,"column":5,"message":"Error: Line 1: Invalid left-hand side in assignment","description":"Invalid left-hand side in assignment"}
+{"index":0,"lineNumber":1,"column":0,"message":"Invalid left-hand side in assignment (1:1)","description":"Invalid left-hand side in assignment"}

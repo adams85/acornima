@@ -1,6 +1,1 @@
-{
-    "index": 43,
-    "lineNumber": 1,
-    "column": 44,
-    "message": "Error: Line 1: Undefined label 'x'"
-}
+{"index":42,"lineNumber":1,"column":42,"message":"Undefined label 'x' (1:43)","description":"Undefined label 'x'"}

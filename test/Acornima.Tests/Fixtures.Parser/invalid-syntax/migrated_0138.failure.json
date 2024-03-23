@@ -1,1 +1,1 @@
-{"index":15,"lineNumber":1,"column":16,"message":"Error: Line 1: Missing initializer in const declaration","description":"Missing initializer in const declaration"}
+{"index":15,"lineNumber":1,"column":15,"message":"Missing initializer in const declaration (1:16)","description":"Missing initializer in const declaration"}

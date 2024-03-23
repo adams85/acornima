@@ -1,1 +1,1 @@
-{"index":14,"lineNumber":1,"column":15,"message":"Error: Line 1: Unexpected token =>","description":"Unexpected token =>"}
+{"index":2,"lineNumber":1,"column":2,"message":"Invalid destructuring assignment target (1:3)","description":"Invalid destructuring assignment target"}

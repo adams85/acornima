@@ -1,1 +1,1 @@
-{"index":21,"lineNumber":1,"column":22,"message":"Yield expression cannot be a default value (1:22)","description":"Yield expression cannot be a default value"}
+{"index":21,"lineNumber":1,"column":21,"message":"Yield expression not allowed in formal parameter (1:22)","description":"Yield expression not allowed in formal parameter"}

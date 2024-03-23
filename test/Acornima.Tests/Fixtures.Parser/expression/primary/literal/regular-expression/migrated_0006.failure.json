@@ -1,6 +1,1 @@
-{
-    "index": 21,
-    "lineNumber": 1,
-    "column": 22,
-    "message": "Error: Line 1: Invalid regular expression"
-}
+{"index":9,"lineNumber":1,"column":9,"message":"Invalid regular expression: /\\u{110000}/u: Invalid Unicode escape (1:10)","description":"Invalid regular expression: /\\u{110000}/u: Invalid Unicode escape"}

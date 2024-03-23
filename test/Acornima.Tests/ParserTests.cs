@@ -1705,14 +1705,6 @@ public partial class ParserTests
         Assert.Equal(3, ex.Column);
     }
 
-    // TODO
-    //[Fact]
-    //public void ThrowsErrorForDeepRecursionParsing()
-    //{
-    //    var parser = new Parser(new ParserOptions { MaxAssignmentDepth = 100 });
-    //    Assert.Throws<SyntaxErrorException>(() => parser.ParseScript("if ((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((true)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))) { } "));
-    //}
-
     [Fact]
     public void AllowsSingleProto()
     {
@@ -1750,30 +1742,23 @@ public partial class ParserTests
         Assert.Empty(errorCollector.Errors);
     }
 
-    // TODO
-    //[Theory]
-    //[InlineData("(async () => { for await (;;) { } })()")]
-    //[InlineData("(async () => { for await (var i = 0, j = 1;;) { } })()")]
-    //[InlineData("(async () => { for await (let i = 0, j = 1;;) { } })()")]
-    //[InlineData("(async () => { for await (const i = 0, j = 1;;) { } })()")]
-    //[InlineData("(async () => { for await (i = 0, j = 1;;) { } })()")]
-    //[InlineData("(async () => { for await (var x = (0 in []) in {}) { } })()")]
-    //[InlineData("(async () => { for await (let x in {}) { } })()")]
-    //[InlineData("(async () => { for await (const x in {}) { } })()")]
-    //[InlineData("(async () => { for await (let in {}) { } })()")]
-    //[InlineData("(async () => { for await (const in {}) { } })()")]
-    //[InlineData("(async () => { for await (x in {}) { } })()")]
-    //public void ToleratesInvalidForAwaitLoops(string code)
-    //{
-    //    var errorCollector = new ParseErrorCollector();
-    //    var parser = new Parser(new ParserOptions { Tolerant = true, ErrorHandler = errorCollector });
-    //    parser.ParseScript(code);
-
-    //    Assert.NotEmpty(errorCollector.Errors);
-
-    //    parser = new Parser(new ParserOptions { Tolerant = false });
-    //    Assert.Throws<SyntaxErrorException>(() => parser.ParseScript(code));
-    //}
+    [Theory]
+    [InlineData("(async () => { for await (;;) { } })()")]
+    [InlineData("(async () => { for await (var i = 0, j = 1;;) { } })()")]
+    [InlineData("(async () => { for await (let i = 0, j = 1;;) { } })()")]
+    [InlineData("(async () => { for await (const i = 0, j = 1;;) { } })()")]
+    [InlineData("(async () => { for await (i = 0, j = 1;;) { } })()")]
+    [InlineData("(async () => { for await (var x = (0 in []) in {}) { } })()")]
+    [InlineData("(async () => { for await (let x in {}) { } })()")]
+    [InlineData("(async () => { for await (const x in {}) { } })()")]
+    [InlineData("(async () => { for await (let in {}) { } })()")]
+    [InlineData("(async () => { for await (const in {}) { } })()")]
+    [InlineData("(async () => { for await (x in {}) { } })()")]
+    public void ReportsInvalidForAwaitLoops(string code)
+    {
+        var parser = new Parser(new ParserOptions { Tolerant = false });
+        Assert.Throws<SyntaxErrorException>(() => parser.ParseScript(code));
+    }
 
     [Fact]
     public void CanParsePrivateIdentifierInOperator()

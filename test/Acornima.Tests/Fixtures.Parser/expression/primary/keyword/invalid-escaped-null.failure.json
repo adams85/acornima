@@ -1,1 +1,1 @@
-{"index":0,"lineNumber":1,"column":1,"message":"Escape sequence in keyword null (1:1)","description":"Escape sequence in keyword null"}
+{"index":0,"lineNumber":1,"column":0,"message":"Keyword must not contain escaped characters (1:1)","description":"Keyword must not contain escaped characters"}

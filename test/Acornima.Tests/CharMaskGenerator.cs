@@ -67,7 +67,7 @@ public class CharMaskGenerator
             masks[c >> 1] |= (byte)((byte)mask << ((c & 1) << 2));
         }
 
-        sb.AppendLine("    private static byte[] s_characterData = new byte[]");
+        sb.AppendLine("    private static readonly byte[] s_characterData = new byte[]");
         sb.AppendLine("    {");
         foreach (var chunk in masks.Chunk(32))
         {

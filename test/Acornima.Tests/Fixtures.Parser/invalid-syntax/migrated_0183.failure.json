@@ -1,6 +1,1 @@
-{
-    "index": 37,
-    "lineNumber": 1,
-    "column": 38,
-    "message": "Error: Line 1: Delete of an unqualified identifier in strict mode."
-}
+{"index":36,"lineNumber":1,"column":36,"message":"Delete of an unqualified identifier in strict mode (1:37)","description":"Delete of an unqualified identifier in strict mode"}

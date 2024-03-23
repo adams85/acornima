@@ -1,6 +1,1 @@
-{
-  "index": 5,
-  "lineNumber": 2,
-  "column": 6,
-  "message": "Decorators must not be followed by a semicolon."
-}
+{"index":14,"lineNumber":2,"column":4,"message":"Unexpected token ';' (2:5)","description":"Unexpected token ';'"}

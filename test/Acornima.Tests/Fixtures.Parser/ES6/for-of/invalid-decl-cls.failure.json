@@ -1,1 +1,1 @@
-{"index":17,"lineNumber":1,"column":18,"message":"Error: Line 1: Unexpected token [object Object]","description":"Unexpected token [object Object]"}
+{"index":18,"lineNumber":1,"column":18,"message":"Unexpected token 'class' (1:19)","description":"Unexpected token 'class'"}

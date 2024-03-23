@@ -1,1 +1,1 @@
-{"index":12,"lineNumber":1,"column":13,"message":"Setter cannot use rest params (1:13)","description":"Setter cannot use rest params"}
+{"index":11,"lineNumber":1,"column":11,"message":"Setter function argument must not be a rest parameter (1:12)","description":"Setter function argument must not be a rest parameter"}

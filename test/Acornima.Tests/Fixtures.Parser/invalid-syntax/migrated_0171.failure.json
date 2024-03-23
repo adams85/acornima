@@ -1,6 +1,1 @@
-{
-    "index": 6,
-    "lineNumber": 1,
-    "column": 7,
-    "message": "Error: Line 1: Illegal return statement"
-}
+{"index":0,"lineNumber":1,"column":0,"message":"Illegal return statement (1:1)","description":"Illegal return statement"}

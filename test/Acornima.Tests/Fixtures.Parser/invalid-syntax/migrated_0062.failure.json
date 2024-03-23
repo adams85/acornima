@@ -1,6 +1,1 @@
-{
-    "index": 10,
-    "lineNumber": 1,
-    "column": 11,
-    "message": "Error: Line 1: Invalid regular expression: missing /"
-}
+{"index":8,"lineNumber":1,"column":8,"message":"Invalid regular expression: missing / (1:9)","description":"Invalid regular expression: missing /"}

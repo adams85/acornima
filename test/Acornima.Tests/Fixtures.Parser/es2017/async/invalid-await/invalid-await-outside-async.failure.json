@@ -1,1 +1,1 @@
-{"index":22,"lineNumber":1,"column":23,"message":"Error: Line 1: Unexpected identifier","description":"Unexpected identifier"}
+{"index":16,"lineNumber":1,"column":16,"message":"await is only valid in async functions and the top level bodies of modules (1:17)","description":"await is only valid in async functions and the top level bodies of modules"}

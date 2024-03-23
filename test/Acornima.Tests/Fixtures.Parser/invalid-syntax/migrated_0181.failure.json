@@ -1,6 +1,1 @@
-{
-    "index": 42,
-    "lineNumber": 1,
-    "column": 43,
-    "message": "Error: Line 1: Illegal continue statement"
-}
+{"index":33,"lineNumber":1,"column":33,"message":"Illegal continue statement: no surrounding iteration statement (1:34)","description":"Illegal continue statement: no surrounding iteration statement"}

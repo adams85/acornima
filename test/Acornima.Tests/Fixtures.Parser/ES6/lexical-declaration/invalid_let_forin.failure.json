@@ -1,1 +1,1 @@
-{"index":15,"lineNumber":1,"column":16,"message":"Error: Line 1: Unexpected token in","description":"Unexpected token in"}
+{"index":9,"lineNumber":1,"column":9,"message":"for-in loop variable declaration may not have an initializer (1:10)","description":"for-in loop variable declaration may not have an initializer"}

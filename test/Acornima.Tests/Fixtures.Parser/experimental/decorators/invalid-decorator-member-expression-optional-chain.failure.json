@@ -1,1 +1,1 @@
-{"index":2,"lineNumber":1,"column":3,"message":"Line 1: Invalid decorator member expression","description":"Invalid decorator member expression"}
+{"index":2,"lineNumber":1,"column":2,"message":"Invalid decorator member expression (1:3)","description":"Invalid decorator member expression"}

@@ -1,1 +1,1 @@
-{"index":29,"lineNumber":1,"column":30,"message":"Error: Line 1: Duplicate __proto__ fields are not allowed in object literals","description":"Duplicate __proto__ fields are not allowed in object literals"}
+{"index":20,"lineNumber":1,"column":20,"message":"Duplicate __proto__ fields are not allowed in object literals (1:21)","description":"Duplicate __proto__ fields are not allowed in object literals"}

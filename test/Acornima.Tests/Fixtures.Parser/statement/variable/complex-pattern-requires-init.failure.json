@@ -1,1 +1,1 @@
-{"index":7,"lineNumber":2,"column":1,"message":"Error: Line 2: Unexpected end of input","description":"Unexpected end of input"}
+{"index":6,"lineNumber":1,"column":6,"message":"Missing initializer in destructuring declaration (1:7)","description":"Missing initializer in destructuring declaration"}

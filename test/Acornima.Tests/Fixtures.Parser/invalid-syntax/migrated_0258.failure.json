@@ -1,6 +1,1 @@
-{
-    "index": 18,
-    "lineNumber": 1,
-    "column": 19,
-    "message": "Error: Line 1: Rest parameter must be last formal parameter"
-}
+{"index":17,"lineNumber":1,"column":17,"message":"Rest parameter must be last formal parameter (1:18)","description":"Rest parameter must be last formal parameter"}

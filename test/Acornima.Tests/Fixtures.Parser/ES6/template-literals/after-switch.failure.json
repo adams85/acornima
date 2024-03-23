@@ -1,1 +1,1 @@
-{"index":7,"lineNumber":1,"column":8,"message":"Error: Line 1: Unexpected quasi test","description":"Unexpected quasi test"}
+{"index":7,"lineNumber":1,"column":7,"message":"Unexpected template string (1:8)","description":"Unexpected template string"}

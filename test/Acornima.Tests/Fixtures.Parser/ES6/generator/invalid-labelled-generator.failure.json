@@ -1,1 +1,1 @@
-{"index":12,"lineNumber":1,"column":13,"message":"Unexpected token (1:13)","description":"Unexpected token"}
+{"index":3,"lineNumber":1,"column":3,"message":"Generators can only be declared at the top level or inside a block (1:4)","description":"Generators can only be declared at the top level or inside a block"}

@@ -1,1 +1,1 @@
-{"index":4,"lineNumber":1,"column":5,"message":"Error: Line 1: Unexpected reserved word","description":"Unexpected reserved word"}
+{"index":10,"lineNumber":1,"column":10,"message":"Unexpected token '(' (1:11)","description":"Unexpected token '('"}

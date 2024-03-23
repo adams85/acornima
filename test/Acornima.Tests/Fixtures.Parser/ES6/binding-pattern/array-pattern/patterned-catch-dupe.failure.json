@@ -1,7 +1,1 @@
-{
-    "index": 19,
-    "lineNumber": 1,
-    "column": 20,
-    "message": "Error: Line 1: Duplicate binding a",
-    "description": "Duplicate binding a"
-}
+{"index":17,"lineNumber":1,"column":17,"message":"Identifier 'a' has already been declared (1:18)","description":"Identifier 'a' has already been declared"}

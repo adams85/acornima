@@ -1,1 +1,1 @@
-{"index":23,"lineNumber":1,"column":24,"message":"Error: Line 1: Unexpected token =>","description":"Unexpected token =>"}
+{"index":16,"lineNumber":1,"column":16,"message":"Yield expression not allowed in formal parameter (1:17)","description":"Yield expression not allowed in formal parameter"}

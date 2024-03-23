@@ -1,1 +1,1 @@
-{"index":50,"lineNumber":1,"column":51,"message":"Error: Line 1: Unexpected token =>","description":"Unexpected token =>"}
+{"index":24,"lineNumber":1,"column":24,"message":"Illegal property in declaration context (1:25)","description":"Illegal property in declaration context"}

@@ -1,1 +1,1 @@
-{"index":46,"lineNumber":1,"column":47,"message":"Error: Line 1: Use of future reserved word in strict mode","description":"Use of future reserved word in strict mode"}
+{"index":46,"lineNumber":1,"column":46,"message":"Unexpected strict mode reserved word (1:47)","description":"Unexpected strict mode reserved word"}

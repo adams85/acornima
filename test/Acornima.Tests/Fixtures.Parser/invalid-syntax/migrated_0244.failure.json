@@ -1,1 +1,1 @@
-{"index":15,"lineNumber":1,"column":16,"message":"Error: Line 1: Unexpected identifier","description":"Unexpected identifier"}
+{"index":15,"lineNumber":1,"column":15,"message":"Duplicate parameter name not allowed in this context (1:16)","description":"Duplicate parameter name not allowed in this context"}

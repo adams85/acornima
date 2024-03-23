@@ -1,1 +1,1 @@
-{"index":8,"lineNumber":1,"column":9,"message":"Unexpected keyword 'try' (1:9)","description":"Unexpected keyword 'try'"}
+{"index":8,"lineNumber":1,"column":8,"message":"Unexpected token 'try' (1:9)","description":"Unexpected token 'try'"}

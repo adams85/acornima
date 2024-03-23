@@ -1,6 +1,1 @@
-{
-    "index": 30,
-    "lineNumber": 1,
-    "column": 31,
-    "message": "Error: Line 1: More than one default clause in switch statement"
-}
+{"index":22,"lineNumber":1,"column":22,"message":"More than one default clause in switch statement (1:23)","description":"More than one default clause in switch statement"}

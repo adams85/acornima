@@ -1,6 +1,1 @@
-{
-    "index": 24,
-    "lineNumber": 1,
-    "column": 25,
-    "message": "Error: Line 1: Unexpected end of input"
-}
+{"index":24,"lineNumber":1,"column":24,"message":"Unexpected end of input (1:25)","description":"Unexpected end of input"}

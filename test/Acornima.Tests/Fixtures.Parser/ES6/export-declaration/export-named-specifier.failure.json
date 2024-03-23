@@ -1,1 +1,1 @@
-{"index":8,"lineNumber":1,"column":9,"message":"Export 'foo' is not defined (1:9)","description":"Export 'foo' is not defined"}
+{"index":8,"lineNumber":1,"column":8,"message":"Export 'foo' is not defined in module (1:9)","description":"Export 'foo' is not defined in module"}

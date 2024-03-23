@@ -1,1 +1,1 @@
-{"index":27,"lineNumber":3,"column":8,"message":"Error: Line 3: Unexpected token (","description":"Unexpected token ("}
+{"index":25,"lineNumber":3,"column":5,"message":"Invalid optional chain from new expression (3:6)","description":"Invalid optional chain from new expression"}

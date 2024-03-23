@@ -1,6 +1,1 @@
-{
-    "index": 21,
-    "lineNumber": 1,
-    "column": 22,
-    "message": "Error: Line 1: Invalid regular expression"
-}
+{"index":17,"lineNumber":1,"column":17,"message":"Invalid regular expression: /[\\u{63}-b]/u: Range out of order in character class (1:18)","description":"Invalid regular expression: /[\\u{63}-b]/u: Range out of order in character class"}

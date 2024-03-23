@@ -1,1 +1,1 @@
-{"index":16,"lineNumber":1,"column":17,"message":"Error: Line 1: Class constructor may not be an async method","description":"Class constructor may not be an async method"}
+{"index":16,"lineNumber":1,"column":16,"message":"Class constructor may not be an async method (1:17)","description":"Class constructor may not be an async method"}

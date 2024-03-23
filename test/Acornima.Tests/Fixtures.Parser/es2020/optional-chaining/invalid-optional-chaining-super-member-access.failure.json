@@ -1,1 +1,1 @@
-{"index":50,"lineNumber":2,"column":30,"message":"Line 2: 'super' keyword unexpected here","description":"'super' keyword unexpected here"}
+{"index":45,"lineNumber":2,"column":24,"message":"'super' keyword unexpected here (2:25)","description":"'super' keyword unexpected here"}

@@ -1,1 +1,1 @@
-{"index":11,"lineNumber":1,"column":12,"message":"Error: Line 1: Unexpected token =>","description":"Unexpected token =>"}
+{"index":7,"lineNumber":1,"column":7,"message":"Rest element must be last element (1:8)","description":"Rest element must be last element"}

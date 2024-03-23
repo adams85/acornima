@@ -1,6 +1,1 @@
-{
-    "index": 6,
-    "lineNumber": 1,
-    "column": 7,
-    "message": "Error: Line 1: Unexpected number"
-}
+{"index":6,"lineNumber":1,"column":6,"message":"Unexpected number (1:7)","description":"Unexpected number"}

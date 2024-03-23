@@ -1,6 +1,1 @@
-{
-    "index": 20,
-    "lineNumber": 1,
-    "column": 21,
-    "message": "Error: Line 1: Label 'x' has already been declared"
-}
+{"index":18,"lineNumber":1,"column":18,"message":"Label 'x' has already been declared (1:19)","description":"Label 'x' has already been declared"}

@@ -1,1 +1,1 @@
-{"index":12,"lineNumber":1,"column":13,"message":"Error: Line 1: Unexpected identifier","description":"Unexpected identifier"}
+{"index":12,"lineNumber":1,"column":12,"message":"new.target expression is not allowed here (1:13)","description":"new.target expression is not allowed here"}

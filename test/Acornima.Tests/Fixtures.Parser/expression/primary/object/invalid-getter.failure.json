@@ -1,1 +1,1 @@
-{"index":11,"lineNumber":1,"column":12,"message":"getter should have no params (1:12)","description":"getter should have no params"}
+{"index":11,"lineNumber":1,"column":11,"message":"Getter must not have any formal parameters (1:12)","description":"Getter must not have any formal parameters"}

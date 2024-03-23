@@ -1,6 +1,1 @@
-{
-    "index": 12,
-    "lineNumber": 1,
-    "column": 13,
-    "message": "Error: Line 1: Parameter name eval or arguments is not allowed in strict mode"
-}
+{"index":12,"lineNumber":1,"column":12,"message":"Unexpected eval or arguments in strict mode (1:13)","description":"Unexpected eval or arguments in strict mode"}

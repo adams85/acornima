@@ -1,1 +1,1 @@
-{"index":0,"lineNumber":1,"column":1,"message":"Error: Line 1: Invalid Unicode escape sequence","description":"Invalid Unicode escape sequence"}
+{"index":1,"lineNumber":1,"column":1,"message":"Invalid Unicode escape sequence (1:2)","description":"Invalid Unicode escape sequence"}

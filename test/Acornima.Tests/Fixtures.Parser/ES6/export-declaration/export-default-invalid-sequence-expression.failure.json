@@ -1,1 +1,1 @@
-{"index":34,"lineNumber":1,"column":35,"message":"Line 1: Unexpected token ,","description":"Unexpected token ,"}
+{"index":34,"lineNumber":1,"column":34,"message":"Unexpected token ',' (1:35)","description":"Unexpected token ','"}
