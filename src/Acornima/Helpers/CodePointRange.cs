@@ -95,13 +95,13 @@ internal readonly struct CodePointRange : IComparable<CodePointRange>
         return invertedRanges;
     }
 
-    internal static bool RangesContain(int codePoint, int[] ranges, int[] rangeLengthLookup)
+    internal static bool RangesContain(int codePoint, ReadOnlySpan<int> ranges, ReadOnlySpan<int> rangeLengthLookup)
     {
         Debug.Assert(codePoint is >= 0 and <= UnicodeHelper.LastCodePoint);
 
         var codePointShifted = codePoint << 8;
 
-        var index = Array.BinarySearch(ranges, codePointShifted);
+        var index = ranges.BinarySearch(codePointShifted);
         if (index >= 0
             || (index = ~index) < ranges.Length && DecodeRange(ranges[index], rangeLengthLookup).Contains(codePoint)
             || index > 0 && DecodeRange(ranges[index - 1], rangeLengthLookup).Contains(codePoint))
@@ -113,7 +113,7 @@ internal readonly struct CodePointRange : IComparable<CodePointRange>
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static CodePointRange DecodeRange(int data, int[] rangeLengths)
+    private static CodePointRange DecodeRange(int data, ReadOnlySpan<int> rangeLengths)
     {
         var start = data >> 8;
         return new CodePointRange(start, start + rangeLengths[data & 0xFF]);

@@ -21,6 +21,9 @@ public class CharMaskGenerator
     {
         var sb = new StringBuilder();
 
+        sb.AppendLine("using System;");
+        sb.AppendLine("using System.Runtime.CompilerServices;");
+        sb.AppendLine();
         sb.AppendLine("namespace Acornima;");
         sb.AppendLine();
 
@@ -67,11 +70,14 @@ public class CharMaskGenerator
             masks[c >> 1] |= (byte)((byte)mask << ((c & 1) << 2));
         }
 
-        sb.AppendLine("    private static readonly byte[] s_characterData = new byte[]");
+        sb.AppendLine("    private static ReadOnlySpan<byte> CharacterData");
         sb.AppendLine("    {");
+        sb.AppendLine("        [MethodImpl(MethodImplOptions.AggressiveInlining)]");
+        sb.AppendLine("        get => new byte[]");
+        sb.AppendLine("        {");
         foreach (var chunk in masks.Chunk(32))
         {
-            sb.Append("        ");
+            sb.Append("            ");
             foreach (var value in chunk)
             {
                 sb.Append("0x").Append(value.ToString("X2"));
@@ -81,7 +87,8 @@ public class CharMaskGenerator
             sb.AppendLine();
         }
 
-        sb.AppendLine("    };");
+        sb.AppendLine("        };");
+        sb.AppendLine("    }");
     }
 
     private static void GenerateAstralRanges(StringBuilder sb)
@@ -90,10 +97,10 @@ public class CharMaskGenerator
 
         foreach (var (match, name) in new[]
         {
-            (new Predicate<int>(JavaScriptCharacter.IsLineTerminator), "lineTerminator"),
-            (new Predicate<int>(JavaScriptCharacter.IsWhiteSpace), "whiteSpace"),
-            (JavaScriptCharacter.IsIdentifierStart, "identifierStart"),
-            (JavaScriptCharacter.IsIdentifierPart, "identifierPart"),
+            (new Predicate<int>(JavaScriptCharacter.IsLineTerminator), "LineTerminator"),
+            (new Predicate<int>(JavaScriptCharacter.IsWhiteSpace), "WhiteSpace"),
+            (JavaScriptCharacter.IsIdentifierStart, "IdentifierStart"),
+            (JavaScriptCharacter.IsIdentifierPart, "IdentifierPart"),
         })
         {
             var ranges = new ArrayList<CodePointRange>();
@@ -105,12 +112,15 @@ public class CharMaskGenerator
                 continue;
             }
 
-            sb.AppendLine($"    private static readonly int[] s_{name}AstralRanges = new[]");
+            sb.AppendLine($"    private static ReadOnlySpan<int> {name}AstralRanges");
             sb.AppendLine("    {");
+            sb.AppendLine("        [MethodImpl(MethodImplOptions.AggressiveInlining)]");
+            sb.AppendLine("        get => new int[]");
+            sb.AppendLine("        {");
 
             foreach (var chunk in ranges.Chunk(16))
             {
-                sb.Append("        ");
+                sb.Append("            ");
                 foreach (var range in chunk)
                 {
                     sb.Append("0x").Append(EncodeRange(range, lengthLookup).ToString("X8", CultureInfo.InvariantCulture));
@@ -120,15 +130,20 @@ public class CharMaskGenerator
                 sb.AppendLine();
             }
 
-            sb.AppendLine("    };");
+            sb.AppendLine("        };");
+            sb.AppendLine("    }");
             sb.AppendLine();
         }
 
-        sb.AppendLine($"    private static readonly int[] s_rangeLengthLookup = new int[]");
+        sb.AppendLine("    private static ReadOnlySpan<int> RangeLengthLookup");
         sb.AppendLine("    {");
+        sb.AppendLine("        [MethodImpl(MethodImplOptions.AggressiveInlining)]");
+        sb.AppendLine("        get => new int[]");
+        sb.AppendLine("        {");
+
         foreach (var chunk in lengthLookup.Chunk(40))
         {
-            sb.Append("        ");
+            sb.Append("            ");
             foreach (var length in chunk)
             {
                 sb.Append(length.ToString(CultureInfo.InvariantCulture));
@@ -137,7 +152,8 @@ public class CharMaskGenerator
 
             sb.AppendLine();
         }
-        sb.AppendLine("    };");
+        sb.AppendLine("        };");
+        sb.AppendLine("    }");
     }
 
     private static int EncodeRange(CodePointRange range, List<int> lengthLookup)

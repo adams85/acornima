@@ -27,7 +27,7 @@ public partial class Tokenizer
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static CharFlags GetCharFlags(char ch)
     {
-        return (CharFlags)(s_characterData[ch >> 1] >> ((ch & 1) << 2));
+        return (CharFlags)(CharacterData[ch >> 1] >> ((ch & 1) << 2));
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -100,7 +100,7 @@ public partial class Tokenizer
     {
         return cp <= char.MaxValue
             ? (GetCharFlags((char)cp) & CharFlags.IdentifierStart) != 0
-            : allowAstral && cp >= 0 && CodePointRange.RangesContain(cp, s_identifierStartAstralRanges, s_rangeLengthLookup);
+            : allowAstral && cp >= 0 && CodePointRange.RangesContain(cp, IdentifierStartAstralRanges, RangeLengthLookup);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -108,7 +108,7 @@ public partial class Tokenizer
     {
         return cp <= char.MaxValue
             ? (GetCharFlags((char)cp) & CharFlags.IdentifierPart) != 0
-            : allowAstral && cp >= 0 && CodePointRange.RangesContain(cp, s_identifierPartAstralRanges, s_rangeLengthLookup);
+            : allowAstral && cp >= 0 && CodePointRange.RangesContain(cp, IdentifierPartAstralRanges, RangeLengthLookup);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
