@@ -7,7 +7,8 @@ public sealed partial class ClassBody : Node
 {
     private readonly NodeList<Node> _body;
 
-    public ClassBody(in NodeList<Node> body) : base(NodeType.ClassBody)
+    public ClassBody(in NodeList<Node> body)
+        : base(NodeType.ClassBody)
     {
         _body = body;
     }

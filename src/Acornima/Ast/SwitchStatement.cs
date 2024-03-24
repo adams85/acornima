@@ -7,7 +7,8 @@ public sealed partial class SwitchStatement : Statement
 {
     private readonly NodeList<SwitchCase> _cases;
 
-    public SwitchStatement(Expression discriminant, in NodeList<SwitchCase> cases) : base(NodeType.SwitchStatement)
+    public SwitchStatement(Expression discriminant, in NodeList<SwitchCase> cases)
+        : base(NodeType.SwitchStatement)
     {
         Discriminant = discriminant;
         _cases = cases;

@@ -5,7 +5,8 @@ namespace Acornima.Ast;
 [VisitableNode(ChildProperties = new[] { nameof(Argument) })]
 public sealed partial class ReturnStatement : Statement
 {
-    public ReturnStatement(Expression? argument) : base(NodeType.ReturnStatement)
+    public ReturnStatement(Expression? argument)
+        : base(NodeType.ReturnStatement)
     {
         Argument = argument;
     }

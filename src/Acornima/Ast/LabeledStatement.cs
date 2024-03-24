@@ -5,7 +5,8 @@ namespace Acornima.Ast;
 [VisitableNode(ChildProperties = new[] { nameof(Label), nameof(Body) })]
 public sealed partial class LabeledStatement : Statement
 {
-    public LabeledStatement(Identifier label, Statement body) : base(NodeType.LabeledStatement)
+    public LabeledStatement(Identifier label, Statement body)
+        : base(NodeType.LabeledStatement)
     {
         Label = label;
         Body = body;

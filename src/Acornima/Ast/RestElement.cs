@@ -5,7 +5,8 @@ namespace Acornima.Ast;
 [VisitableNode(ChildProperties = new[] { nameof(Argument) })]
 public sealed partial class RestElement : Node, IDestructuringPattern
 {
-    public RestElement(Node argument) : base(NodeType.RestElement)
+    public RestElement(Node argument)
+        : base(NodeType.RestElement)
     {
         Argument = argument;
     }

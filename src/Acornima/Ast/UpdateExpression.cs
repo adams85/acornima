@@ -4,13 +4,11 @@ namespace Acornima.Ast;
 
 public sealed partial class UpdateExpression : UnaryExpression
 {
-    public UpdateExpression(string op, Expression arg, bool prefix) : this(OperatorFromString(op), arg, prefix)
-    {
-    }
+    public UpdateExpression(string op, Expression arg, bool prefix)
+        : this(OperatorFromString(op), arg, prefix) { }
 
-    public UpdateExpression(Operator op, Expression arg, bool prefix) : base(NodeType.UpdateExpression, op, arg, prefix)
-    {
-    }
+    public UpdateExpression(Operator op, Expression arg, bool prefix)
+        : base(NodeType.UpdateExpression, op, arg, prefix) { }
 
     [StringMatcher(
         "++" /* => Operator.Increment */,

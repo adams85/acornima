@@ -5,7 +5,8 @@ namespace Acornima.Ast;
 [VisitableNode(ChildProperties = new[] { nameof(Left), nameof(Right) }, SealOverrideMethods = true)]
 public abstract partial class BinaryExpression : Expression
 {
-    private protected BinaryExpression(NodeType type, Operator op, Expression left, Expression right) : base(type)
+    private protected BinaryExpression(NodeType type, Operator op, Expression left, Expression right)
+        : base(type)
     {
         Operator = op;
         Left = left;

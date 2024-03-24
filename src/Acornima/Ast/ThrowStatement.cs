@@ -5,7 +5,8 @@ namespace Acornima.Ast;
 [VisitableNode(ChildProperties = new[] { nameof(Argument) })]
 public sealed partial class ThrowStatement : Statement
 {
-    public ThrowStatement(Expression argument) : base(NodeType.ThrowStatement)
+    public ThrowStatement(Expression argument)
+        : base(NodeType.ThrowStatement)
     {
         Argument = argument;
     }

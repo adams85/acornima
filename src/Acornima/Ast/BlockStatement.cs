@@ -7,7 +7,8 @@ public abstract partial class BlockStatement : Statement
 {
     private readonly NodeList<Statement> _body;
 
-    private protected BlockStatement(NodeType type, in NodeList<Statement> body) : base(type)
+    private protected BlockStatement(NodeType type, in NodeList<Statement> body)
+        : base(type)
     {
         _body = body;
     }

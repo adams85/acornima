@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-using System.Xml.Linq;
 using Acornima.Ast;
 using Acornima.Helpers;
 using Acornima.Properties;

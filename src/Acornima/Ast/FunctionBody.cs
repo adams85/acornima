@@ -4,7 +4,8 @@ namespace Acornima.Ast;
 
 public sealed class FunctionBody : BlockStatement, IVarScope
 {
-    public FunctionBody(in NodeList<Statement> body, bool strict) : base(NodeType.BlockStatement, body)
+    public FunctionBody(in NodeList<Statement> body, bool strict)
+        : base(NodeType.BlockStatement, body)
     {
         Strict = strict;
     }

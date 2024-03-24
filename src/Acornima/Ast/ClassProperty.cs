@@ -4,7 +4,8 @@ namespace Acornima.Ast;
 
 public abstract class ClassProperty : Node, IProperty, IClassElement
 {
-    private protected ClassProperty(NodeType type, PropertyKind kind, Expression key, bool computed, bool isStatic) : base(type)
+    private protected ClassProperty(NodeType type, PropertyKind kind, Expression key, bool computed, bool isStatic)
+        : base(type)
     {
         Kind = kind;
         Key = key;

@@ -7,7 +7,8 @@ public sealed partial class ArrayPattern : Node, IDestructuringPattern
 {
     private readonly NodeList<Node?> _elements;
 
-    public ArrayPattern(in NodeList<Node?> elements) : base(NodeType.ArrayPattern)
+    public ArrayPattern(in NodeList<Node?> elements)
+        : base(NodeType.ArrayPattern)
     {
         _elements = elements;
     }

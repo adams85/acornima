@@ -8,7 +8,7 @@ public interface IFunction : INode
     Identifier? Id { get; }
     ref readonly NodeList<Node> Params { get; }
     StatementOrExpression Body { get; }
-    bool Generator { get; }
     bool Expression { get; }
+    bool Generator { get; }
     bool Async { get; }
 }

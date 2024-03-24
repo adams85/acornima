@@ -4,13 +4,11 @@ namespace Acornima.Ast;
 
 public sealed partial class NonUpdateUnaryExpression : UnaryExpression
 {
-    public NonUpdateUnaryExpression(string op, Expression arg) : this(OperatorFromString(op), arg)
-    {
-    }
+    public NonUpdateUnaryExpression(string op, Expression arg)
+        : this(OperatorFromString(op), arg) { }
 
-    public NonUpdateUnaryExpression(Operator op, Expression arg) : base(NodeType.UnaryExpression, op, arg, prefix: true)
-    {
-    }
+    public NonUpdateUnaryExpression(Operator op, Expression arg)
+        : base(NodeType.UnaryExpression, op, arg, prefix: true) { }
 
     [StringMatcher(
         "!" /* => Operator.LogicalNot  */,

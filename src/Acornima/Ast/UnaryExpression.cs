@@ -5,7 +5,8 @@ namespace Acornima.Ast;
 [VisitableNode(ChildProperties = new[] { nameof(Argument) }, SealOverrideMethods = true)]
 public abstract partial class UnaryExpression : Expression
 {
-    private protected UnaryExpression(NodeType type, Operator op, Expression arg, bool prefix) : base(type)
+    private protected UnaryExpression(NodeType type, Operator op, Expression arg, bool prefix)
+        : base(type)
     {
         Operator = op;
         Argument = arg;

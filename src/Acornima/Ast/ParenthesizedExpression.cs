@@ -5,7 +5,8 @@ namespace Acornima.Ast;
 [VisitableNode(ChildProperties = new[] { nameof(Expression) })]
 public sealed partial class ParenthesizedExpression : Expression
 {
-    public ParenthesizedExpression(Expression expression) : base(NodeType.ParenthesizedExpression)
+    public ParenthesizedExpression(Expression expression)
+        : base(NodeType.ParenthesizedExpression)
     {
         Expression = expression;
     }

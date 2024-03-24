@@ -5,7 +5,8 @@ namespace Acornima.Ast;
 [VisitableNode]
 public sealed partial class TemplateElement : Node
 {
-    public TemplateElement(TemplateValue value, bool tail) : base(NodeType.TemplateElement)
+    public TemplateElement(TemplateValue value, bool tail)
+        : base(NodeType.TemplateElement)
     {
         Value = value;
         Tail = tail;

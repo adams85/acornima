@@ -5,8 +5,8 @@ namespace Acornima.Ast;
 [VisitableNode(ChildProperties = new[] { nameof(Id), nameof(Init) })]
 public sealed partial class VariableDeclarator : Node
 {
-    public VariableDeclarator(Node id, Expression? init) :
-        base(NodeType.VariableDeclarator)
+    public VariableDeclarator(Node id, Expression? init)
+        : base(NodeType.VariableDeclarator)
     {
         Id = id;
         Init = init;

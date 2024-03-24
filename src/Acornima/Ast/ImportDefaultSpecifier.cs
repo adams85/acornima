@@ -1,13 +1,10 @@
-using System.Runtime.CompilerServices;
-
 namespace Acornima.Ast;
 
 [VisitableNode(ChildProperties = new[] { nameof(Local) })]
 public sealed partial class ImportDefaultSpecifier : ImportDeclarationSpecifier
 {
-    public ImportDefaultSpecifier(Identifier local) : base(local, NodeType.ImportDefaultSpecifier)
-    {
-    }
+    public ImportDefaultSpecifier(Identifier local)
+        : base(local, NodeType.ImportDefaultSpecifier) { }
 
     private ImportDefaultSpecifier Rewrite(Identifier local)
     {

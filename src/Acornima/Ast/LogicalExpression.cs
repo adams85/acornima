@@ -4,13 +4,11 @@ namespace Acornima.Ast;
 
 public sealed partial class LogicalExpression : BinaryExpression
 {
-    public LogicalExpression(string op, Expression left, Expression right) : this(OperatorFromString(op), left, right)
-    {
-    }
+    public LogicalExpression(string op, Expression left, Expression right)
+        : this(OperatorFromString(op), left, right) { }
 
-    public LogicalExpression(Operator op, Expression left, Expression right) : base(NodeType.LogicalExpression, op, left, right)
-    {
-    }
+    public LogicalExpression(Operator op, Expression left, Expression right)
+        : base(NodeType.LogicalExpression, op, left, right) { }
 
     [StringMatcher(
         "??" /* => Operator.NullishCoalescing */,

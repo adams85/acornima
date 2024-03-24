@@ -5,7 +5,8 @@ namespace Acornima.Ast;
 [VisitableNode(ChildProperties = new[] { nameof(Tag), nameof(Quasi) })]
 public sealed partial class TaggedTemplateExpression : Expression
 {
-    public TaggedTemplateExpression(Expression tag, TemplateLiteral quasi) : base(NodeType.TaggedTemplateExpression)
+    public TaggedTemplateExpression(Expression tag, TemplateLiteral quasi)
+        : base(NodeType.TaggedTemplateExpression)
     {
         Tag = tag;
         Quasi = quasi;

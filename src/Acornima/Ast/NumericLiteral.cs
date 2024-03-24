@@ -4,7 +4,8 @@ namespace Acornima.Ast;
 
 public sealed class NumericLiteral : Literal
 {
-    public NumericLiteral(double value, string raw) : base(TokenKind.NumericLiteral, raw)
+    public NumericLiteral(double value, string raw)
+        : base(TokenKind.NumericLiteral, raw)
     {
         Value = value;
     }

@@ -5,7 +5,8 @@ namespace Acornima.Ast;
 [VisitableNode(ChildProperties = new[] { nameof(Label) })]
 public sealed partial class BreakStatement : Statement
 {
-    public BreakStatement(Identifier? label) : base(NodeType.BreakStatement)
+    public BreakStatement(Identifier? label)
+        : base(NodeType.BreakStatement)
     {
         Label = label;
     }

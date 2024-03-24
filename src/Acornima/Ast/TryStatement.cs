@@ -8,8 +8,8 @@ public sealed partial class TryStatement : Statement
     public TryStatement(
         BlockStatement block,
         CatchClause? handler,
-        BlockStatement? finalizer) :
-        base(NodeType.TryStatement)
+        BlockStatement? finalizer)
+        : base(NodeType.TryStatement)
     {
         Block = block;
         Handler = handler;

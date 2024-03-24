@@ -5,8 +5,8 @@ namespace Acornima.Ast;
 [VisitableNode(ChildProperties = new[] { nameof(Param), nameof(Body) })]
 public sealed partial class CatchClause : Node
 {
-    public CatchClause(Node? param, BlockStatement body) :
-        base(NodeType.CatchClause)
+    public CatchClause(Node? param, BlockStatement body)
+        : base(NodeType.CatchClause)
     {
         Param = param;
         Body = body;

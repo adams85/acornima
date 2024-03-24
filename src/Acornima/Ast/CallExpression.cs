@@ -10,7 +10,8 @@ public sealed partial class CallExpression : Expression, IChainElement
     public CallExpression(
         Expression callee,
         in NodeList<Expression> args,
-        bool optional) : base(NodeType.CallExpression)
+        bool optional)
+        : base(NodeType.CallExpression)
     {
         Callee = callee;
         _arguments = args;

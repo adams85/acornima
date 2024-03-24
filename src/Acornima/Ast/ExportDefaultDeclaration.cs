@@ -5,7 +5,8 @@ namespace Acornima.Ast;
 [VisitableNode(ChildProperties = new[] { nameof(Declaration) })]
 public sealed partial class ExportDefaultDeclaration : ExportDeclaration
 {
-    public ExportDefaultDeclaration(StatementOrExpression declaration) : base(NodeType.ExportDefaultDeclaration)
+    public ExportDefaultDeclaration(StatementOrExpression declaration)
+        : base(NodeType.ExportDefaultDeclaration)
     {
         Declaration = declaration;
     }

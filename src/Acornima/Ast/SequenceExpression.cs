@@ -7,7 +7,8 @@ public sealed partial class SequenceExpression : Expression
 {
     private readonly NodeList<Expression> _expressions;
 
-    public SequenceExpression(in NodeList<Expression> expressions) : base(NodeType.SequenceExpression)
+    public SequenceExpression(in NodeList<Expression> expressions)
+        : base(NodeType.SequenceExpression)
     {
         _expressions = expressions;
     }

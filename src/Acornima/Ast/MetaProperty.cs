@@ -5,7 +5,8 @@ namespace Acornima.Ast;
 [VisitableNode(ChildProperties = new[] { nameof(Meta), nameof(Property) })]
 public sealed partial class MetaProperty : Expression
 {
-    public MetaProperty(Identifier meta, Identifier property) : base(NodeType.MetaProperty)
+    public MetaProperty(Identifier meta, Identifier property)
+        : base(NodeType.MetaProperty)
     {
         Meta = meta;
         Property = property;

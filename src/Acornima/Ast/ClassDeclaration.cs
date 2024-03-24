@@ -7,8 +7,12 @@ public sealed partial class ClassDeclaration : Declaration, IClass
 {
     private readonly NodeList<Decorator> _decorators;
 
-    public ClassDeclaration(Identifier? id, Expression? superClass, ClassBody body, in NodeList<Decorator> decorators) :
-        base(NodeType.ClassDeclaration)
+    public ClassDeclaration(
+        Identifier? id,
+        Expression? superClass,
+        ClassBody body,
+        in NodeList<Decorator> decorators)
+        : base(NodeType.ClassDeclaration)
     {
         Id = id;
         SuperClass = superClass;

@@ -5,7 +5,8 @@ namespace Acornima.Ast;
 [VisitableNode(ChildProperties = new[] { nameof(Test), nameof(Body) })]
 public sealed partial class WhileStatement : Statement
 {
-    public WhileStatement(Expression test, Statement body) : base(NodeType.WhileStatement)
+    public WhileStatement(Expression test, Statement body)
+        : base(NodeType.WhileStatement)
     {
         Test = test;
         Body = body;

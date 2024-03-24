@@ -5,7 +5,8 @@ namespace Acornima.Ast;
 [VisitableNode(ChildProperties = new[] { nameof(Label) })]
 public sealed partial class ContinueStatement : Statement
 {
-    public ContinueStatement(Identifier? label) : base(NodeType.ContinueStatement)
+    public ContinueStatement(Identifier? label)
+        : base(NodeType.ContinueStatement)
     {
         Label = label;
     }

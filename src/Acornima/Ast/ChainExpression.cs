@@ -5,7 +5,8 @@ namespace Acornima.Ast;
 [VisitableNode(ChildProperties = new[] { nameof(Expression) })]
 public sealed partial class ChainExpression : Expression
 {
-    public ChainExpression(Expression expression) : base(NodeType.ChainExpression)
+    public ChainExpression(Expression expression)
+        : base(NodeType.ChainExpression)
     {
         Expression = expression;
     }

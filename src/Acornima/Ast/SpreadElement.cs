@@ -5,7 +5,8 @@ namespace Acornima.Ast;
 [VisitableNode(ChildProperties = new[] { nameof(Argument) })]
 public sealed partial class SpreadElement : Expression
 {
-    public SpreadElement(Expression argument) : base(NodeType.SpreadElement)
+    public SpreadElement(Expression argument)
+        : base(NodeType.SpreadElement)
     {
         Argument = argument;
     }

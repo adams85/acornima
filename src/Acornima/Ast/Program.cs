@@ -7,7 +7,8 @@ public abstract partial class Program : Node, IVarScope
 {
     private readonly NodeList<Statement> _body;
 
-    private protected Program(SourceType sourceType, in NodeList<Statement> body, bool strict) : base(NodeType.Program)
+    private protected Program(SourceType sourceType, in NodeList<Statement> body, bool strict)
+        : base(NodeType.Program)
     {
         SourceType = sourceType;
         _body = body;

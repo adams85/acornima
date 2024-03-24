@@ -5,7 +5,8 @@ namespace Acornima.Ast;
 [VisitableNode(ChildProperties = new[] { nameof(Argument) })]
 public sealed partial class YieldExpression : Expression
 {
-    public YieldExpression(Expression? argument, bool @delegate) : base(NodeType.YieldExpression)
+    public YieldExpression(Expression? argument, bool @delegate)
+        : base(NodeType.YieldExpression)
     {
         Argument = argument;
         Delegate = @delegate;

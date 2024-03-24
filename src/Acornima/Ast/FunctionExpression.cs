@@ -12,8 +12,8 @@ public sealed partial class FunctionExpression : Expression, IFunction
         in NodeList<Node> parameters,
         FunctionBody body,
         bool generator,
-        bool async) :
-        base(NodeType.FunctionExpression)
+        bool async)
+        : base(NodeType.FunctionExpression)
     {
         Id = id;
         _params = parameters;

@@ -5,7 +5,8 @@ namespace Acornima.Ast;
 [VisitableNode(ChildProperties = new[] { nameof(Expression) })]
 public sealed partial class Decorator : Node
 {
-    public Decorator(Expression expression) : base(NodeType.Decorator)
+    public Decorator(Expression expression)
+        : base(NodeType.Decorator)
     {
         Expression = expression;
     }

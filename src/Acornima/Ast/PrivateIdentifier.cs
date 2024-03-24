@@ -1,11 +1,12 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 
 namespace Acornima.Ast;
 
 [VisitableNode]
 public sealed partial class PrivateIdentifier : Expression
 {
-    public PrivateIdentifier(string name) : base(NodeType.PrivateIdentifier)
+    public PrivateIdentifier(string name)
+        : base(NodeType.PrivateIdentifier)
     {
         Name = name;
     }

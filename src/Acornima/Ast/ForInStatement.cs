@@ -8,7 +8,8 @@ public sealed partial class ForInStatement : Statement
     public ForInStatement(
         Node left,
         Expression right,
-        Statement body) : base(NodeType.ForInStatement)
+        Statement body)
+        : base(NodeType.ForInStatement)
     {
         Left = left;
         Right = right;

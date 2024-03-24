@@ -6,7 +6,8 @@ namespace Acornima.Ast;
 
 public sealed class BigIntLiteral : Literal
 {
-    public BigIntLiteral(BigInteger value, string raw) : base(TokenKind.BigIntLiteral, raw)
+    public BigIntLiteral(BigInteger value, string raw)
+        : base(TokenKind.BigIntLiteral, raw)
     {
         Value = value;
     }

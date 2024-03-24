@@ -6,9 +6,7 @@ namespace Acornima.Ast;
 public sealed partial class AssignmentExpression : Expression
 {
     public AssignmentExpression(string op, Node left, Expression right)
-        : this(OperatorFromString(op), left, right)
-    {
-    }
+        : this(OperatorFromString(op), left, right) { }
 
     public AssignmentExpression(Operator op, Node left, Expression right)
         : base(NodeType.AssignmentExpression)

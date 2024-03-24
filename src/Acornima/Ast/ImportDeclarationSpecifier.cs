@@ -4,7 +4,8 @@ namespace Acornima.Ast;
 
 public abstract class ImportDeclarationSpecifier : ModuleSpecifier
 {
-    private protected ImportDeclarationSpecifier(Identifier local, NodeType type) : base(type)
+    private protected ImportDeclarationSpecifier(Identifier local, NodeType type)
+        : base(type)
     {
         Local = local;
     }

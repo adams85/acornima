@@ -9,7 +9,8 @@ public sealed partial class ForOfStatement : Statement
         Node left,
         Expression right,
         Statement body,
-        bool await) : base(NodeType.ForOfStatement)
+        bool await)
+        : base(NodeType.ForOfStatement)
     {
         Left = left;
         Right = right;

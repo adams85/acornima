@@ -8,7 +8,8 @@ public sealed partial class ConditionalExpression : Expression
     public ConditionalExpression(
         Expression test,
         Expression consequent,
-        Expression alternate) : base(NodeType.ConditionalExpression)
+        Expression alternate)
+        : base(NodeType.ConditionalExpression)
     {
         Test = test;
         Consequent = consequent;

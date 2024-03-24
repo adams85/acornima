@@ -5,7 +5,8 @@ namespace Acornima.Ast;
 [VisitableNode(ChildProperties = new[] { nameof(Imported), nameof(Local) })]
 public sealed partial class ImportSpecifier : ImportDeclarationSpecifier
 {
-    public ImportSpecifier(Identifier local, Expression imported) : base(local, NodeType.ImportSpecifier)
+    public ImportSpecifier(Expression imported, Identifier local)
+        : base(local, NodeType.ImportSpecifier)
     {
         Imported = imported;
     }
@@ -19,6 +20,6 @@ public sealed partial class ImportSpecifier : ImportDeclarationSpecifier
 
     private ImportSpecifier Rewrite(Expression imported, Identifier local)
     {
-        return new ImportSpecifier(local, imported);
+        return new ImportSpecifier(imported, local);
     }
 }

@@ -3,9 +3,8 @@ namespace Acornima.Ast;
 [VisitableNode(ChildProperties = new[] { nameof(Body) })]
 public sealed partial class StaticBlock : BlockStatement, IClassElement, IVarScope
 {
-    public StaticBlock(in NodeList<Statement> body) : base(NodeType.StaticBlock, body)
-    {
-    }
+    public StaticBlock(in NodeList<Statement> body)
+        : base(NodeType.StaticBlock, body) { }
 
     bool IClassElement.Static => true;
 

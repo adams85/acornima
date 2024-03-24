@@ -4,7 +4,8 @@ namespace Acornima.Ast;
 
 public sealed class StringLiteral : Literal
 {
-    public StringLiteral(string value, string raw) : base(TokenKind.StringLiteral, raw)
+    public StringLiteral(string value, string raw)
+        : base(TokenKind.StringLiteral, raw)
     {
         Value = value;
     }

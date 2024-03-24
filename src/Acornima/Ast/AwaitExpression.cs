@@ -5,7 +5,8 @@ namespace Acornima.Ast;
 [VisitableNode(ChildProperties = new[] { nameof(Argument) })]
 public sealed partial class AwaitExpression : Expression
 {
-    public AwaitExpression(Expression argument) : base(NodeType.AwaitExpression)
+    public AwaitExpression(Expression argument)
+        : base(NodeType.AwaitExpression)
     {
         Argument = argument;
     }

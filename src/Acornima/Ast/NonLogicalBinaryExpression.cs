@@ -4,13 +4,11 @@ namespace Acornima.Ast;
 
 public sealed partial class NonLogicalBinaryExpression : BinaryExpression
 {
-    public NonLogicalBinaryExpression(string op, Expression left, Expression right) : this(OperatorFromString(op), left, right)
-    {
-    }
+    public NonLogicalBinaryExpression(string op, Expression left, Expression right)
+        : this(OperatorFromString(op), left, right) { }
 
-    public NonLogicalBinaryExpression(Operator op, Expression left, Expression right) : base(NodeType.BinaryExpression, op, left, right)
-    {
-    }
+    public NonLogicalBinaryExpression(Operator op, Expression left, Expression right)
+        : base(NodeType.BinaryExpression, op, left, right) { }
 
     [StringMatcher(
         "|" /* => Operator.BitwiseOr */,

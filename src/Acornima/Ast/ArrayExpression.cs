@@ -7,7 +7,8 @@ public sealed partial class ArrayExpression : Expression
 {
     private readonly NodeList<Expression?> _elements;
 
-    public ArrayExpression(in NodeList<Expression?> elements) : base(NodeType.ArrayExpression)
+    public ArrayExpression(in NodeList<Expression?> elements)
+        : base(NodeType.ArrayExpression)
     {
         _elements = elements;
     }

@@ -5,7 +5,8 @@ namespace Acornima.Ast;
 [VisitableNode(ChildProperties = new[] { nameof(Object), nameof(Body) })]
 public sealed partial class WithStatement : Statement
 {
-    public WithStatement(Expression obj, Statement body) : base(NodeType.WithStatement)
+    public WithStatement(Expression obj, Statement body)
+        : base(NodeType.WithStatement)
     {
         Object = obj;
         Body = body;

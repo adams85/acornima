@@ -1747,7 +1747,7 @@ public partial class Parser
 
         Semicolon();
 
-        return FinishNode(startMarker, new ExportAllDeclaration(source, exported, NodeList.From(ref attributes)));
+        return FinishNode(startMarker, new ExportAllDeclaration(exported, source, NodeList.From(ref attributes)));
     }
 
     private void CheckExport(HashSet<string>? exports, object name, int pos)
@@ -1951,7 +1951,7 @@ public partial class Parser
             Debug.Assert(local is not null);
         }
 
-        return FinishNode(startMarker, new ImportSpecifier(local!, imported));
+        return FinishNode(startMarker, new ImportSpecifier(imported, local!));
     }
 
     private ImportDefaultSpecifier ParseImportDefaultSpecifier()

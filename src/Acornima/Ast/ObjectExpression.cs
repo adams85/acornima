@@ -7,7 +7,8 @@ public sealed partial class ObjectExpression : Expression
 {
     private readonly NodeList<Node> _properties;
 
-    public ObjectExpression(in NodeList<Node> properties) : base(NodeType.ObjectExpression)
+    public ObjectExpression(in NodeList<Node> properties)
+        : base(NodeType.ObjectExpression)
     {
         _properties = properties;
     }

@@ -7,7 +7,8 @@ namespace Acornima.Ast;
 [VisitableNode(SealOverrideMethods = true)]
 public abstract partial class Literal : Expression
 {
-    private protected Literal(TokenKind kind, string raw) : base(NodeType.Literal)
+    private protected Literal(TokenKind kind, string raw)
+        : base(NodeType.Literal)
     {
         Kind = kind;
         Raw = raw;

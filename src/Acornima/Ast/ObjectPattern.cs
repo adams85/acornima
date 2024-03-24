@@ -7,7 +7,8 @@ public sealed partial class ObjectPattern : Node, IDestructuringPattern
 {
     private readonly NodeList<Node> _properties;
 
-    public ObjectPattern(in NodeList<Node> properties) : base(NodeType.ObjectPattern)
+    public ObjectPattern(in NodeList<Node> properties)
+        : base(NodeType.ObjectPattern)
     {
         _properties = properties;
     }

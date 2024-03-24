@@ -5,7 +5,8 @@ namespace Acornima.Ast;
 [VisitableNode(ChildProperties = new[] { nameof(Key), nameof(Value) })]
 public sealed partial class ImportAttribute : Node
 {
-    public ImportAttribute(Expression key, StringLiteral value) : base(NodeType.ImportAttribute)
+    public ImportAttribute(Expression key, StringLiteral value)
+        : base(NodeType.ImportAttribute)
     {
         Key = key;
         Value = value;

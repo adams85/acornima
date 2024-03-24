@@ -5,7 +5,8 @@ namespace Acornima.Ast;
 [VisitableNode(ChildProperties = new[] { nameof(Body), nameof(Test) })]
 public sealed partial class DoWhileStatement : Statement
 {
-    public DoWhileStatement(Statement body, Expression test) : base(NodeType.DoWhileStatement)
+    public DoWhileStatement(Statement body, Expression test)
+        : base(NodeType.DoWhileStatement)
     {
         Body = body;
         Test = test;

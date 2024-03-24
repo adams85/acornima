@@ -11,7 +11,8 @@ public sealed partial class ClassExpression : Expression, IClass
         Identifier? id,
         Expression? superClass,
         ClassBody body,
-        in NodeList<Decorator> decorators) : base(NodeType.ClassExpression)
+        in NodeList<Decorator> decorators)
+        : base(NodeType.ClassExpression)
     {
         Id = id;
         SuperClass = superClass;
