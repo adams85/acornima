@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Acornima.Helpers;
+using Acornima.Properties;
 
 namespace Acornima.Ast;
 
@@ -30,7 +31,7 @@ public abstract class Node : INode
     protected internal virtual IEnumerator<Node>? GetChildNodes() => null;
 
     internal virtual Node? NextChildNode(ref ChildNodes.Enumerator enumerator) =>
-        throw new NotImplementedException($"User-defined node types should override the {nameof(GetChildNodes)} method and provide an actual implementation.");
+        throw new NotImplementedException(string.Format(ExceptionMessages.OverrideGetChildNodes, nameof(GetChildNodes)));
 
     public int Start { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _range.Start; }
 

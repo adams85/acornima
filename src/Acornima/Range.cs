@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using Acornima.Properties;
 
 namespace Acornima;
 
@@ -143,7 +144,7 @@ public readonly struct Range : IEquatable<Range>
 
     public static Range Parse(ReadOnlySpan<char> s)
     {
-        return TryParseCore(s, throwIfInvalid: true, out var result) ? result : ThrowFormatException<Range>("Input string was not in a correct format.");
+        return TryParseCore(s, throwIfInvalid: true, out var result) ? result : ThrowFormatException<Range>(ExceptionMessages.InvalidFormat);
     }
 
     public static Range Parse(string s) => Parse(s.AsSpan());

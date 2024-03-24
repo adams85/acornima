@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Acornima.Ast;
+using Acornima.Properties;
 
 namespace Acornima;
 
@@ -24,10 +25,10 @@ public partial class AstRewriter : AstVisitor
         };
 
         static Exception MustRewriteToSameNodeNonNullable(Type nodeType) =>
-            new InvalidOperationException($"Rewriting a node of type {nodeType} must return a non-null value of the same type. Alternatively, override the visitor method and change it not to visit children of this type.");
+            new InvalidOperationException(string.Format(ExceptionMessages.MustRewriteToSameNodeNonNullable, nodeType));
 
         static Exception MustRewriteToSameNodeNullable(Type nodeType) =>
-            new InvalidOperationException($"Rewriting a node of type {nodeType} must return null or a non-null value of the same type. Alternatively, override the visitor method and change it not to visit children of this type.");
+            new InvalidOperationException(string.Format(ExceptionMessages.MustRewriteToSameNodeNullable, nodeType));
     }
 
     public virtual bool VisitAndConvert<T>(in NodeList<T> nodes, out NodeList<T> newNodes, bool allowNullElement = false)

@@ -38,6 +38,11 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>RegExpConversionErrorMessages.resx</DependentUpon>
     </Compile>
+    <Compile Update="Properties\ExceptionMessages.Designer.cs">
+      <DependentUpon>ExceptionMessages.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
     <Compile Update="Properties\SyntaxErrorMessages.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -48,6 +53,11 @@
   <ItemGroup>
     <EmbeddedResource Update="Properties\RegExpConversionErrorMessages.resx">
       <LastGenOutput>RegExpConversionErrorMessages.Designer.cs</LastGenOutput>
+      <Generator>ResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Properties\ExceptionMessages.resx">
+      <SubType>Designer</SubType>
+      <LastGenOutput>ExceptionMessages.Designer.cs</LastGenOutput>
       <Generator>ResXFileCodeGenerator</Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="Properties\SyntaxErrorMessages.resx">

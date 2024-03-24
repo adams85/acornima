@@ -20,7 +20,7 @@ internal static class StringExtensions
     {
         int index = c;
         var temp = s_charToString;
-        if ((uint)index < temp.Length)
+        if ((uint)index < (uint)temp.Length)
         {
             return temp[index];
         }
@@ -55,7 +55,7 @@ internal static class StringExtensions
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int CharCodeAt(this string s, int index)
     {
-        if ((uint)index < s.Length)
+        if ((uint)index < (uint)s.Length)
         {
             return s[index];
         }
@@ -68,9 +68,9 @@ internal static class StringExtensions
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int CharCodeAt(this string s, int index, int endIndex)
     {
-        Debug.Assert((uint)endIndex <= s.Length);
+        Debug.Assert((uint)endIndex <= (uint)s.Length);
 
-        if ((uint)index < endIndex)
+        if ((uint)index < (uint)endIndex)
         {
             return s[index];
         }

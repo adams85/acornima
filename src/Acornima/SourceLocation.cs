@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using Acornima.Properties;
 
 namespace Acornima;
 
@@ -229,7 +230,7 @@ public readonly struct SourceLocation : IEquatable<SourceLocation>
 
     public static SourceLocation Parse(ReadOnlySpan<char> s)
     {
-        return TryParseCore(s, throwIfInvalid: true, out var result) ? result : ThrowFormatException<SourceLocation>("Input string was not in a correct format.");
+        return TryParseCore(s, throwIfInvalid: true, out var result) ? result : ThrowFormatException<SourceLocation>(ExceptionMessages.InvalidFormat);
     }
 
     public static SourceLocation Parse(string s) => Parse(s.AsSpan());

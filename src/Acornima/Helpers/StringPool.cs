@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using Acornima.Properties;
 
 namespace Acornima.Helpers;
 
@@ -105,7 +106,7 @@ internal struct StringPool
             if (collisionCount > (uint)entries.Length)
             {
                 // The chain of entries forms a loop, which means a concurrent update has happened.
-                throw new InvalidOperationException("A concurrent update was performed on this object and corrupted its state.");
+                throw new InvalidOperationException(ExceptionMessages.ConcurrentUpdatePerformed);
             }
         }
 

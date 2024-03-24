@@ -115,70 +115,47 @@ public readonly struct NodeList<T> : IReadOnlyList<T> where T : Node?
         return GetEnumerator();
     }
 
-    /// <remarks>
-    /// This implementation does not detect changes to the list
-    /// during iteration and therefore the behaviour is undefined
-    /// under those conditions.
-    /// </remarks>
     public struct Enumerator : IEnumerator<T>
     {
         private readonly T[]? _items; // Usually null when count is zero
         private readonly int _count;
-
         private int _index;
-        private T? _current;
 
-        internal Enumerator(T[]? items, int count) : this()
+        internal Enumerator(T[]? items, int count)
         {
-            _index = 0;
             _items = items;
             _count = count;
+            _index = -1;
         }
 
-        public readonly void Dispose()
-        {
-        }
+        public readonly void Dispose() { }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext()
         {
-            if (_index < _count)
+            var index = _index + 1;
+            if (index < _count)
             {
-                _current = _items![_index];
-                _index++;
+                _index = index;
                 return true;
             }
 
-            return MoveNextRare();
-        }
-
-        private bool MoveNextRare()
-        {
-            _index = _count + 1;
-            _current = default;
             return false;
         }
 
         public void Reset()
         {
-            _index = 0;
-            _current = default;
+            _index = -1;
         }
 
-        public readonly T Current { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _current!; }
+        /// <remarks>
+        /// According to the <see cref="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ienumerator-1.current#remarks">specification</see>,
+        /// accessing <see cref="Current"/> before calling <see cref="MoveNext"/> or after <see cref="MoveNext"/> returning <see langword="false"/> is undefined behavior.
+        /// Thus, to maximize performance, this implementation doesn't do any null or range checks, just let the default exceptions occur on invalid access.
+        /// </remarks>
+        public readonly T Current { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _items![_index]; }
 
-        readonly object? IEnumerator.Current
-        {
-            get
-            {
-                if (_index == 0 || _index == _count + 1)
-                {
-                    throw new InvalidOperationException();
-                }
-
-                return Current;
-            }
-        }
+        readonly object? IEnumerator.Current => Current;
     }
 
     [DebuggerNonUserCode]

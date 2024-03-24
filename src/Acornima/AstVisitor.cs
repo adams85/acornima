@@ -2,6 +2,7 @@ using System;
 using System.Runtime.CompilerServices;
 using Acornima.Ast;
 using Acornima.Helpers;
+using Acornima.Properties;
 
 namespace Acornima;
 
@@ -9,7 +10,7 @@ namespace Acornima;
 public partial class AstVisitor
 {
     private static Exception UnsupportedNodeType(Type nodeType, [CallerMemberName] string? callerName = null) =>
-        new NotImplementedException($"The visitor does not support nodes of type {nodeType}. You can override {callerName} to handle this case.");
+        new NotImplementedException(string.Format(ExceptionMessages.UnsupportedNodeTypeVisited, nodeType, callerName));
 
     private int _recursionDepth = 0;
 
@@ -39,7 +40,7 @@ public partial class AstVisitor
     protected internal virtual object? VisitExtension(Node node)
     {
         // Node type Extension is used to represent extensions to the standard AST (for example, see JSX parsing).
-        // Nodes of this type never appear in the tree returned by the core parser (JavaScriptParser),
+        // Nodes of this type never appear in the tree returned by the core parser (Parser),
         // thus the visitor doesn't deal with this type by default. Inheritors either need to override this method,
         // or inherit from another visitor which was built to handle extension nodes (e.g. JsxAstVisitor in the case of JSX).
 

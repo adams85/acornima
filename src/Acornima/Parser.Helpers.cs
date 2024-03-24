@@ -297,7 +297,7 @@ public partial class Parser
                 break;
 
             default:
-                throw new InvalidOperationException($"ECMAScript version '{ecmaVersion}' is not supported.");
+                throw new InvalidOperationException(string.Format(ExceptionMessages.UnsupportedEcmaVersion, ecmaVersion));
         }
     }
 
@@ -319,7 +319,7 @@ public partial class Parser
                 return strict ? IsReservedWordES6Strict(word) : IsReservedWordES6NonStrict(word);
 
             default:
-                throw new InvalidOperationException($"ECMAScript version '{ecmaVersion}' is not supported.");
+                throw new InvalidOperationException(string.Format(ExceptionMessages.UnsupportedEcmaVersion, ecmaVersion));
         }
     }
 

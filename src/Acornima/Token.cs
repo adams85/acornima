@@ -98,8 +98,7 @@ public readonly struct Token
             TokenKind.Identifier or
             TokenKind.NullLiteral or
             TokenKind.BooleanLiteral or
-            TokenKind.StringLiteral or
-            TokenKind.EOF => $"{Kind} ({_value.Value})",
+            TokenKind.StringLiteral => $"{Kind} ({_value.Value})",
             TokenKind.NumericLiteral => $"{Kind} ({_value.NumericValue})",
             TokenKind.BigIntLiteral => $"{Kind} ({_value.BigIntValue})",
             TokenKind.RegExpLiteral => $"{Kind} ({((Tuple<RegExpValue, RegExpParseResult>)_value.Value!).Item1})",

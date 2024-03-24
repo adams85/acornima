@@ -21,12 +21,6 @@ internal static class ExceptionHelper
     }
 
     [DoesNotReturn]
-    public static void ThrowArgumentException(string message, string paramName)
-    {
-        throw new ArgumentException(message, paramName);
-    }
-
-    [DoesNotReturn]
     public static T ThrowIndexOutOfRangeException<T>()
     {
         throw new ArgumentOutOfRangeException("index");

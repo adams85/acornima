@@ -1012,7 +1012,7 @@ public partial class Tokenizer
                 // behavior as if we fell through to the switch below (which was actually used to produce the lookup table).
                 ReadOnlySpan<byte> asciiLookup = AsciiLookup();
                 int chDiv8 = ch >> 3;
-                if ((uint)chDiv8 < asciiLookup.Length)
+                if ((uint)chDiv8 < (uint)asciiLookup.Length)
                 {
                     return (asciiLookup[chDiv8] & (1 << (ch & 0x7))) != 0;
                 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 using Acornima.Ast;
+using Acornima.Extras.Properties;
 using Acornima.Helpers;
 
 namespace Acornima;
@@ -32,7 +33,7 @@ public abstract class JavaScriptTextFormatter : JavaScriptTextWriter
     {
         if (!string.IsNullOrWhiteSpace(options.Indent))
         {
-            throw new ArgumentException("Indent must be null or white-space.", nameof(options));
+            throw new ArgumentException(ExceptionMessages.InvalidIndent, nameof(options));
         }
 
         _indent = options.Indent ?? "  ";
@@ -435,7 +436,7 @@ public abstract class JavaScriptTextFormatter : JavaScriptTextWriter
             NodeType.ExportAllDeclaration or
             NodeType.ExportDefaultDeclaration or
             NodeType.ExportNamedDeclaration =>
-                throw new ArgumentException($"Operation is not defined for nodes of type {statement.Type}.", nameof(statement)),
+                throw new ArgumentException(string.Format(ExceptionMessages.OperationNotDefinedForNodeType, statement.Type), nameof(statement)),
 
             // Extensions
             _ => false,
@@ -509,9 +510,9 @@ public abstract class JavaScriptTextFormatter : JavaScriptTextWriter
             LastTokenKind == TokenKind.Punctuator &&
             LastTokenFlags.HasFlagFast(TokenFlags.IsUnaryOperator) &&
             (expression is NonUpdateUnaryExpression unaryExpression &&
-                !(NonUpdateUnaryExpression.OperatorToString(unaryExpression.Operator) ?? throw new InvalidOperationException("Invalid unary operator."))[0].IsBasicLatinLetter() ||
+                !(NonUpdateUnaryExpression.OperatorToString(unaryExpression.Operator) ?? throw new InvalidOperationException(ExceptionMessages.InvalidUnaryOperator))[0].IsBasicLatinLetter() ||
              expression is UpdateExpression { Prefix: true } updateExpression &&
-                !(UpdateExpression.OperatorToString(updateExpression.Operator) ?? throw new InvalidOperationException("Invalid unary operator."))[0].IsBasicLatinLetter());
+                !(UpdateExpression.OperatorToString(updateExpression.Operator) ?? throw new InvalidOperationException(ExceptionMessages.InvalidUnaryOperator))[0].IsBasicLatinLetter());
     }
 
     public override void StartAuxiliaryNodeListItem<T>(int index, int count, string separator, object? nodeContext, ref WriteContext context)
