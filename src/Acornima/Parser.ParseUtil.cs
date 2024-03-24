@@ -73,7 +73,7 @@ public partial class Parser
             || Tokenizer.ContainsLineBreak(_tokenizer._input.SliceBetween(_tokenizer._lastTokenEnd, _tokenizer._start));
     }
 
-    public bool InsertSemicolon()
+    private bool InsertSemicolon()
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/parseutil.js > `pp.insertSemicolon = function`
 
@@ -89,7 +89,7 @@ public partial class Parser
     // Consume a semicolon, or, failing that, see if we are allowed to
     // pretend that there is a semicolon at this position.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Semicolon()
+    private void Semicolon()
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/parseutil.js > `pp.semicolon = function`
 
