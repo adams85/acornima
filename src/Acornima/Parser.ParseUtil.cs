@@ -113,14 +113,12 @@ public partial class Parser
 
         if (_tokenizer._type == type)
         {
-            if (isAllowed)
-            {
-                _options._onTrailingComma?.Invoke(_tokenizer._lastTokenStart, _tokenizer._lastTokenStartLocation);
-            }
-            else
+            if (!isAllowed)
             {
                 RaiseRecoverable(_tokenizer._start, GetUnexpectedTokenMessage(_tokenizer._type, _tokenizer._value.Value));
             }
+
+            _options._onTrailingComma?.Invoke(_tokenizer._lastTokenStart, _tokenizer._lastTokenStartLocation);
 
             if (!notNext)
             {

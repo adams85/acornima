@@ -6,6 +6,8 @@ using Acornima.Properties;
 
 namespace Acornima;
 
+using static Helpers.ExceptionHelper;
+
 // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/index.js
 
 public sealed partial class Parser
@@ -27,7 +29,7 @@ public sealed partial class Parser
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Script ParseScript(string input, string? sourceFile = null, bool strict = false)
     {
-        return ParseScript(input ?? throw new ArgumentNullException(nameof(input)), 0, input.Length, sourceFile, strict);
+        return ParseScript(input ?? ThrowArgumentNullException<string>(nameof(input)), 0, input.Length, sourceFile, strict);
     }
 
     public Script ParseScript(string input, int start, int length, string? sourceFile = null, bool strict = false)
@@ -57,7 +59,7 @@ public sealed partial class Parser
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Module ParseModule(string input, string? sourceFile = null)
     {
-        return ParseModule(input ?? throw new ArgumentNullException(nameof(input)), 0, input.Length, sourceFile);
+        return ParseModule(input ?? ThrowArgumentNullException<string>(nameof(input)), 0, input.Length, sourceFile);
     }
 
     public Module ParseModule(string input, int start, int length, string? sourceFile = null)
@@ -87,7 +89,7 @@ public sealed partial class Parser
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Expression ParseExpression(string input, string? sourceFile = null, bool strict = false)
     {
-        return ParseExpression(input ?? throw new ArgumentNullException(nameof(input)), 0, input.Length, sourceFile, strict);
+        return ParseExpression(input ?? ThrowArgumentNullException<string>(nameof(input)), 0, input.Length, sourceFile, strict);
     }
 
     public Expression ParseExpression(string input, int start, int length, string? sourceFile = null, bool strict = false)

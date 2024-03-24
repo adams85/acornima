@@ -1818,79 +1818,11 @@ public partial class ParserTests
         }
     }
 
-    // TODO
-    //[Fact]
-    //public void PropertyNamedAccessorIsStillValid()
-    //{
-    //    var parser = new Parser();
-    //    var program = parser.ParseModule(
-    //        """
-    //        class aa {
-    //            static accessor = true;
-    //            accessor = true;
-    //            #accessor = true;
-    //        }
-    //        class bb {
-    //            static accessor() { };
-    //            accessor() { }
-    //            #accessor() { };
-    //        }
-    //        class cc {
-    //            static async accessor() { };
-    //            async accessor() { }
-    //            async #accessor() { };
-    //        }
-    //        """);
-    //    var json = program.ToJsonString();
-    //    var expected = "{\"type\":\"Program\",\"body\":[{\"type\":\"ClassDeclaration\",\"id\":{\"type\":\"Identifier\",\"name\":\"aa\"},\"superClass\":null,\"body\":{\"type\":\"ClassBody\",\"body\":[{\"type\":\"PropertyDefinition\",\"key\":{\"type\":\"Identifier\",\"name\":\"accessor\"},\"computed\":false,\"value\":{\"type\":\"Literal\",\"value\":true,\"raw\":\"true\"},\"kind\":\"property\",\"static\":true},{\"type\":\"PropertyDefinition\",\"key\":{\"type\":\"Identifier\",\"name\":\"accessor\"},\"computed\":false,\"value\":{\"type\":\"Literal\",\"value\":true,\"raw\":\"true\"},\"kind\":\"property\",\"static\":false},{\"type\":\"PropertyDefinition\",\"key\":{\"type\":\"PrivateIdentifier\",\"name\":\"accessor\"},\"computed\":false,\"value\":{\"type\":\"Literal\",\"value\":true,\"raw\":\"true\"},\"kind\":\"property\",\"static\":false}]}},{\"type\":\"ClassDeclaration\",\"id\":{\"type\":\"Identifier\",\"name\":\"bb\"},\"superClass\":null,\"body\":{\"type\":\"ClassBody\",\"body\":[{\"type\":\"MethodDefinition\",\"key\":{\"type\":\"Identifier\",\"name\":\"accessor\"},\"computed\":false,\"value\":{\"type\":\"FunctionExpression\",\"id\":null,\"params\":[],\"body\":{\"type\":\"BlockStatement\",\"body\":[]},\"generator\":false,\"expression\":false,\"strict\":true,\"async\":false},\"kind\":\"method\",\"static\":true},{\"type\":\"MethodDefinition\",\"key\":{\"type\":\"Identifier\",\"name\":\"accessor\"},\"computed\":false,\"value\":{\"type\":\"FunctionExpression\",\"id\":null,\"params\":[],\"body\":{\"type\":\"BlockStatement\",\"body\":[]},\"generator\":false,\"expression\":false,\"strict\":true,\"async\":false},\"kind\":\"method\",\"static\":false},{\"type\":\"MethodDefinition\",\"key\":{\"type\":\"PrivateIdentifier\",\"name\":\"accessor\"},\"computed\":false,\"value\":{\"type\":\"FunctionExpression\",\"id\":null,\"params\":[],\"body\":{\"type\":\"BlockStatement\",\"body\":[]},\"generator\":false,\"expression\":false,\"strict\":true,\"async\":false},\"kind\":\"method\",\"static\":false}]}},{\"type\":\"ClassDeclaration\",\"id\":{\"type\":\"Identifier\",\"name\":\"cc\"},\"superClass\":null,\"body\":{\"type\":\"ClassBody\",\"body\":[{\"type\":\"MethodDefinition\",\"key\":{\"type\":\"Identifier\",\"name\":\"accessor\"},\"computed\":false,\"value\":{\"type\":\"FunctionExpression\",\"id\":null,\"params\":[],\"body\":{\"type\":\"BlockStatement\",\"body\":[]},\"generator\":false,\"expression\":false,\"strict\":true,\"async\":true},\"kind\":\"method\",\"static\":true},{\"type\":\"MethodDefinition\",\"key\":{\"type\":\"Identifier\",\"name\":\"accessor\"},\"computed\":false,\"value\":{\"type\":\"FunctionExpression\",\"id\":null,\"params\":[],\"body\":{\"type\":\"BlockStatement\",\"body\":[]},\"generator\":false,\"expression\":false,\"strict\":true,\"async\":true},\"kind\":\"method\",\"static\":false},{\"type\":\"MethodDefinition\",\"key\":{\"type\":\"PrivateIdentifier\",\"name\":\"accessor\"},\"computed\":false,\"value\":{\"type\":\"FunctionExpression\",\"id\":null,\"params\":[],\"body\":{\"type\":\"BlockStatement\",\"body\":[]},\"generator\":false,\"expression\":false,\"strict\":true,\"async\":true},\"kind\":\"method\",\"static\":false}]}}],\"sourceType\":\"module\"}";
-
-    //    Assert.Equal(expected, json);
-    //}
-
-    //[Fact]
-    //public void CanParseAccessorKeyword()
-    //{
-    //    var parser = new Parser();
-    //    var program = parser.ParseModule(
-    //        """
-    //        class aa {
-    //            static accessor a = true;
-    //            accessor b = true;
-    //            accessor #c = true;
-    //        }
-    //        """);
-
-    //    var json = program.ToJsonString();
-    //    var expected = "{\"type\":\"Program\",\"body\":[{\"type\":\"ClassDeclaration\",\"id\":{\"type\":\"Identifier\",\"name\":\"aa\"},\"superClass\":null,\"body\":{\"type\":\"ClassBody\",\"body\":[{\"type\":\"AccessorProperty\",\"key\":{\"type\":\"Identifier\",\"name\":\"a\"},\"computed\":false,\"value\":{\"type\":\"Literal\",\"value\":true,\"raw\":\"true\"},\"kind\":\"property\",\"static\":true},{\"type\":\"AccessorProperty\",\"key\":{\"type\":\"Identifier\",\"name\":\"b\"},\"computed\":false,\"value\":{\"type\":\"Literal\",\"value\":true,\"raw\":\"true\"},\"kind\":\"property\",\"static\":false},{\"type\":\"AccessorProperty\",\"key\":{\"type\":\"PrivateIdentifier\",\"name\":\"c\"},\"computed\":false,\"value\":{\"type\":\"Literal\",\"value\":true,\"raw\":\"true\"},\"kind\":\"property\",\"static\":false}]}}],\"sourceType\":\"module\"}";
-
-    //    Assert.Equal(expected, json);
-    //}
-
-    //[Fact]
-    //public void CanParsePrivateStaticClassMembers()
-    //{
-    //    var parser = new Parser();
-    //    var program = parser.ParseModule(
-    //        """
-    //        class X {
-    //            static #privateField = 'super';
-    //            static #getPrivateField() {
-    //            return X.#privateField;
-    //            }
-    //        }
-    //        """);
-
-    //    var json = program.ToJsonString();
-    //    var expected = "{\"type\":\"Program\",\"body\":[{\"type\":\"ClassDeclaration\",\"id\":{\"type\":\"Identifier\",\"name\":\"X\"},\"superClass\":null,\"body\":{\"type\":\"ClassBody\",\"body\":[{\"type\":\"PropertyDefinition\",\"key\":{\"type\":\"PrivateIdentifier\",\"name\":\"privateField\"},\"computed\":false,\"value\":{\"type\":\"Literal\",\"value\":\"super\",\"raw\":\"'super'\"},\"kind\":\"property\",\"static\":true},{\"type\":\"MethodDefinition\",\"key\":{\"type\":\"PrivateIdentifier\",\"name\":\"getPrivateField\"},\"computed\":false,\"value\":{\"type\":\"FunctionExpression\",\"id\":null,\"params\":[],\"body\":{\"type\":\"BlockStatement\",\"body\":[{\"type\":\"ReturnStatement\",\"argument\":{\"type\":\"MemberExpression\",\"computed\":false,\"object\":{\"type\":\"Identifier\",\"name\":\"X\"},\"property\":{\"type\":\"PrivateIdentifier\",\"name\":\"privateField\"},\"optional\":false}}]},\"generator\":false,\"expression\":false,\"strict\":true,\"async\":false},\"kind\":\"method\",\"static\":true}]}}],\"sourceType\":\"module\"}";
-
-    //    Assert.Equal(expected, json);
-    //}
-
     [Fact]
     public void CanParseClassElementsWithNewLinesInsteadOfSemicolon()
     {
         // field-definition-accessor-no-line-terminator.js
-        var parser = new Parser();
+        var parser = new Parser(new ParserOptions { EcmaVersion = EcmaVersion.Experimental });
         var program = parser.ParseScript("""
          var C = class {
            accessor

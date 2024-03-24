@@ -7,7 +7,9 @@ namespace Acornima;
 // The algorithm used to determine whether a regexp can appear at a
 // given point in the program is loosely based on sweet.js' approach.
 // See https://github.com/mozilla/sweet.js/wiki/design
+#if DEBUG
 [DebuggerDisplay($"{{{nameof(Kind)}}}, {nameof(IsExpression)} = {{{nameof(IsExpression)}}}, {nameof(Generator)} = {{{nameof(Generator)}}}")]
+#endif
 internal sealed class TokenContext
 {
     public static readonly TokenContext BracketsInStatement = new(TokenContextKind.BraceLeft, false);

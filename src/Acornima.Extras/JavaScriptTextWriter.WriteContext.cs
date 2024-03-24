@@ -17,7 +17,7 @@ internal abstract class NodePropertyListValueHelper
 {
     public abstract Type ItemType { get; }
 
-    public abstract NodeList<Node?> GetNodeList(ref JavaScriptTextWriter.WriteContext context);
+    public abstract NodeList<Node?> GetNodeList(in JavaScriptTextWriter.WriteContext context);
 }
 
 internal sealed class NodePropertyListValueHelper<T> : NodePropertyListValueHelper where T : Node?
@@ -28,7 +28,7 @@ internal sealed class NodePropertyListValueHelper<T> : NodePropertyListValueHelp
 
     public override Type ItemType => typeof(T);
 
-    public override NodeList<Node?> GetNodeList(ref JavaScriptTextWriter.WriteContext context) => context.GetNodePropertyListValue<T>().As<Node?>();
+    public override NodeList<Node?> GetNodeList(in JavaScriptTextWriter.WriteContext context) => context.GetNodePropertyListValue<T>().As<Node?>();
 }
 
 public partial class JavaScriptTextWriter
@@ -37,7 +37,7 @@ public partial class JavaScriptTextWriter
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #pragma warning disable CA1822 // Mark members as static
-        public WriteContext From(Node? parentNode, Node node) =>
+        public readonly WriteContext From(Node? parentNode, Node node) =>
 #pragma warning restore CA1822 // Mark members as static
             new WriteContext(parentNode, node ?? ThrowArgumentNullException<Node>(nameof(node)));
 
@@ -62,21 +62,21 @@ public partial class JavaScriptTextWriter
         public Node? ParentNode { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
         public Node Node { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-        public string? NodePropertyName { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _nodePropertyName; }
+        public readonly string? NodePropertyName { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _nodePropertyName; }
 
-        public bool NodePropertyHasListValue
+        public readonly bool NodePropertyHasListValue
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _nodePropertyListValueHelper is not null;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Delegate EnsureNodePropertyAccessor()
+        private readonly Delegate EnsureNodePropertyAccessor()
         {
             return _nodePropertyAccessor ?? ThrowInvalidOperationException<Delegate>(ExceptionMessages.WriteContextHasNoAssociatedProperty);
         }
 
-        private NodePropertyValueAccessor EnsureNodePropertyValueAccessor()
+        private readonly NodePropertyValueAccessor EnsureNodePropertyValueAccessor()
         {
             if (_nodePropertyAccessor is NodePropertyValueAccessor accessor)
             {
@@ -87,7 +87,7 @@ public partial class JavaScriptTextWriter
             return ThrowInvalidOperationException<NodePropertyValueAccessor>(ExceptionMessages.WriteContextHasAssociatedNodeListProperty);
         }
 
-        private NodePropertyListValueHelper EnsureNodePropertyListValueAccessor()
+        private readonly NodePropertyListValueHelper EnsureNodePropertyListValueAccessor()
         {
             if (_nodePropertyListValueHelper is not null)
             {
@@ -100,26 +100,26 @@ public partial class JavaScriptTextWriter
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public T GetNodePropertyValue<T>()
+        public readonly T GetNodePropertyValue<T>()
         {
             return (T)EnsureNodePropertyValueAccessor()(Node)!;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ref readonly NodeList<T> GetNodePropertyListValue<T>() where T : Node?
+        public readonly ref readonly NodeList<T> GetNodePropertyListValue<T>() where T : Node?
         {
             EnsureNodePropertyListValueAccessor();
             return ref ((NodePropertyListValueAccessor<T>)_nodePropertyAccessor!)(Node);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public NodeList<Node?> GetNodePropertyListValue()
+        public readonly NodeList<Node?> GetNodePropertyListValue()
         {
-            return EnsureNodePropertyListValueAccessor().GetNodeList(ref this);
+            return EnsureNodePropertyListValueAccessor().GetNodeList(this);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public T GetNodePropertyListItem<T>() where T : Node?
+        public readonly T GetNodePropertyListItem<T>() where T : Node?
         {
             return (T)GetNodePropertyListValue()[_nodePropertyItemIndex]!;
         }
@@ -186,7 +186,7 @@ public partial class JavaScriptTextWriter
         public object? UserData
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _additionalDataSlot[1];
+            readonly get => _additionalDataSlot[1];
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => _additionalDataSlot[1] = value;
         }

@@ -324,7 +324,9 @@ public partial class Parser
         Switch
     }
 
+#if DEBUG
     [DebuggerDisplay($"{{{nameof(Kind)}}}, {nameof(Name)} = {{{nameof(Name)}}}")]
+#endif
     private struct Label
     {
         public Label(LabelKind kind, string? name = null, int statementStart = 0)

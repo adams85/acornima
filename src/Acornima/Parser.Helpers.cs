@@ -66,8 +66,6 @@ public partial class Parser
 
     // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/identifier.js
 
-    // TODO: add tests to verify identical behavior to acornjs
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static bool IsKeyword(ReadOnlySpan<char> word, EcmaVersion ecmaVersion, [NotNullWhen(true)] out TokenType? tokenType)
     {
@@ -330,7 +328,9 @@ public partial class Parser
             : SyntaxErrorMessages.UnexpectedReserved);
     }
 
+#if DEBUG
     [DebuggerDisplay($"{nameof(Index)} = {{{nameof(Index)}}}, {nameof(Position)} = {{{nameof(Position)}}}")]
+#endif
     private readonly struct Marker
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -396,7 +396,7 @@ public partial class Parser
         public int DoubleProto;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int GetTrailingComma()
+        public readonly int GetTrailingComma()
         {
             return TrailingComma == -1 ? -1 : TrailingComma & 0x7FFF_FFFF;
         }

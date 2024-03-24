@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using Acornima.Helpers;
@@ -98,8 +99,8 @@ public readonly struct Token
             TokenKind.Identifier or
             TokenKind.BooleanLiteral or
             TokenKind.StringLiteral => $"{Kind} ({_value.Value})",
-            TokenKind.NumericLiteral => $"{Kind} ({_value.NumericValue})",
-            TokenKind.BigIntLiteral => $"{Kind} ({_value.BigIntValue})",
+            TokenKind.NumericLiteral => $"{Kind} ({_value.NumericValue.ToString(CultureInfo.InvariantCulture)})",
+            TokenKind.BigIntLiteral => $"{Kind} ({_value.BigIntValue.ToString(CultureInfo.InvariantCulture)})",
             TokenKind.RegExpLiteral => $"{Kind} ({((Tuple<RegExpValue, RegExpParseResult>)_value.Value!).Item1})",
             TokenKind.Template => $"{Kind} ({new TemplateValue(_value.TemplateCooked, (string)_value.Value!)})",
             _ => Kind.ToString()

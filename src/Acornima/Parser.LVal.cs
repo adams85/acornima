@@ -24,8 +24,6 @@ public partial class Parser
 
         if (node is not null && _tokenizerOptions._ecmaVersion >= EcmaVersion.ES6)
         {
-            // TODO: revise CheckPatternErrors checks as they produces recoverable errors
-
             Node convertedNode;
             NodeList<Node?> convertedNodes;
 
@@ -507,7 +505,7 @@ public partial class Parser
         }
     }
 
-    private void CheckLValPattern(Node expr, BindingType bindingType = BindingType.None, HashSet<string>? checkClashes = null, LeftHandSideKind lhsKind = LeftHandSideKind.Unknown) // TODO: ???
+    private void CheckLValPattern(Node expr, BindingType bindingType = BindingType.None, HashSet<string>? checkClashes = null, LeftHandSideKind lhsKind = LeftHandSideKind.Unknown)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/lval.js > `pp.checkLValPattern = function`
 

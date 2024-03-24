@@ -770,12 +770,12 @@ public partial class Parser
         return FinishNode(startMarker, new TryStatement(block, handler, finalizer));
     }
 
-    private VariableDeclaration ParseVarStatement(in Marker startMarker, VariableDeclarationKind kind, bool allowMissingInitializer = false)
+    private VariableDeclaration ParseVarStatement(in Marker startMarker, VariableDeclarationKind kind)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseVarStatement = function`
 
         Next();
-        var declaration = ParseVar(kind, isFor: false, allowMissingInitializer);
+        var declaration = ParseVar(kind, isFor: false);
         Semicolon();
 
         return FinishNode(startMarker, declaration);
@@ -972,7 +972,7 @@ public partial class Parser
     }
 
     // Parse a list of variable declarations.
-    private VariableDeclaration ParseVar(VariableDeclarationKind kind, bool isFor, bool allowMissingInitializer = false)
+    private VariableDeclaration ParseVar(VariableDeclarationKind kind, bool isFor)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseVar = function`
 
@@ -990,18 +990,15 @@ public partial class Parser
             }
             else
             {
-                if (!allowMissingInitializer)
+                if (kind == VariableDeclarationKind.Const && !(_tokenizer._type == TokenType.In || _tokenizerOptions._ecmaVersion >= EcmaVersion.ES6 && IsContextual("of")))
                 {
-                    if (kind == VariableDeclarationKind.Const && !(_tokenizer._type == TokenType.In || _tokenizerOptions._ecmaVersion >= EcmaVersion.ES6 && IsContextual("of")))
-                    {
-                        // Unexpected(); // original acornjs error reporting
-                        Raise(_tokenizer._lastTokenEnd, SyntaxErrorMessages.DeclarationMissingInitializer_Const);
-                    }
-                    else if (id.Type != NodeType.Identifier && !(isFor && (_tokenizer._type == TokenType.In || IsContextual("of"))))
-                    {
-                        // Raise(_tokenizer._lastTokenEnd, "Complex binding patterns require an initialization value"); // original acornjs error reporting
-                        Raise(_tokenizer._lastTokenEnd, SyntaxErrorMessages.DeclarationMissingInitializer_Destructuring);
-                    }
+                    // Unexpected(); // original acornjs error reporting
+                    Raise(_tokenizer._lastTokenEnd, SyntaxErrorMessages.DeclarationMissingInitializer_Const);
+                }
+                else if (id.Type != NodeType.Identifier && !(isFor && (_tokenizer._type == TokenType.In || IsContextual("of"))))
+                {
+                    // Raise(_tokenizer._lastTokenEnd, "Complex binding patterns require an initialization value"); // original acornjs error reporting
+                    Raise(_tokenizer._lastTokenEnd, SyntaxErrorMessages.DeclarationMissingInitializer_Destructuring);
                 }
                 init = null;
             }
@@ -1245,7 +1242,7 @@ public partial class Parser
             }
             else if (_tokenizerOptions.EcmaVersion == EcmaVersion.Experimental && EatContextual(keyword = "accessor"))
             {
-                if (IsClassElementNameStart())
+                if (!CanInsertSemicolon() && IsClassElementNameStart())
                 {
                     isAccessor = true;
                 }

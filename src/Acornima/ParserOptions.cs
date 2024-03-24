@@ -36,14 +36,15 @@ public record class ParserOptions
     public TokenizerOptions GetTokenizerOptions() => _tokenizerOptions;
 
     /// <summary>
-    /// <see cref="EcmaVersion"/> indicates the ECMAScript version to parse. Must be
-    /// either ES3, ES5, ES6 (or ES2015), ES7 (ES2016), ES8 (ES2017), ES9 (ES2018), ES10
+    /// Gets or sets the ECMAScript version to parse.
+    /// Must be either ES3, ES5, ES6 (or ES2015), ES7 (ES2016), ES8 (ES2017), ES9 (ES2018), ES10
     /// (ES2019), ES11 (ES2020), ES12 (ES2021), ES13 (ES2022), ES14 (ES2023), or Latest
-    /// (the latest version the library supports).<br/>
-    /// This influences
-    /// support for strict mode, the set of reserved words, and support
-    /// for new syntax features.
+    /// (the latest version the library supports). Defaults to <see cref="EcmaVersion.Latest"/>.
     /// </summary>
+    /// <remarks>
+    /// This influences support for strict mode, the set of reserved words, and support
+    /// for new syntax features.
+    /// </remarks>
     public EcmaVersion EcmaVersion
     {
         get => _tokenizerOptions._ecmaVersion;
@@ -52,60 +53,64 @@ public record class ParserOptions
 
     internal readonly AllowReservedOption _allowReserved;
     /// <summary>
-    /// By default, reserved words are only enforced if <see cref="EcmaVersion"/> >= ES5.
-    /// Set <see cref="AllowReserved"/> to a boolean value to explicitly enable or disable this behavior.<br/>
-    /// When this option has the value <see cref="AllowReservedOption.Never"/>, reserved words
-    /// and keywords can also not be used as property names.
+    /// Gets or sets whether to enforce reserved words. Defaults to <see cref="AllowReservedOption.Default"/>,
+    /// in which case reserved words are only enforced if <see cref="EcmaVersion"/> >= ES5.
     /// </summary>
+    /// <remarks>
+    /// Set <see cref="AllowReserved"/> to <see cref="AllowReservedOption.Yes"/> or <see cref="AllowReservedOption.No"/>
+    /// to explicitly enable or disable this behavior. When this option has the value <see cref="AllowReservedOption.Never"/>,
+    /// reserved words and keywords can not even be used as property names.
+    /// </remarks>
     public AllowReservedOption AllowReserved { get => _allowReserved; init => _allowReserved = value; }
 
     internal readonly bool _allowReturnOutsideFunction;
     /// <summary>
-    /// When enabled, a return at the top level is not considered an
-    /// error.
+    /// Gets or sets whether to allow return statements at the top level.
+    /// Defaults to <see langword="false"/>.
     /// </summary>
     public bool AllowReturnOutsideFunction { get => _allowReturnOutsideFunction; init => _allowReturnOutsideFunction = value; }
 
     internal readonly bool _allowImportExportEverywhere;
     /// <summary>
-    /// When enabled, import/export statements are not constrained to
-    /// appearing at the top of the program.
+    /// Gets or sets whether to allow import/export statements at locations other than the top level.
+    /// Defaults to <see langword="false"/>.
     /// </summary>
     public bool AllowImportExportEverywhere { get => _allowImportExportEverywhere; init => _allowImportExportEverywhere = value; }
 
     internal readonly bool _allowAwaitOutsideFunction;
     /// <summary>
-    /// When enabled, await identifiers are allowed to appear at the top-level scope,
-    /// but they are still not allowed in non-async functions.
+    /// Gets or sets whether to allow await identifiers in the top-level scope.
+    /// Defaults to <see langword="false"/>.
     /// </summary>
+    /// <remarks>
+    /// They will not be allowed in non-async functions even when enabling this option.
+    /// </remarks>
     public bool AllowAwaitOutsideFunction { get => _allowAwaitOutsideFunction; init => _allowAwaitOutsideFunction = value; }
 
     internal readonly bool _allowSuperOutsideMethod;
     /// <summary>
-    /// When enabled, super identifiers are not constrained to
-    /// appearing in methods and do not raise an error when they appear elsewhere.
+    /// Gets or sets whether to allow super identifiers to appear outside methods.
+    /// Defaults to <see langword="false"/>.
     /// </summary>
     public bool AllowSuperOutsideMethod { get => _allowSuperOutsideMethod; init => _allowSuperOutsideMethod = value; }
 
     /// <summary>
-    /// When enabled, hashbang directive at the beginning of file is
-    /// allowed and treated as a line comment. Enabled by default when
-    /// <see cref="EcmaVersion"/> >= ES2023.
+    /// Gets or sets whether to allow hashbang directive at the beginning of file and treat it as a line comment.
+    /// Defaults to <see langword="null"/>, in which case hashbang comment is allowed if <see cref="EcmaVersion"/> >= ES2023.
     /// </summary>
     public bool? AllowHashBang { get => _tokenizerOptions._allowHashBang; init => _tokenizerOptions._allowHashBang = value; }
 
     internal readonly bool _checkPrivateFields = true;
     /// <summary>
-    /// By default, the parser will verify that private properties are
-    /// only used in places where they are valid and have been declared.
-    /// Set this to <see langword="false"/> to turn such checks off.
+    /// Gets or sets whether to verify that private properties are only used in places where they are valid and have been declared.
+    /// Defaults to <see langword="true"/>.
     /// </summary>
     public bool CheckPrivateFields { get => _checkPrivateFields; init => _checkPrivateFields = value; }
 
     internal readonly bool _preserveParens;
     /// <summary>
-    /// When enabled, parenthesized expressions are represented by
-    /// (non-standard) <see cref="ParenthesizedExpression"/> nodes.
+    /// Gets or sets whether to represent parenthesized expressions by (non-standard) <see cref="ParenthesizedExpression"/> nodes in the AST.
+    /// Defaults to <see langword="false"/>.
     /// </summary>
     public bool PreserveParens { get => _preserveParens; init => _preserveParens = value; }
 
@@ -115,12 +120,12 @@ public record class ParserOptions
     public RegExpParseMode RegExpParseMode { get => _tokenizerOptions._regExpParseMode; init => _tokenizerOptions._regExpParseMode = value; }
 
     /// <summary>
-    /// Default timeout for created <see cref="Regex"/> instances. Defaults to 5 seconds.
+    /// Gets or sets the default timeout for created <see cref="Regex"/> instances. Defaults to 5 seconds.
     /// </summary>
     public TimeSpan RegexTimeout { get => _tokenizerOptions._regexTimeout; init => _tokenizerOptions._regexTimeout = value; }
 
     /// <summary>
-    /// Gets or sets whether the parser should ignore minor errors that do not affect the semantics of the parsed program.
+    /// Gets or sets whether to ignore minor errors that do not affect the semantics of the parsed program.
     /// Defaults to <see langword="false"/>.
     /// </summary>
     public bool Tolerant { get => _tokenizerOptions._tolerant; init => _tokenizerOptions._tolerant = value; }
@@ -135,38 +140,43 @@ public record class ParserOptions
     }
 
     /// <summary>
-    /// A function can be passed as <see cref="OnToken"/> option, which will
-    /// cause the tokenizer to call that function with object in the same
-    /// format as tokens returned from `<see cref="Tokenizer.GetToken"/>`.
+    /// Gets or sets an optional callback function which will be called whenever a token is read.
     /// </summary>
+    /// <remarks>
+    /// It will be passed the parameters of the token as a <see cref="Token"/> object,
+    /// in the same format as returned by <see cref="Tokenizer.GetToken"/>.
+    /// </remarks>
     public OnTokenHandler? OnToken { get => _tokenizerOptions._onToken; init => _tokenizerOptions._onToken = value; }
 
     /// <summary>
-    /// A function can be passed as <see cref="OnComment"/> option, which will
-    /// cause the tokenizer to call that function with
-    /// the parameters of the comment whenever a comment is skipped.
+    /// Gets or sets an optional callback function which will be called whenever a comment is skipped.
     /// </summary>
+    /// <remarks>
+    /// It will be passed the parameters of the comment as a <see cref="Comment"/> object.
+    /// </remarks>
     public OnCommentHandler? OnComment { get => _tokenizerOptions._onComment; init => _tokenizerOptions._onComment = value; }
 
     internal readonly OnInsertedSemicolonHandler? _onInsertedSemicolon;
     /// <summary>
-    /// <see cref="OnInsertedSemicolon"/> can be a callback that will be called
-    /// when a semicolon is automatically inserted.<br/>
-    /// It will be passed the position of the inserted semicolon as an offset, and
-    /// it is given the location as a <see cref="Position"/> object as second argument.
+    /// Gets or sets an optional callback function which will be called when a semicolon is automatically inserted.
     /// </summary>
+    /// <remarks>
+    /// It will be passed the position of the inserted semicolon as an offset and the location as a <see cref="Position"/> object.
+    /// </remarks>
     public OnInsertedSemicolonHandler? OnInsertedSemicolon { get => _onInsertedSemicolon; init => _onInsertedSemicolon = value; }
 
     internal readonly OnTrailingCommaHandler? _onTrailingComma;
     /// <summary>
-    /// <see cref="OnTrailingComma"/> is similar to  <see cref="OnInsertedSemicolon"/>, but for
-    /// trailing commas.
+    /// Gets or sets an optional callback function which will be called when a trailing comma is encountered.
     /// </summary>
+    /// <remarks>
+    /// It will be passed the position of the trailing comma as an offset and the location as a <see cref="Position"/> object.
+    /// </remarks>
     public OnTrailingCommaHandler? OnTrailingComma { get => _onTrailingComma; init => _onTrailingComma = value; }
 
     internal OnNodeHandler? _onNode;
     /// <summary>
-    /// An optional callback to execute on each parsed node.
+    /// Gets or sets an optional callback which will be called whenever an AST node is parsed.
     /// </summary>
     /// <remarks>
     /// This callback allows you to make changes to the nodes created by the parser.
@@ -180,8 +190,8 @@ public record class ParserOptions
     ///     }
     /// };
     /// </code>
-    /// Please note that the callback is executed on nodes which are reinterpreted
-    /// later during parsing, thus, won't become a part of the final AST.
+    /// Please note that the callback is also executed on nodes which are reinterpreted
+    /// later during parsing, that is, on nodes which won't become a part of the final AST.
     /// </remarks>
     public OnNodeHandler? OnNode { get => _onNode; init => _onNode = value; }
 }

@@ -9,7 +9,9 @@ namespace Acornima.Ast;
 
 public static class NodeExtensions
 {
+#if DEBUG
     [DebuggerStepThrough]
+#endif
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T As<T>(this INode node) where T : INode
     {

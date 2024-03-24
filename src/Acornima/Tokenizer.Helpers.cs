@@ -46,8 +46,6 @@ public partial class Tokenizer
         return text.IndexOfAny("\r\n\u2028\u2029".AsSpan()) >= 0;
     }
 
-    // TODO: add tests to verify identical behavior to acornjs
-
     internal static int NextLineBreak(string text, int startIndex, int endIndex)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/whitespace.js > `export function nextLineBreak`

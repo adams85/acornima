@@ -29,7 +29,9 @@ using KeywordEnum = Keyword;
 // to know when parsing a label, in order to allow or disallow
 // continue jumps to that label.
 
+#if DEBUG
 [DebuggerDisplay($"{{{nameof(Kind)}}}, {nameof(Label)} = {{{nameof(Label)}}}")]
+#endif
 internal sealed partial class TokenType
 {
     public static readonly TokenType EOF = new TokenType("eof", TokenKind.EOF);

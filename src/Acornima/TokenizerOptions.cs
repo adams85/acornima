@@ -15,21 +15,21 @@ public record class TokenizerOptions
 
     internal EcmaVersion _ecmaVersion = EcmaVersion.Latest;
     /// <summary>
-    /// <see cref="EcmaVersion"/> indicates the ECMAScript version to parse. Must be
-    /// either ES3, ES5, ES6 (or ES2015), ES7 (ES2016), ES8 (ES2017), ES9 (ES2018), ES10
+    /// Gets or sets the ECMAScript version to parse.
+    /// Must be either ES3, ES5, ES6 (or ES2015), ES7 (ES2016), ES8 (ES2017), ES9 (ES2018), ES10
     /// (ES2019), ES11 (ES2020), ES12 (ES2021), ES13 (ES2022), ES14 (ES2023), or Latest
-    /// (the latest version the library supports).<br/>
-    /// This influences
-    /// support for strict mode, the set of reserved words, and support
-    /// for new syntax features.
+    /// (the latest version the library supports). Defaults to <see cref="EcmaVersion.Latest"/>.
     /// </summary>
+    /// <remarks>
+    /// This influences support for strict mode, the set of reserved words, and support
+    /// for new syntax features.
+    /// </remarks>
     public EcmaVersion EcmaVersion { get => _ecmaVersion; init => _ecmaVersion = value; }
 
     internal bool? _allowHashBang;
     /// <summary>
-    /// When enabled, hashbang directive at the beginning of file is
-    /// allowed and treated as a line comment. Enabled by default when
-    /// <see cref="EcmaVersion"/> >= ES2023.
+    /// Gets or sets whether to allow hashbang directive at the beginning of file and treat it as a line comment.
+    /// Defaults to <see langword="null"/>, in which case hashbang comment is allowed if <see cref="EcmaVersion"/> >= ES2023.
     /// </summary>
     public bool? AllowHashBang { get => _allowHashBang; init => _allowHashBang = value; }
 
@@ -41,13 +41,13 @@ public record class TokenizerOptions
 
     internal TimeSpan _regexTimeout = TimeSpan.FromSeconds(5);
     /// <summary>
-    /// Default timeout for created <see cref="Regex"/> instances. Defaults to 5 seconds.
+    /// Gets or sets the default timeout for created <see cref="Regex"/> instances. Defaults to 5 seconds.
     /// </summary>
     public TimeSpan RegexTimeout { get => _regexTimeout; init => _regexTimeout = value; }
 
     internal bool _tolerant;
     /// <summary>
-    /// Gets or sets whether the tokenizer should ignore minor errors that do not affect the semantics of the parsed program.
+    /// Gets or sets whether to ignore minor errors that do not affect the semantics of the parsed program.
     /// Defaults to <see langword="false"/>.
     /// </summary>
     public bool Tolerant { get => _tolerant; init => _tolerant = value; }
@@ -64,19 +64,21 @@ public record class TokenizerOptions
 
     internal OnTokenHandler? _onToken;
     /// <summary>
-    /// A function can be passed as <see cref="OnToken"/> option, which will
-    /// cause the tokenizer to call that function with object in the same
-    /// format as tokens returned from `<see cref="Tokenizer.GetToken"/>`.<br/>
-    /// Note that you are not allowed to call the tokenizer from the
-    /// callback — that will corrupt its internal state.
+    /// Gets or sets an optional callback function which will be called whenever a token is read.
     /// </summary>
+    /// <remarks>
+    /// It will be passed the parameters of the token as a <see cref="Token"/> object,
+    /// in the same format as returned by <see cref="Tokenizer.GetToken"/>.<br/>
+    /// Note that you should not call the tokenizer from the callback as that would corrupt its internal state.
+    /// </remarks>
     public OnTokenHandler? OnToken { get => _onToken; init => _onToken = value; }
 
     internal OnCommentHandler? _onComment;
     /// <summary>
-    /// A function can be passed as <see cref="OnComment"/> option, which will
-    /// cause the tokenizer to call that function with
-    /// the parameters of the comment whenever a comment is skipped.
+    /// Gets or sets an optional callback function which will be called whenever a comment is skipped.
     /// </summary>
+    /// <remarks>
+    /// It will be passed the parameters of the comment as a <see cref="Comment"/> object.
+    /// </remarks>
     public OnCommentHandler? OnComment { get => _onComment; init => _onComment = value; }
 }

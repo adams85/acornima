@@ -9,7 +9,9 @@ internal static class StackGuard
 {
     public const int MaxUncheckedRecursionDepth = 20;
 
+#if DEBUG
     [DebuggerStepThrough]
+#endif
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void EnsureSufficientExecutionStack(int recursionDepth)
     {
