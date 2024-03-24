@@ -81,7 +81,7 @@ public partial class RegExpTests
 
         if (!expectError)
         {
-            var regex = Tokenizer.AdaptRegExp(pattern, flags, compiled, matchTimeout, throwIfNotAdaptable).Regex;
+            var regex = Tokenizer.AdaptRegExp(pattern, flags, compiled, matchTimeout, EcmaVersion.Latest, throwIfNotAdaptable).Regex;
             if (expectCompiled is not null)
             {
                 Assert.NotNull(regex);
@@ -95,7 +95,7 @@ public partial class RegExpTests
         }
         else
         {
-            Assert.ThrowsAny<ParseErrorException>(() => Tokenizer.AdaptRegExp(pattern, flags, compiled, matchTimeout, throwIfNotAdaptable));
+            Assert.ThrowsAny<ParseErrorException>(() => Tokenizer.AdaptRegExp(pattern, flags, compiled, matchTimeout, EcmaVersion.Latest, throwIfNotAdaptable));
         }
     }
 

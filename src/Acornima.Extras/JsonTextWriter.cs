@@ -102,7 +102,9 @@ internal sealed class JsonTextWriter : JsonWriter
     public override void String(string? str)
     {
         if (str == null)
+        {
             Null();
+        }
         else
         {
             Write(str, TokenKind.String);
@@ -220,7 +222,9 @@ internal sealed class JsonTextWriter : JsonWriter
             Indent();
 
         if (kind == TokenKind.String)
+        {
             Enquote(token, writer);
+        }
         else
         {
             writer.Write(token);

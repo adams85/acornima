@@ -13,5 +13,5 @@ public readonly struct TemplateValue
     public string? Cooked { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public string Raw { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-    public override string ToString() => Raw ?? string.Empty;
+    public override string ToString() => Cooked ?? Raw;
 }

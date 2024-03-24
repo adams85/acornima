@@ -154,7 +154,6 @@ public static class NodeExtensions
             while (nodes.Count > 0);
         }
 
-
         static IEnumerable<Node> ImplWithFilter(Node node, Func<Node, bool> descendIntoChildren)
         {
             var nodes = new ArrayList<Node>() { node };

@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 namespace Acornima.Ast;
 
 [VisitableNode(ChildProperties = new[] { nameof(Left), nameof(Right) })]
-public sealed partial class AssignmentPattern : Node, IBindingPattern
+public sealed partial class AssignmentPattern : Node, IDestructuringPattern
 {
     public AssignmentPattern(Node left, Expression right) : base(NodeType.AssignmentPattern)
     {

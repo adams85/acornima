@@ -47,8 +47,7 @@ public partial class Parser
 
     private ArrayList<Decorator> _decorators;
 
-    private int _bindingPatternDepth;
-    private int _recursionDepth;
+    private int _bindingPatternDepth, _recursionDepth;
 
     internal void Reset(string input, int start, int length, SourceType sourceType, string? sourceFile, bool strict)
     {
