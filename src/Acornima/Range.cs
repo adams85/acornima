@@ -12,12 +12,12 @@ using static Helpers.ExceptionHelper;
 public readonly struct Range : IEquatable<Range>
 {
     /// <summary>
-    /// Start index (inclusive, 0-indexed).
+    /// Start index (zero-based, inclusive).
     /// </summary>
     public readonly int Start;
 
     /// <summary>
-    /// End index (exclusive, 0-indexed).
+    /// End index (zero-based, exclusive).
     /// </summary>
     public readonly int End;
 

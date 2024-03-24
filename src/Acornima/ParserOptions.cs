@@ -1,4 +1,5 @@
 using System;
+using System.Text.RegularExpressions;
 using Acornima.Ast;
 
 namespace Acornima;
@@ -38,7 +39,8 @@ public record class ParserOptions
     /// <see cref="EcmaVersion"/> indicates the ECMAScript version to parse. Must be
     /// either ES3, ES5, ES6 (or ES2015), ES7 (ES2016), ES8 (ES2017), ES9 (ES2018), ES10
     /// (ES2019), ES11 (ES2020), ES12 (ES2021), ES13 (ES2022), ES14 (ES2023), or Latest
-    /// (the latest version the library supports). This influences
+    /// (the latest version the library supports).<br/>
+    /// This influences
     /// support for strict mode, the set of reserved words, and support
     /// for new syntax features.
     /// </summary>
@@ -51,7 +53,7 @@ public record class ParserOptions
     internal readonly AllowReservedOption _allowReserved;
     /// <summary>
     /// By default, reserved words are only enforced if <see cref="EcmaVersion"/> >= ES5.
-    /// Set <see cref="AllowReserved"/> to a boolean value to explicitly turn this on.
+    /// Set <see cref="AllowReserved"/> to a boolean value to explicitly enable or disable this behavior.<br/>
     /// When this option has the value <see cref="AllowReservedOption.Never"/>, reserved words
     /// and keywords can also not be used as property names.
     /// </summary>
@@ -100,12 +102,42 @@ public record class ParserOptions
     /// </summary>
     public bool CheckPrivateFields { get => _checkPrivateFields; init => _checkPrivateFields = value; }
 
+    internal readonly bool _preserveParens;
+    /// <summary>
+    /// When enabled, parenthesized expressions are represented by
+    /// (non-standard) <see cref="ParenthesizedExpression"/> nodes.
+    /// </summary>
+    public bool PreserveParens { get => _preserveParens; init => _preserveParens = value; }
+
+    /// <summary>
+    /// Gets or sets how regular expressions should be parsed. Defaults to <see cref="RegExpParseMode.Validate"/>.
+    /// </summary>
+    public RegExpParseMode RegExpParseMode { get => _tokenizerOptions._regExpParseMode; init => _tokenizerOptions._regExpParseMode = value; }
+
+    /// <summary>
+    /// Default timeout for created <see cref="Regex"/> instances. Defaults to 5 seconds.
+    /// </summary>
+    public TimeSpan RegexTimeout { get => _tokenizerOptions._regexTimeout; init => _tokenizerOptions._regexTimeout = value; }
+
+    /// <summary>
+    /// Gets or sets whether the parser should ignore minor errors that do not affect the semantics of the parsed program.
+    /// Defaults to <see langword="false"/>.
+    /// </summary>
+    public bool Tolerant { get => _tokenizerOptions._tolerant; init => _tokenizerOptions._tolerant = value; }
+
+    /// <summary>
+    /// Gets or sets the <see cref="ParseErrorHandler"/> to use. Defaults to <see cref="ParseErrorHandler.Default"/>.
+    /// </summary>
+    public ParseErrorHandler ErrorHandler
+    {
+        get => _tokenizerOptions._errorHandler;
+        init => _tokenizerOptions._errorHandler = value ?? throw new ArgumentNullException(nameof(value));
+    }
+
     /// <summary>
     /// A function can be passed as <see cref="OnToken"/> option, which will
     /// cause the tokenizer to call that function with object in the same
-    /// format as tokens returned from `<see cref="TokenizerBase.GetToken"/>`. Note
-    /// that you are not allowed to call the tokenizer from the
-    /// callback — that will corrupt its internal state.
+    /// format as tokens returned from `<see cref="Tokenizer.GetToken"/>`.
     /// </summary>
     public OnTokenHandler? OnToken { get => _tokenizerOptions._onToken; init => _tokenizerOptions._onToken = value; }
 
@@ -119,8 +151,8 @@ public record class ParserOptions
     internal readonly OnInsertedSemicolonHandler? _onInsertedSemicolon;
     /// <summary>
     /// <see cref="OnInsertedSemicolon"/> can be a callback that will be called
-    /// when a semicolon is automatically inserted. It will be passed
-    /// the position of the inserted semicolon as an offset, and
+    /// when a semicolon is automatically inserted.<br/>
+    /// It will be passed the position of the inserted semicolon as an offset, and
     /// it is given the location as a <see cref="Position"/> object as second argument.
     /// </summary>
     public OnInsertedSemicolonHandler? OnInsertedSemicolon { get => _onInsertedSemicolon; init => _onInsertedSemicolon = value; }
@@ -152,36 +184,4 @@ public record class ParserOptions
     /// later during parsing, thus, won't become a part of the final AST.
     /// </remarks>
     public OnNodeHandler? OnNode { get => _onNode; init => _onNode = value; }
-
-    internal readonly bool _preserveParens;
-    /// <summary>
-    /// When enabled, parenthesized expressions are represented by
-    /// (non-standard) ParenthesizedExpression nodes
-    /// </summary>
-    public bool PreserveParens { get => _preserveParens; init => _preserveParens = value; }
-
-    /// <summary>
-    /// Gets or sets how regular expressions should be parsed, defaults to <see cref="RegExpParseMode.AdaptToInterpreted"/>.
-    /// </summary>
-    public RegExpParseMode RegExpParseMode { get => _tokenizerOptions._regExpParseMode; init => _tokenizerOptions._regExpParseMode = value; }
-
-    /// <summary>
-    /// Default timeout for created <see cref="Regex"/> instances, defaults to 10 seconds.
-    /// </summary>
-    public TimeSpan RegexTimeout { get => _tokenizerOptions._regexTimeout; init => _tokenizerOptions._regexTimeout = value; }
-
-    /// <summary>
-    /// Gets or sets whether the parser should ignore minor errors that do not lead to a semantically invalid or ambiguous program.
-    /// Defaults to <see langword="false"/>.
-    /// </summary>
-    public bool Tolerant { get => _tokenizerOptions._tolerant; init => _tokenizerOptions._tolerant = value; }
-
-    /// <summary>
-    /// Gets or sets the <see cref="ParseErrorHandler"/> to use. Defaults to <see cref="ParseErrorHandler.Default"/>.
-    /// </summary>
-    public ParseErrorHandler ErrorHandler
-    {
-        get => _tokenizerOptions._errorHandler;
-        init => _tokenizerOptions._errorHandler = value ?? throw new ArgumentNullException(nameof(value));
-    }
 }

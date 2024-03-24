@@ -479,9 +479,8 @@ internal struct ArrayList<T> : IList<T>
     }
 
     /// <remarks>
-    /// This implementation does not detect changes to the list
-    /// during iteration and therefore the behaviour is undefined
-    /// under those conditions.
+    /// This implementation does not detect changes to the list during iteration
+    /// and therefore the behaviour is undefined under those conditions.
     /// </remarks>
     public struct Enumerator : IEnumerator<T>
     {

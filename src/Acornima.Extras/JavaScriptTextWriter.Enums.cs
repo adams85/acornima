@@ -69,11 +69,11 @@ public partial class JavaScriptTextWriter
         /// </summary>
         Leading = 1 << 0,
         /// <summary>
-        /// The punctuator is somewhere in the middle of the related token(s). 
+        /// The punctuator is somewhere in the middle of the related token(s).
         /// </summary>
         InBetween = 1 << 1,
         /// <summary>
-        /// The punctuator follows the related token(s). 
+        /// The punctuator follows the related token(s).
         /// </summary>
         Trailing = 1 << 2,
 

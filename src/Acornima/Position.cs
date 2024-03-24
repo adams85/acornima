@@ -14,7 +14,7 @@ public readonly struct Position : IEquatable<Position>, IComparable<Position>
     // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/locutil.js > `export class Position`
 
     /// <summary>
-    /// Line number (1-indexed).
+    /// Line number (one-based).
     /// </summary>
     /// <remarks>
     /// A position where <see cref="Line"/> and <see cref="Column"/> are zero is an allowed value
@@ -23,7 +23,7 @@ public readonly struct Position : IEquatable<Position>, IComparable<Position>
     public readonly int Line;
 
     /// <summary>
-    /// Column number (0-indexed).
+    /// Column number (zero-based).
     /// </summary>
     public readonly int Column;
 

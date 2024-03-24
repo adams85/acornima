@@ -16,9 +16,6 @@ public sealed partial class MemberExpression : Expression, IBindingPattern, ICha
 
     public Expression Object { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public Expression Property { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
-    /// <summary>
-    /// True if an indexer is used and the property to be evaluated.
-    /// </summary>
     public bool Computed { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public bool Optional { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 

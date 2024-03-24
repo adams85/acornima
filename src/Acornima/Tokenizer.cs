@@ -1848,11 +1848,21 @@ public sealed partial class Tokenizer
     /// <summary>
     /// Checks whether an ECMAScript regular expression is syntactically correct.
     /// </summary>
+    /// <returns><see langword="true"/> if the regular expression is syntactically correct, otherwise <see langword="false"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool ValidateRegExp(string pattern, string flags, out ParseError? error)
+    {
+        return ValidateRegExp(pattern, flags, EcmaVersion.Latest, out error);
+    }
+
+    /// <summary>
+    /// Checks whether an ECMAScript regular expression is syntactically correct.
+    /// </summary>
     /// <remarks>
     /// Unicode sets mode (flag v) is not supported currently, for such patterns the method returns <see langword="false"/>.
     /// </remarks>
     /// <returns><see langword="true"/> if the regular expression is syntactically correct, otherwise <see langword="false"/>.</returns>
-    public static bool ValidateRegExp(string pattern, string flags, out SyntaxError? error)
+    public static bool ValidateRegExp(string pattern, string flags, EcmaVersion ecmaVersion, out ParseError? error)
     {
         if (pattern is null)
         {
@@ -1864,14 +1874,18 @@ public sealed partial class Tokenizer
             throw new ArgumentNullException(nameof(flags));
         }
 
-        Debug.Assert(TokenizerOptions.Default is { RegExpParseMode: RegExpParseMode.Validate, Tolerant: false });
+        Debug.Assert(TokenizerOptions.Default is { RegExpParseMode: RegExpParseMode.Validate, Tolerant: false, EcmaVersion: EcmaVersion.Latest });
+
+        var tokenizerOptions = ecmaVersion == EcmaVersion.Latest
+            ? TokenizerOptions.Default
+            : new TokenizerOptions { EcmaVersion = ecmaVersion };
 
         try
         {
-            var parseResult = new RegExpParser(pattern, flags, TokenizerOptions.Default).Parse();
+            var parseResult = new RegExpParser(pattern, flags, tokenizerOptions).Parse();
             Debug.Assert(parseResult.Success);
         }
-        catch (SyntaxErrorException ex)
+        catch (ParseErrorException ex)
         {
             error = ex.Error;
             return false;
@@ -1886,8 +1900,8 @@ public sealed partial class Tokenizer
     /// </summary>
     /// <remarks>
     /// Please note that, because of some fundamental differences between the ECMAScript and .NET regular expression engines,
-    /// not every ECMAScript regular expression can be converted to an equivalent <see cref="Regex"/> (or can be converted with compromises only).
-    /// You can read more about the known issues of the conversion <see href="https://github.com/adams85/acornima#regular-expressions">here</see>.
+    /// not every ECMAScript regular expression can be converted to an equivalent <see cref="Regex"/> (or can be converted with compromises only).<br/>
+    /// You can read more about the known issues and limitations of the conversion <see href="https://github.com/adams85/acornima#regular-expressions">here</see>.
     /// </remarks>
     /// <returns>
     /// An instance of <see cref="RegExpParseResult"/>, whose <see cref="RegExpParseResult.Regex"/> property contains the equivalent <see cref="Regex"/> if the conversion was possible,
@@ -1899,7 +1913,8 @@ public sealed partial class Tokenizer
     /// <exception cref="RegExpConversionErrorException">
     /// <paramref name="pattern"/> cannot be converted to an equivalent <see cref="Regex"/> (if <paramref name="throwIfNotAdaptable"/> is <see langword="true"/>).
     /// </exception>
-    public static RegExpParseResult AdaptRegExp(string pattern, string flags, bool compiled = false, TimeSpan? matchTimeout = null, bool throwIfNotAdaptable = false)
+    public static RegExpParseResult AdaptRegExp(string pattern, string flags, bool compiled = false, TimeSpan? matchTimeout = null,
+        EcmaVersion ecmaVersion = EcmaVersion.Latest, bool throwIfNotAdaptable = false)
     {
         if (pattern is null)
         {
@@ -1913,6 +1928,7 @@ public sealed partial class Tokenizer
 
         var tokenizerOptions = new TokenizerOptions
         {
+            EcmaVersion = ecmaVersion,
             RegExpParseMode = !compiled ? RegExpParseMode.AdaptToInterpreted : RegExpParseMode.AdaptToCompiled,
             RegexTimeout = matchTimeout ?? TokenizerOptions.Default.RegexTimeout,
             Tolerant = !throwIfNotAdaptable,

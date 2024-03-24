@@ -380,17 +380,17 @@ public partial class Parser
         public readonly int CurrentThisScopeIndex;
 
         /// <summary>
-        /// A list of var-declared names in the current lexical scope
+        /// A list of var-declared names in the current lexical scope.
         /// </summary>
         public ArrayList<string> Var;
 
         /// <summary>
-        /// A list of lexically-declared names in the current lexical scope
+        /// A list of lexically-declared names in the current lexical scope.
         /// </summary>
         public ArrayList<string> Lexical;
 
         /// <summary>
-        /// A list of lexically-declared FunctionDeclaration names in the current lexical scope
+        /// A list of lexically-declared FunctionDeclaration names in the current lexical scope.
         /// </summary>
         public ArrayList<string> Functions;
     }

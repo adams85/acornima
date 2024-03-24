@@ -16,7 +16,8 @@ public sealed class RegExpLiteral : Literal
     }
 
     /// <remarks>
-    /// May return <see langword="null"/> if a <see cref="Regex"/> object couldn't be created out of the pattern or flags.
+    /// Can be <see langword="null"/> when the parser was not configured to convert regular expressions to <see cref="Regex"/> objects
+    /// (see also <see cref="ParserOptions.RegExpParseMode"/>) or tolerant parsing was enabled and it was not possible to construct an equivalent <see cref="Regex"/> object.
     /// </remarks>
     public new Regex? Value { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ParseResult.Regex; }
 

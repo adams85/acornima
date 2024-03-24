@@ -16,7 +16,7 @@ public record class JavaScriptTextWriterOptions
 }
 
 /// <summary>
-/// Base JavaScript text writer (code formatter) which uses the most compact possible (i.e. minimal) format.
+/// Base JavaScript text writer (code formatter) which uses the minimal (most compact possible) format.
 /// </summary>
 public partial class JavaScriptTextWriter
 {

@@ -96,7 +96,6 @@ public readonly struct Token
             TokenKind.Punctuator or
             TokenKind.Keyword or
             TokenKind.Identifier or
-            TokenKind.NullLiteral or
             TokenKind.BooleanLiteral or
             TokenKind.StringLiteral => $"{Kind} ({_value.Value})",
             TokenKind.NumericLiteral => $"{Kind} ({_value.NumericValue})",
