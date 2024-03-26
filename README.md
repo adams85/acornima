@@ -1,5 +1,7 @@
 [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/adams85/acornima/build.yml)](https://github.com/adams85/acornima/actions/workflows/build.yml)
+[![NuGet Release](https://img.shields.io/nuget/v/Acornima)](https://www.nuget.org/packages/Acornima)
 [![Feedz Version](https://img.shields.io/feedz/v/acornima/acornima/Acornima)](https://feedz.io/org/acornima/repository/acornima/packages/Acornima)
+[![Donate](https://img.shields.io/badge/-buy_me_a%C2%A0coffee-gray?logo=buy-me-a-coffee)](https://www.buymeacoffee.com/adams85)
 
 # Acorn + Esprima = Acornima 
 
@@ -10,17 +12,56 @@ It should also be mentioned that there is an earlier .NET port of acornjs, [Acor
 ### Here is how this Frankenstein's monster looks like:
 
 * The tokenizer is mostly a direct translation of the acornjs tokenizer to C# (with many smaller and bigger performance improvements, partly inspired by Esprima.NET) - apart from the regex validation/conversion logic, which has been borrowed from Esprima.NET currently.
-* The parser is ~99% acornjs (also with a bunch of minor improvements) and ~1% Esprima.NET (strict mode detection, public API).
+* The parser is ~99% acornjs (also with a bunch of minor improvements) and ~1% Esprima.NET (strict mode detection, public API). It is also worth mentioning that the error reporting has been changed to use the error messages of V8.
+* It includes protection against the non-catchable `StackOverflowException` using the same approach as Roslyn.
 * Both projects follow the ESTree specification, so is Acornima. The actual AST implementation is based on that of Esprima.NET, with further minor improvements to the class hierarchy that bring it even closer to the spec and allow encoding a bit more information.
 * The built-in AST visitors and additional utility functionality stems from Esprima.NET as well.
 
 ### And what good comes out of this mix?
 
 * A parser which already matches the performance of Esprima.NET, while doing more: it also passes the **complete** [Test262 test suite](https://github.com/tc39/test262) for ECMAScript 2023.
-* It is also more economic with regard to stack usage, so it can parse ~1.5x deeper structures.
+* It is also more economic with regard to stack usage, so it can parse ~1.7x deeper structures.
 * More options for fine-tuning parsing.
 * A standalone tokenizer which can deal with most of the ambiguities of the JavaScript grammar (thanks to the clever context tracking solution implemented by acornjs).
 * As the parser tracks variable scopes to detect variable redeclarations, it will be possible to expose this information to the consumer.
+
+### Getting started
+
+#### 1. Install the [package](https://www.nuget.org/packages/Acornima) from [NuGet](https://learn.microsoft.com/en-us/nuget/quickstart/install-and-use-a-package-using-the-dotnet-cli).
+
+```bash
+dotnet add package Acornima
+```
+
+Or, if you want to use additional features like AST to JavaScript or AST to JSON conversion:
+
+```bash
+dotnet add package Acornima.Extras
+```
+
+#### 2. Import the *Acornima* namespace in your application
+
+```csharp
+using Acornima;
+```
+
+#### 3. Create a parser instance
+
+```csharp
+var parser = new Parser();
+```
+
+Or, if you want to tweak the available settings:
+
+```csharp
+var parser = new Parser(new ParserOptions { /* ... */ });
+```
+
+#### 4. Use it to parse your JavaScript code:
+
+```csharp
+var ast = parser.ParseScript("console.log('Hello world!')");
+```
 
 ### AST
 
@@ -135,50 +176,50 @@ Legend:
 
 ### Benchmarks
 
-| Method         | Runtime            | FileName            | Mean      | Allocated  |
-|----------------|--------------------|---------------------|-----------|------------|
-| Acornima-dev   | .NET 8.0           | angular-1.2.5       | 10.576 ms | 4062.79 KB |
-| Acornima-dev   | .NET Framework 4.8 | angular-1.2.5       | 21.935 ms | 4083.74 KB |
-|                |                    |                     |           |            |
-| Esprima-v3.0.4 | .NET 8.0           | angular-1.2.5       | 11.214 ms | 3828.11 KB |
-| Esprima-v3.0.4 | .NET Framework 4.8 | angular-1.2.5       | 20.684 ms | 3879.54 KB |
-|                |                    |                     |           |            |
-| Acornima-dev   | .NET 8.0           | backbone-1.1.0      | 1.408 ms  | 638.72 KB  |
-| Acornima-dev   | .NET Framework 4.8 | backbone-1.1.0      | 3.226 ms  | 642.58 KB  |
-|                |                    |                     |           |            |
-| Esprima-v3.0.4 | .NET 8.0           | backbone-1.1.0      | 1.465 ms  | 613.88 KB  |
-| Esprima-v3.0.4 | .NET Framework 4.8 | backbone-1.1.0      | 2.917 ms  | 620.3 KB   |
-|                |                    |                     |           |            |
-| Acornima-dev   | .NET 8.0           | jquery-1.9.1        | 8.221 ms  | 3322.58 KB |
-| Acornima-dev   | .NET Framework 4.8 | jquery-1.9.1        | 18.009 ms | 3339.42 KB |
-|                |                    |                     |           |            |
-| Esprima-v3.0.4 | .NET 8.0           | jquery-1.9.1        | 8.469 ms  | 3305.23 KB |
-| Esprima-v3.0.4 | .NET Framework 4.8 | jquery-1.9.1        | 16.542 ms | 3355.15 KB |
-|                |                    |                     |           |            |
-| Acornima-dev   | .NET 8.0           | jquery.mobile-1.4.2 | 14.038 ms | 5499.24 KB |
-| Acornima-dev   | .NET Framework 4.8 | jquery.mobile-1.4.2 | 29.629 ms | 5530.42 KB |
-|                |                    |                     |           |            |
-| Esprima-v3.0.4 | .NET 8.0           | jquery.mobile-1.4.2 | 14.599 ms | 5428.48 KB |
-| Esprima-v3.0.4 | .NET Framework 4.8 | jquery.mobile-1.4.2 | 27.261 ms | 5497.48 KB |
-|                |                    |                     |           |            |
-| Acornima-dev   | .NET 8.0           | mootools-1.4.5      | 6.695 ms  | 2812.26 KB |
-| Acornima-dev   | .NET Framework 4.8 | mootools-1.4.5      | 14.633 ms | 2828 KB    |
-|                |                    |                     |           |            |
-| Esprima-v3.0.4 | .NET 8.0           | mootools-1.4.5      | 7.034 ms  | 2777.83 KB |
-| Esprima-v3.0.4 | .NET Framework 4.8 | mootools-1.4.5      | 13.754 ms | 2816.33 KB |
-|                |                    |                     |           |            |
-| Acornima-dev   | .NET 8.0           | underscore-1.5.2    | 1.158 ms  | 541.81 KB  |
-| Acornima-dev   | .NET Framework 4.8 | underscore-1.5.2    | 2.782 ms  | 544.51 KB  |
-|                |                    |                     |           |            |
-| Esprima-v3.0.4 | .NET 8.0           | underscore-1.5.2    | 1.229 ms  | 539.42 KB  |
-| Esprima-v3.0.4 | .NET Framework 4.8 | underscore-1.5.2    | 2.516 ms  | 547.18 KB  |
-|                |                    |                     |           |            |
-| Acornima-dev   | .NET 8.0           | yui-3.12.0          | 5.867 ms  | 2638.28 KB |
-| Acornima-dev   | .NET Framework 4.8 | yui-3.12.0          | 13.651 ms | 2655.09 KB |
-|                |                    |                     |           |            |
-| Esprima-v3.0.4 | .NET 8.0           | yui-3.12.0          | 6.488 ms  | 2585.78 KB |
-| Esprima-v3.0.4 | .NET Framework 4.8 | yui-3.12.0          | 12.365 ms | 2624.92 KB |
- 
+| Method          | Runtime            | FileName            |      Mean |  Allocated |
+|-----------------|--------------------|---------------------|----------:|-----------:|
+| Acornima v0.9.0 | .NET 8.0           | angular-1.2.5       | 10.656 ms | 4067.62 KB |
+| Acornima v0.9.0 | .NET Framework 4.8 | angular-1.2.5       | 21.035 ms | 4088.56 KB |
+|                 |                    |                     |           |            |
+| Esprima v3.0.4  | .NET 8.0           | angular-1.2.5       | 11.291 ms | 3828.11 KB |
+| Esprima v3.0.4  | .NET Framework 4.8 | angular-1.2.5       | 20.673 ms | 3879.54 KB |
+|                 |                    |                     |           |            |
+| Acornima v0.9.0 | .NET 8.0           | backbone-1.1.0      |  1.430 ms |  638.85 KB |
+| Acornima v0.9.0 | .NET Framework 4.8 | backbone-1.1.0      |  3.145 ms |  642.71 KB |
+|                 |                    |                     |           |            |
+| Esprima v3.0.4  | .NET 8.0           | backbone-1.1.0      |  1.452 ms |  613.88 KB |
+| Esprima v3.0.4  | .NET Framework 4.8 | backbone-1.1.0      |  2.883 ms |   620.3 KB |
+|                 |                    |                     |           |            |
+| Acornima v0.9.0 | .NET 8.0           | jquery-1.9.1        |  8.438 ms | 3324.14 KB |
+| Acornima v0.9.0 | .NET Framework 4.8 | jquery-1.9.1        | 17.668 ms | 3340.91 KB |
+|                 |                    |                     |           |            |
+| Esprima v3.0.4  | .NET 8.0           | jquery-1.9.1        |  8.453 ms | 3305.23 KB |
+| Esprima v3.0.4  | .NET Framework 4.8 | jquery-1.9.1        | 16.625 ms | 3355.15 KB |
+|                 |                    |                     |           |            |
+| Acornima v0.9.0 | .NET 8.0           | jquery.mobile-1.4.2 | 14.394 ms | 5505.68 KB |
+| Acornima v0.9.0 | .NET Framework 4.8 | jquery.mobile-1.4.2 | 28.905 ms | 5536.94 KB |
+|                 |                    |                     |           |            |
+| Esprima v3.0.4  | .NET 8.0           | jquery.mobile-1.4.2 | 14.566 ms | 5428.48 KB |
+| Esprima v3.0.4  | .NET Framework 4.8 | jquery.mobile-1.4.2 | 27.031 ms | 5497.48 KB |
+|                 |                    |                     |           |            |
+| Acornima v0.9.0 | .NET 8.0           | mootools-1.4.5      |  6.788 ms | 2811.17 KB |
+| Acornima v0.9.0 | .NET Framework 4.8 | mootools-1.4.5      | 14.466 ms |  2826.9 KB |
+|                 |                    |                     |           |            |
+| Esprima v3.0.4  | .NET 8.0           | mootools-1.4.5      |  6.875 ms | 2777.83 KB |
+| Esprima v3.0.4  | .NET Framework 4.8 | mootools-1.4.5      | 13.628 ms | 2816.33 KB |
+|                 |                    |                     |           |            |
+| Acornima v0.9.0 | .NET 8.0           | underscore-1.5.2    |  1.234 ms |  541.64 KB |
+| Acornima v0.9.0 | .NET Framework 4.8 | underscore-1.5.2    |  2.720 ms |  544.34 KB |
+|                 |                    |                     |           |            |
+| Esprima v3.0.4  | .NET 8.0           | underscore-1.5.2    |  1.239 ms |  539.42 KB |
+| Esprima v3.0.4  | .NET Framework 4.8 | underscore-1.5.2    |  2.501 ms |  547.18 KB |
+|                 |                    |                     |           |            |
+| Acornima v0.9.0 | .NET 8.0           | yui-3.12.0          |  6.359 ms | 2639.25 KB |
+| Acornima v0.9.0 | .NET Framework 4.8 | yui-3.12.0          | 13.410 ms | 2656.09 KB |
+|                 |                    |                     |           |            |
+| Esprima v3.0.4  | .NET 8.0           | yui-3.12.0          |  6.516 ms | 2585.78 KB |
+| Esprima v3.0.4  | .NET Framework 4.8 | yui-3.12.0          | 12.346 ms | 2624.92 KB |
+
 ### Known issues and limitations
 
 #### Regular expressions
@@ -197,14 +238,5 @@ However, because of the fundamental differences between the JS and .NET regex en
   * Support for Unicode property escapes is pretty limited (see [explanation](https://github.com/adams85/acornima/blob/488e55472113af21e31cbc24a79c18b01d23dcc7/src/Acornima/Tokenizer.RegExpParser.Unicode.cs#L871)). Currently, only General Category expressions are converted. But even this is not perfect as the result will depend the Unicode version included in the specific .NET runtime which is executing the parser's code.
 
 To sum it up, legacy pattern conversion is pretty solid apart from the minor issues listed above. However, support for unicode mode (flag u) patterns is partial and quirky, while conversion of the upcoming unicode sets mode (flag v) will be next to impossible - until the .NET regex engine gets some improved Unicode support.
- 
-### What's missing currently:
-* [x] Implementation of some experimental features (decorators, import attributes)
-* [ ] Moving messages into resources and replacing acorn messages with V8 messages
-* [x] AST to JSON conversion
-* [x] AST to JS conversion
-* [ ] Support for JSX
-* [x] Porting additional tests from Esprima.NET
-* [ ] Porting additional tests from acornjs
-* [x] CI
-* [ ] Docs
+
+### *Any feedback appreciated, contributions are welcome!*
