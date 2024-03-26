@@ -623,7 +623,6 @@ public class AstToJsonConverter : AstVisitor
         {
             Member("specifiers", node.Specifiers);
             Member("source", node.Source);
-            // original Esprima doesn't include this information yet
             if (node.Attributes.Count > 0)
             {
                 Member("attributes", node.Attributes);

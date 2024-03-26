@@ -3,6 +3,8 @@
   <PropertyGroup>
     <TargetFrameworks>net8.0</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">$(TargetFrameworks);net462</TargetFrameworks>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\..\src\Karambolo.Public.snk</AssemblyOriginatorKeyFile>
     <DefaultItemExcludes>Fixtures.RegExp\Generator\**;$(DefaultItemExcludes)</DefaultItemExcludes>
   </PropertyGroup>
 
