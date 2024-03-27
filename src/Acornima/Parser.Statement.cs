@@ -505,9 +505,9 @@ public partial class Parser
             var isForOf = false;
             if (_tokenizer._type == TokenType.In || (isForOf = _tokenizerOptions._ecmaVersion >= EcmaVersion.ES6 && IsContextual("of")))
             {
-                if (awaitAt >= 0)
+                if (awaitAt >= 0) // this implies _ecmaVersion >= EcmaVersion.ES9
                 {
-                    if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES9 && _tokenizer._type == TokenType.In)
+                    if (_tokenizer._type == TokenType.In)
                     {
                         Unexpected(awaitAt, TokenType.Name, "await");
                     }
