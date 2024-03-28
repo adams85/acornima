@@ -460,7 +460,7 @@ public partial class Parser
                 Unexpected(awaitAt, TokenType.Name, "await");
             }
 
-            return ParseFor(startMarker, null);
+            return ParseFor(startMarker, init: null);
         }
 
         var isLet = false;
@@ -500,7 +500,10 @@ public partial class Parser
             var containsEscape = _tokenizer._containsEscape;
             var destructuringErrors = new DestructuringErrors();
 
+            var oldForInitPosition = _forInitPosition;
+            _forInitPosition = _tokenizer._start;
             init = ParseExpression(ref destructuringErrors, awaitAt >= 0 ? ExpressionContext.AwaitForInit : ExpressionContext.ForInit);
+            _forInitPosition = oldForInitPosition;
 
             var isForOf = false;
             if (_tokenizer._type == TokenType.In || (isForOf = _tokenizerOptions._ecmaVersion >= EcmaVersion.ES6 && IsContextual("of")))

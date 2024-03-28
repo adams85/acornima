@@ -22,7 +22,7 @@ public partial class Parser
 
     // Used to signify the start of a potential arrow function
     private int _potentialArrowAt;
-    private bool _potentialArrowInForAwait;
+    private int _forInitPosition;
 
     // Positions to delayed-check that yield/await does not exist in default parameters.
     private int _yieldPosition, _awaitPosition, _awaitIdentifierPosition;
@@ -101,9 +101,7 @@ public partial class Parser
         GetIsReservedWord(_inModule, ecmaVersion, allowReserved, out _isReservedWord, out _isReservedWordBind);
 
         _potentialArrowAt = -1;
-        _potentialArrowInForAwait = false;
-
-        _yieldPosition = _awaitPosition = _awaitIdentifierPosition = 0;
+        _forInitPosition = _yieldPosition = _awaitPosition = _awaitIdentifierPosition = 0;
 
         _labels.Clear();
 

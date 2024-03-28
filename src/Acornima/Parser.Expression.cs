@@ -190,7 +190,6 @@ public partial class Parser
         if (_tokenizer._type == TokenType.ParenLeft || _tokenizer._type == TokenType.Name)
         {
             _potentialArrowAt = _tokenizer._start;
-            _potentialArrowInForAwait = (context & ExpressionContext.AwaitForInit) == ExpressionContext.AwaitForInit;
         }
 
         var left = ParseMaybeConditional(ref actualDestructuringErrors, context);
@@ -842,17 +841,16 @@ public partial class Parser
                     }
 
                     if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES8 && !containsEsc && id.Name == "async" && _tokenizer._type == TokenType.Name
-                        && (!_potentialArrowInForAwait || !"of".Equals(_tokenizer._value.Value) || _tokenizer._containsEscape))
+                        && ((context & ExpressionContext.AwaitForInit) != ExpressionContext.AwaitForInit || !"of".Equals(_tokenizer._value.Value) || _tokenizer._containsEscape))
                     {
                         containsEsc = _tokenizer._containsEscape;
-
                         id = ParseIdentifier();
                         if (CanInsertSemicolon() || !Eat(TokenType.Arrow))
                         {
                             // Unexpected(); // original acornjs error reporting
                             if ((context & ExpressionContext.AwaitForInit) == ExpressionContext.ForInit && !containsEsc && id.Name == "of")
                             {
-                                Raise(startMarker.Index, SyntaxErrorMessages.ForOfAsync);
+                                Raise(_forInitPosition, startMarker.Index == _forInitPosition ? SyntaxErrorMessages.ForOfAsync : SyntaxErrorMessages.InvalidLhsInFor);
                             }
                             else
                             {
