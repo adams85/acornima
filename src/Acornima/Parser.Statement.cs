@@ -476,20 +476,30 @@ public partial class Parser
 
             var initDeclaration = FinishNode(initStartMarker, ParseVar(kind, isFor: true));
 
-            if (_tokenizer._type == TokenType.In || _tokenizerOptions._ecmaVersion >= EcmaVersion.ES6 && IsContextual("of"))
+            if (_tokenizer._type == TokenType.In)
             {
                 if (initDeclaration.Declarations.Count != 1)
                 {
                     // This error is not reported by the original acornjs implementation.
-                    Raise(initDeclaration.Start, string.Format(SyntaxErrorMessages.ForInOfLoopMultiBindings, _tokenizer._type == TokenType.In ? "for-in" : "for-of"));
+                    Raise(initDeclaration.Start, string.Format(SyntaxErrorMessages.ForInOfLoopMultiBindings, "for-in"));
                 }
 
-                if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES9 && _tokenizer._type == TokenType.In && awaitAt >= 0)
+                if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES9 && awaitAt >= 0)
                 {
                     Unexpected(awaitAt, TokenType.Name, "await");
                 }
 
-                return ParseForInOf(startMarker, await: awaitAt >= 0, initDeclaration);
+                return ParseForInOf(startMarker, isForIn: true, await: false, initDeclaration);
+            }
+            else if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES6 && IsContextual("of"))
+            {
+                if (initDeclaration.Declarations.Count != 1)
+                {
+                    // This error is not reported by the original acornjs implementation.
+                    Raise(initDeclaration.Start, string.Format(SyntaxErrorMessages.ForInOfLoopMultiBindings, "for-of"));
+                }
+
+                return ParseForInOf(startMarker, isForIn: false, await: awaitAt >= 0, initDeclaration);
             }
 
             init = initDeclaration;
@@ -502,28 +512,37 @@ public partial class Parser
 
             var oldForInitPosition = _forInitPosition;
             _forInitPosition = _tokenizer._start;
-            init = ParseExpression(ref destructuringErrors, awaitAt >= 0 ? ExpressionContext.AwaitForInit : ExpressionContext.ForInit);
-            _forInitPosition = oldForInitPosition;
 
-            var isForOf = false;
-            if (_tokenizer._type == TokenType.In || (isForOf = _tokenizerOptions._ecmaVersion >= EcmaVersion.ES6 && IsContextual("of")))
+            init = awaitAt < 0
+                ? ParseExpression(ref destructuringErrors, ExpressionContext.ForInit)
+                : ParseExprSubscripts(ref destructuringErrors, ExpressionContext.AwaitForInit);
+
+            // Swap variables using XOR
+            _forInitPosition ^= oldForInitPosition;
+            oldForInitPosition ^= _forInitPosition;
+            _forInitPosition ^= oldForInitPosition;
+
+            if (_tokenizer._type == TokenType.In)
             {
                 if (awaitAt >= 0) // this implies _ecmaVersion >= EcmaVersion.ES9
                 {
-                    if (_tokenizer._type == TokenType.In)
-                    {
-                        Unexpected(awaitAt, TokenType.Name, "await");
-                    }
-                }
-                else
-                {
-                    if (isForOf && _tokenizerOptions._ecmaVersion >= EcmaVersion.ES8 && !containsEscape && init is Identifier { Name: "async" })
-                    {
-                        Raise(init.Start, SyntaxErrorMessages.ForOfAsync);
-                    }
+                    Unexpected(awaitAt, TokenType.Name, "await");
                 }
 
-                if (startsWithLet && isForOf)
+                var initPattern = ToAssignable(init, ref destructuringErrors, isBinding: false, lhsKind: LeftHandSideKind.ForInOf);
+                CheckLValPattern(initPattern, lhsKind: LeftHandSideKind.ForInOf);
+
+                return ParseForInOf(startMarker, isForIn: true, await: false, initPattern);
+            }
+            else if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES6 && IsContextual("of"))
+            {
+                if (awaitAt < 0 && _tokenizerOptions._ecmaVersion >= EcmaVersion.ES8
+                    && oldForInitPosition == init.Start && !containsEscape && init is Identifier { Name: "async" })
+                {
+                    Raise(init.Start, SyntaxErrorMessages.ForOfAsync);
+                }
+
+                if (startsWithLet)
                 {
                     // Raise(init.Start, "The left-hand side of a for-of loop may not start with 'let'"); // original acornjs error reporting
                     Raise(init.Start, SyntaxErrorMessages.ForOfLet);
@@ -532,7 +551,11 @@ public partial class Parser
                 var initPattern = ToAssignable(init, ref destructuringErrors, isBinding: false, lhsKind: LeftHandSideKind.ForInOf);
                 CheckLValPattern(initPattern, lhsKind: LeftHandSideKind.ForInOf);
 
-                return ParseForInOf(startMarker, await: awaitAt >= 0, initPattern);
+                return ParseForInOf(startMarker, isForIn: false, await: awaitAt >= 0, initPattern);
+            }
+            else if (awaitAt >= 0)
+            {
+                Unexpected();
             }
 
             CheckExpressionErrors(ref destructuringErrors, andThrow: true);
@@ -936,11 +959,10 @@ public partial class Parser
 
     // Parse a `for`/`in` and `for`/`of` loop, which are almost
     // same from parser's perspective.
-    private Statement ParseForInOf(in Marker startMarker, bool await, Node init)
+    private Statement ParseForInOf(in Marker startMarker, bool isForIn, bool await, Node init)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseForIn = function`
 
-        var isForIn = _tokenizer._type == TokenType.In;
         Next();
 
         VariableDeclarator? variableDeclarator;

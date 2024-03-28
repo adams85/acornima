@@ -1284,8 +1284,8 @@ public partial class ParserTests
     [InlineData("script", "async function f() { for ([{await}] of []) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
     [InlineData("module", "async function f() { for ([{await}] of []) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
 
-    [InlineData("script", "async function f() { for await (await of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")] // V8 reports "Unexpected reserved word"
-    [InlineData("module", "async function f() { for await (await of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")] // V8 reports "Unexpected reserved word"
+    [InlineData("script", "async function f() { for await (await of []) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("module", "async function f() { for await (await of []) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
     [InlineData("script", "async function f() { for await ((await) of []) {} }", EcmaVersion.Latest, "Unexpected token ')'")]
     [InlineData("module", "async function f() { for await ((await) of []) {} }", EcmaVersion.Latest, "Unexpected token ')'")]
     [InlineData("script", "async function f() { for await ([await] of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
@@ -1559,14 +1559,14 @@ public partial class ParserTests
     [InlineData("module", "for (x = async of\n[1]) { console.log(async) }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "The left-hand side of a for-of loop may not be 'async'."
 
     [InlineData("script", "for await (x = async of [1]) { console.log(async) }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("module", "for await (x = async of [1]) { console.log(async) }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "Unexpected token '='"
-    [InlineData("script", "async () => { for await (x = async of [1]) { console.log(async) } }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "Unexpected token '='"
+    [InlineData("module", "for await (x = async of [1]) { console.log(async) }", EcmaVersion.Latest, "Unexpected token '='")]
+    [InlineData("script", "async () => { for await (x = async of [1]) { console.log(async) } }", EcmaVersion.Latest, "Unexpected token '='")]
     [InlineData("script", "for await (x = async\nof [1]) { console.log(async) }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("module", "for await (x = async\nof [1]) { console.log(async) }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "Unexpected token '='"
-    [InlineData("script", "async () => { for await (x = async\nof [1]) { console.log(async) } }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "Unexpected token '='"
+    [InlineData("module", "for await (x = async\nof [1]) { console.log(async) }", EcmaVersion.Latest, "Unexpected token '='")]
+    [InlineData("script", "async () => { for await (x = async\nof [1]) { console.log(async) } }", EcmaVersion.Latest, "Unexpected token '='")]
     [InlineData("script", "for await (x = async of\n[1]) { console.log(async) }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("module", "for await (x = async of\n[1]) { console.log(async) }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "Unexpected token '='"
-    [InlineData("script", "async () => { for await (x = async of\n[1]) { console.log(async) } }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "Unexpected token '='"
+    [InlineData("module", "for await (x = async of\n[1]) { console.log(async) }", EcmaVersion.Latest, "Unexpected token '='")]
+    [InlineData("script", "async () => { for await (x = async of\n[1]) { console.log(async) } }", EcmaVersion.Latest, "Unexpected token '='")]
 
     [InlineData("script", "for (x, async of [1]) { console.log(async) }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "The left-hand side of a for-of loop may not be 'async'."
     [InlineData("module", "for (x, async of [1]) { console.log(async) }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "The left-hand side of a for-of loop may not be 'async'."
@@ -1574,17 +1574,24 @@ public partial class ParserTests
     [InlineData("script", "for (x, y = async of [1]) { console.log(async) }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "The left-hand side of a for-of loop may not be 'async'."
     [InlineData("module", "for (x, y = async of [1]) { console.log(async) }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "The left-hand side of a for-of loop may not be 'async'."
 
-    [InlineData("script", "async () => { for await (x, async of [1]) { console.log(async) } }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "Unexpected token ','"
-    [InlineData("module", "async () => { for await (x, async of [1]) { console.log(async) } }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "Unexpected token ','"
+    [InlineData("script", "async () => { for await (x, async of [1]) { console.log(async) } }", EcmaVersion.Latest, "Unexpected token ','")]
+    [InlineData("module", "async () => { for await (x, async of [1]) { console.log(async) } }", EcmaVersion.Latest, "Unexpected token ','")]
 
-    [InlineData("script", "async () => { for await (x, y = async of [1]) { console.log(async) } }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "Unexpected token ','"
-    [InlineData("module", "async () => { for await (x, y = async of [1]) { console.log(async) } }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "Unexpected token ','"
+    [InlineData("script", "async () => { for await (x, y = async of [1]) { console.log(async) } }", EcmaVersion.Latest, "Unexpected token ','")]
+    [InlineData("module", "async () => { for await (x, y = async of [1]) { console.log(async) } }", EcmaVersion.Latest, "Unexpected token ','")]
 
     [InlineData("script", "for (x ? async of => {} : y of [1]) { console.log(async) }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")]
     [InlineData("module", "for (x ? async of => {} : y of [1]) { console.log(async) }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")]
 
-    [InlineData("script", "async () => { for await (x ? async of => {} : y of [1]) { console.log(async) } }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "Unexpected token '?'"
-    [InlineData("module", "async () => { for await (x ? async of => {} : y of [1]) { console.log(async) } }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "Unexpected token '?'"
+    [InlineData("script", "async () => { for await (x ? async of => {} : y of [1]) { console.log(async) } }", EcmaVersion.Latest, "Unexpected token '?'")]
+    [InlineData("module", "async () => { for await (x ? async of => {} : y of [1]) { console.log(async) } }", EcmaVersion.Latest, "Unexpected token '?'")]
+
+    [InlineData("script", "async () => { for ((async) of [1]) { console.log(async) } }", EcmaVersion.Latest, null)]
+    [InlineData("module", "async () => { for ((async) of [1]) { console.log(async) } }", EcmaVersion.Latest, null)]
+    [InlineData("script", "async () => { for ((async)\nof [1]) { console.log(async) } }", EcmaVersion.Latest, null)]
+    [InlineData("module", "async () => { for ((async)\nof [1]) { console.log(async) } }", EcmaVersion.Latest, null)]
+    [InlineData("script", "async () => { for ((async) of\n[1]) { console.log(async) } }", EcmaVersion.Latest, null)]
+    [InlineData("module", "async () => { for ((async) of\n[1]) { console.log(async) } }", EcmaVersion.Latest, null)]
     public void ShouldHandleAsyncOfAmbiguityInForLoop(string sourceType, string input, EcmaVersion ecmaVersion, string? expectedError)
     {
         // See also: https://github.com/tc39/ecma262/issues/2034
