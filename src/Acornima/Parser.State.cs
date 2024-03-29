@@ -298,7 +298,8 @@ public partial class Parser
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/state.js > `get allowNewDotTarget`
 
-        return (CurrentThisScope(out _).Flags & (ScopeFlags.Function | ScopeFlags.ClassStaticBlock | ScopeFlags.InClassFieldInit)) != 0;
+        return _options.AllowNewTargetOutsideFunction
+            || (CurrentThisScope(out _).Flags & (ScopeFlags.Function | ScopeFlags.ClassStaticBlock | ScopeFlags.InClassFieldInit)) != 0;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -87,6 +87,13 @@ public record class ParserOptions
     /// </remarks>
     public bool AllowAwaitOutsideFunction { get => _allowAwaitOutsideFunction; init => _allowAwaitOutsideFunction = value; }
 
+    internal readonly bool _allowNewTargetOutsideFunction;
+    /// <summary>
+    /// Gets or sets whether to allow new.target meta-properties in the top-level scope.
+    /// Defaults to <see langword="false"/>.
+    /// </summary>
+    public bool AllowNewTargetOutsideFunction { get => _allowNewTargetOutsideFunction; init => _allowNewTargetOutsideFunction = value; }
+
     internal readonly bool _allowSuperOutsideMethod;
     /// <summary>
     /// Gets or sets whether to allow super identifiers to appear outside methods.
