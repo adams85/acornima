@@ -776,7 +776,7 @@ public partial class Parser
             handler = FinishNode(clauseStartMarker, new CatchClause(param, body));
         }
 
-        BlockStatement? finalizer;
+        NestedBlockStatement? finalizer;
         if (Eat(TokenType.Finally))
         {
             blockStartMarker = StartNode();
@@ -899,7 +899,7 @@ public partial class Parser
     // Parse a semicolon-enclosed block of statements, handling `"use
     // strict"` declarations when `allowStrict` is true (used for
     // function bodies).
-    private BlockStatement ParseBlockStatement(in Marker startMarker, bool createNewLexicalScope = true)
+    private NestedBlockStatement ParseBlockStatement(in Marker startMarker, bool createNewLexicalScope = true)
     {
         // NOTE: This method doesn't exist in acornjs, was added for consistency.
 

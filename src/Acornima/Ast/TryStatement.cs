@@ -6,9 +6,9 @@ namespace Acornima.Ast;
 public sealed partial class TryStatement : Statement
 {
     public TryStatement(
-        BlockStatement block,
+        NestedBlockStatement block,
         CatchClause? handler,
-        BlockStatement? finalizer)
+        NestedBlockStatement? finalizer)
         : base(NodeType.TryStatement)
     {
         Block = block;
@@ -16,11 +16,11 @@ public sealed partial class TryStatement : Statement
         Finalizer = finalizer;
     }
 
-    public BlockStatement Block { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
+    public NestedBlockStatement Block { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public CatchClause? Handler { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
-    public BlockStatement? Finalizer { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
+    public NestedBlockStatement? Finalizer { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-    private TryStatement Rewrite(BlockStatement block, CatchClause? handler, BlockStatement? finalizer)
+    private TryStatement Rewrite(NestedBlockStatement block, CatchClause? handler, NestedBlockStatement? finalizer)
     {
         return new TryStatement(block, handler, finalizer);
     }

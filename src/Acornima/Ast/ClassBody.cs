@@ -14,7 +14,7 @@ public sealed partial class ClassBody : Node
     }
 
     /// <remarks>
-    /// { <see cref="MethodDefinition"/> | <see cref="PropertyDefinition"/> | <see cref="StaticBlock"/> }
+    /// { <see cref="PropertyDefinition"/> | <see cref="AccessorProperty"/> | <see cref="MethodDefinition"/> |  <see cref="StaticBlock"/> }
     /// </remarks>
     public ref readonly NodeList<Node> Body { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref _body; }
 
