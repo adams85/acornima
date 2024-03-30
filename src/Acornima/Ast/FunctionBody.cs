@@ -2,7 +2,7 @@ using System.Runtime.CompilerServices;
 
 namespace Acornima.Ast;
 
-public sealed class FunctionBody : BlockStatement, IVarScope
+public sealed class FunctionBody : BlockStatement, IHoistingScope
 {
     public FunctionBody(in NodeList<Statement> body, bool strict)
         : base(NodeType.BlockStatement, body)
