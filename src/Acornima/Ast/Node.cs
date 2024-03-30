@@ -39,9 +39,11 @@ public abstract class Node : INode
 
     internal Range _range;
     public Range Range { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _range; init => _range = value; }
+    public ref readonly Range RangeRef { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref _range; }
 
     internal SourceLocation _location;
     public SourceLocation Location { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _location; init => _location = value; }
+    public ref readonly SourceLocation LocationRef { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref _location; }
 
     /// <summary>
     /// Gets or sets the arbitrary, user-defined data object associated with the current <see cref="Node"/>.
