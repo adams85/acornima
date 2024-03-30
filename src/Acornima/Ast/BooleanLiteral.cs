@@ -20,5 +20,5 @@ public sealed class BooleanLiteral : Literal
 
     public new bool Value { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ReferenceEquals(_value, CachedValues.True); }
 
-    protected override object? GetValue() => Value;
+    protected override object? GetValue() => _value;
 }

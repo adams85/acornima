@@ -1228,8 +1228,8 @@ public partial class Tokenizer
 
     private struct RegExpGroup
     {
-        // NOTE: Instead of just using a list, we can leverage our economic internal data structure to optimize the case of no alternates.
-        private AdditionalDataSlot _alternates;
+        // NOTE: We optimize for the case of no alternates.
+        private ArrayList<RegExpGroupAlternate> _additionalAlternates;
 
         public RegExpGroup(RegExpGroupType type)
         {
@@ -1238,24 +1238,19 @@ public partial class Tokenizer
 
         public RegExpGroup(RegExpGroupType type, RegExpGroupAlternate? parent) : this(type)
         {
-            _alternates.PrimaryData = new RegExpGroupAlternate(parent);
-            AlternateCount = 1;
+            FirstAlternate = new RegExpGroupAlternate(parent);
         }
 
         public RegExpGroupType Type { get; }
 
-        public int AlternateCount { get; private set; }
+        public readonly RegExpGroupAlternate? FirstAlternate;
 
-        public readonly RegExpGroupAlternate? FirstAlternate => (RegExpGroupAlternate?)_alternates.PrimaryData;
-
-        public readonly RegExpGroupAlternate? LastAlternate => GetAlternate(AlternateCount - 1);
-
-        public readonly RegExpGroupAlternate? GetAlternate(int index) => (RegExpGroupAlternate?)_alternates[index];
+        public readonly RegExpGroupAlternate? LastAlternate => _additionalAlternates.Count == 0 ? FirstAlternate : _additionalAlternates.LastItemRef();
 
         public void AddAlternate()
         {
             Debug.Assert(FirstAlternate is not null);
-            _alternates[AlternateCount++] = new RegExpGroupAlternate(FirstAlternate!.Parent);
+            _additionalAlternates.Add(new RegExpGroupAlternate(FirstAlternate!.Parent));
         }
 
         public readonly void HoistGroupNamesToParent()
@@ -1264,9 +1259,10 @@ public partial class Tokenizer
             var parent = FirstAlternate!.Parent;
             Debug.Assert(parent is not null);
 
-            for (var i = 0; i < AlternateCount; i++)
+            FirstAlternate!.HoistGroupNamesTo(parent!);
+            for (var i = 0; i < _additionalAlternates.Count; i++)
             {
-                GetAlternate(i)!.HoistGroupNamesTo(parent!);
+                _additionalAlternates[i].HoistGroupNamesTo(parent!);
             }
         }
     }

@@ -1,78 +1,110 @@
-using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace Acornima.Helpers;
 
-// NOTE: We need an internal type to make our logic foolproof. (See the type check in the AdditionalDataSlot.PrimaryData property below.)
-internal struct AdditionalDataHolder
-{
-    public object? Data;
-}
-
+// This type is semi-thread-safe: promotion of a single value to an array is thread-safe but updating items is not.
 internal struct AdditionalDataSlot
 {
-    private object? _data;
+    private volatile object? _data;
 
     public object? PrimaryData
     {
-        readonly get => _data is not AdditionalDataHolder[] array ? _data : array[0].Data;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        readonly get
+        {
+            var data = _data;
+            return data is not ValueHolder[] array ? data : Volatile.Read(ref array[0].Data);
+        }
         set
         {
-            Debug.Assert(value is not AdditionalDataHolder[], $"Value of type {typeof(AdditionalDataHolder[])} is not allowed.");
-            (_data is not AdditionalDataHolder[] array ? ref _data : ref array[0].Data) = value;
+            var data = _data;
+            for (; ; )
+            {
+                object? newData;
+                if (data is not ValueHolder[] array)
+                {
+                    newData = value;
+                }
+                else
+                {
+                    Volatile.Write(ref array[0].Data, value);
+                    return;
+                }
+
+                var currentData = Interlocked.CompareExchange(ref _data, newData, data);
+                if (currentData == data)
+                {
+                    break;
+                }
+                data = currentData;
+            }
         }
     }
 
-    public object? this[int index]
+    public readonly object? this[int index]
     {
-        readonly get
+        get
         {
-            Debug.Assert(index >= 0, "Index must be greater than or equal to 0.");
+            Debug.Assert(index >= 0, "Index is out of range.");
 
-            var array = _data as AdditionalDataHolder[];
+            var data = _data;
             if (index == 0)
             {
-                return array is null ? _data : array[0].Data;
+                return PrimaryData;
             }
-            else
-            {
-                return array is not null && (uint)index < (uint)array.Length ? array[index].Data : null;
-            }
+
+            var array = data as ValueHolder[];
+            return array is not null && (uint)index < (uint)array.Length ? Volatile.Read(ref array[index].Data) : null;
         }
-        set
+    }
+
+    public object? SetItem(int index, object? value, int capacity)
+    {
+        Debug.Assert(index >= 0 && index < capacity, "Index is out of range.");
+        Debug.Assert(((_data as ValueHolder[])?.Length ?? capacity) == capacity, "Capacity changed.");
+
+        if (index == 0)
         {
-            Debug.Assert(value is not AdditionalDataHolder[], $"Value of type {typeof(AdditionalDataHolder[])} is not allowed.");
-            Debug.Assert(index >= 0, "Index must be greater than or equal to 0.");
+            PrimaryData = value;
+            return value;
+        }
 
-            var array = _data as AdditionalDataHolder[];
-            if (index == 0)
-            {
-                (array is null ? ref _data : ref array[0].Data) = value;
-                return;
-            }
-
+        var data = _data;
+        for (; ; )
+        {
+            var array = data as ValueHolder[];
             if (array is not null)
             {
-                if ((uint)index >= (uint)array.Length)
-                {
-                    if (value is null)
-                        return;
-
-                    Array.Resize(ref array, index + 1);
-                    _data = array;
-                }
+                Volatile.Write(ref array[index].Data, value);
+                return value;
+            }
+            else if (value is not null)
+            {
+                array = new ValueHolder[capacity];
+                array[0].Data = data;
+                array[index].Data = value;
             }
             else
             {
-                if (value is null)
-                    return;
-
-                array = new AdditionalDataHolder[index + 1];
-                array[0].Data = _data;
-                _data = array;
+                return value;
             }
 
-            array[index].Data = value;
+            var currentData = Interlocked.CompareExchange(ref _data, array, data);
+            if (currentData == data)
+            {
+                break;
+            }
+            data = currentData;
         }
+
+        return value;
+    }
+
+    // NOTE: We need an internal type to make our logic foolproof. (See the type check in the AdditionalDataSlot.PrimaryData property below.)
+    private struct ValueHolder
+    {
+        public object? Data;
     }
 }

@@ -15,6 +15,7 @@ public abstract partial class Literal : Expression
     }
 
     public TokenKind Kind { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
+
     /// <remarks>
     /// <see langword="null"/> | <see cref="string"/> | <see cref="bool"/> | <see cref="double"/> | <see cref="BigInteger"/> | <see cref="Regex"/>
     /// </remarks>

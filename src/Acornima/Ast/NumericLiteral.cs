@@ -12,6 +12,9 @@ public sealed class NumericLiteral : Literal
 
     public new double Value { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-    // TODO: cache boxed value?
-    protected override object? GetValue() => Value;
+    protected override object? GetValue()
+    {
+        const int index = 1;
+        return _additionalDataSlot[index] ?? _additionalDataSlot.SetItem(index, Value, capacity: index + 1);
+    }
 }

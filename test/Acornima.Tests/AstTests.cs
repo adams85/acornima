@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using Acornima.Ast;
 using Xunit;
 
@@ -9,6 +10,28 @@ namespace Acornima.Tests;
 
 public class AstTests
 {
+    [Fact]
+    public void LiteralValueShouldBeCached()
+    {
+        var parser = new Parser();
+        var ast = parser.ParseExpression("false + 1 + 2n");
+
+        Literal literal = ast.DescendantNodes().OfType<BooleanLiteral>().First();
+        var value = literal.Value;
+        Assert.Equal(false, value);
+        Assert.Same(value, literal.Value);
+
+        literal = ast.DescendantNodes().OfType<NumericLiteral>().First();
+        value = literal.Value;
+        Assert.Equal(1d, value);
+        Assert.Same(value, literal.Value);
+
+        literal = ast.DescendantNodes().OfType<BigIntLiteral>().First();
+        value = literal.Value;
+        Assert.Equal(new BigInteger(2), value);
+        Assert.Same(value, literal.Value);
+    }
+
     [Theory]
     [InlineData("root", true, 1)]
     [InlineData("root", false, 0)]

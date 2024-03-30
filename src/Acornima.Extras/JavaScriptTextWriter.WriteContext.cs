@@ -188,7 +188,7 @@ public partial class JavaScriptTextWriter
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             readonly get => _additionalDataSlot[1];
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set => _additionalDataSlot[1] = value;
+            set => _additionalDataSlot.SetItem(1, value, capacity: 2);
         }
     }
 }

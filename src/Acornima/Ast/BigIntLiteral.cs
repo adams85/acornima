@@ -14,8 +14,11 @@ public sealed class BigIntLiteral : Literal
 
     public new BigInteger Value { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-    // TODO: cache boxed value?
-    protected override object? GetValue() => Value;
+    protected override object? GetValue()
+    {
+        const int index = 1;
+        return _additionalDataSlot[index] ?? _additionalDataSlot.SetItem(index, Value, capacity: index + 1);
+    }
 
     public string BigInt => Value.ToString(CultureInfo.InvariantCulture);
 }

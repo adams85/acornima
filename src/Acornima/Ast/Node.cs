@@ -45,13 +45,21 @@ public abstract class Node : INode
     public SourceLocation Location { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _location; init => _location = value; }
     public ref readonly SourceLocation LocationRef { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref _location; }
 
+    private protected AdditionalDataSlot _additionalDataSlot;
+
     /// <summary>
     /// Gets or sets the arbitrary, user-defined data object associated with the current <see cref="Node"/>.
     /// </summary>
     /// <remarks>
     /// The operation is not guaranteed to be thread-safe. In case concurrent access or update is possible, the necessary synchronization is caller's responsibility.
     /// </remarks>
-    public object? UserData { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; [MethodImpl(MethodImplOptions.AggressiveInlining)] set; }
+    public object? UserData
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _additionalDataSlot.PrimaryData;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        set => _additionalDataSlot.PrimaryData = value;
+    }
 
     protected internal abstract object? Accept(AstVisitor visitor);
 
