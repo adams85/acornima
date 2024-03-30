@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 namespace Acornima.Ast;
 
 [VisitableNode(ChildProperties = new[] { nameof(Properties) })]
-public sealed partial class ObjectPattern : Node, IDestructuringPattern
+public sealed partial class ObjectPattern : DestructuringPattern
 {
     private readonly NodeList<Node> _properties;
 

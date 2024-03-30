@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 namespace Acornima.Ast;
 
 [VisitableNode(ChildProperties = new[] { nameof(Object), nameof(Property) })]
-public sealed partial class MemberExpression : Expression, IDestructuringPattern, IChainElement
+public sealed partial class MemberExpression : Expression, IChainElement, IDestructuringElement
 {
     public MemberExpression(Expression obj, Expression property, bool computed, bool optional)
         : base(NodeType.MemberExpression)
