@@ -940,7 +940,7 @@ public partial class Parser
                 _tokenizer.ReadRegExp();
                 goto case TokenKind.RegExpLiteral;
 
-            case TokenKind.Punctuator when _tokenizer._type == TokenType.At && _tokenizerOptions.EcmaVersion == EcmaVersion.Experimental:
+            case TokenKind.Punctuator when _tokenizer._type == TokenType.At:
                 EnterRecursion();
                 return ExitRecursion(ParseDecoratedClassExpression(startMarker));
 
@@ -991,7 +991,7 @@ public partial class Parser
         var source = ParseMaybeAssign(ref NullRef<DestructuringErrors>());
 
         Expression? attributes = null;
-        if (_tokenizerOptions._ecmaVersion == EcmaVersion.Experimental
+        if (_tokenizerOptions.AllowImportAttributes()
             && Eat(TokenType.Comma) && _tokenizer._type != TokenType.ParenRight)
         {
             attributes = ParseMaybeAssign(ref NullRef<DestructuringErrors>());

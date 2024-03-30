@@ -23,6 +23,7 @@ public record class ParserOptions
         _allowReturnOutsideFunction = original._allowReturnOutsideFunction;
         _allowImportExportEverywhere = original._allowImportExportEverywhere;
         _allowAwaitOutsideFunction = original._allowAwaitOutsideFunction;
+        _allowNewTargetOutsideFunction = original._allowNewTargetOutsideFunction;
         _allowSuperOutsideMethod = original._allowSuperOutsideMethod;
         _checkPrivateFields = original._checkPrivateFields;
         _onInsertedSemicolon = original._onInsertedSemicolon;
@@ -49,6 +50,15 @@ public record class ParserOptions
     {
         get => _tokenizerOptions._ecmaVersion;
         init => _tokenizerOptions._ecmaVersion = value;
+    }
+
+    /// <summary>
+    /// Gets or sets which experimental ECMAScript language features to enable.
+    /// </summary>
+    public ExperimentalESFeatures ExperimentalESFeatures
+    {
+        get => _tokenizerOptions._experimentalESFeatures;
+        init => _tokenizerOptions._experimentalESFeatures = value;
     }
 
     internal readonly AllowReservedOption _allowReserved;

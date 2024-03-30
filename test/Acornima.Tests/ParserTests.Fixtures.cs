@@ -51,15 +51,15 @@ public partial class ParserTests
     [MemberData(nameof(Fixtures), FixturesDirName)]
     public void ExecuteTestCase(string fixture)
     {
-        static T CreateParserOptions<T>(bool tolerant, RegExpParseMode regExpParseMode, EcmaVersion ecmaVersion) where T : ParserOptions, new() => new T
+        static T CreateParserOptions<T>(bool tolerant, RegExpParseMode regExpParseMode, ExperimentalESFeatures experimentalESFeatures) where T : ParserOptions, new() => new T
         {
             Tolerant = tolerant,
             RegExpParseMode = regExpParseMode,
             AllowReturnOutsideFunction = tolerant,
-            EcmaVersion = ecmaVersion,
+            ExperimentalESFeatures = experimentalESFeatures,
         };
 
-        var (parserOptionsFactory, parserFactory, conversionDefaultOptions) = (new Func<bool, RegExpParseMode, EcmaVersion, ParserOptions>(CreateParserOptions<ParserOptions>),
+        var (parserOptionsFactory, parserFactory, conversionDefaultOptions) = (new Func<bool, RegExpParseMode, ExperimentalESFeatures, ParserOptions>(CreateParserOptions<ParserOptions>),
             new Func<ParserOptions, Parser>(opts => new Parser(opts)),
             AstToJsonOptions.Default);
 
@@ -119,9 +119,9 @@ public partial class ParserTests
             : SourceType.Script;
 
         var regExpParseMode = !metadata.IgnoresRegex ? RegExpParseMode.AdaptToInterpreted : RegExpParseMode.Skip;
-        var ecmaVersion = jsFilePath.Contains("experimental") ? EcmaVersion.Experimental : EcmaVersion.Latest;
+        var experimentalESFeatures = jsFilePath.Contains("experimental") ? ExperimentalESFeatures.All : ExperimentalESFeatures.None;
 
-        var parserOptions = parserOptionsFactory(false, regExpParseMode, ecmaVersion);
+        var parserOptions = parserOptionsFactory(false, regExpParseMode, experimentalESFeatures);
 
         var conversionOptions = metadata.CreateConversionOptions(conversionDefaultOptions);
         if (File.Exists(moduleFilePath))
@@ -186,7 +186,7 @@ public partial class ParserTests
 
         if (!invalid)
         {
-            parserOptions = parserOptionsFactory(true, parserOptions.RegExpParseMode, parserOptions.EcmaVersion);
+            parserOptions = parserOptionsFactory(true, parserOptions.RegExpParseMode, parserOptions.ExperimentalESFeatures);
 
             var actual = ParseAndFormat(sourceType, script, parserOptions, parserFactory, conversionOptions);
             CompareTreesAndAssert(actual, expected);
@@ -196,7 +196,7 @@ public partial class ParserTests
         }
         else
         {
-            parserOptions = parserOptionsFactory(false, parserOptions.RegExpParseMode, parserOptions.EcmaVersion);
+            parserOptions = parserOptionsFactory(false, parserOptions.RegExpParseMode, parserOptions.ExperimentalESFeatures);
 
             // TODO: check the accuracy of the message and of the location
             Assert.Throws<SyntaxErrorException>(() => ParseAndFormat(sourceType, script, parserOptions, parserFactory, conversionOptions));

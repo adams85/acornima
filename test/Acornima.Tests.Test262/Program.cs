@@ -69,7 +69,7 @@ public static class Program
                         var parserOptions = new ParserOptions
                         {
                             Tolerant = false,
-                            EcmaVersion = Test262Test.TestsExperimentalFeature(file) ? EcmaVersion.Experimental : EcmaVersion.Latest,
+                            ExperimentalESFeatures = Test262Test.TestsExperimentalFeature(file) ? ExperimentalESFeatures.All : ExperimentalESFeatures.None,
                             PreserveParens = true,
                         };
                         var parser = new Parser(parserOptions);

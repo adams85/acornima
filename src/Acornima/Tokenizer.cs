@@ -251,7 +251,7 @@ public sealed partial class Tokenizer
             case '#':
                 return ReadToken_NumberSign(cp);
 
-            case '@' when _options._ecmaVersion == EcmaVersion.Experimental:
+            case '@' when _options.AllowDecorators():
                 _position++;
                 return FinishToken(TokenType.At, ((char)cp).ToStringCached());
         }
@@ -1848,21 +1848,12 @@ public sealed partial class Tokenizer
     /// <summary>
     /// Checks whether an ECMAScript regular expression is syntactically correct.
     /// </summary>
-    /// <returns><see langword="true"/> if the regular expression is syntactically correct, otherwise <see langword="false"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool ValidateRegExp(string pattern, string flags, out ParseError? error)
-    {
-        return ValidateRegExp(pattern, flags, EcmaVersion.Latest, out error);
-    }
-
-    /// <summary>
-    /// Checks whether an ECMAScript regular expression is syntactically correct.
-    /// </summary>
     /// <remarks>
     /// Unicode sets mode (flag v) is not supported currently, for such patterns the method returns <see langword="false"/>.
     /// </remarks>
     /// <returns><see langword="true"/> if the regular expression is syntactically correct, otherwise <see langword="false"/>.</returns>
-    public static bool ValidateRegExp(string pattern, string flags, EcmaVersion ecmaVersion, out ParseError? error)
+    public static bool ValidateRegExp(string pattern, string flags, out ParseError? error,
+        EcmaVersion ecmaVersion = EcmaVersion.Latest, ExperimentalESFeatures experimentalESFeatures = ExperimentalESFeatures.None)
     {
         if (pattern is null)
         {
@@ -1874,11 +1865,11 @@ public sealed partial class Tokenizer
             throw new ArgumentNullException(nameof(flags));
         }
 
-        Debug.Assert(TokenizerOptions.Default is { RegExpParseMode: RegExpParseMode.Validate, Tolerant: false, EcmaVersion: EcmaVersion.Latest });
+        Debug.Assert(TokenizerOptions.Default is { RegExpParseMode: RegExpParseMode.Validate, Tolerant: false, EcmaVersion: EcmaVersion.Latest, ExperimentalESFeatures: ExperimentalESFeatures.None });
 
         var tokenizerOptions = ecmaVersion == EcmaVersion.Latest
             ? TokenizerOptions.Default
-            : new TokenizerOptions { EcmaVersion = ecmaVersion };
+            : new TokenizerOptions { EcmaVersion = ecmaVersion, ExperimentalESFeatures = experimentalESFeatures };
 
         try
         {
@@ -1913,8 +1904,8 @@ public sealed partial class Tokenizer
     /// <exception cref="RegExpConversionErrorException">
     /// <paramref name="pattern"/> cannot be converted to an equivalent <see cref="Regex"/> (if <paramref name="throwIfNotAdaptable"/> is <see langword="true"/>).
     /// </exception>
-    public static RegExpParseResult AdaptRegExp(string pattern, string flags, bool compiled = false, TimeSpan? matchTimeout = null,
-        EcmaVersion ecmaVersion = EcmaVersion.Latest, bool throwIfNotAdaptable = false)
+    public static RegExpParseResult AdaptRegExp(string pattern, string flags, bool compiled = false, TimeSpan? matchTimeout = null, bool throwIfNotAdaptable = false,
+        EcmaVersion ecmaVersion = EcmaVersion.Latest, ExperimentalESFeatures experimentalESFeatures = ExperimentalESFeatures.None)
     {
         if (pattern is null)
         {
@@ -1929,6 +1920,7 @@ public sealed partial class Tokenizer
         var tokenizerOptions = new TokenizerOptions
         {
             EcmaVersion = ecmaVersion,
+            ExperimentalESFeatures = experimentalESFeatures,
             RegExpParseMode = !compiled ? RegExpParseMode.AdaptToInterpreted : RegExpParseMode.AdaptToCompiled,
             RegexTimeout = matchTimeout ?? TokenizerOptions.Default.RegexTimeout,
             Tolerant = !throwIfNotAdaptable,

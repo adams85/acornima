@@ -26,6 +26,8 @@ public enum EcmaVersion
     ES2022 = ES13,
     ES2023 = ES14,
 
-    Latest = ES14,
-    Experimental = int.MaxValue
+    /// <summary>
+    /// The latest version which is fully supported (<see cref="ES2023"/>).
+    /// </summary>
+    Latest = ES2023,
 }

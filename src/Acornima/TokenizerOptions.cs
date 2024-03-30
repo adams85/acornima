@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
 namespace Acornima;
@@ -25,6 +26,12 @@ public record class TokenizerOptions
     /// for new syntax features.
     /// </remarks>
     public EcmaVersion EcmaVersion { get => _ecmaVersion; init => _ecmaVersion = value; }
+
+    internal ExperimentalESFeatures _experimentalESFeatures;
+    /// <summary>
+    /// Gets or sets which experimental ECMAScript language features to enable.
+    /// </summary>
+    public ExperimentalESFeatures ExperimentalESFeatures { get => _experimentalESFeatures; init => _experimentalESFeatures = value; }
 
     internal bool? _allowHashBang;
     /// <summary>
@@ -81,4 +88,22 @@ public record class TokenizerOptions
     /// It will be passed the parameters of the comment as a <see cref="Comment"/> object.
     /// </remarks>
     public OnCommentHandler? OnComment { get => _onComment; init => _onComment = value; }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal bool AllowDecorators()
+    {
+        return _ecmaVersion >= EcmaVersion.ES2022 && (_experimentalESFeatures & ExperimentalESFeatures.Decorators) != 0;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal bool AllowImportAttributes()
+    {
+        return _ecmaVersion >= EcmaVersion.ES2020 && (_experimentalESFeatures & ExperimentalESFeatures.ImportAttributes) != 0;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal bool AllowRegExpDuplicateNamedCapturingGroups()
+    {
+        return (_experimentalESFeatures & ExperimentalESFeatures.RegExpDuplicateNamedCapturingGroups) != 0;
+    }
 }

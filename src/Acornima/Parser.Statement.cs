@@ -306,7 +306,7 @@ public partial class Parser
             Next();
             return ExitRecursion(ParseFunctionStatement(startMarker, isAsync: true, declarationPosition: !hasContext));
         }
-        else if (startType == TokenType.At && _tokenizerOptions.EcmaVersion == EcmaVersion.Experimental)
+        else if (startType == TokenType.At)
         {
             return ExitRecursion(ParseDecoratedClassStatement(startMarker));
         }
@@ -1195,7 +1195,7 @@ public partial class Parser
 
         var startMarker = StartNode();
 
-        var hasDecorators = _tokenizer._type == TokenType.At && _tokenizerOptions.EcmaVersion == EcmaVersion.Experimental;
+        var hasDecorators = _tokenizer._type == TokenType.At;
         var decorators = hasDecorators ? ParseDecorators() : default;
 
         string? keyName = null;
@@ -1265,7 +1265,7 @@ public partial class Parser
                     keyName = keyword;
                 }
             }
-            else if (_tokenizerOptions.EcmaVersion == EcmaVersion.Experimental && EatContextual(keyword = "accessor"))
+            else if (_tokenizerOptions.AllowDecorators() && EatContextual(keyword = "accessor"))
             {
                 if (!CanInsertSemicolon() && IsClassElementNameStart())
                 {
@@ -1665,7 +1665,7 @@ public partial class Parser
                 }
 
                 source = ParseExprAtom(ref NullRef<DestructuringErrors>()).As<StringLiteral>();
-                attributes = _tokenizerOptions._ecmaVersion == EcmaVersion.Experimental
+                attributes = _tokenizerOptions.AllowImportAttributes()
                     ? ParseImportAttributes()
                     : default;
             }
@@ -1729,7 +1729,7 @@ public partial class Parser
             Next();
             declaration = ParseClass(declarationStartMarker, FunctionOrClassFlags.Statement | FunctionOrClassFlags.NullableId);
         }
-        else if (_tokenizer._type == TokenType.At && _tokenizerOptions.EcmaVersion == EcmaVersion.Experimental)
+        else if (_tokenizer._type == TokenType.At)
         {
             declarationStartMarker = StartNode();
             declaration = ParseDecoratedClassStatement(declarationStartMarker, FunctionOrClassFlags.Statement | FunctionOrClassFlags.NullableId);
@@ -1766,7 +1766,7 @@ public partial class Parser
         }
 
         var source = ParseExprAtom(ref NullRef<DestructuringErrors>()).As<StringLiteral>();
-        var attributes = _tokenizerOptions._ecmaVersion == EcmaVersion.Experimental
+        var attributes = _tokenizerOptions.AllowImportAttributes()
             ? ParseImportAttributes()
             : default;
 
@@ -1939,7 +1939,7 @@ public partial class Parser
         }
 
         var source = ParseExprAtom(ref NullRef<DestructuringErrors>()).As<StringLiteral>();
-        var attributes = _tokenizerOptions._ecmaVersion == EcmaVersion.Experimental
+        var attributes = _tokenizerOptions.AllowImportAttributes()
             ? ParseImportAttributes()
             : default;
 

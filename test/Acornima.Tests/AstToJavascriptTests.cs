@@ -886,15 +886,15 @@ public class AstToJavaScriptTests
     [MemberData(nameof(SourceFiles), ParserTests.FixturesDirName)]
     public void OriginalAndReparsedASTsShouldMatch(string fixture, bool preserveParens)
     {
-        static T CreateParserOptions<T>(bool tolerant, RegExpParseMode regExpParseMode, EcmaVersion ecmaVersion, bool preserveParens) where T : ParserOptions, new() => new T
+        static T CreateParserOptions<T>(bool tolerant, RegExpParseMode regExpParseMode, ExperimentalESFeatures experimentalESFeatures, bool preserveParens) where T : ParserOptions, new() => new T
         {
             Tolerant = tolerant,
             RegExpParseMode = regExpParseMode,
             AllowReturnOutsideFunction = tolerant,
-            EcmaVersion = ecmaVersion,
+            ExperimentalESFeatures = experimentalESFeatures,
         };
 
-        var (parserOptionsFactory, parserFactory, convertToCode) = (new Func<bool, RegExpParseMode, EcmaVersion, bool, ParserOptions>(CreateParserOptions<ParserOptions>),
+        var (parserOptionsFactory, parserFactory, convertToCode) = (new Func<bool, RegExpParseMode, ExperimentalESFeatures, bool, ParserOptions>(CreateParserOptions<ParserOptions>),
             new Func<ParserOptions, Parser>(opts => new Parser(opts)),
             new Func<Node, bool, string>((node, format) => node.ToJavaScriptString(format)));
 
@@ -966,8 +966,8 @@ public class AstToJavaScriptTests
             return;
         }
 
-        var ecmaVersion = jsFilePath.Contains("experimental") ? EcmaVersion.Experimental : EcmaVersion.Latest;
-        var parserOptions = parserOptionsFactory(false, RegExpParseMode.Validate, ecmaVersion, preserveParens);
+        var experimentalESFeatures = jsFilePath.Contains("experimental") ? ExperimentalESFeatures.All : ExperimentalESFeatures.None;
+        var parserOptions = parserOptionsFactory(false, RegExpParseMode.Validate, experimentalESFeatures, preserveParens);
 
         try { expectedAst = Parse(sourceType, script, parserOptions, parserFactory); }
         catch (SyntaxErrorException) { return; }

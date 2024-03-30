@@ -1923,7 +1923,7 @@ public partial class ParserTests
     public void CanParseClassElementsWithNewLinesInsteadOfSemicolon()
     {
         // field-definition-accessor-no-line-terminator.js
-        var parser = new Parser(new ParserOptions { EcmaVersion = EcmaVersion.Experimental });
+        var parser = new Parser(new ParserOptions { ExperimentalESFeatures = ExperimentalESFeatures.Decorators });
         var program = parser.ParseScript("""
          var C = class {
            accessor

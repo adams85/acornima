@@ -81,7 +81,7 @@ public partial class RegExpTests
 
         if (!expectError)
         {
-            var regex = Tokenizer.AdaptRegExp(pattern, flags, compiled, matchTimeout, EcmaVersion.Latest, throwIfNotAdaptable).Regex;
+            var regex = Tokenizer.AdaptRegExp(pattern, flags, compiled, matchTimeout, throwIfNotAdaptable).Regex;
             if (expectCompiled is not null)
             {
                 Assert.NotNull(regex);
@@ -95,7 +95,7 @@ public partial class RegExpTests
         }
         else
         {
-            Assert.ThrowsAny<ParseErrorException>(() => Tokenizer.AdaptRegExp(pattern, flags, compiled, matchTimeout, EcmaVersion.Latest, throwIfNotAdaptable));
+            Assert.ThrowsAny<ParseErrorException>(() => Tokenizer.AdaptRegExp(pattern, flags, compiled, matchTimeout, throwIfNotAdaptable));
         }
     }
 
@@ -134,7 +134,7 @@ public partial class RegExpTests
 
         var parser = new Tokenizer.RegExpParser(pattern, flags, new TokenizerOptions
         {
-            EcmaVersion = EcmaVersion.Experimental,
+            ExperimentalESFeatures = ExperimentalESFeatures.RegExpDuplicateNamedCapturingGroups,
             RegExpParseMode = RegExpParseMode.AdaptToInterpreted,
             Tolerant = false
         });

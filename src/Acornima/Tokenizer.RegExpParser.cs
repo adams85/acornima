@@ -60,7 +60,7 @@ public partial class Tokenizer
                     'y' when ecmaVersion >= EcmaVersion.ES6 => RegExpFlags.Sticky,
                     's' when ecmaVersion >= EcmaVersion.ES9 => RegExpFlags.DotAll,
                     'd' when ecmaVersion >= EcmaVersion.ES13 => RegExpFlags.Indices,
-                    'v' when ecmaVersion == EcmaVersion.Experimental => RegExpFlags.UnicodeSets,
+                    'v' when ecmaVersion >= (EcmaVersion)15 => RegExpFlags.UnicodeSets,
                     _ => RegExpFlags.None
                 };
 
@@ -285,7 +285,7 @@ public partial class Tokenizer
                             var groupStartIndex = i++;
                             var groupName = ReadNormalizedCapturingGroupName(ref i)!;
                             var isDuplicate = !(capturingGroupNames ??= new Dictionary<string, string?>()).TryAdd(groupName, null);
-                            if (isDuplicate && _tokenizer._options._ecmaVersion != EcmaVersion.Experimental)
+                            if (isDuplicate && !_tokenizer._options.AllowRegExpDuplicateNamedCapturingGroups())
                             {
                                 ReportSyntaxError(groupStartIndex + 3, SyntaxErrorMessages.RegExpDuplicateCaptureGroupName);
                             }
