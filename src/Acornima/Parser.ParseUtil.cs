@@ -6,6 +6,8 @@ using Acornima.Properties;
 
 namespace Acornima;
 
+using static SyntaxErrorMessages;
+
 // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/parseutil.js
 
 public partial class Parser
@@ -99,7 +101,7 @@ public partial class Parser
             if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES8
                 && _tokenizer._input.SliceBetween(_tokenizer._lastTokenStart, _tokenizer._lastTokenEnd).SequenceEqual("await".AsSpan()) && !CanAwait())
             {
-                Raise(_tokenizer._lastTokenStart, SyntaxErrorMessages.AwaitNotInAsyncContext);
+                Raise(_tokenizer._lastTokenStart, AwaitNotInAsyncContext);
             }
 
             Unexpected();
@@ -114,7 +116,7 @@ public partial class Parser
         {
             if (!isAllowed)
             {
-                RaiseRecoverable(_tokenizer._start, GetUnexpectedTokenMessage(_tokenizer._type, _tokenizer._value.Value));
+                RaiseRecoverable(_tokenizer._start, _tokenizer._type, _tokenizer._value.Value);
             }
 
             _options._onTrailingComma?.Invoke(_tokenizer._lastTokenStart, _tokenizer._lastTokenStartLocation);
@@ -142,38 +144,50 @@ public partial class Parser
         }
     }
 
-    private static string GetUnexpectedTokenMessage(TokenType tokenType, object? tokenValue)
+    private static string GetUnexpectedTokenMessage(TokenType tokenType, object? tokenValue, out string code)
     {
         switch (tokenType.Kind)
         {
             case TokenKind.Punctuator when tokenType == TokenType.BackQuote:
-                return SyntaxErrorMessages.UnexpectedTemplateString;
+                code = nameof(UnexpectedTemplateString);
+                return UnexpectedTemplateString;
 
             case TokenKind.Punctuator:
-                return string.Format(SyntaxErrorMessages.UnexpectedToken, (string)tokenValue!);
+                code = nameof(UnexpectedToken);
+                return string.Format(UnexpectedToken, (string)tokenValue!);
 
             case TokenKind.Keyword:
             case TokenKind.NullLiteral:
             case TokenKind.BooleanLiteral:
-                return string.Format(SyntaxErrorMessages.UnexpectedToken, tokenType.Label);
+                code = nameof(UnexpectedToken);
+                return string.Format(UnexpectedToken, tokenType.Label);
 
             case TokenKind.Identifier:
-                return string.Format(SyntaxErrorMessages.UnexpectedTokenIdentifier, tokenType == TokenType.PrivateId
+                code = nameof(UnexpectedTokenIdentifier);
+                return string.Format(UnexpectedTokenIdentifier, tokenType == TokenType.PrivateId
                     ? '#'.ToStringCached() + (string)tokenValue!
                     : (string)tokenValue!);
 
             case TokenKind.NumericLiteral:
             case TokenKind.BigIntLiteral:
-                return SyntaxErrorMessages.UnexpectedTokenNumber;
+                code = nameof(UnexpectedTokenNumber);
+                return UnexpectedTokenNumber;
 
             case TokenKind.StringLiteral:
-                return SyntaxErrorMessages.UnexpectedTokenString;
+                code = nameof(UnexpectedTokenString);
+                return UnexpectedTokenString;
+
+            case TokenKind.RegExpLiteral:
+                code = nameof(UnexpectedTokenRegExp);
+                return UnexpectedTokenRegExp;
 
             case TokenKind.EOF:
-                return SyntaxErrorMessages.UnexpectedEOS;
+                code = nameof(UnexpectedEOS);
+                return UnexpectedEOS;
         }
 
-        return SyntaxErrorMessages.InvalidOrUnexpectedToken;
+        code = nameof(InvalidOrUnexpectedToken);
+        return InvalidOrUnexpectedToken;
     }
 
     [DoesNotReturn]
@@ -189,9 +203,10 @@ public partial class Parser
     }
 
     [DoesNotReturn]
+    [MethodImpl(MethodImplOptions.NoInlining)]
     private void Unexpected(TokenState tokenState)
     {
-        Raise(tokenState.Position, GetUnexpectedTokenMessage(tokenState.TokenType, tokenState.TokenValue));
+        Raise(tokenState.Position, GetUnexpectedTokenMessage(tokenState.TokenType, tokenState.TokenValue, out var code), code: code);
     }
 
     [DoesNotReturn]
@@ -202,15 +217,33 @@ public partial class Parser
     }
 
     [DoesNotReturn]
-    private void Raise(int pos, string message, ParseError.Factory? errorFactory = null)
+    private void Raise(int pos, string message, [CallerArgumentExpression(nameof(message))] string code = Tokenizer.UnknownError)
     {
-        _tokenizer.Raise(pos, message, errorFactory);
+        _tokenizer.Raise(pos, message, code: code);
+    }
+
+    [DoesNotReturn]
+    private void Raise(int pos, string messageFormat, object[] args, [CallerArgumentExpression(nameof(messageFormat))] string code = Tokenizer.UnknownError)
+    {
+        Raise(pos, string.Format(messageFormat, args), code);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private ParseError RaiseRecoverable(int pos, string message, ParseError.Factory? errorFactory = null)
+    private ParseError RaiseRecoverable(int pos, string message, [CallerArgumentExpression(nameof(message))] string code = Tokenizer.UnknownError)
     {
-        return _tokenizer.RaiseRecoverable(pos, message, errorFactory);
+        return _tokenizer.RaiseRecoverable(pos, message, code: code);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private ParseError RaiseRecoverable(int pos, string messageFormat, object[] args, [CallerArgumentExpression(nameof(messageFormat))] string code = Tokenizer.UnknownError)
+    {
+        return RaiseRecoverable(pos, string.Format(messageFormat, args), code);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private ParseError RaiseRecoverable(int pos, TokenType tokenType, object? tokenValue)
+    {
+        return RaiseRecoverable(pos, GetUnexpectedTokenMessage(tokenType, tokenValue, out var code), code);
     }
 
     private void CheckPatternErrors(ref DestructuringErrors destructuringErrors, bool isAssign)
@@ -227,14 +260,28 @@ public partial class Parser
         if (position >= 0)
         {
             // RaiseRecoverable(destructuringErrors.TrailingComma, "Comma is not permitted after the rest element"); // original acornjs error reporting
-            Raise(position, destructuringErrors.TrailingComma < 0 ? SyntaxErrorMessages.ParamAfterRest : SyntaxErrorMessages.ElementAfterRest);
+            if (destructuringErrors.TrailingComma < 0)
+            {
+                Raise(position, ParamAfterRest);
+            }
+            else
+            {
+                Raise(position, ElementAfterRest);
+            }
         }
 
         position = isAssign ? destructuringErrors.ParenthesizedAssign : destructuringErrors.ParenthesizedBind;
         if (position >= 0)
         {
             // RaiseRecoverable(parens, isAssign ? "Assigning to rvalue" : "Parenthesized pattern"); // original acornjs error reporting
-            Raise(position, isAssign ? SyntaxErrorMessages.InvalidLhsInAssignment : SyntaxErrorMessages.InvalidDestructuringTarget);
+            if (isAssign)
+            {
+                Raise(position, InvalidLhsInAssignment);
+            }
+            else
+            {
+                Raise(position, InvalidDestructuringTarget);
+            }
         }
     }
 
@@ -256,13 +303,13 @@ public partial class Parser
         if (destructuringErrors.ShorthandAssign >= 0)
         {
             // Raise(destructuringErrors.ShorthandAssign, "Shorthand property assignments are valid only in destructuring patterns"); // original acornjs error reporting
-            Raise(destructuringErrors.ShorthandAssign, SyntaxErrorMessages.InvalidCoverInitializedName);
+            Raise(destructuringErrors.ShorthandAssign, InvalidCoverInitializedName);
         }
 
         if (destructuringErrors.DoubleProto >= 0)
         {
             // RaiseRecoverable(destructuringErrors.DoubleProto, "Redefinition of __proto__ property"); // original acornjs error reporting
-            Raise(destructuringErrors.DoubleProto, SyntaxErrorMessages.DuplicateProto);
+            Raise(destructuringErrors.DoubleProto, DuplicateProto);
         }
 
         return false;
@@ -275,13 +322,13 @@ public partial class Parser
         if (_yieldPosition != 0 && (_awaitPosition == 0 || _yieldPosition < _awaitPosition))
         {
             // Raise(_yieldPosition, "Yield expression cannot be a default value"); // original acornjs error reporting
-            Raise(_yieldPosition, SyntaxErrorMessages.YieldInParameter);
+            Raise(_yieldPosition, YieldInParameter);
         }
 
         if (_awaitPosition != 0)
         {
             // Raise(_awaitPosition, "Await expression cannot be a default value"); // original acornjs error reporting
-            Raise(_awaitPosition, SyntaxErrorMessages.AwaitExpressionFormalParameter);
+            Raise(_awaitPosition, AwaitExpressionFormalParameter);
         }
     }
 

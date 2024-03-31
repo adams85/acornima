@@ -9,6 +9,7 @@ using Acornima.Properties;
 namespace Acornima;
 
 using static Unsafe;
+using static SyntaxErrorMessages;
 
 // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js
 
@@ -37,7 +38,7 @@ public partial class Parser
             foreach (var kvp in undefinedExports)
             {
                 // RaiseRecoverable(kvp.Value, $"Export '{kvp.Key}' is not defined"); // original acornjs error reporting
-                Raise(kvp.Value, string.Format(SyntaxErrorMessages.ModuleExportUndefined, kvp.Key));
+                Raise(kvp.Value, ModuleExportUndefined, new object[] { kvp.Key });
             }
         }
 
@@ -189,12 +190,12 @@ public partial class Parser
                         if (_strict)
                         {
                             // Unexpected(); // original acornjs error reporting
-                            Raise(_tokenizer._start, SyntaxErrorMessages.StrictFunction);
+                            Raise(_tokenizer._start, StrictFunction);
                         }
                         else if (context is not (StatementContext.If or StatementContext.Label))
                         {
                             // Unexpected(); // original acornjs error reporting
-                            Raise(_tokenizer._start, SyntaxErrorMessages.SloppyFunction);
+                            Raise(_tokenizer._start, SloppyFunction);
 
                         }
                     }
@@ -267,7 +268,7 @@ public partial class Parser
                             // Raise(_tokenizer._start, "'import' and 'export' may appear only with 'sourceType: module'"); // original acornjs error reporting
                             if (startType.Keyword.Value == Keyword.Import)
                             {
-                                Raise(_tokenizer._start, SyntaxErrorMessages.ImportOutsideModule);
+                                Raise(_tokenizer._start, ImportOutsideModule);
                             }
                             else
                             {
@@ -300,7 +301,7 @@ public partial class Parser
             if (hasContext)
             {
                 // Unexpected(); // original acornjs error reporting
-                Raise(_tokenizer._start, SyntaxErrorMessages.AsyncFunctionInSingleStatementContext);
+                Raise(_tokenizer._start, AsyncFunctionInSingleStatementContext);
             }
 
             Next();
@@ -347,9 +348,14 @@ public partial class Parser
             }
 
             // Raise(startMarker.Index, "Unsyntactic " + keyword.Label); // original acornjs error reporting
-            Raise(startMarker.Index, isBreak
-                ? SyntaxErrorMessages.IllegalBreak
-                : SyntaxErrorMessages.NoIterationStatement);
+            if (isBreak)
+            {
+                Raise(startMarker.Index, IllegalBreak);
+            }
+            else
+            {
+                Raise(startMarker.Index, NoIterationStatement);
+            }
         }
         else if (_tokenizer._type == TokenType.Name)
         {
@@ -366,7 +372,7 @@ public partial class Parser
                     if (!isBreak && lab.Kind != LabelKind.Loop)
                     {
                         // Raise(startMarker.Index, "Unsyntactic " + keyword.Label); // original acornjs error reporting
-                        Raise(startMarker.Index, string.Format(SyntaxErrorMessages.IllegalContinue, label.Name));
+                        Raise(startMarker.Index, IllegalContinue, new object[] { label.Name });
                     }
 
                     goto Success;
@@ -374,7 +380,7 @@ public partial class Parser
             }
 
             // Raise(startMarker.Index, "Unsyntactic " + keyword.Label); // original acornjs error reporting
-            Raise(label.Start, string.Format(SyntaxErrorMessages.UnknownLabel, label.Name));
+            Raise(label.Start, UnknownLabel, new object[] { label.Name });
         }
         else
         {
@@ -438,7 +444,7 @@ public partial class Parser
         {
             if (!CanAwait())
             {
-                Raise(_tokenizer._start, SyntaxErrorMessages.UnexpectedReserved);
+                Raise(_tokenizer._start, UnexpectedReserved);
             }
             awaitAt = _tokenizer._start;
             Next();
@@ -481,7 +487,7 @@ public partial class Parser
                 if (initDeclaration.Declarations.Count != 1)
                 {
                     // This error is not reported by the original acornjs implementation.
-                    Raise(initDeclaration.Start, string.Format(SyntaxErrorMessages.ForInOfLoopMultiBindings, "for-in"));
+                    Raise(initDeclaration.Start, ForInOfLoopMultiBindings, new object[] { "for-in" });
                 }
 
                 if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES9 && awaitAt >= 0)
@@ -496,7 +502,7 @@ public partial class Parser
                 if (initDeclaration.Declarations.Count != 1)
                 {
                     // This error is not reported by the original acornjs implementation.
-                    Raise(initDeclaration.Start, string.Format(SyntaxErrorMessages.ForInOfLoopMultiBindings, "for-of"));
+                    Raise(initDeclaration.Start, ForInOfLoopMultiBindings, new object[] { "for-of" });
                 }
 
                 return ParseForInOf(startMarker, isForIn: false, await: awaitAt >= 0, initDeclaration);
@@ -539,13 +545,13 @@ public partial class Parser
                 if (awaitAt < 0 && _tokenizerOptions._ecmaVersion >= EcmaVersion.ES8
                     && oldForInitPosition == init.Start && !containsEscape && init is Identifier { Name: "async" })
                 {
-                    Raise(init.Start, SyntaxErrorMessages.ForOfAsync);
+                    Raise(init.Start, ForOfAsync);
                 }
 
                 if (startsWithLet)
                 {
                     // Raise(init.Start, "The left-hand side of a for-of loop may not start with 'let'"); // original acornjs error reporting
-                    Raise(init.Start, SyntaxErrorMessages.ForOfLet);
+                    Raise(init.Start, ForOfLet);
                 }
 
                 var initPattern = ToAssignable(init, ref destructuringErrors, isBinding: false, lhsKind: LeftHandSideKind.ForInOf);
@@ -608,7 +614,7 @@ public partial class Parser
         if (!_options._allowReturnOutsideFunction && !InFunction())
         {
             // Raise(_tokenizer._start, "'return' outside of function"); // original acornjs error reporting
-            Raise(_tokenizer._start, SyntaxErrorMessages.IllegalReturn);
+            Raise(_tokenizer._start, IllegalReturn);
         }
 
         Next();
@@ -660,7 +666,7 @@ public partial class Parser
                 if (sawDefault)
                 {
                     // RaiseRecoverable(_tokenizer._start, "Multiple default clauses"); // original acornjs error reporting
-                    Raise(_tokenizer._start, SyntaxErrorMessages.MultipleDefaultsInSwitch);
+                    Raise(_tokenizer._start, MultipleDefaultsInSwitch);
                 }
                 else
                 {
@@ -703,7 +709,7 @@ public partial class Parser
         if (Tokenizer.ContainsLineBreak(_tokenizer._input.SliceBetween(_tokenizer._lastTokenEnd, _tokenizer._start)))
         {
             // Raise(_tokenizer._lastTokenEnd, "Illegal newline after throw"); // original acornjs error reporting
-            RaiseRecoverable(_tokenizer._lastTokenEnd, SyntaxErrorMessages.NewlineAfterThrow);
+            RaiseRecoverable(_tokenizer._lastTokenEnd, NewlineAfterThrow);
         }
 
         var argument = ParseExpression(ref NullRef<DestructuringErrors>());
@@ -790,7 +796,7 @@ public partial class Parser
         if (handler is null && finalizer is null)
         {
             // Raise(startMarker.Index, "Missing catch or finally clause"); // original acornjs error reporting
-            Raise(_tokenizer._lastTokenEnd, SyntaxErrorMessages.NoCatchOrFinally);
+            Raise(_tokenizer._lastTokenEnd, NoCatchOrFinally);
         }
 
         return FinishNode(startMarker, new TryStatement(block, handler, finalizer));
@@ -828,7 +834,7 @@ public partial class Parser
         if (_strict)
         {
             // Raise(_tokenizer._start, "'with' in strict mode"); // original acornjs error reporting
-            RaiseRecoverable(_tokenizer._start, SyntaxErrorMessages.StrictWith);
+            RaiseRecoverable(_tokenizer._start, StrictWith);
         }
 
         Next();
@@ -857,7 +863,7 @@ public partial class Parser
             if (label.Name == maybeName)
             {
                 // Raise(expr.Start, $"Label '{maybeName}' is already declared"); // original acornjs error reporting
-                Raise(expr.Start, string.Format(SyntaxErrorMessages.LabelRedeclaration, maybeName));
+                Raise(expr.Start, LabelRedeclaration, new object[] { maybeName });
             }
         }
 
@@ -976,7 +982,7 @@ public partial class Parser
                 || variableDeclarator.Id.Type != NodeType.Identifier)
             {
                 // Raise(init.Start, $"{(isForIn ? "for-in" : "for-of")} loop variable declaration may not have an initializer"); // original acornjs error reporting
-                Raise(variableDeclarator.Id.Start, string.Format(SyntaxErrorMessages.ForInOfLoopInitializer, isForIn ? "for-in" : "for-of"));
+                Raise(variableDeclarator.Id.Start, ForInOfLoopInitializer, new object[] { isForIn ? "for-in" : "for-of" });
             }
         }
 
@@ -1018,12 +1024,12 @@ public partial class Parser
                 if (kind == VariableDeclarationKind.Const && !(_tokenizer._type == TokenType.In || _tokenizerOptions._ecmaVersion >= EcmaVersion.ES6 && IsContextual("of")))
                 {
                     // Unexpected(); // original acornjs error reporting
-                    Raise(_tokenizer._lastTokenEnd, SyntaxErrorMessages.DeclarationMissingInitializer_Const);
+                    Raise(_tokenizer._lastTokenEnd, DeclarationMissingInitializer_Const);
                 }
                 else if (id.Type != NodeType.Identifier && !(isFor && (_tokenizer._type == TokenType.In || IsContextual("of"))))
                 {
                     // Raise(_tokenizer._lastTokenEnd, "Complex binding patterns require an initialization value"); // original acornjs error reporting
-                    Raise(_tokenizer._lastTokenEnd, SyntaxErrorMessages.DeclarationMissingInitializer_Destructuring);
+                    Raise(_tokenizer._lastTokenEnd, DeclarationMissingInitializer_Destructuring);
                 }
                 init = null;
             }
@@ -1057,7 +1063,7 @@ public partial class Parser
             if (_tokenizer._type == TokenType.Star && (flags & FunctionOrClassFlags.HangingStatement) != 0)
             {
                 // Unexpected(); // original acornjs error reporting
-                Raise(startMarker.Index, SyntaxErrorMessages.GeneratorInSingleStatementContext);
+                Raise(startMarker.Index, GeneratorInSingleStatementContext);
             }
 
             generator = Eat(TokenType.Star);
@@ -1161,7 +1167,7 @@ public partial class Parser
                 if (hadConstructor)
                 {
                     // RaiseRecoverable(element.Start, "Duplicate constructor in the same class"); // original acornjs error reporting
-                    Raise(element.Start, SyntaxErrorMessages.DuplicateConstructor);
+                    Raise(element.Start, DuplicateConstructor);
                 }
                 else
                 {
@@ -1172,7 +1178,7 @@ public partial class Parser
                 && IsPrivateNameConflicted(ref _privateNameStack.GetItemRef(privateNameStatusIndex), prop))
             {
                 // RaiseRecoverable(prop.Key.Start, $"Identifier '#{prop.Key.As<PrivateIdentifier>().Name}' has already been declared"); // original acornjs error reporting
-                Raise(prop.Key.Start, string.Format(SyntaxErrorMessages.VarRedeclaration, '#'.ToStringCached() + prop.Key.As<PrivateIdentifier>().Name));
+                Raise(prop.Key.Start, VarRedeclaration, new object[] { '#'.ToStringCached() + prop.Key.As<PrivateIdentifier>().Name });
             }
         }
 
@@ -1209,7 +1215,7 @@ public partial class Parser
             {
                 if (hasDecorators)
                 {
-                    Raise(startMarker.Index, SyntaxErrorMessages.DecoratorAppliedToStaticBlock);
+                    Raise(startMarker.Index, DecoratorAppliedToStaticBlock);
                 }
 
                 return ParseClassStaticBlock(startMarker);
@@ -1329,7 +1335,7 @@ public partial class Parser
             if ("constructor".Equals(_tokenizer._value.Value))
             {
                 // Raise(_tokenizer._start, "Classes can't have an element named '#constructor'"); // original acornjs error reporting
-                Raise(_tokenizer._start, SyntaxErrorMessages.ConstructorIsPrivate);
+                Raise(_tokenizer._start, ConstructorIsPrivate);
             }
             computed = false;
             return ParsePrivateIdentifier();
@@ -1354,17 +1360,17 @@ public partial class Parser
             if (kind != PropertyKind.Method)
             {
                 // Raise(key.Start, "Constructor can't have get/set modifier"); // original acornjs error reporting
-                Raise(key.Start, SyntaxErrorMessages.ConstructorIsAccessor);
+                Raise(key.Start, ConstructorIsAccessor);
             }
             if (isGenerator)
             {
                 // Raise(key.Start, "Constructor can't be a generator"); // original acornjs error reporting
-                Raise(key.Start, SyntaxErrorMessages.ConstructorIsGenerator);
+                Raise(key.Start, ConstructorIsGenerator);
             }
             if (isAsync)
             {
                 // Raise(key.Start, "Constructor can't be an async method"); // original acornjs error reporting
-                Raise(key.Start, SyntaxErrorMessages.ConstructorIsAsync);
+                Raise(key.Start, ConstructorIsAsync);
             }
 
             kind = PropertyKind.Constructor;
@@ -1372,7 +1378,7 @@ public partial class Parser
         else if (isStatic && CheckKeyName(key, computed, "prototype"))
         {
             // Raise(key.Start, "Classes may not have a static property named prototype"); // original acornjs error reporting
-            Raise(key.Start, SyntaxErrorMessages.StaticPrototype);
+            Raise(key.Start, StaticPrototype);
         }
 
         // Parse value
@@ -1384,7 +1390,7 @@ public partial class Parser
             if (value.Params.Count != 0)
             {
                 // RaiseRecoverable(value.Start, "getter should have no params"); // original acornjs error reporting
-                Raise(value.Start, SyntaxErrorMessages.BadGetterArity);
+                Raise(value.Start, BadGetterArity);
             }
         }
         else if (kind == PropertyKind.Set)
@@ -1392,12 +1398,12 @@ public partial class Parser
             if (value.Params.Count != 1)
             {
                 // RaiseRecoverable(value.Start, "setter should have exactly one param"); // original acornjs error reporting
-                Raise(value.Start, SyntaxErrorMessages.BadSetterArity);
+                Raise(value.Start, BadSetterArity);
             }
             else if (value.Params[0] is RestElement)
             {
                 // RaiseRecoverable(value.Params[0].Start, "Setter cannot use rest params"); // original acornjs error reporting
-                Raise(value.Start, SyntaxErrorMessages.BadSetterRestParameter);
+                Raise(value.Start, BadSetterRestParameter);
             }
         }
 
@@ -1411,12 +1417,12 @@ public partial class Parser
         if (CheckKeyName(key, computed, "constructor"))
         {
             // Raise(key.Start, "Classes can't have a field named 'constructor'"); // original acornjs error reporting
-            Raise(key.Start, SyntaxErrorMessages.ConstructorClassField);
+            Raise(key.Start, ConstructorClassField);
         }
         else if (isStatic && CheckKeyName(key, computed, "prototype"))
         {
             // Raise(key.Start, "Classes can't have a static field named 'prototype'"); // original acornjs error reporting
-            Raise(key.Start, SyntaxErrorMessages.StaticPrototype);
+            Raise(key.Start, StaticPrototype);
         }
 
         Expression? value;
@@ -1533,7 +1539,7 @@ public partial class Parser
                 else
                 {
                     // RaiseRecoverable(id.Start, $"Private field '#{id.Name}' must be declared in an enclosing class"); // original acornjs error reporting
-                    Raise(id.Start, string.Format(SyntaxErrorMessages.InvalidPrivateFieldResolution, '#'.ToStringCached() + id.Name));
+                    Raise(id.Start, InvalidPrivateFieldResolution, new object[] { '#'.ToStringCached() + id.Name });
                 }
             }
         }
@@ -1687,7 +1693,7 @@ public partial class Parser
                     else
                     {
                         // Raise(spec.Local.Start, "A string literal cannot be used as an exported binding without `from`."); // original acornjs error reporting
-                        Raise(spec.Local.Start, SyntaxErrorMessages.ModuleExportNameWithoutFromClause);
+                        Raise(spec.Local.Start, ModuleExportNameWithoutFromClause);
                     }
                 }
 
@@ -1794,7 +1800,7 @@ public partial class Parser
         if (exports.Contains(exportName))
         {
             // RaiseRecoverable(pos, $"Duplicate export '{exportName}'"); // original acornjs error reporting
-            Raise(pos, string.Format(SyntaxErrorMessages.DuplicateExport, exportName));
+            Raise(pos, DuplicateExport, new[] { exportName });
         }
         else
         {
@@ -2059,7 +2065,7 @@ public partial class Parser
             if (stringLiteral.Value.AsSpan().ContainsLoneSurrogate())
             {
                 // Raise(stringLiteral.Start, "An export name cannot include a lone surrogate."); // original acornjs error reporting
-                Raise(stringLiteral.Start, SyntaxErrorMessages.InvalidModuleExportName);
+                Raise(stringLiteral.Start, InvalidModuleExportName);
             }
             return stringLiteral;
         }
@@ -2095,16 +2101,21 @@ public partial class Parser
                 {
                     if (!allowStrictDirective)
                     {
-                        RaiseRecoverable(startMarker.Index, string.Format(SyntaxErrorMessages.IllegalLanguageModeDirective, directive));
+                        RaiseRecoverable(startMarker.Index, IllegalLanguageModeDirective, new object[] { directive });
                     }
 
                     if (!_strict)
                     {
                         if (firstRestrictedPos >= 0)
                         {
-                            RaiseRecoverable(firstRestrictedPos, _tokenizer._input[firstRestrictedPos + 1] is '8' or '9'
-                                ? SyntaxErrorMessages.Strict8Or9Escape
-                                : SyntaxErrorMessages.StrictOctalEscape);
+                            if (_tokenizer._input[firstRestrictedPos + 1] is '8' or '9')
+                            {
+                                RaiseRecoverable(firstRestrictedPos, Strict8Or9Escape);
+                            }
+                            else
+                            {
+                                RaiseRecoverable(firstRestrictedPos, StrictOctalEscape);
+                            }
                         }
 
                         _strict = true;
@@ -2174,7 +2185,7 @@ public partial class Parser
 
             if (!parameterSet.Add(key))
             {
-                Raise(importAttribute.Start, string.Format(SyntaxErrorMessages.DuplicateImportAttribute, key));
+                Raise(importAttribute.Start, DuplicateImportAttribute, new object[] { key });
             }
 
             attributes.Add(importAttribute);

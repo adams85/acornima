@@ -15,11 +15,6 @@ public abstract class ParseErrorException : Exception
     public string Description => Error.Description;
 
     /// <summary>
-    /// Zero-based index within the parsed code string. (Can be negative if location information is available.)
-    /// </summary>
-    public int Index => Error.Index;
-
-    /// <summary>
     /// One-based line number. (Can be zero if location information is not available.)
     /// </summary>
     public int LineNumber => Error.LineNumber;

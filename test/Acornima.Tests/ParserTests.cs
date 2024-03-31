@@ -1778,9 +1778,10 @@ public partial class ParserTests
     {
         var parser = new Parser();
         var ex = Assert.Throws<SyntaxErrorException>(() => parser.ParseScript("if (1}=1) eval('1');"));
-        Assert.Equal(5, ex.Index);
+        Assert.Equal(5, ex.Error.Index);
         Assert.Equal(1, ex.LineNumber);
         Assert.Equal(5, ex.Column);
+        Assert.Equal("UnexpectedToken", ex.Error.Code);
     }
 
     [Theory]
@@ -1791,19 +1792,21 @@ public partial class ParserTests
     {
         var parser = new Parser();
         var ex = Assert.Throws<SyntaxErrorException>(() => parser.ParseScript(script));
-        Assert.Equal(0, ex.Index);
+        Assert.Equal(0, ex.Error.Index);
         Assert.Equal(1, ex.LineNumber);
         Assert.Equal(0, ex.Column);
+        Assert.Equal("UnexpectedToken", ex.Error.Code);
     }
 
     [Fact]
-    public void ThrowsErrorForInvalidRegExFlags()
+    public void ThrowsErrorForInvalidRegExpFlags()
     {
         var parser = new Parser();
         var ex = Assert.Throws<SyntaxErrorException>(() => parser.ParseScript("/'/o//'///C//ÿ"));
-        Assert.Equal(3, ex.Index);
+        Assert.Equal(3, ex.Error.Index);
         Assert.Equal(1, ex.LineNumber);
         Assert.Equal(3, ex.Column);
+        Assert.Equal("InvalidRegExpFlags", ex.Error.Code);
     }
 
     [Fact]
@@ -1824,9 +1827,10 @@ public partial class ParserTests
     {
         var parser = new Parser(new ParserOptions { Tolerant = false });
         var ex = Assert.Throws<SyntaxErrorException>(() => parser.ParseScript("if({ __proto__: [], __proto__: [] } instanceof Array) {}"));
-        Assert.Equal(20, ex.Index);
+        Assert.Equal(20, ex.Error.Index);
         Assert.Equal(1, ex.LineNumber);
         Assert.Equal(20, ex.Column);
+        Assert.Equal("DuplicateProto", ex.Error.Code);
     }
 
     [Theory]

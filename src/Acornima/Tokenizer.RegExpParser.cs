@@ -11,6 +11,9 @@ using Acornima.Properties;
 
 namespace Acornima;
 
+using static SyntaxErrorMessages;
+using static RegExpConversionErrorMessages;
+
 public partial class Tokenizer
 {
     [Flags]
@@ -67,7 +70,7 @@ public partial class Tokenizer
                 if (flag == RegExpFlags.None || (flags & flag) != 0)
                 {
                     // unknown or already set
-                    tokenizer.Raise(startIndex, SyntaxErrorMessages.InvalidRegExpFlags);
+                    tokenizer.Raise(startIndex, InvalidRegExpFlags);
                 }
                 flags |= flag;
             }
@@ -75,7 +78,7 @@ public partial class Tokenizer
             if ((flags & RegExpFlags.UnicodeSets) != 0 && (flags & RegExpFlags.Unicode) != 0)
             {
                 // cannot have them both
-                tokenizer.Raise(startIndex, SyntaxErrorMessages.InvalidRegExpFlags);
+                tokenizer.Raise(startIndex, InvalidRegExpFlags);
             }
 
             return flags;
@@ -134,17 +137,25 @@ public partial class Tokenizer
             _tokenizer.Reset(pattern);
         }
 
-        private readonly RegExpConversionError ReportConversionFailure(int index, string reason)
+        private readonly RegExpConversionError ReportConversionFailure(int index, string reason,
+            [CallerArgumentExpression(nameof(reason))] string code = Tokenizer.UnknownError)
         {
             return (RegExpConversionError)_tokenizer.RaiseRecoverable(_patternStartIndex + index,
-                string.Format(RegExpConversionErrorMessages.RegExpConversionFailed, typeof(Regex), _pattern, _flagsOriginal, reason),
-                RegExpConversionError.s_factory);
+                string.Format(RegExpConversionFailed, typeof(Regex), _pattern, _flagsOriginal, reason),
+                RegExpConversionError.s_factory, code);
+        }
+
+        private readonly RegExpConversionError ReportConversionFailure(int index, string reasonFormat, object[] args,
+            [CallerArgumentExpression(nameof(reasonFormat))] string code = Tokenizer.UnknownError)
+        {
+            return ReportConversionFailure(index, string.Format(reasonFormat, args), code);
         }
 
         [DoesNotReturn]
-        private readonly void ReportSyntaxError(int index, string messageFormat)
+        private readonly void ReportSyntaxError(int index, string messageFormat,
+            [CallerArgumentExpression(nameof(messageFormat))] string code = Tokenizer.UnknownError)
         {
-            _tokenizer.Raise(_patternStartIndex + index, string.Format(messageFormat, _pattern, _flagsOriginal));
+            _tokenizer.Raise(_patternStartIndex + index, string.Format(messageFormat, _pattern, _flagsOriginal), code: code);
         }
 
         public RegExpParseResult Parse()
@@ -155,11 +166,11 @@ public partial class Tokenizer
             {
                 if (_tokenizer._options._regExpParseMode == RegExpParseMode.Validate)
                 {
-                    _tokenizer.Raise(_patternStartIndex, RegExpConversionErrorMessages.RegExpUnicodeSetsModeNotSupported, RegExpConversionError.s_factory);
+                    _tokenizer.Raise(_patternStartIndex, RegExpUnicodeSetsModeNotSupported, RegExpConversionError.s_factory);
                 }
                 else
                 {
-                    conversionError = ReportConversionFailure(0, RegExpConversionErrorMessages.RegExpUnicodeSetsModeNotSupported);
+                    conversionError = ReportConversionFailure(0, RegExpUnicodeSetsModeNotSupported);
                     return new RegExpParseResult(conversionError);
                 }
             }
@@ -186,7 +197,7 @@ public partial class Tokenizer
             }
             catch
             {
-                conversionError = ReportConversionFailure(0, string.Format(RegExpConversionErrorMessages.RegexCreationFailed, typeof(Regex), adaptedPattern, options));
+                conversionError = ReportConversionFailure(0, RegexCreationFailed, new object[] { typeof(Regex), adaptedPattern, options });
                 return new RegExpParseResult(conversionError);
             }
         }
@@ -220,8 +231,8 @@ public partial class Tokenizer
                         ? new ArrayList<RegExpGroup>(new[] { new RegExpGroup(default, parent: null) })
                         : default,
                     SetStartIndex = -1,
-                    FollowingQuantifierError = SyntaxErrorMessages.RegExpNothingToRepeat,
                 };
+                context.SetFollowingQuantifierError(RegExpNothingToRepeat);
 
                 return (_flags & RegExpFlags.Unicode) != 0
                     ? ParsePattern(UnicodeMode.Instance, ref context, out conversionError)
@@ -287,13 +298,13 @@ public partial class Tokenizer
                             var isDuplicate = !(capturingGroupNames ??= new Dictionary<string, string?>()).TryAdd(groupName, null);
                             if (isDuplicate && !_tokenizer._options.AllowRegExpDuplicateNamedCapturingGroups())
                             {
-                                ReportSyntaxError(groupStartIndex + 3, SyntaxErrorMessages.RegExpDuplicateCaptureGroupName);
+                                ReportSyntaxError(groupStartIndex + 3, RegExpDuplicateCaptureGroupName);
                             }
                             capturingGroups.Add(new RegExpCapturingGroup(i, groupName));
                         }
                         else if (groupType == RegExpGroupType.Unknown)
                         {
-                            ReportSyntaxError(i, SyntaxErrorMessages.RegExpInvalidGroup);
+                            ReportSyntaxError(i, RegExpInvalidGroup);
                         }
 
                         break;
@@ -306,7 +317,7 @@ public partial class Tokenizer
 
                         if (inGroup == 0)
                         {
-                            ReportSyntaxError(i, SyntaxErrorMessages.RegExpUnmatchedParen);
+                            ReportSyntaxError(i, RegExpUnmatchedParen);
                         }
 
                         inGroup--;
@@ -324,7 +335,7 @@ public partial class Tokenizer
                         }
                         else if (isUnicode)
                         {
-                            ReportSyntaxError(i, SyntaxErrorMessages.RegExpIncompleteQuantifier);
+                            ReportSyntaxError(i, RegExpIncompleteQuantifier);
                         }
 
                         break;
@@ -341,7 +352,7 @@ public partial class Tokenizer
                         }
                         else if (isUnicode)
                         {
-                            ReportSyntaxError(i, SyntaxErrorMessages.RegExpLoneQuantifierBrackets);
+                            ReportSyntaxError(i, RegExpLoneQuantifierBrackets);
                         }
 
                         break;
@@ -362,7 +373,7 @@ public partial class Tokenizer
                         }
                         else if (isUnicode)
                         {
-                            ReportSyntaxError(i, SyntaxErrorMessages.RegExpLoneQuantifierBrackets);
+                            ReportSyntaxError(i, RegExpLoneQuantifierBrackets);
                         }
 
                         break;
@@ -374,19 +385,19 @@ public partial class Tokenizer
 
             if (inGroup > 0)
             {
-                ReportSyntaxError(_pattern.Length, SyntaxErrorMessages.RegExpUnterminatedGroup);
+                ReportSyntaxError(_pattern.Length, RegExpUnterminatedGroup);
             }
 
             if (inSet)
             {
-                ReportSyntaxError(_pattern.Length, SyntaxErrorMessages.RegExpUnterminatedCharacterClass);
+                ReportSyntaxError(_pattern.Length, RegExpUnterminatedCharacterClass);
             }
 
             if (isUnicode)
             {
                 if (inQuantifier)
                 {
-                    ReportSyntaxError(_pattern.Length, SyntaxErrorMessages.RegExpLoneQuantifierBrackets);
+                    ReportSyntaxError(_pattern.Length, RegExpLoneQuantifierBrackets);
                 }
             }
         }
@@ -440,7 +451,7 @@ public partial class Tokenizer
                     case ']':
                         if (!context.WithinSet)
                         {
-                            Debug.Assert(mode is LegacyMode, SyntaxErrorMessages.RegExpLoneQuantifierBrackets); // CheckBracesBalance should ensure this.
+                            Debug.Assert(mode is LegacyMode, RegExpLoneQuantifierBrackets); // CheckBracesBalance should ensure this.
                             goto default;
                         }
 
@@ -450,7 +461,7 @@ public partial class Tokenizer
                         }
 
                         context.SetStartIndex = -1;
-                        context.FollowingQuantifierError = null;
+                        context.ClearFollowingQuantifierError();
                         break;
 
                     case '(' when !context.WithinSet:
@@ -470,15 +481,15 @@ public partial class Tokenizer
 
                             if (!currentGroupAlternate!.TryAddGroupName(groupName!))
                             {
-                                ReportSyntaxError(i + 3, SyntaxErrorMessages.RegExpDuplicateCaptureGroupName);
+                                ReportSyntaxError(i + 3, RegExpDuplicateCaptureGroupName);
                             }
 
                             if (sb is not null)
                             {
-                                groupName = AdjustCapturingGroupName(groupName!, context.CapturingGroupNames!);
-                                if (groupName is null)
+                                var adjustedGroupName = AdjustCapturingGroupName(groupName!, context.CapturingGroupNames!);
+                                if (adjustedGroupName is null)
                                 {
-                                    conversionError = ReportConversionFailure(i + 3, string.Format(RegExpConversionErrorMessages.RegExpUnmappableGroupName, groupName));
+                                    conversionError = ReportConversionFailure(i + 3, RegExpUnmappableGroupName, new object[] { groupName! });
                                     return null;
                                 }
 
@@ -492,7 +503,7 @@ public partial class Tokenizer
                                 // in a plain (numbered) capturing group to force .NET to include all capturing groups in the resulting match in the expected order.
                                 // (Named groups will also be listed after these but we can't do anything about that.)
 
-                                sb.Append('(').Append(_pattern, i, 3).Append(groupName);
+                                sb.Append('(').Append(_pattern, i, 3).Append(adjustedGroupName);
                             }
 
                             i = _pattern.IndexOf('>', i + 3);
@@ -500,7 +511,7 @@ public partial class Tokenizer
                             sb?.Append(_pattern[i]);
 
                             context.GroupStack.Push(new RegExpGroup(groupType, currentGroupAlternate));
-                            context.FollowingQuantifierError = SyntaxErrorMessages.RegExpNothingToRepeat;
+                            context.SetFollowingQuantifierError(RegExpNothingToRepeat);
                             break;
                         }
 
@@ -510,7 +521,7 @@ public partial class Tokenizer
                         context.GroupStack.Push(currentGroupAlternate is not null
                             ? new RegExpGroup(groupType, currentGroupAlternate)
                             : new RegExpGroup(groupType));
-                        context.FollowingQuantifierError = SyntaxErrorMessages.RegExpNothingToRepeat;
+                        context.SetFollowingQuantifierError(RegExpNothingToRepeat);
                         break;
 
                     case '|' when !context.WithinSet:
@@ -520,11 +531,11 @@ public partial class Tokenizer
                         {
                             context.GroupStack.PeekRef().AddAlternate();
                         }
-                        context.FollowingQuantifierError = SyntaxErrorMessages.RegExpNothingToRepeat;
+                        context.SetFollowingQuantifierError(RegExpNothingToRepeat);
                         break;
 
                     case ')' when !context.WithinSet:
-                        Debug.Assert(context.GroupStack.Count > (context.CapturingGroupNames is not null ? 1 : 0), SyntaxErrorMessages.RegExpUnmatchedParen); // CheckBracesBalance should ensure this.
+                        Debug.Assert(context.GroupStack.Count > (context.CapturingGroupNames is not null ? 1 : 0), RegExpUnmatchedParen); // CheckBracesBalance should ensure this.
 
                         if (context.CapturingGroupNames is not null)
                         {
@@ -543,7 +554,14 @@ public partial class Tokenizer
                             }
                         }
 
-                        context.FollowingQuantifierError = mode.AllowsQuantifierAfterGroup(groupType) ? null : SyntaxErrorMessages.RegExpInvalidQuantifier;
+                        if (mode.AllowsQuantifierAfterGroup(groupType))
+                        {
+                            context.ClearFollowingQuantifierError();
+                        }
+                        else
+                        {
+                            context.SetFollowingQuantifierError(RegExpInvalidQuantifier);
+                        }
                         break;
 
                     // RegexOptions.Multiline matches only '\n' and has other behavioral differences (e.g. "a\r\n\b".match(/^$/m) matches,
@@ -558,7 +576,7 @@ public partial class Tokenizer
                                 : sb.Append(ch);
                         }
 
-                        context.FollowingQuantifierError = SyntaxErrorMessages.RegExpNothingToRepeat;
+                        context.SetFollowingQuantifierError(RegExpNothingToRepeat);
                         break;
 
                     case '$' when !context.WithinSet:
@@ -569,7 +587,7 @@ public partial class Tokenizer
                                 : sb.Append(ch);
                         }
 
-                        context.FollowingQuantifierError = SyntaxErrorMessages.RegExpNothingToRepeat;
+                        context.SetFollowingQuantifierError(RegExpNothingToRepeat);
                         break;
 
                     case '.' when !context.WithinSet:
@@ -580,13 +598,14 @@ public partial class Tokenizer
                         // * Flag 'u' also changes the behavior (it must match code points instead of characters).
                         mode.RewriteDot(ref context, (_flags & RegExpFlags.DotAll) != 0);
 
-                        context.FollowingQuantifierError = null;
+                        context.ClearFollowingQuantifierError();
                         break;
 
                     case '*' or '+' or '?' when !context.WithinSet:
-                        if (context.FollowingQuantifierError is not null)
+                        if (context.FollowingQuantifierErrorCode is not null)
                         {
-                            ReportSyntaxError(i, context.FollowingQuantifierError);
+                            Debug.Assert(context.FollowingQuantifierErrorMessage is not null);
+                            ReportSyntaxError(i, context.FollowingQuantifierErrorMessage!, context.FollowingQuantifierErrorCode);
                         }
 
                         sb?.Append(ch);
@@ -597,7 +616,7 @@ public partial class Tokenizer
                             i++;
                         }
 
-                        context.FollowingQuantifierError = SyntaxErrorMessages.RegExpNothingToRepeat;
+                        context.SetFollowingQuantifierError(RegExpNothingToRepeat);
                         break;
 
                     case '{' when !context.WithinSet:
@@ -617,7 +636,7 @@ public partial class Tokenizer
                             i++;
                         }
 
-                        context.FollowingQuantifierError = SyntaxErrorMessages.RegExpNothingToRepeat;
+                        context.SetFollowingQuantifierError(RegExpNothingToRepeat);
                         break;
 
                     case '\\':
@@ -632,7 +651,7 @@ public partial class Tokenizer
                         if (!context.WithinSet)
                         {
                             mode.ProcessChar(ref context, ch, context.AppendChar, ref this);
-                            context.FollowingQuantifierError = null;
+                            context.ClearFollowingQuantifierError();
                         }
                         else
                         {
@@ -795,12 +814,13 @@ public partial class Tokenizer
             {
                 if (min > max)
                 {
-                    ReportSyntaxError(i, SyntaxErrorMessages.RegExpRangeOutOfOrder);
+                    ReportSyntaxError(i, RegExpRangeOutOfOrder);
                 }
 
-                if (context.FollowingQuantifierError is not null)
+                if (context.FollowingQuantifierErrorCode is not null)
                 {
-                    ReportSyntaxError(i, context.FollowingQuantifierError);
+                    Debug.Assert(context.FollowingQuantifierErrorMessage is not null);
+                    ReportSyntaxError(i, context.FollowingQuantifierErrorMessage!, context.FollowingQuantifierErrorCode);
                 }
 
                 sb?.Append(_pattern, i, endIndex + 1 - i);
@@ -811,7 +831,7 @@ public partial class Tokenizer
                 // number of occurrences can be an arbitrarily big number, however implementations (incl. V8) seems to ignore numbers greater than int.MaxValue.
                 // (e.g. /x{2147483647,2147483646}/ is syntax error while /x{2147483648,2147483647}/ is not!)
                 // We report failure in this case because .NET regex engine doesn't allow numbers greater than int.MaxValue.
-                conversionError = ReportConversionFailure(i, RegExpConversionErrorMessages.RegExpInconvertibleRangeQuantifier);
+                conversionError = ReportConversionFailure(i, RegExpInconvertibleRangeQuantifier);
                 return true;
             }
 
@@ -866,7 +886,7 @@ public partial class Tokenizer
                     }
                 }
 
-                ReportSyntaxError(startIndex, SyntaxErrorMessages.RegExpInvalidCaptureGroupName);
+                ReportSyntaxError(startIndex, RegExpInvalidCaptureGroupName);
             }
 
             return null;
@@ -905,7 +925,7 @@ public partial class Tokenizer
                         }
                         else if (!TryReadCodePoint(_pattern, ref i, endIndex, out cp))
                         {
-                            ReportSyntaxError(escStart, SyntaxErrorMessages.RegExpInvalidUnicodeEscape);
+                            ReportSyntaxError(escStart, RegExpInvalidUnicodeEscape);
                         }
 
                         ++i;
@@ -914,7 +934,7 @@ public partial class Tokenizer
                     {
                         if (!TryReadHexEscape(_pattern, ref i, endIndex, charCodeLength: 4, out var ch))
                         {
-                            ReportSyntaxError(escStart, SyntaxErrorMessages.RegExpInvalidUnicodeEscape);
+                            ReportSyntaxError(escStart, RegExpInvalidUnicodeEscape);
                         }
                         cp = ch;
                         ++i;
@@ -1070,7 +1090,7 @@ public partial class Tokenizer
             {
                 // RegexOptions.ECMAScript treats forward references like /\1(A)/ differently than JS,
                 // so we don't make an attempt at rewriting them.
-                conversionError = ReportConversionFailure(startIndex, RegExpConversionErrorMessages.RegExpInconvertibleForwardReference);
+                conversionError = ReportConversionFailure(startIndex, RegExpInconvertibleForwardReference);
                 return true;
             }
 
@@ -1100,18 +1120,18 @@ public partial class Tokenizer
                         {
                             // RegexOptions.ECMAScript treats forward references like /\k<a>(?<a>A)/ differently than JS,
                             // so we don't make an attempt at rewriting them.
-                            conversionError = ReportConversionFailure(startIndex, RegExpConversionErrorMessages.RegExpInconvertibleNamedForwardReference);
+                            conversionError = ReportConversionFailure(startIndex, RegExpInconvertibleNamedForwardReference);
                         }
                     }
                 }
                 else
                 {
-                    ReportSyntaxError(startIndex, SyntaxErrorMessages.RegExpInvalidNamedCaptureReference);
+                    ReportSyntaxError(startIndex, RegExpInvalidNamedCaptureReference);
                 }
             }
             else
             {
-                ReportSyntaxError(startIndex + 2, SyntaxErrorMessages.RegExpInvalidNamedReference);
+                ReportSyntaxError(startIndex + 2, RegExpInvalidNamedReference);
             }
         }
 
@@ -1182,7 +1202,21 @@ public partial class Tokenizer
 
             // A variable which keeps track whether the current construct can be followed by a quantifier. A null value indicates that a quantifier can follow,
             // otherwise it stores the error message for cases where a quantifier follows.
-            public string? FollowingQuantifierError;
+            public string? FollowingQuantifierErrorMessage;
+            public string? FollowingQuantifierErrorCode;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void ClearFollowingQuantifierError()
+            {
+                FollowingQuantifierErrorMessage = FollowingQuantifierErrorCode = null;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void SetFollowingQuantifierError(string message, [CallerArgumentExpression(nameof(message))] string? code = "UnknownError")
+            {
+                FollowingQuantifierErrorMessage = message;
+                FollowingQuantifierErrorCode = code;
+            }
 
             // In unicode mode we need to completely rewrite character sets as follows:
             // * Surrogate pairs should match the code point and not the high or low part of the surrogate pair.

@@ -6,6 +6,8 @@ using Acornima.Properties;
 
 namespace Acornima;
 
+using static SyntaxErrorMessages;
+
 public partial class Tokenizer
 {
     internal partial struct RegExpParser
@@ -52,7 +54,7 @@ public partial class Tokenizer
                         if (context.SetRangeStart <= UnicodeHelper.LastCodePoint)
                         {
                             // Cases like /[z-a]/ are syntax error.
-                            parser.ReportSyntaxError(startIndex, SyntaxErrorMessages.RegExpRangeOutOfOrderCharacterClass);
+                            parser.ReportSyntaxError(startIndex, RegExpRangeOutOfOrderCharacterClass);
                         }
                         else
                         {
@@ -147,7 +149,7 @@ public partial class Tokenizer
 
                 sb?.Append(pattern[startIndex]);
 
-                context.FollowingQuantifierError = null;
+                context.ClearFollowingQuantifierError();
             }
 
             public bool AdjustEscapeSequence(ref ParsePatternContext context, ref RegExpParser parser, out RegExpConversionError? conversionError)
@@ -172,7 +174,7 @@ public partial class Tokenizer
                             if (!context.WithinSet)
                             {
                                 context.AppendCharSafe?.Invoke(sb!, (char)charCode);
-                                context.FollowingQuantifierError = null;
+                                context.ClearFollowingQuantifierError();
                             }
                             else
                             {
@@ -190,7 +192,7 @@ public partial class Tokenizer
                             if (!context.WithinSet)
                             {
                                 sb?.Append(ch);
-                                context.FollowingQuantifierError = null;
+                                context.ClearFollowingQuantifierError();
                             }
                             else
                             {
@@ -210,7 +212,7 @@ public partial class Tokenizer
                                 if (!context.WithinSet)
                                 {
                                     context.AppendCharSafe?.Invoke(sb!, (char)charCode);
-                                    context.FollowingQuantifierError = null;
+                                    context.ClearFollowingQuantifierError();
                                 }
                                 else
                                 {
@@ -241,7 +243,7 @@ public partial class Tokenizer
                         if (!context.WithinSet)
                         {
                             sb?.Append('\\').Append('\\').Append(ch);
-                            context.FollowingQuantifierError = null;
+                            context.ClearFollowingQuantifierError();
                         }
                         else
                         {
@@ -259,7 +261,7 @@ public partial class Tokenizer
                         if (!context.WithinSet)
                         {
                             context.AppendCharSafe?.Invoke(sb!, (char)charCode);
-                            context.FollowingQuantifierError = null;
+                            context.ClearFollowingQuantifierError();
                         }
                         else
                         {
@@ -279,7 +281,7 @@ public partial class Tokenizer
                                     return false;
                                 }
 
-                                context.FollowingQuantifierError = null;
+                                context.ClearFollowingQuantifierError();
                                 break;
                             }
                         }
@@ -296,7 +298,7 @@ public partial class Tokenizer
                             if (!context.WithinSet)
                             {
                                 context.AppendCharSafe?.Invoke(sb!, ch);
-                                context.FollowingQuantifierError = null;
+                                context.ClearFollowingQuantifierError();
                             }
                             else
                             {
@@ -313,7 +315,7 @@ public partial class Tokenizer
                             // \k escapes are ignored - but not by the .NET regex engine,
                             // so they need to be rewritten (e.g. /\k<a>/ --> @"k<a>", /[\k<a>]/ --> @"[k<a>]").
                             sb?.Append(ch);
-                            context.FollowingQuantifierError = null;
+                            context.ClearFollowingQuantifierError();
                             break;
                         }
 
@@ -325,13 +327,13 @@ public partial class Tokenizer
                                 return false;
                             }
 
-                            context.FollowingQuantifierError = null;
+                            context.ClearFollowingQuantifierError();
                         }
                         else
                         {
                             // \k escape sequence within character sets is not allowed
                             // (except when there are no named capturing groups; see above).
-                            parser.ReportSyntaxError(startIndex, SyntaxErrorMessages.RegExpInvalidEscape);
+                            parser.ReportSyntaxError(startIndex, RegExpInvalidEscape);
                         }
                         break;
 
@@ -360,7 +362,7 @@ public partial class Tokenizer
                                 }
                             }
 
-                            context.FollowingQuantifierError = null;
+                            context.ClearFollowingQuantifierError();
                         }
                         else
                         {
@@ -399,7 +401,7 @@ public partial class Tokenizer
                         if (!context.WithinSet)
                         {
                             sb?.Append(ch);
-                            context.FollowingQuantifierError = null;
+                            context.ClearFollowingQuantifierError();
                         }
                         else
                         {
@@ -414,12 +416,19 @@ public partial class Tokenizer
                             {
                                 // These .NET-only escape sequences must be unescaped outside character sets as RegexOptions.ECMAScript doesn't handle them correctly.
                                 sb?.Append(ch);
-                                context.FollowingQuantifierError = null;
+                                context.ClearFollowingQuantifierError();
                             }
                             else
                             {
                                 sb?.Append(pattern, startIndex, 2);
-                                context.FollowingQuantifierError = ch is 'b' or 'B' ? SyntaxErrorMessages.RegExpNothingToRepeat : null;
+                                if (ch is 'b' or 'B')
+                                {
+                                    context.SetFollowingQuantifierError(RegExpNothingToRepeat);
+                                }
+                                else
+                                {
+                                    context.ClearFollowingQuantifierError();
+                                }
                             }
                         }
                         else

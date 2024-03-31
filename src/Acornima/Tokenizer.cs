@@ -10,10 +10,14 @@ using Acornima.Properties;
 
 namespace Acornima;
 
+using static SyntaxErrorMessages;
+
 // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js
 
 public sealed partial class Tokenizer
 {
+    internal const string UnknownError = nameof(UnknownError);
+
     private readonly TokenizerOptions _options;
 
     internal Tokenizer(TokenizerOptions options)
@@ -64,7 +68,7 @@ public sealed partial class Tokenizer
         if (!context.IgnoreEscapeSequenceInKeyword && _type.Keyword is not null && _containsEscape)
         {
             // RaiseRecoverable(_start, "Escape sequence in keyword " + _type.Label); // original acornjs error reporting
-            RaiseRecoverable(_start, SyntaxErrorMessages.InvalidEscapedReservedWord);
+            RaiseRecoverable(_start, InvalidEscapedReservedWord);
         }
 
         _strict = _inModule || context.Strict;
@@ -711,7 +715,7 @@ public sealed partial class Tokenizer
                         if (_containsEscape)
                         {
                             // Unexpected(flagsStart); // original acornjs error reporting
-                            RaiseRecoverable(flagsStart, SyntaxErrorMessages.InvalidRegExpFlags);
+                            RaiseRecoverable(flagsStart, InvalidRegExpFlags);
                         }
 
                         var patternCached = DeduplicateString(pattern, ref _stringPool, NonIdentifierDeduplicationThreshold);
@@ -734,7 +738,7 @@ public sealed partial class Tokenizer
 
     Unterminated:
         // return Raise<bool>(start, "Unterminated regular expression"); // original acornjs error reporting
-        return Raise<bool>(start - 1, SyntaxErrorMessages.UnterminatedRegExp);
+        return Raise<bool>(start - 1, UnterminatedRegExp);
     }
 
     // Read an integer in the given radix. Return the number of digits read,
@@ -760,20 +764,25 @@ public sealed partial class Tokenizer
                 if (startsWithZero)
                 {
                     // RaiseRecoverable(_position, "Numeric separator is not allowed in legacy octal numeric literals"); // original acornjs error reporting
-                    RaiseRecoverable(_position, i > 1
-                        ? SyntaxErrorMessages.InvalidOrUnexpectedToken
-                        : SyntaxErrorMessages.ZeroDigitNumericSeparator);
+                    if (i > 1)
+                    {
+                        RaiseRecoverable(_position, InvalidOrUnexpectedToken);
+                    }
+                    else
+                    {
+                        RaiseRecoverable(_position, ZeroDigitNumericSeparator);
+                    }
                 }
                 else if (i == 0)
                 {
                     // RaiseRecoverable(_position, "Numeric separator is not allowed at the first of digits"); // original acornjs error reporting
-                    RaiseRecoverable(_start, SyntaxErrorMessages.InvalidOrUnexpectedToken);
+                    RaiseRecoverable(_start, InvalidOrUnexpectedToken);
                 }
 
                 if (lastCh == '_')
                 {
                     // RaiseRecoverable(_position, "Numeric separator must be exactly one underscore"); // original acornjs error reporting
-                    RaiseRecoverable(_position, SyntaxErrorMessages.ContinuousNumericSeparator);
+                    RaiseRecoverable(_position, ContinuousNumericSeparator);
                 }
 
                 lastCh = (char)ch;
@@ -803,7 +812,7 @@ public sealed partial class Tokenizer
         if (allowSeparators && lastCh == '_')
         {
             // RaiseRecoverable(_position - 1, "Numeric separator is not allowed at the last of digits"); // original acornjs error reporting
-            RaiseRecoverable(_position - 1, SyntaxErrorMessages.TrailingNumericSeparator);
+            RaiseRecoverable(_position - 1, TrailingNumericSeparator);
         }
 
         return numDigits;
@@ -903,7 +912,7 @@ public sealed partial class Tokenizer
                 if (_strict)
                 {
                     // Raise(start, "Invalid number"); // original acornjs error reporting
-                    RaiseRecoverable(start, SyntaxErrorMessages.StrictOctalLiteral);
+                    RaiseRecoverable(start, StrictOctalLiteral);
                 }
 
                 if (!overflow)
@@ -987,7 +996,7 @@ public sealed partial class Tokenizer
 
         if (startsWithZero && _strict && numDigits > 1)
         {
-            RaiseRecoverable(start, SyntaxErrorMessages.StrictDecimalWithLeadingZero);
+            RaiseRecoverable(start, StrictDecimalWithLeadingZero);
         }
 
         if (!overflow && _position - integerPartEnd <= 1) // no need to reparse literals like 10.
@@ -1083,7 +1092,7 @@ public sealed partial class Tokenizer
             if (_options._ecmaVersion < EcmaVersion.ES6)
             {
                 // Unexpected(); // original acornjs error reporting
-                Raise(start - 2, SyntaxErrorMessages.InvalidUnicodeEscapeSequence);
+                Raise(start - 2, InvalidUnicodeEscapeSequence);
             }
 
             ++_position;
@@ -1094,7 +1103,7 @@ public sealed partial class Tokenizer
                 if (cp > 0)
                 {
                     // InvalidStringToken(errorPos, "Code point out of bounds"); // original acornjs error reporting
-                    InvalidStringToken(start - 2, SyntaxErrorMessages.UndefinedUnicodeCodePoint);
+                    InvalidStringToken(start - 2, UndefinedUnicodeCodePoint);
                 }
 
                 // Propagate escape sequence error to caller when parsing a template literal.
@@ -1127,7 +1136,7 @@ public sealed partial class Tokenizer
         return success;
     }
 
-    private void InvalidStringToken(int pos, string message)
+    private void InvalidStringToken(int pos, string message, [CallerArgumentExpression(nameof(message))] string code = UnknownError)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.invalidStringToken = function`
 
@@ -1135,7 +1144,7 @@ public sealed partial class Tokenizer
         {
             if (_requireValidEscapeSequenceInTemplate)
             {
-                RaiseRecoverable(pos, message);
+                RaiseRecoverable(pos, message, code: code);
             }
 
             // NOTE: Original acornjs implementation uses a custom exception (INVALID_TEMPLATE_ESCAPE_ERROR) to
@@ -1145,7 +1154,7 @@ public sealed partial class Tokenizer
             return;
         }
 
-        Raise(pos, message);
+        Raise(pos, message, code: code);
     }
 
     private bool ReadTemplateToken(ref bool normalizeRaw, out bool invalidTemplate)
@@ -1235,7 +1244,7 @@ public sealed partial class Tokenizer
         finally { ReleaseStringBuilder(ref sb); }
 
         // return Raise<bool>(_start, "Unterminated template"); // original acornjs error reporting
-        return Raise<bool>(_position, SyntaxErrorMessages.UnexpectedEOS);
+        return Raise<bool>(_position, UnexpectedEOS);
     }
 
     // Reads a template token to search for the end, without validating any escape sequences
@@ -1292,7 +1301,7 @@ public sealed partial class Tokenizer
         }
 
         // return Raise<bool>(_start, "Unterminated template"); // original acornjs error reporting
-        return Raise<bool>(_position, SyntaxErrorMessages.UnexpectedEOS);
+        return Raise<bool>(_position, UnexpectedEOS);
     }
 
     private ReadOnlySpan<char> ReadTemplateRaw(StringBuilder sb, bool normalizeRaw)
@@ -1386,12 +1395,12 @@ public sealed partial class Tokenizer
 
                     if (inTemplate)
                     {
-                        InvalidStringToken(start - 1, SyntaxErrorMessages.TemplateOctalLiteral);
+                        InvalidStringToken(start - 1, TemplateOctalLiteral);
                         return null;
                     }
                     else if (_strict)
                     {
-                        RaiseRecoverable(start - 1, SyntaxErrorMessages.StrictOctalEscape);
+                        RaiseRecoverable(start - 1, StrictOctalEscape);
                     }
 
                     if (_legacyOctalPosition < 0)
@@ -1413,12 +1422,12 @@ public sealed partial class Tokenizer
 
                 if (inTemplate)
                 {
-                    InvalidStringToken(_position - 2, SyntaxErrorMessages.Template8Or9Escape);
+                    InvalidStringToken(_position - 2, Template8Or9Escape);
                     return null;
                 }
                 else if (_strict)
                 {
-                    RaiseRecoverable(_position - 2, SyntaxErrorMessages.Strict8Or9Escape);
+                    RaiseRecoverable(_position - 2, Strict8Or9Escape);
                 }
 
                 if (_legacyOctalPosition < 0)
@@ -1440,9 +1449,14 @@ public sealed partial class Tokenizer
         if (ReadInt(out var n, out var overflow, out _, radix: 16, len: len) != len)
         {
             // InvalidStringToken(errorPos, "Bad character escape sequence"); // original acornjs error reporting
-            InvalidStringToken(start - 2, !isVariableLength && len == 2
-                ? SyntaxErrorMessages.InvalidHexEscapeSequence
-                : SyntaxErrorMessages.InvalidUnicodeEscapeSequence);
+            if (!isVariableLength && len == 2)
+            {
+                InvalidStringToken(start - 2, InvalidHexEscapeSequence);
+            }
+            else
+            {
+                InvalidStringToken(start - 2, InvalidUnicodeEscapeSequence);
+            }
             return -1;
         }
         else if (overflow || n > int.MaxValue)
@@ -1796,7 +1810,7 @@ public sealed partial class Tokenizer
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/parseutil.js > `pp.unexpected = function`
 
-        Raise(pos ?? _start, SyntaxErrorMessages.InvalidOrUnexpectedToken);
+        Raise(pos ?? _start, InvalidOrUnexpectedToken);
     }
 
     [DoesNotReturn]
@@ -1814,34 +1828,37 @@ public sealed partial class Tokenizer
     // of the error message, and then raises a `SyntaxError` with that
     // message.
     [DoesNotReturn]
-    internal void Raise(int pos, string message, ParseError.Factory? errorFactory = null)
+    internal void Raise(int pos, string message, ParseError.Factory? errorFactory = null,
+        [CallerArgumentExpression(nameof(message))] string code = UnknownError)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/location.js > `pp.raise = function`
 
         var loc = GetLineInfo(_input, pos, out _);
         var error = errorFactory is null
-            ? new SyntaxError(message, pos, loc, _sourceFile)
-            : errorFactory(message, pos, loc, _sourceFile);
+            ? new SyntaxError(code, message, pos, loc, _sourceFile)
+            : errorFactory(code, message, pos, loc, _sourceFile);
         _options._errorHandler.ThrowError(error);
     }
 
     [DoesNotReturn]
-    internal T Raise<T>(int pos, string message, ParseError.Factory? errorFactory = null)
+    internal T Raise<T>(int pos, string message, ParseError.Factory? errorFactory = null,
+        [CallerArgumentExpression(nameof(message))] string code = UnknownError)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/location.js > `pp.raise = function`
 
-        Raise(pos, message, errorFactory);
+        Raise(pos, message, errorFactory, code);
         return default!;
     }
 
-    internal ParseError RaiseRecoverable(int pos, string message, ParseError.Factory? errorFactory = null)
+    internal ParseError RaiseRecoverable(int pos, string message, ParseError.Factory? errorFactory = null,
+        [CallerArgumentExpression(nameof(message))] string code = UnknownError)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/location.js > `pp.raiseRecoverable =`
 
         var loc = GetLineInfo(_input, pos, out _);
         var error = errorFactory is null
-            ? new SyntaxError(message, pos, loc, _sourceFile)
-            : errorFactory(message, pos, loc, _sourceFile);
+            ? new SyntaxError(code, message, pos, loc, _sourceFile)
+            : errorFactory(code, message, pos, loc, _sourceFile);
         return _options._errorHandler.TolerateError(error, _options._tolerant);
     }
 

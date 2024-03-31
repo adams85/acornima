@@ -76,6 +76,7 @@
 
   <PropertyGroup>
     <PolySharpIncludeGeneratedTypes Condition="'$(TargetFramework)' == 'net462' OR '$(TargetFramework)' == 'netstandard2.0' OR '$(TargetFramework)' == 'netstandard2.1'">
+      System.Runtime.CompilerServices.CallerArgumentExpressionAttribute;
       System.Runtime.CompilerServices.IsExternalInit;
       System.Runtime.CompilerServices.SkipLocalsInitAttribute
     </PolySharpIncludeGeneratedTypes>

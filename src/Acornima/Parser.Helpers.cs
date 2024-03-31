@@ -8,6 +8,8 @@ using Acornima.Properties;
 
 namespace Acornima;
 
+using static SyntaxErrorMessages;
+
 public partial class Parser
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -323,9 +325,14 @@ public partial class Parser
 
     private void HandleReservedWordError(Identifier id)
     {
-        Raise(id.Start, (GetReservedWordKind(id.Name.AsSpan(), _strict, _options.EcmaVersion) & ReservedWordKind.Strict) != 0
-            ? SyntaxErrorMessages.UnexpectedStrictReserved
-            : SyntaxErrorMessages.UnexpectedReserved);
+        if ((GetReservedWordKind(id.Name.AsSpan(), _strict, _options.EcmaVersion) & ReservedWordKind.Strict) != 0)
+        {
+            Raise(id.Start, UnexpectedStrictReserved);
+        }
+        else
+        {
+            Raise(id.Start, UnexpectedReserved);
+        }
     }
 
 #if DEBUG
