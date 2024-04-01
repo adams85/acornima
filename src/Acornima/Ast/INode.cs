@@ -10,5 +10,8 @@ public interface INode
     ref readonly Range RangeRef { get; }
     SourceLocation Location { get; }
     ref readonly SourceLocation LocationRef { get; }
+    /// <remarks>
+    /// The operation is not guaranteed to be thread-safe. In case concurrent access or update is possible, the necessary synchronization is caller's responsibility.
+    /// </remarks>
     object? UserData { get; }
 }

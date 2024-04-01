@@ -138,8 +138,33 @@ public partial class RegExpTests
             RegExpParseMode = RegExpParseMode.AdaptToInterpreted,
             Tolerant = false
         });
-        var actualAdaptedPattern = parser.ParseCore(out _, out _);
+        var actualAdaptedPattern = parser.ParseCore(out _, out _, out _);
 
         Assert.Equal(expectedAdaptedPattern, actualAdaptedPattern);
+    }
+
+    [Theory]
+    [InlineData(@"(?:x)", false, false)]
+    [InlineData(@"(?![^\\x28]*\\x29)", false, false)]
+    [InlineData(@"(?<!(Saturday|Sunday))", false, false)]
+    [InlineData(@"(?:x)", true, true)]
+#if NET7_0_OR_GREATER
+    [InlineData(@"(?![^\\x28]*\\x29)", true, false)]
+    [InlineData(@"(?<!(Saturday|Sunday))", true, false)]
+#else
+    [InlineData(@"(?![^\\x28]*\\x29)", true, true)]
+    [InlineData(@"(?<!(Saturday|Sunday))", true, true)]
+#endif
+    public void ShouldNotCompileNegativeLookaroundOnNET7OrLater(string pattern, bool compileRegex, bool expectedIsCompiled)
+    {
+        var parser = new Tokenizer.RegExpParser(pattern, string.Empty, new TokenizerOptions
+        {
+            RegExpParseMode = compileRegex ? RegExpParseMode.AdaptToCompiled : RegExpParseMode.AdaptToInterpreted,
+            Tolerant = false
+        });
+        var parseResult = parser.Parse();
+        Assert.True(parseResult.Success);
+        Assert.NotNull(parseResult.Regex);
+        Assert.Equal(expectedIsCompiled, (parseResult.Regex.Options & RegexOptions.Compiled) != 0);
     }
 }

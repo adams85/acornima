@@ -5,7 +5,7 @@ VisualStudioVersion = 17.6.33717.318
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Generator", "Generator.csproj", "{5FC6B784-BAA9-4BF6-8845-0D762D938816}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Acornima.Core", "..\..\..\..\src\Acornima.Core\Acornima.Core.csproj", "{C3607046-115D-45CE-8EA2-580D270DDC08}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Acornima.Core", "..\..\..\..\src\Acornima\Acornima.csproj", "{C3607046-115D-45CE-8EA2-580D270DDC08}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -49,7 +49,14 @@ public partial class RegExpTests
                     continue;
                 }
 
-#if NET462_OR_GREATER
+#if !NET8_0_OR_GREATER
+                if (hintArray.Contains("!skip-before-net8.0"))
+                {
+                    continue;
+                }
+#endif
+
+#if NETFRAMEWORK
                 if (hintArray.Contains("!skip-on-netframework"))
                 {
                     continue;

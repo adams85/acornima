@@ -46,6 +46,10 @@ public partial class Tokenizer
         private const int SetRangeNotStarted = int.MaxValue;
         private const int SetRangeStartedWithCharClass = int.MaxValue - 1;
 
+        // Negative lookaround assertions don't work as expected under .NET 7 and .NET 8 when the regex is compiled
+        // (see also https://github.com/dotnet/runtime/issues/97455).
+        private static readonly bool s_canCompileNegativeLookaroundAssertions = typeof(Regex).Assembly.GetName().Version?.Major < 7;
+
         internal static RegExpFlags ParseFlags(string value, int startIndex, Tokenizer tokenizer)
         {
             var flags = RegExpFlags.None;
@@ -175,7 +179,7 @@ public partial class Tokenizer
                 }
             }
 
-            var adaptedPattern = ParseCore(out var capturingGroups, out conversionError);
+            var adaptedPattern = ParseCore(out var capturingGroups, out conversionError, out var canCompile);
             if (adaptedPattern is null)
             {
                 // NOTE: ParseCore should return null
@@ -188,7 +192,7 @@ public partial class Tokenizer
             Debug.Assert(conversionError is null);
             capturingGroups.TrimExcess();
 
-            var options = FlagsToOptions(_flags, compiled: _tokenizer._options._regExpParseMode == RegExpParseMode.AdaptToCompiled);
+            var options = FlagsToOptions(_flags, compiled: _tokenizer._options._regExpParseMode == RegExpParseMode.AdaptToCompiled && canCompile);
             var matchTimeout = _tokenizer._options._regexTimeout;
 
             try
@@ -202,7 +206,7 @@ public partial class Tokenizer
             }
         }
 
-        internal string? ParseCore(out ArrayList<RegExpCapturingGroup> capturingGroups, out RegExpConversionError? conversionError)
+        internal string? ParseCore(out ArrayList<RegExpCapturingGroup> capturingGroups, out RegExpConversionError? conversionError, out bool canCompile)
         {
             _tokenizer.AcquireStringBuilder(out var sb);
             try
@@ -234,9 +238,11 @@ public partial class Tokenizer
                 };
                 context.SetFollowingQuantifierError(RegExpNothingToRepeat);
 
-                return (_flags & RegExpFlags.Unicode) != 0
+                var adaptedPattern = (_flags & RegExpFlags.Unicode) != 0
                     ? ParsePattern(UnicodeMode.Instance, ref context, out conversionError)
                     : ParsePattern(LegacyMode.Instance, ref context, out conversionError);
+                canCompile = context.CanCompile;
+                return adaptedPattern;
             }
             finally
             {
@@ -513,6 +519,10 @@ public partial class Tokenizer
                             context.GroupStack.Push(new RegExpGroup(groupType, currentGroupAlternate));
                             context.SetFollowingQuantifierError(RegExpNothingToRepeat);
                             break;
+                        }
+                        else if (!s_canCompileNegativeLookaroundAssertions && groupType is RegExpGroupType.NegativeLookaheadAssertion or RegExpGroupType.NegativeLookbehindAssertion)
+                        {
+                            context.CanCompile = false;
                         }
 
                         sb?.Append(_pattern, i, 1 + ((int)groupType >> 2));
@@ -1166,6 +1176,7 @@ public partial class Tokenizer
 
                 CapturingGroups = capturingGroups;
                 CapturingGroupNames = capturingGroupNames;
+                CanCompile = true;
             }
 
             public int Index;
@@ -1225,6 +1236,8 @@ public partial class Tokenizer
             // * Lone surrogates need special care too.
             // We use the following list to build the adjusted character set.
             public ArrayList<CodePointRange> UnicodeSet;
+
+            public bool CanCompile;
         }
 
         private interface IMode

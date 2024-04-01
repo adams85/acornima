@@ -74,7 +74,7 @@ while ((line = reader.ReadLine()) is not null)
         var flags = DecodeStringIfEscaped(parts[1]);
 
         var regexParser = new Tokenizer.RegExpParser(pattern, flags, tokenizerOptions);
-        try { adaptedPattern = regexParser.ParseCore(out _, out _) ?? ")inconvertible("; }
+        try { adaptedPattern = regexParser.ParseCore(out _, out _, out _) ?? ")inconvertible("; }
         catch (SyntaxErrorException) { adaptedPattern = ")syntax-error("; }
         var encodedDotnetPattern = JavaScriptString.Encode(adaptedPattern, addDoubleQuotes: false);
         if (adaptedPattern != encodedDotnetPattern)

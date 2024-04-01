@@ -36,6 +36,9 @@ public enum RegExpParseMode
     /// In case an invalid regular expression is encountered, <see cref="SyntaxErrorException"/> is thrown.<br/>
     /// In the case of a valid regular expression for which an equivalent <see cref="Regex"/> cannot be constructed, either <see cref="RegExpConversionErrorException"/> is thrown
     /// or a <see cref="Token"/> is created with the <see cref="Token.Value"/> property set to <see langword="null"/>, depending on the <see cref="TokenizerOptions.Tolerant"/> option.
+    /// <para>
+    /// Please note that adapted patterns containing negative lookaround assertions won't be compiled on .NET 7+ because of a <seealso href="https://github.com/dotnet/runtime/issues/97455">regression of .NET's regex compiler</seealso>.
+    /// </para>
     /// </remarks>
     AdaptToCompiled,
 }
