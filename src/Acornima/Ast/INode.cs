@@ -7,6 +7,8 @@ public interface INode
     int Start { get; }
     int End { get; }
     Range Range { get; }
+    ref readonly Range RangeRef { get; }
     SourceLocation Location { get; }
+    ref readonly SourceLocation LocationRef { get; }
     object? UserData { get; }
 }
