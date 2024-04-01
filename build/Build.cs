@@ -15,7 +15,7 @@ using Serilog;
 [ShutdownDotNetAfterServerBuild]
 partial class Build : NukeBuild, IPublish
 {
-    public static int Main() => Execute<Build>(x => ((ICompile) x).Compile);
+    public static int Main() => Execute<Build>(x => ((ICompile)x).Compile);
 
     [GitRepository] readonly GitRepository GitRepository;
 
@@ -33,10 +33,10 @@ partial class Build : NukeBuild, IPublish
     string PublicNuGetSource => "https://api.nuget.org/v3/index.json";
     string FeedzNuGetSource => "https://f.feedz.io/acornima/acornima/nuget/index.json";
 
-    [Parameter] [Secret] readonly string PublicNuGetApiKey;
-    [Parameter] [Secret] readonly string FeedzNuGetApiKey;
+    [Parameter][Secret] readonly string PublicNuGetApiKey;
+    [Parameter][Secret] readonly string FeedzNuGetApiKey;
 
-    bool IsPublicRelease => GitRepository.IsOnMainOrMasterBranch() && IsTaggedBuild;
+    bool IsPublicRelease => IsTaggedBuild;
     string IPublish.NuGetSource => IsPublicRelease ? PublicNuGetSource : FeedzNuGetSource;
     string IPublish.NuGetApiKey => IsPublicRelease ? PublicNuGetApiKey : FeedzNuGetApiKey;
 
@@ -59,23 +59,22 @@ partial class Build : NukeBuild, IPublish
         }
 
         Log.Information("BUILD SETUP");
-        Log.Information("Configuration:\t{Configuration}", ((IHazConfiguration) this).Configuration);
+        Log.Information("Configuration:\t{Configuration}", ((IHazConfiguration)this).Configuration);
         Log.Information("Version suffix:\t{VersionSuffix}", VersionSuffix);
         Log.Information("Version:\t\t{Version}", Version);
         Log.Information("Tagged build:\t{IsTaggedBuild}", IsTaggedBuild);
     }
 
-    Target Clean => _ => _
+    public Target Clean => _ => _
         .Before<IRestore>(x => x.Restore)
         .Executes(() =>
         {
             SourceDirectory.GlobDirectories("**/bin", "**/obj").ForEach(x => x.DeleteDirectory());
             TestDirectory.GlobDirectories("**/bin", "**/obj").ForEach(x => x.DeleteDirectory());
-            ((IHazArtifacts) this).ArtifactsDirectory.CreateOrCleanDirectory();
+            ((IHazArtifacts)this).ArtifactsDirectory.CreateOrCleanDirectory();
         });
 
-    public IEnumerable<Project> TestProjects => ((IHazSolution) this).Solution.AllProjects.Where(x => x.Name.Contains("Tests"));
-
+    public IEnumerable<Project> TestProjects => ((IHazSolution)this).Solution.AllProjects.Where(x => x.Name.Contains("Tests"));
 
     public Configure<DotNetBuildSettings> CompileSettings => _ => _
         .SetVersion(Version)
