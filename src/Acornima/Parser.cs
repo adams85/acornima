@@ -26,6 +26,8 @@ public sealed partial class Parser
         _isReservedWord = _isReservedWordBind = null!;
     }
 
+    public ParserOptions Options => _options;
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Script ParseScript(string input, string? sourceFile = null, bool strict = false)
     {

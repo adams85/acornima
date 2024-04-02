@@ -42,6 +42,13 @@ public sealed partial class Tokenizer
         Reset(input, start, length, sourceType, sourceFile);
     }
 
+    public string Input => _input;
+    public Range Range => new Range(_startPosition, _endPosition);
+    public SourceType SourceType => _sourceType;
+    public string? SourceFile => _sourceFile;
+
+    public TokenizerOptions Options => _options;
+
     public Token Current
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
