@@ -48,7 +48,7 @@ public partial class Tokenizer
 
         // Negative lookaround assertions don't work as expected under .NET 7 and .NET 8 when the regex is compiled
         // (see also https://github.com/dotnet/runtime/issues/97455).
-        private static readonly bool s_canCompileNegativeLookaroundAssertions = typeof(Regex).Assembly.GetName().Version?.Major < 7;
+        private static readonly bool s_canCompileNegativeLookaroundAssertions = typeof(Regex).Assembly.GetName().Version?.Major is not (null or 7 or 8);
 
         internal static RegExpFlags ParseFlags(string value, int startIndex, Tokenizer tokenizer)
         {
