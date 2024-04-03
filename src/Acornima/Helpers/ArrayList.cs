@@ -244,22 +244,10 @@ internal struct ArrayList<T> : IList<T>
         return (capacity * 3L) >> 1;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add(T item)
     {
-        AssertUnchanged();
-
-        var capacity = Capacity;
-
-        if (_count == capacity)
-        {
-            Array.Resize(ref _items, Math.Max(checked((int)GrowCapacity(capacity)), MinAllocatedCount));
-        }
-
-        Debug.Assert(_items is not null);
-        _items![_count] = item;
-        _count++;
-
-        OnChanged();
+        PushRef() = item;
     }
 
     public void AddRange(ReadOnlySpan<T> items)
@@ -394,10 +382,32 @@ internal struct ArrayList<T> : IList<T>
         }
     }
 
+    /// <remarks>
+    /// WARNING: Items should not be added or removed from the <see cref="ArrayList{T}"/> while the returned reference is in use.
+    /// </remarks>
+    public ref T PushRef()
+    {
+        AssertUnchanged();
+
+        var capacity = Capacity;
+
+        if (_count == capacity)
+        {
+            Array.Resize(ref _items, Math.Max(checked((int)GrowCapacity(capacity)), MinAllocatedCount));
+        }
+
+        Debug.Assert(_items is not null);
+        ref var item = ref _items![_count++];
+
+        OnChanged();
+
+        return ref item!;
+    }
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Push(T item)
     {
-        Add(item);
+        PushRef() = item;
     }
 
     /// <remarks>
@@ -409,12 +419,30 @@ internal struct ArrayList<T> : IList<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public readonly T Peek() => PeekRef();
 
+    /// <remarks>
+    /// WARNING: Items should not be added or removed from the <see cref="ArrayList{T}"/> while the returned reference is in use.<br/>
+    /// Also note that this operation doesn't actually remove the item from the underlying data structure, so objects referenced by
+    /// the item will not be eligible for garbage collection.
+    /// </remarks>
+    public ref T PopRef()
+    {
+        AssertUnchanged();
+
+        var lastIndex = _count - 1;
+        ref var last = ref _items![lastIndex];
+        _count = lastIndex;
+
+        OnChanged();
+
+        return ref last!;
+    }
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public T Pop()
     {
-        var lastIndex = _count - 1;
-        var last = this[lastIndex];
-        RemoveAt(lastIndex);
+        ref var lastRef = ref PopRef();
+        var last = lastRef;
+        lastRef = default;
         return last;
     }
 

@@ -407,9 +407,9 @@ public partial class Parser
 
         Next();
 
-        _labels.Push(new Label(LabelKind.Loop));
+        _labels.PushRef().Reset(LabelKind.Loop);
         var body = ParseStatement(StatementContext.Do);
-        _labels.Pop();
+        _labels.PopRef();
 
         Expect(TokenType.While);
 
@@ -454,7 +454,7 @@ public partial class Parser
             awaitAt = -1;
         }
 
-        _labels.Push(new Label(LabelKind.Loop));
+        _labels.PushRef().Reset(LabelKind.Loop);
         EnterScope(ScopeFlags.None);
 
         Expect(TokenType.ParenLeft);
@@ -647,7 +647,7 @@ public partial class Parser
         var cases = new ArrayList<SwitchCase>();
         Expect(TokenType.BraceLeft);
 
-        _labels.Push(new Label(LabelKind.Switch));
+        _labels.PushRef().Reset(LabelKind.Switch);
         EnterScope(ScopeFlags.None);
 
         var sawDefault = false;
@@ -686,7 +686,7 @@ public partial class Parser
             var consequent = new ArrayList<Statement>();
             while (_tokenizer._type != TokenType.BraceRight && _tokenizer._type != TokenType.Case && _tokenizer._type != TokenType.Default)
             {
-                consequent.Push(ParseStatement(StatementContext.Default));
+                consequent.Add(ParseStatement(StatementContext.Default));
             }
 
             var current = FinishNode(caseStartMarker, new SwitchCase(test, NodeList.From(ref consequent)));
@@ -695,7 +695,7 @@ public partial class Parser
         }
 
         ExitScope();
-        _labels.Pop();
+        _labels.PopRef();
 
         return FinishNode(startMarker, new SwitchStatement(discriminant, NodeList.From(ref cases)));
     }
@@ -820,9 +820,9 @@ public partial class Parser
         Next();
         var test = ParseParenExpression();
 
-        _labels.Push(new Label(LabelKind.Loop));
+        _labels.PushRef().Reset(LabelKind.Loop);
         var body = ParseStatement(StatementContext.While);
-        _labels.Pop();
+        _labels.PopRef();
 
         return FinishNode(startMarker, new WhileStatement(test, body));
     }
@@ -886,9 +886,9 @@ public partial class Parser
             }
         }
 
-        _labels.Push(new Label(kind, maybeName, _tokenizer._start));
+        _labels.PushRef().Reset(kind, maybeName, _tokenizer._start);
         var body = ParseStatement(context | StatementContext.Label);
-        _labels.Pop();
+        _labels.PopRef();
 
         return FinishNode(startMarker, new LabeledStatement(expr, body));
     }
@@ -958,7 +958,7 @@ public partial class Parser
         var body = ParseStatement(StatementContext.For);
 
         ExitScope();
-        _labels.Pop();
+        _labels.PopRef();
 
         return FinishNode(startMarker, new ForStatement(init, test, update, body));
     }
@@ -995,7 +995,7 @@ public partial class Parser
         var body = ParseStatement(StatementContext.For);
 
         ExitScope();
-        _labels.Pop();
+        _labels.PopRef();
 
         return FinishNode<Statement>(startMarker, isForIn
             ? new ForInStatement(left, right, body)
@@ -1507,8 +1507,7 @@ public partial class Parser
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.enterClassBody = function`
 
-        var element = new PrivateNameStatus();
-        _privateNameStack.Push(element);
+        _privateNameStack.PushRef().Reset();
         return _privateNameStack.Count - 1;
     }
 
@@ -1521,7 +1520,7 @@ public partial class Parser
             return;
         }
 
-        var current = _privateNameStack.Pop();
+        ref readonly var current = ref _privateNameStack.PopRef();
 
         ref var parent = ref (_privateNameStack.Count == 0
             ? ref NullRef<PrivateNameStatus>()
@@ -2125,12 +2124,12 @@ public partial class Parser
                 }
 
                 Semicolon();
-                body.Push(FinishNode(startMarker, new Directive(expr, directive)));
+                body.Add(FinishNode(startMarker, new Directive(expr, directive)));
             }
             else
             {
                 Semicolon();
-                body.Push(FinishNode(startMarker, new NonSpecialExpressionStatement(expr)));
+                body.Add(FinishNode(startMarker, new NonSpecialExpressionStatement(expr)));
                 break;
             }
         }

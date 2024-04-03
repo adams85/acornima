@@ -232,7 +232,7 @@ public partial class Tokenizer
                 {
                     CapturingGroupCounter = 0,
                     GroupStack = capturingGroupNames is not null
-                        ? new ArrayList<RegExpGroup>(new[] { new RegExpGroup(default, parent: null) })
+                        ? new ArrayList<RegExpGroup> { new RegExpGroup() { FirstAlternate = new RegExpGroupAlternate(null) } }
                         : default,
                     SetStartIndex = -1,
                 };
@@ -516,7 +516,7 @@ public partial class Tokenizer
                             Debug.Assert(i >= 0);
                             sb?.Append(_pattern[i]);
 
-                            context.GroupStack.Push(new RegExpGroup(groupType, currentGroupAlternate));
+                            context.GroupStack.PushRef().Reset(groupType, parent: currentGroupAlternate);
                             context.SetFollowingQuantifierError(RegExpNothingToRepeat);
                             break;
                         }
@@ -528,9 +528,15 @@ public partial class Tokenizer
                         sb?.Append(_pattern, i, 1 + ((int)groupType >> 2));
                         i += (int)groupType >> 2;
 
-                        context.GroupStack.Push(currentGroupAlternate is not null
-                            ? new RegExpGroup(groupType, currentGroupAlternate)
-                            : new RegExpGroup(groupType));
+                        if (currentGroupAlternate is not null)
+                        {
+                            context.GroupStack.PushRef().Reset(groupType, parent: currentGroupAlternate);
+                        }
+                        else
+                        {
+                            context.GroupStack.PushRef() = new RegExpGroup(groupType);
+                        }
+
                         context.SetFollowingQuantifierError(RegExpNothingToRepeat);
                         break;
 
@@ -552,7 +558,7 @@ public partial class Tokenizer
                             context.GroupStack.PeekRef().HoistGroupNamesToParent();
                         }
 
-                        groupType = context.GroupStack.Pop().Type;
+                        groupType = context.GroupStack.PopRef().Type;
 
                         if (sb is not null)
                         {
@@ -1278,19 +1284,23 @@ public partial class Tokenizer
         // NOTE: We optimize for the case of no alternates.
         private ArrayList<RegExpGroupAlternate> _additionalAlternates;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public RegExpGroup(RegExpGroupType type)
         {
             Type = type;
         }
 
-        public RegExpGroup(RegExpGroupType type, RegExpGroupAlternate? parent) : this(type)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Reset(RegExpGroupType type, RegExpGroupAlternate? parent)
         {
+            Type = type;
             FirstAlternate = new RegExpGroupAlternate(parent);
+            _additionalAlternates.Clear();
         }
 
-        public RegExpGroupType Type { get; }
+        public RegExpGroupType Type;
 
-        public readonly RegExpGroupAlternate? FirstAlternate;
+        public RegExpGroupAlternate? FirstAlternate;
 
         public readonly RegExpGroupAlternate? LastAlternate => _additionalAlternates.Count == 0 ? FirstAlternate : _additionalAlternates.LastItemRef();
 

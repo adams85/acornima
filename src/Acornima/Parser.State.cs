@@ -182,7 +182,7 @@ public partial class Parser
             currentThisScopeIndex = currentScope.CurrentThisScopeIndex;
         }
 
-        _scopeStack.Push(new Scope(flags, currentVarScopeIndex, currentThisScopeIndex));
+        _scopeStack.PushRef().Reset(flags, currentVarScopeIndex, currentThisScopeIndex);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -190,7 +190,7 @@ public partial class Parser
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/scope.js > `pp.exitScope = function`
 
-        _scopeStack.Pop();
+        _scopeStack.PopRef();
     }
 
     // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/scope.js > `pp.currentScope = function`
@@ -328,7 +328,8 @@ public partial class Parser
 #endif
     private struct Label
     {
-        public Label(LabelKind kind, string? name = null, int statementStart = 0)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Reset(LabelKind kind, string? name = null, int statementStart = 0)
         {
             Kind = kind;
             Name = name;
@@ -367,17 +368,21 @@ public partial class Parser
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/scope.js > `class Scope`
 
-        public Scope(ScopeFlags flags, int currentVarScopeIndex, int currentThisScopeIndex)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Reset(ScopeFlags flags, int currentVarScopeIndex, int currentThisScopeIndex)
         {
             Flags = flags;
             CurrentVarScopeIndex = currentVarScopeIndex;
             CurrentThisScopeIndex = currentThisScopeIndex;
+            Var.Clear();
+            Lexical.Clear();
+            Functions.Clear();
         }
 
         public ScopeFlags Flags;
 
-        public readonly int CurrentVarScopeIndex;
-        public readonly int CurrentThisScopeIndex;
+        public int CurrentVarScopeIndex;
+        public int CurrentThisScopeIndex;
 
         /// <summary>
         /// A list of var-declared names in the current lexical scope.
@@ -397,6 +402,13 @@ public partial class Parser
 
     private struct PrivateNameStatus
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Reset()
+        {
+            Declared?.Clear();
+            Used.Clear();
+        }
+
         public Dictionary<string, int>? Declared;
         public ArrayList<PrivateIdentifier> Used;
     }
