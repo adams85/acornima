@@ -895,6 +895,11 @@ public partial class AstToJavaScriptConverter : AstVisitor
         return node;
     }
 
+    protected internal override object? VisitFunctionBody(FunctionBody node)
+    {
+        return VisitBlockStatement(node);
+    }
+
     protected internal override object? VisitFunctionDeclaration(FunctionDeclaration node)
     {
         if (node.Async)

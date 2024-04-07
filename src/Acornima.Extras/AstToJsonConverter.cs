@@ -291,11 +291,6 @@ public class AstToJsonConverter : AstVisitor
         using (StartNodeObject(node))
         {
             Member("body", node.Body);
-
-            if (node is FunctionBody functionBody)
-            {
-                Member("strict", functionBody.Strict);
-            }
         }
 
         return node;
@@ -551,6 +546,17 @@ public class AstToJsonConverter : AstVisitor
             Member("generator", node.Generator);
             Member("expression", node.Expression);
             Member("async", node.Async);
+        }
+
+        return node;
+    }
+
+    protected internal override object? VisitFunctionBody(FunctionBody node)
+    {
+        using (StartNodeObject(node))
+        {
+            Member("body", node.Body);
+            Member("strict", node.Strict);
         }
 
         return node;

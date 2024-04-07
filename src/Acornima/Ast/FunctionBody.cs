@@ -2,7 +2,8 @@ using System.Runtime.CompilerServices;
 
 namespace Acornima.Ast;
 
-public sealed class FunctionBody : BlockStatement, IHoistingScope
+[VisitableNode(ChildProperties = new[] { nameof(Body) })]
+public sealed partial class FunctionBody : BlockStatement, IHoistingScope
 {
     public FunctionBody(in NodeList<Statement> body, bool strict)
         : base(NodeType.BlockStatement, body)
@@ -11,6 +12,11 @@ public sealed class FunctionBody : BlockStatement, IHoistingScope
     }
 
     public bool Strict { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
+
+    public new FunctionBody UpdateWith(in NodeList<Statement> body)
+    {
+        return (FunctionBody)base.UpdateWith(body);
+    }
 
     protected override BlockStatement Rewrite(in NodeList<Statement> body)
     {
