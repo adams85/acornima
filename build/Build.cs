@@ -42,19 +42,26 @@ partial class Build : NukeBuild, IPublish
 
     protected override void OnBuildInitialized()
     {
-        VersionSuffix = !IsTaggedBuild
-            ? $"preview-{DateTime.UtcNow:yyyyMMdd-HHmm}"
-            : "";
-
         if (IsLocalBuild)
         {
             VersionSuffix = $"dev-{DateTime.UtcNow:yyyyMMdd-HHmm}";
         }
+        else if (!IsTaggedBuild)
+        {
+            VersionSuffix = $"preview-{DateTime.UtcNow:yyyyMMdd-HHmm}";
+        }
         else
         {
-            if (IsTaggedBuild)
+            var index = TagVersion.IndexOf('-');
+            if (index < 0)
             {
                 Version = TagVersion;
+                VersionSuffix = "";
+            }
+            else
+            {
+                Version = TagVersion.Substring(0, index);
+                VersionSuffix = TagVersion.Substring(index + 1);
             }
         }
 
