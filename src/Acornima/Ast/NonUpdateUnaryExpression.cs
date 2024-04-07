@@ -8,7 +8,9 @@ public sealed partial class NonUpdateUnaryExpression : UnaryExpression
         : this(OperatorFromString(op), arg) { }
 
     public NonUpdateUnaryExpression(Operator op, Expression arg)
-        : base(NodeType.UnaryExpression, op, arg, prefix: true) { }
+        : base(NodeType.UnaryExpression, op, arg) { }
+
+    private protected override bool GetPrefix() => true;
 
     [StringMatcher(
         "!" /* => Operator.LogicalNot  */,

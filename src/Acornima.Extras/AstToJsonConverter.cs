@@ -853,8 +853,8 @@ public class AstToJsonConverter : AstVisitor
             Member("computed", node.Computed);
             Member("value", node.Value);
             Member("kind", node.Kind);
-            Member("method", node.Method);
             Member("shorthand", node.Shorthand);
+            Member("method", node.Method);
         }
 
         return node;

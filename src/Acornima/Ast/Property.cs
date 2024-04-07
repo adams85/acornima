@@ -5,14 +5,13 @@ namespace Acornima.Ast;
 [VisitableNode(ChildProperties = new[] { nameof(Key), nameof(Value) }, SealOverrideMethods = true)]
 public abstract partial class Property : Node, IProperty
 {
-    private protected Property(PropertyKind kind, Expression key, Node value, bool computed, bool method, bool shorthand)
+    private protected Property(PropertyKind kind, Expression key, Node value, bool computed, bool shorthand)
         : base(NodeType.Property)
     {
         Kind = kind;
         Key = key;
         Value = value;
         Computed = computed;
-        Method = method;
         Shorthand = shorthand;
     }
 
@@ -28,8 +27,9 @@ public abstract partial class Property : Node, IProperty
     /// </remarks>
     public Node Value { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public bool Computed { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
-    public bool Method { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public bool Shorthand { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
+    public bool Method { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetMethod(); }
+    private protected abstract bool GetMethod();
 
     internal override Node? NextChildNode(ref ChildNodes.Enumerator enumerator) => enumerator.MoveNextProperty(Key, Value, Shorthand);
 

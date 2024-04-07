@@ -9,10 +9,11 @@ public sealed partial class JsxOpeningElement : JsxOpeningTag
     private readonly NodeList<JsxAttributeBase> _attributes;
 
     public JsxOpeningElement(JsxName name, in NodeList<JsxAttributeBase> attributes, bool selfClosing)
-        : base(JsxNodeType.OpeningElement, selfClosing)
+        : base(JsxNodeType.OpeningElement)
     {
         Name = name;
         _attributes = attributes;
+        SelfClosing = selfClosing;
     }
 
     /// <remarks>
@@ -20,6 +21,8 @@ public sealed partial class JsxOpeningElement : JsxOpeningTag
     /// </remarks>
     public JsxName Name { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public ref readonly NodeList<JsxAttributeBase> Attributes { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref _attributes; }
+    public new bool SelfClosing { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
+    private protected override bool GetSelfClosing() => SelfClosing;
 
     private JsxOpeningElement Rewrite(JsxName name, in NodeList<JsxAttributeBase> attributes)
     {

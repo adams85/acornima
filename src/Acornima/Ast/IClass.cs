@@ -1,7 +1,7 @@
 namespace Acornima.Ast;
 
 /// <summary>
-/// Represents either a <see cref="ClassDeclaration"/> or an <see cref="ClassExpression"/>.
+/// Represents either a <see cref="ClassDeclaration"/> or a <see cref="ClassExpression"/>.
 /// </summary>
 public interface IClass : INode
 {

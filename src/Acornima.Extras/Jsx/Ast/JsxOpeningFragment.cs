@@ -6,5 +6,7 @@ namespace Acornima.Jsx.Ast;
 public sealed partial class JsxOpeningFragment : JsxOpeningTag
 {
     public JsxOpeningFragment()
-        : base(JsxNodeType.OpeningFragment, selfClosing: false) { }
+        : base(JsxNodeType.OpeningFragment) { }
+
+    private protected override bool GetSelfClosing() => false;
 }

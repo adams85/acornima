@@ -1,5 +1,8 @@
 namespace Acornima.Ast;
 
+/// <summary>
+/// Defines the base interface of AST nodes.
+/// </summary>
 public interface INode
 {
     NodeType Type { get; }

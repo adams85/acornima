@@ -8,7 +8,13 @@ public sealed partial class UpdateExpression : UnaryExpression
         : this(OperatorFromString(op), arg, prefix) { }
 
     public UpdateExpression(Operator op, Expression arg, bool prefix)
-        : base(NodeType.UpdateExpression, op, arg, prefix) { }
+        : base(NodeType.UpdateExpression, op, arg)
+    {
+        Prefix = prefix;
+    }
+
+    public new bool Prefix { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
+    private protected override bool GetPrefix() => Prefix;
 
     [StringMatcher(
         "++" /* => Operator.Increment */,

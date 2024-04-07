@@ -4,11 +4,9 @@ namespace Acornima.Jsx.Ast;
 
 public abstract class JsxOpeningTag : JsxNode
 {
-    private protected JsxOpeningTag(JsxNodeType type, bool selfClosing)
-        : base(type)
-    {
-        SelfClosing = selfClosing;
-    }
+    private protected JsxOpeningTag(JsxNodeType type)
+        : base(type) { }
 
-    public bool SelfClosing { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
+    public bool SelfClosing { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetSelfClosing(); }
+    private protected abstract bool GetSelfClosing();
 }

@@ -47,7 +47,7 @@ public partial class Parser
             return;
         }
 
-        var prop = (Property)property;
+        var prop = (ObjectProperty)property;
         if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES6 && (prop.Computed || prop.Method || prop.Shorthand))
         {
             return;
@@ -1475,7 +1475,7 @@ public partial class Parser
         Debug.Assert(!isPattern || kind == PropertyKind.Init);
         return FinishNode<Property>(propertyStartMarker, isPattern
             ? new AssignmentProperty(key, value, computed, shorthand)
-            : new ObjectProperty(kind, key, value, computed, method, shorthand));
+            : new ObjectProperty(kind, key, value, computed, shorthand, method));
     }
 
     private Expression ParseGetterSetter(ref Expression key, ref bool computed, PropertyKind kind)
