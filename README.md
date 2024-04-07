@@ -86,11 +86,11 @@ Node [x]
  │     ├─ImportNamespaceSpecifier [v,s]
  │     └─ImportSpecifier [v,s]
  ├─Program : IHoistingScope [v]
- │  ├─Module : IHoistingScope [s]
- │  └─Script : IHoistingScope [s]
- ├─Property : IProperty [v]
- │  ├─AssignmentProperty : IProperty [s]
- │  └─ObjectProperty : IProperty [s]
+ │  ├─Module : IHoistingScope [s,t=Program]
+ │  └─Script : IHoistingScope [s,t=Program]
+ ├─Property : IProperty
+ │  ├─AssignmentProperty : IProperty [v,s,t=Property]
+ │  └─ObjectProperty : IProperty [v,s,t=Property]
  ├─RestElement : IDestructuringPatternElement [v,s]
  ├─StatementOrExpression
  │  ├─Expression [x]
@@ -100,7 +100,7 @@ Node [x]
  │  │  ├─AwaitExpression [v,s]
  │  │  ├─BinaryExpression [v]
  │  │  │  ├─LogicalExpression [s]
- │  │  │  └─NonLogicalBinaryExpression [s]
+ │  │  │  └─NonLogicalBinaryExpression [s,t=BinaryExpression]
  │  │  ├─CallExpression : IChainElement [v,s]
  │  │  ├─ChainExpression [v,s]
  │  │  ├─ClassExpression : IClass [v,s]
@@ -109,12 +109,12 @@ Node [x]
  │  │  ├─Identifier : IDestructuringPatternElement [v,s]
  │  │  ├─ImportExpression [v,s]
  │  │  ├─Literal [v]
- │  │  │  ├─BigIntLiteral [s]
- │  │  │  ├─BooleanLiteral [s]
- │  │  │  ├─NullLiteral [s]
- │  │  │  ├─NumericLiteral [s]
- │  │  │  ├─RegExpLiteral [s]
- │  │  │  └─StringLiteral [s]
+ │  │  │  ├─BigIntLiteral [s,t=Literal]
+ │  │  │  ├─BooleanLiteral [s,t=Literal]
+ │  │  │  ├─NullLiteral [s,t=Literal]
+ │  │  │  ├─NumericLiteral [s,t=Literal]
+ │  │  │  ├─RegExpLiteral [s,t=Literal]
+ │  │  │  └─StringLiteral [s,t=Literal]
  │  │  ├─MemberExpression : IChainElement, IDestructuringPatternElement [v,s]
  │  │  ├─MetaProperty [v,s]
  │  │  ├─NewExpression [v,s]
@@ -128,13 +128,13 @@ Node [x]
  │  │  ├─TemplateLiteral [v,s]
  │  │  ├─ThisExpression [v,s]
  │  │  ├─UnaryExpression [v]
- │  │  │  ├─NonUpdateUnaryExpression [s]
+ │  │  │  ├─NonUpdateUnaryExpression [s,t=UnaryExpression]
  │  │  │  └─UpdateExpression [s]
  │  │  └─YieldExpression [v,s]
  │  └─Statement [x]
  │     ├─BlockStatement [v]
- │     │  ├─FunctionBody : IHoistingScope [s]
- │     │  ├─NestedBlockStatement [s]
+ │     │  ├─FunctionBody : IHoistingScope [v,s,t=BlockStatement]
+ │     │  ├─NestedBlockStatement [s,t=BlockStatement]
  │     │  └─StaticBlock : IClassElement, IHoistingScope [v,s]
  │     ├─BreakStatement [v,s]
  │     ├─ContinueStatement [v,s]
@@ -152,8 +152,8 @@ Node [x]
  │     ├─DoWhileStatement [v,s]
  │     ├─EmptyStatement [v,s]
  │     ├─ExpressionStatement [v]
- │     │  ├─Directive [s]
- │     │  └─NonSpecialExpressionStatement [s]
+ │     │  ├─Directive [s,t=ExpressionStatement]
+ │     │  └─NonSpecialExpressionStatement [s,t=ExpressionStatement]
  │     ├─ForInStatement [v,s]
  │     ├─ForOfStatement [v,s]
  │     ├─ForStatement [v,s]
@@ -173,7 +173,53 @@ Node [x]
 Legend:
 * `v` - A visitation method is generated in the visitors for the node type.
 * `s` - The node class is sealed. (It's [beneficial to check for sealed types](https://www.meziantou.net/performance-benefits-of-sealed-class.htm#casting-objects-is-a) when possible.)
+* `t` - The node type (the value of the `Node.Type` property) as specified by ESTree (shown only if it differs from the name of the node class).
 * `x` - The node class can be subclassed. (The AST provides some limited extensibility for special use cases.)
+
+### JSX
+
+The library also supports the syntax extensions [JSX](https://facebook.github.io/jsx/).
+However, mostly for performance reasons, the related functionality is separated from the core parser: it is available in the `Acornima.Extras` package, in the `Acornima.Jsx` namespace.
+
+#### Installation & usage
+
+After installing the `Acornima.Extras` package as described in the [Getting started](#getting-started) section, you can parse JSX code like this:
+
+```csharp
+using Acornima.Jsx;
+
+var parser = new JsxParser(new JsxParserOptions { /* ... */ });
+
+var ast = parser.ParseScript("<>Hello world!</>");
+```
+
+#### AST
+
+```
+Node [x]
+ └─StatementOrExpression
+    └─Expression [x]
+       └─JsxNode [x]
+          ├─JsxAttributeLike
+          │  ├─JsxAttribute [v,s]
+          │  └─JsxSpreadAttribute [v,s]
+          ├─JsxClosingTag
+          │  ├─JsxClosingElement [v,s]
+          │  └─JsxClosingFragment [v,s]
+          ├─JsxElementOrFragment
+          │  ├─JsxElement [v,s]
+          │  └─JsxFragment [v,s]
+          ├─JsxEmptyExpression [v,s]
+          ├─JsxExpressionContainer [v,s]
+          ├─JsxName
+          │  ├─JsxIdentifier [v,s]
+          │  ├─JsxMemberExpression [v,s]
+          │  └─JsxNamespacedName [v,s]
+          ├─JsxOpeningTag
+          │  ├─JsxOpeningElement [v,s]
+          │  └─JsxOpeningFragment [v,s]
+          └─JsxText [v,s]
+```
 
 ### Benchmarks
 
