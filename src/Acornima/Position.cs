@@ -33,7 +33,7 @@ public readonly struct Position : IEquatable<Position>, IComparable<Position>
         {
             if (throwOnError)
             {
-                throw new ArgumentOutOfRangeException(nameof(line), line, null);
+                ThrowArgumentOutOfRangeException(nameof(line), line, null);
             }
             return false;
         }
@@ -42,7 +42,7 @@ public readonly struct Position : IEquatable<Position>, IComparable<Position>
         {
             if (throwOnError)
             {
-                throw new ArgumentOutOfRangeException(nameof(column), column, null);
+                ThrowArgumentOutOfRangeException(nameof(column), column, null);
             }
             return false;
         }

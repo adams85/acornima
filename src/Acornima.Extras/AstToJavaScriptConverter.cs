@@ -5,6 +5,7 @@ using Acornima.Helpers;
 
 namespace Acornima;
 
+using static ExceptionHelper;
 using static JavaScriptTextWriter;
 
 public partial class AstToJavaScriptConverter : AstVisitor
@@ -53,7 +54,7 @@ public partial class AstToJavaScriptConverter : AstVisitor
         _currentExpressionFlags = ExpressionFlags.None;
         _currentAuxiliaryNodeContext = null;
 
-        Visit(node ?? throw new ArgumentNullException(nameof(node)));
+        Visit(node ?? ThrowArgumentNullException<Node>(nameof(node)));
 
         Writer.Finish();
     }

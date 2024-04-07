@@ -6,8 +6,11 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Acornima.Ast;
+using Acornima.Helpers;
 
 namespace Acornima;
+
+using static ExceptionHelper;
 
 public class AstToJsonConverter : AstVisitor
 {
@@ -175,7 +178,7 @@ public class AstToJsonConverter : AstVisitor
 
     public void Convert(Node node)
     {
-        Visit(node ?? throw new ArgumentNullException(nameof(node)));
+        Visit(node ?? ThrowArgumentNullException<Node>(nameof(node)));
     }
 
     public override object? Visit(Node? node)

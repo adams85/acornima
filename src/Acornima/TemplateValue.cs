@@ -1,13 +1,15 @@
-using System;
 using System.Runtime.CompilerServices;
+using Acornima.Helpers;
 
 namespace Acornima;
+
+using static ExceptionHelper;
 
 public readonly struct TemplateValue
 {
     public static TemplateValue From(string? cooked, string raw)
     {
-        return new TemplateValue(cooked, raw ?? throw new ArgumentNullException(nameof(raw)));
+        return new TemplateValue(cooked, raw ?? ThrowArgumentNullException<string>(nameof(raw)));
     }
 
     internal TemplateValue(string? cooked, string raw)

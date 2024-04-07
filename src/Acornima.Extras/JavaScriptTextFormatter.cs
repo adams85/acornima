@@ -7,6 +7,8 @@ using Acornima.Helpers;
 
 namespace Acornima;
 
+using static ExceptionHelper;
+
 public abstract record class JavaScriptTextFormatterOptions : JavaScriptTextWriterOptions
 {
     public string? Indent { get; init; }
@@ -297,7 +299,7 @@ public abstract class JavaScriptTextFormatter : JavaScriptTextWriter
     protected Statement RetrieveStatementBodyFromContext(ref WriteContext context)
 #pragma warning restore CA1822 // Mark members as static
     {
-        return (Statement)(context._additionalDataSlot.PrimaryData ?? throw new InvalidOperationException());
+        return (Statement)(context._additionalDataSlot.PrimaryData ?? ThrowInvalidOperationException<object>());
     }
 
     public override void StartStatement(StatementFlags flags, ref WriteContext context)

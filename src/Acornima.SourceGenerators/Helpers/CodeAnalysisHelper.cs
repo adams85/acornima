@@ -135,7 +135,17 @@ internal static class CodeAnalysisHelper
 
         public override SyntaxNode? VisitMethodDeclaration(MethodDeclarationSyntax node)
         {
-            return node.Update(attributeLists: default, VisitList(node.Modifiers), (TypeSyntax?)Visit(node.ReturnType) ?? throw new ArgumentNullException("returnType"), (ExplicitInterfaceSpecifierSyntax?)Visit(node.ExplicitInterfaceSpecifier), VisitToken(node.Identifier), (TypeParameterListSyntax?)Visit(node.TypeParameterList), (ParameterListSyntax?)Visit(node.ParameterList) ?? throw new ArgumentNullException("parameterList"), VisitList(node.ConstraintClauses), (BlockSyntax?)Visit(node.Body), (ArrowExpressionClauseSyntax?)Visit(node.ExpressionBody), default);
+            return node.Update(attributeLists: default,
+                VisitList(node.Modifiers),
+                (TypeSyntax?)Visit(node.ReturnType) ?? throw new ArgumentNullException("returnType"),
+                (ExplicitInterfaceSpecifierSyntax?)Visit(node.ExplicitInterfaceSpecifier),
+                VisitToken(node.Identifier),
+                (TypeParameterListSyntax?)Visit(node.TypeParameterList),
+                (ParameterListSyntax?)Visit(node.ParameterList) ?? throw new ArgumentNullException("parameterList"),
+                VisitList(node.ConstraintClauses),
+                (BlockSyntax?)Visit(node.Body),
+                (ArrowExpressionClauseSyntax?)Visit(node.ExpressionBody),
+                default);
         }
 
         public override SyntaxNode? VisitAliasQualifiedName(AliasQualifiedNameSyntax node)

@@ -1,8 +1,11 @@
 using System;
 using System.Text.RegularExpressions;
 using Acornima.Ast;
+using Acornima.Helpers;
 
 namespace Acornima;
+
+using static ExceptionHelper;
 
 // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/options.js
 
@@ -160,7 +163,7 @@ public record class ParserOptions
     public ParseErrorHandler ErrorHandler
     {
         get => _tokenizerOptions._errorHandler;
-        init => _tokenizerOptions._errorHandler = value ?? throw new ArgumentNullException(nameof(value));
+        init => _tokenizerOptions._errorHandler = value ?? ThrowArgumentNullException<ParseErrorHandler>(nameof(value));
     }
 
     /// <summary>

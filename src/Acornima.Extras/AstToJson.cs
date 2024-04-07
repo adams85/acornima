@@ -1,8 +1,10 @@
-using System;
 using System.IO;
 using Acornima.Ast;
+using Acornima.Helpers;
 
 namespace Acornima;
+
+using static ExceptionHelper;
 
 public enum LocationMembersPlacement
 {
@@ -71,7 +73,7 @@ public static class AstToJson
     {
         if (options is null)
         {
-            throw new ArgumentNullException(nameof(options));
+            ThrowArgumentNullException<object>(nameof(options));
         }
 
         options.CreateConverter(writer).Convert(node);

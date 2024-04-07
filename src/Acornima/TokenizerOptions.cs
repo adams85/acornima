@@ -1,8 +1,11 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using Acornima.Helpers;
 
 namespace Acornima;
+
+using static ExceptionHelper;
 
 // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/options.js
 
@@ -66,7 +69,7 @@ public record class TokenizerOptions
     public ParseErrorHandler ErrorHandler
     {
         get => _errorHandler;
-        init => _errorHandler = value ?? throw new ArgumentNullException(nameof(value));
+        init => _errorHandler = value ?? ThrowArgumentNullException<ParseErrorHandler>(nameof(value));
     }
 
     internal OnTokenHandler? _onToken;

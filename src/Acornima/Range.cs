@@ -29,7 +29,7 @@ public readonly struct Range : IEquatable<Range>
         {
             if (throwOnError)
             {
-                throw new ArgumentOutOfRangeException(nameof(start), start, null);
+                ThrowArgumentOutOfRangeException(nameof(start), start, null);
             }
             return false;
         }
@@ -38,7 +38,7 @@ public readonly struct Range : IEquatable<Range>
         {
             if (throwOnError)
             {
-                throw new ArgumentOutOfRangeException(nameof(end), end, null);
+                ThrowArgumentOutOfRangeException(nameof(end), end, null);
             }
             return false;
         }

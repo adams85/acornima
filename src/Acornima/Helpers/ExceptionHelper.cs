@@ -15,7 +15,7 @@ internal static class ExceptionHelper
     }
 
     [DoesNotReturn]
-    public static void ThrowArgumentOutOfRangeException<T>(string paramName, T actualValue, string? message = null)
+    public static T ThrowArgumentOutOfRangeException<T>(string paramName, T actualValue, string? message = null)
     {
         throw new ArgumentOutOfRangeException(paramName, actualValue, message);
     }

@@ -1,15 +1,17 @@
-using System;
 using System.Runtime.CompilerServices;
+using Acornima.Helpers;
 
 namespace Acornima;
+
+using static ExceptionHelper;
 
 public readonly struct RegExpValue
 {
     public static RegExpValue From(string pattern, string flags)
     {
         return new RegExpValue(
-            pattern ?? throw new ArgumentNullException(nameof(pattern)),
-            flags ?? throw new ArgumentNullException(nameof(flags)));
+            pattern ?? ThrowArgumentNullException<string>(nameof(pattern)),
+            flags ?? ThrowArgumentNullException<string>(nameof(flags)));
     }
 
     public RegExpValue(string pattern, string flags)

@@ -1,7 +1,9 @@
-using System;
 using System.Runtime.CompilerServices;
+using Acornima.Helpers;
 
 namespace Acornima.Ast;
+
+using static ExceptionHelper;
 
 [VisitableNode(ChildProperties = new[] { nameof(Declarations) })]
 public sealed partial class VariableDeclaration : Declaration
@@ -13,7 +15,7 @@ public sealed partial class VariableDeclaration : Declaration
             VariableDeclarationKind.Var => "var",
             VariableDeclarationKind.Let => "let",
             VariableDeclarationKind.Const => "const",
-            _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null)
+            _ => ThrowArgumentOutOfRangeException(nameof(kind), kind.ToString(), null)
         };
     }
 

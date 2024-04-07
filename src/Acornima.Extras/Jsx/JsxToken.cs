@@ -1,8 +1,10 @@
-using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using Acornima.Helpers;
 
 namespace Acornima.Jsx;
+
+using static ExceptionHelper;
 
 public static class JsxToken
 {
@@ -22,7 +24,7 @@ public static class JsxToken
 
     public static Token Identifier(string value, Range range, in SourceLocation location)
     {
-        return new Token(TokenKind.Extension, IdentifierValue(value ?? throw new ArgumentNullException(nameof(value))), range, location);
+        return new Token(TokenKind.Extension, IdentifierValue(value ?? ThrowArgumentNullException<string>(nameof(value))), range, location);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -33,7 +35,7 @@ public static class JsxToken
 
     public static Token Text(string value, Range range, in SourceLocation location)
     {
-        return new Token(TokenKind.Extension, TextValue(value ?? throw new ArgumentNullException(nameof(value))), range, location);
+        return new Token(TokenKind.Extension, TextValue(value ?? ThrowArgumentNullException<string>(nameof(value))), range, location);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

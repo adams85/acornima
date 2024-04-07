@@ -1,9 +1,11 @@
-using System;
 using System.IO;
 using Acornima.Ast;
+using Acornima.Helpers;
 using Acornima.Jsx;
 
 namespace Acornima;
+
+using static ExceptionHelper;
 
 public record class AstToJavaScriptOptions
 {
@@ -63,7 +65,7 @@ public static class AstToJavaScript
     {
         if (writerOptions is null)
         {
-            throw new ArgumentNullException(nameof(writerOptions));
+            ThrowArgumentNullException<object>(nameof(writerOptions));
         }
 
         WriteJavaScript(node, writerOptions.CreateWriter(writer), options);
@@ -73,7 +75,7 @@ public static class AstToJavaScript
     {
         if (options is null)
         {
-            throw new ArgumentNullException(nameof(options));
+            ThrowArgumentNullException<object>(nameof(options));
         }
 
         options.CreateConverter(writer).Convert(node);
