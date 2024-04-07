@@ -299,6 +299,42 @@ public partial class AstToJavaScriptConverter : AstVisitor
         return node;
     }
 
+    protected internal override object? VisitAssignmentProperty(AssignmentProperty node)
+    {
+        if (!node.Shorthand)
+        {
+            _writeContext.SetNodeProperty(nameof(node.Key), static node => node.As<Property>().Key);
+            VisitPropertyKey(node.Key, node.Computed, leadingParenFlags: TokenFlags.LeadingSpaceRecommended);
+            Writer.WritePunctuator(":", TokenFlags.Trailing | TokenFlags.TrailingSpaceRecommended, ref _writeContext);
+        }
+
+        _writeContext.SetNodeProperty(nameof(node.Value), static node => node.As<Property>().Value);
+
+        Expression? valueExpression;
+        if (node is AssignmentProperty)
+        {
+            if (_currentAuxiliaryNodeContext != s_bindingPatternAllowsExpressionsFlag)
+            {
+                VisitAuxiliaryNode(node.Value);
+            }
+            else if ((valueExpression = node.Value as Expression) is null)
+            {
+                VisitAuxiliaryNode(node.Value, static delegate { return s_bindingPatternAllowsExpressionsFlag; }); // propagate flag to sub-patterns
+            }
+            else
+            {
+                VisitRootExpression(valueExpression, RootExpressionFlags(needsParens: ExpressionNeedsParensInList(valueExpression)));
+            }
+        }
+        else
+        {
+            valueExpression = node.Value.As<Expression>();
+            VisitRootExpression(valueExpression, RootExpressionFlags(needsParens: ExpressionNeedsParensInList(valueExpression)));
+        }
+
+        return node;
+    }
+
     protected internal override object? VisitAwaitExpression(AwaitExpression node)
     {
         Writer.WriteKeyword("await", TokenFlags.TrailingSpaceRecommended, ref _writeContext);
@@ -1337,32 +1373,7 @@ public partial class AstToJavaScriptConverter : AstVisitor
         return node;
     }
 
-    protected internal override object? VisitParenthesizedExpression(ParenthesizedExpression node)
-    {
-        _writeContext.SetNodeProperty(nameof(node.Expression), static node => node.As<ParenthesizedExpression>().Expression);
-        VisitSubExpression(node.Expression, SubExpressionFlags(needsParens: true, isLeftMost: true));
-
-        return node;
-    }
-
-    protected internal override object? VisitPrivateIdentifier(PrivateIdentifier node)
-    {
-        _writeContext.SetNodeProperty(nameof(node.Name), static node => node.As<PrivateIdentifier>().Name);
-        Writer.WritePunctuator("#", TokenFlags.Leading, ref _writeContext);
-        Writer.WriteIdentifier(node.Name, ref _writeContext);
-
-        return node;
-    }
-
-    protected internal override object? VisitProgram(Program node)
-    {
-        _writeContext.SetNodeProperty(nameof(node.Body), static node => ref node.As<Program>().Body);
-        VisitStatementList(in node.Body);
-
-        return node;
-    }
-
-    protected internal override object? VisitProperty(Property node)
+    protected internal override object? VisitObjectProperty(ObjectProperty node)
     {
         bool isMethod;
 
@@ -1397,27 +1408,33 @@ public partial class AstToJavaScriptConverter : AstVisitor
 
         _writeContext.SetNodeProperty(nameof(node.Value), static node => node.As<Property>().Value);
 
-        Expression? valueExpression;
-        if (node is AssignmentProperty)
-        {
-            if (_currentAuxiliaryNodeContext != s_bindingPatternAllowsExpressionsFlag)
-            {
-                VisitAuxiliaryNode(node.Value);
-            }
-            else if ((valueExpression = node.Value as Expression) is null)
-            {
-                VisitAuxiliaryNode(node.Value, static delegate { return s_bindingPatternAllowsExpressionsFlag; }); // propagate flag to sub-patterns
-            }
-            else
-            {
-                VisitRootExpression(valueExpression, RootExpressionFlags(needsParens: ExpressionNeedsParensInList(valueExpression)));
-            }
-        }
-        else
-        {
-            valueExpression = node.Value.As<Expression>();
-            VisitRootExpression(valueExpression, isMethod.ToFlag(ExpressionFlags.IsMethod) | RootExpressionFlags(needsParens: ExpressionNeedsParensInList(valueExpression)));
-        }
+        var valueExpression = node.Value.As<Expression>();
+        VisitRootExpression(valueExpression, isMethod.ToFlag(ExpressionFlags.IsMethod) | RootExpressionFlags(needsParens: ExpressionNeedsParensInList(valueExpression)));
+
+        return node;
+    }
+
+    protected internal override object? VisitParenthesizedExpression(ParenthesizedExpression node)
+    {
+        _writeContext.SetNodeProperty(nameof(node.Expression), static node => node.As<ParenthesizedExpression>().Expression);
+        VisitSubExpression(node.Expression, SubExpressionFlags(needsParens: true, isLeftMost: true));
+
+        return node;
+    }
+
+    protected internal override object? VisitPrivateIdentifier(PrivateIdentifier node)
+    {
+        _writeContext.SetNodeProperty(nameof(node.Name), static node => node.As<PrivateIdentifier>().Name);
+        Writer.WritePunctuator("#", TokenFlags.Leading, ref _writeContext);
+        Writer.WriteIdentifier(node.Name, ref _writeContext);
+
+        return node;
+    }
+
+    protected internal override object? VisitProgram(Program node)
+    {
+        _writeContext.SetNodeProperty(nameof(node.Body), static node => ref node.As<Program>().Body);
+        VisitStatementList(in node.Body);
 
         return node;
     }

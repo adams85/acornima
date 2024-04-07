@@ -2,8 +2,7 @@ using System.Runtime.CompilerServices;
 
 namespace Acornima.Ast;
 
-[VisitableNode(ChildProperties = new[] { nameof(Key), nameof(Value) }, SealOverrideMethods = true)]
-public abstract partial class Property : Node, IProperty
+public abstract class Property : Node, IProperty
 {
     private protected Property(PropertyKind kind, Expression key, Node value, bool computed, bool shorthand)
         : base(NodeType.Property)
@@ -30,8 +29,4 @@ public abstract partial class Property : Node, IProperty
     public bool Shorthand { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public bool Method { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetMethod(); }
     private protected abstract bool GetMethod();
-
-    internal override Node? NextChildNode(ref ChildNodes.Enumerator enumerator) => enumerator.MoveNextProperty(Key, Value, Shorthand);
-
-    protected abstract Property Rewrite(Expression key, Node value);
 }

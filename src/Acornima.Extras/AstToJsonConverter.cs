@@ -231,17 +231,7 @@ public class AstToJsonConverter : AstVisitor
 
     protected internal override object? VisitArrowFunctionExpression(ArrowFunctionExpression node)
     {
-        using (StartNodeObject(node))
-        {
-            Member("id", ((IFunction)node).Id);
-            Member("params", node.Params);
-            Member("body", node.Body);
-            Member("generator", ((IFunction)node).Generator);
-            Member("expression", node.Expression);
-            Member("async", node.Async);
-        }
-
-        return node;
+        return VisitFunction(node);
     }
 
     protected internal override object? VisitAssignmentExpression(AssignmentExpression node)
@@ -265,6 +255,11 @@ public class AstToJsonConverter : AstVisitor
         }
 
         return node;
+    }
+
+    protected internal override object? VisitAssignmentProperty(AssignmentProperty node)
+    {
+        return VisitProperty(node);
     }
 
     protected internal override object? VisitAwaitExpression(AwaitExpression node)
@@ -359,9 +354,9 @@ public class AstToJsonConverter : AstVisitor
         return node;
     }
 
-    protected internal override object? VisitClassDeclaration(ClassDeclaration node)
+    private object? VisitClass(IClass node)
     {
-        using (StartNodeObject(node))
+        using (StartNodeObject(node.As<Node>()))
         {
             Member("id", node.Id);
             Member("superClass", node.SuperClass);
@@ -375,20 +370,14 @@ public class AstToJsonConverter : AstVisitor
         return node;
     }
 
+    protected internal override object? VisitClassDeclaration(ClassDeclaration node)
+    {
+        return VisitClass(node);
+    }
+
     protected internal override object? VisitClassExpression(ClassExpression node)
     {
-        using (StartNodeObject(node))
-        {
-            Member("id", node.Id);
-            Member("superClass", node.SuperClass);
-            Member("body", node.Body);
-            if (node.Decorators.Count > 0)
-            {
-                Member("decorators", node.Decorators);
-            }
-        }
-
-        return node;
+        return VisitClass(node);
     }
 
     protected internal override object? VisitConditionalExpression(ConditionalExpression node)
@@ -552,34 +541,29 @@ public class AstToJsonConverter : AstVisitor
         return node;
     }
 
-    protected internal override object? VisitFunctionDeclaration(FunctionDeclaration node)
+    private object? VisitFunction(IFunction node)
     {
-        using (StartNodeObject(node))
+        using (StartNodeObject(node.As<Node>()))
         {
             Member("id", node.Id);
             Member("params", node.Params);
             Member("body", node.Body);
             Member("generator", node.Generator);
-            Member("expression", ((IFunction)node).Expression);
+            Member("expression", node.Expression);
             Member("async", node.Async);
         }
 
         return node;
     }
 
+    protected internal override object? VisitFunctionDeclaration(FunctionDeclaration node)
+    {
+        return VisitFunction(node);
+    }
+
     protected internal override object? VisitFunctionExpression(FunctionExpression node)
     {
-        using (StartNodeObject(node))
-        {
-            Member("id", node.Id);
-            Member("params", node.Params);
-            Member("body", node.Body);
-            Member("generator", node.Generator);
-            Member("expression", ((IFunction)node).Expression);
-            Member("async", node.Async);
-        }
-
-        return node;
+        return VisitFunction(node);
     }
 
     protected internal override object? VisitIdentifier(Identifier node)
@@ -809,6 +793,11 @@ public class AstToJsonConverter : AstVisitor
         return node;
     }
 
+    protected internal override object? VisitObjectProperty(ObjectProperty node)
+    {
+        return VisitProperty(node);
+    }
+
     protected internal override object? VisitPrivateIdentifier(PrivateIdentifier node)
     {
         using (StartNodeObject(node))
@@ -845,7 +834,7 @@ public class AstToJsonConverter : AstVisitor
         return node;
     }
 
-    protected internal override object? VisitProperty(Property node)
+    private object? VisitProperty(Property node)
     {
         using (StartNodeObject(node))
         {

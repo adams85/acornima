@@ -230,12 +230,12 @@ public partial class VisitationBoilerplateGenerator : IIncrementalGenerator
 
         // NOTE: SymbolEqualityComparer.Default.Equals doesn't care whether the compared types are by-ref or not.
 
-        var generateNextChildNodeMethod = !classType.GetMembers("NextChildNode")
-            .OfType<IMethodSymbol>()
-            .Where(method => method.Parameters.Length == 1
+        var method = classType.GetMembersIncludingInherited("NextChildNode").FirstOrDefault() as IMethodSymbol;
+        var generateNextChildNodeMethod = method is null
+            || !method.IsOverride
+            || !(method.Parameters.Length == 1
                 && method.Parameters[0] is { RefKind: RefKind.Ref } param
-                && SymbolEqualityComparer.Default.Equals(param.Type, childNodesEnumeratorType))
-            .Any();
+                && SymbolEqualityComparer.Default.Equals(param.Type, childNodesEnumeratorType));
 
         visitorType ??= astVisitorType;
         var generateAcceptMethod = !classType.GetMembers("Accept")

@@ -24,6 +24,18 @@ public partial class AstVisitor
         return result;
     }
 
+    protected internal virtual object? VisitAssignmentProperty(AssignmentProperty node)
+    {
+        if (!node.Shorthand)
+        {
+            Visit(node.Key);
+        }
+
+        Visit(node.Value);
+
+        return node;
+    }
+
     protected internal virtual object? VisitExportSpecifier(ExportSpecifier node)
     {
         Visit(node.Local);
@@ -58,7 +70,7 @@ public partial class AstVisitor
         return node;
     }
 
-    protected internal virtual object? VisitProperty(Property node)
+    protected internal virtual object? VisitObjectProperty(ObjectProperty node)
     {
         if (!node.Shorthand)
         {

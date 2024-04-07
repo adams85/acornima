@@ -66,6 +66,27 @@ public partial class AstRewriter : AstVisitor
         return false;
     }
 
+    protected internal override object? VisitAssignmentProperty(AssignmentProperty node)
+    {
+        Expression? key;
+        Node value;
+
+        if (node.Shorthand)
+        {
+            value = VisitAndConvert(node.Value);
+            key = (value is AssignmentPattern assignmentPattern
+                ? assignmentPattern.Left
+                : value).As<Identifier>();
+        }
+        else
+        {
+            key = VisitAndConvert(node.Key);
+            value = VisitAndConvert(node.Value);
+        }
+
+        return node.UpdateWith(key, value);
+    }
+
     protected internal override object? VisitExportSpecifier(ExportSpecifier node)
     {
         Expression local;
@@ -102,7 +123,7 @@ public partial class AstRewriter : AstVisitor
         return node.UpdateWith(imported, local);
     }
 
-    protected internal override object? VisitProperty(Property node)
+    protected internal override object? VisitObjectProperty(ObjectProperty node)
     {
         Expression? key;
         Node value;
@@ -110,9 +131,7 @@ public partial class AstRewriter : AstVisitor
         if (node.Shorthand)
         {
             value = VisitAndConvert(node.Value);
-            key = (value is AssignmentPattern assignmentPattern
-                ? assignmentPattern.Left
-                : value).As<Identifier>();
+            key = value.As<Identifier>();
         }
         else
         {

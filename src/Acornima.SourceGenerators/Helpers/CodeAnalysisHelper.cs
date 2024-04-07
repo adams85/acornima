@@ -31,6 +31,18 @@ internal static class CodeAnalysisHelper
         return SymbolEqualityComparer.Default.Equals(type, baseType) || type.InheritsFrom(baseType);
     }
 
+    public static IEnumerable<ISymbol> GetMembersIncludingInherited(this ITypeSymbol type, string name)
+    {
+        do
+        {
+            foreach (var member in type.GetMembers(name))
+            {
+                yield return member;
+            }
+        }
+        while ((type = type!.BaseType!) is not null);
+    }
+
     public static string? ResolveStringConstantExpression(this ExpressionSyntax expressionSyntax)
     {
         if (expressionSyntax is LiteralExpressionSyntax literal && literal.IsKind(SyntaxKind.StringLiteralExpression))
