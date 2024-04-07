@@ -14,7 +14,8 @@ public readonly struct RegExpValue
             flags ?? ThrowArgumentNullException<string>(nameof(flags)));
     }
 
-    public RegExpValue(string pattern, string flags)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal RegExpValue(string pattern, string flags)
     {
         _pattern = pattern;
         _flags = flags;

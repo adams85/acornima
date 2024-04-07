@@ -12,6 +12,7 @@ public readonly struct TemplateValue
         return new TemplateValue(cooked, raw ?? ThrowArgumentNullException<string>(nameof(raw)));
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal TemplateValue(string? cooked, string raw)
     {
         Cooked = cooked;
