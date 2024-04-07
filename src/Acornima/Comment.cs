@@ -5,12 +5,12 @@ namespace Acornima;
 
 public readonly struct Comment
 {
-    public Comment(CommentKind kind, Range contentRange, Range range, SourceLocation location)
+    public Comment(CommentKind kind, Range contentRange, Range range, in SourceLocation location)
     {
         Kind = kind;
         ContentRange = contentRange;
         _range = range;
-        Location = location;
+        _location = location;
     }
 
     public CommentKind Kind { get; }
@@ -20,10 +20,11 @@ public readonly struct Comment
     public int Start { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _range.Start; }
     public int End { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _range.End; }
 
-    private readonly Range _range;
+    internal readonly Range _range;
     public Range Range { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _range; }
 
-    public SourceLocation Location { get; }
+    internal readonly SourceLocation _location;
+    public SourceLocation Location { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _location; }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ReadOnlySpan<char> GetContent(string input)

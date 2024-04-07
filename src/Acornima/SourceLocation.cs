@@ -72,7 +72,7 @@ public readonly struct SourceLocation : IEquatable<SourceLocation>
         return obj is SourceLocation other && Equals(other);
     }
 
-    public bool Equals(SourceLocation other)
+    public bool Equals(in SourceLocation other)
     {
         return Start.Equals(other.Start)
                && End.Equals(other.End)
@@ -81,12 +81,12 @@ public readonly struct SourceLocation : IEquatable<SourceLocation>
 
     bool IEquatable<SourceLocation>.Equals(SourceLocation other) => Equals(other);
 
-    public static bool operator ==(SourceLocation left, SourceLocation right)
+    public static bool operator ==(in SourceLocation left, in SourceLocation right)
     {
         return left.Equals(right);
     }
 
-    public static bool operator !=(SourceLocation left, SourceLocation right)
+    public static bool operator !=(in SourceLocation left, in SourceLocation right)
     {
         return !left.Equals(right);
     }

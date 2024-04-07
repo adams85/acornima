@@ -11,27 +11,27 @@ namespace Acornima;
 // used for the onToken callback and the external tokenizer.
 public readonly struct Token
 {
-    public static Token Punctuator(string value, Range range, SourceLocation location) => new Token(TokenKind.Punctuator, value ?? throw new ArgumentNullException(nameof(value)), range, location);
-    public static Token Keyword(string value, Range range, SourceLocation location) => new Token(TokenKind.Keyword, value ?? throw new ArgumentNullException(nameof(value)), range, location);
-    public static Token Identifier(string value, Range range, SourceLocation location) => new Token(TokenKind.Identifier, value ?? throw new ArgumentNullException(nameof(value)), range, location);
-    public static Token NullLiteral(Range range, SourceLocation location) => new Token(TokenKind.NullLiteral, new TokenValue(null), range, location);
-    public static Token BooleanLiteral(bool value, Range range, SourceLocation location) => new Token(TokenKind.BooleanLiteral, new TokenValue(value.AsCachedObject()), range, location);
-    public static Token StringLiteral(string value, Range range, SourceLocation location) => new Token(TokenKind.StringLiteral, value ?? throw new ArgumentNullException(nameof(value)), range, location);
-    public static Token NumericLiteral(double value, Range range, SourceLocation location) => new Token(TokenKind.NumericLiteral, value, range, location);
-    public static Token BigIntLiteral(BigInteger value, Range range, SourceLocation location) => new Token(TokenKind.BigIntLiteral, value, range, location);
-    public static Token RegExpLiteral(RegExpValue value, RegExpParseResult parseResult, Range range, SourceLocation location) => new Token(TokenKind.RegExpLiteral, Tuple.Create(value, parseResult), range, location);
-    public static Token Template(TemplateValue value, Range range, SourceLocation location) => new Token(TokenKind.Template, value, range, location);
-    public static Token EOF(Range range, SourceLocation location) => new Token(TokenKind.EOF, TokenValue.EOF, range, location);
+    public static Token Punctuator(string value, Range range, in SourceLocation location) => new Token(TokenKind.Punctuator, value ?? throw new ArgumentNullException(nameof(value)), range, location);
+    public static Token Keyword(string value, Range range, in SourceLocation location) => new Token(TokenKind.Keyword, value ?? throw new ArgumentNullException(nameof(value)), range, location);
+    public static Token Identifier(string value, Range range, in SourceLocation location) => new Token(TokenKind.Identifier, value ?? throw new ArgumentNullException(nameof(value)), range, location);
+    public static Token NullLiteral(Range range, in SourceLocation location) => new Token(TokenKind.NullLiteral, new TokenValue(null), range, location);
+    public static Token BooleanLiteral(bool value, Range range, in SourceLocation location) => new Token(TokenKind.BooleanLiteral, new TokenValue(value.AsCachedObject()), range, location);
+    public static Token StringLiteral(string value, Range range, in SourceLocation location) => new Token(TokenKind.StringLiteral, value ?? throw new ArgumentNullException(nameof(value)), range, location);
+    public static Token NumericLiteral(double value, Range range, in SourceLocation location) => new Token(TokenKind.NumericLiteral, value, range, location);
+    public static Token BigIntLiteral(BigInteger value, Range range, in SourceLocation location) => new Token(TokenKind.BigIntLiteral, value, range, location);
+    public static Token RegExpLiteral(RegExpValue value, RegExpParseResult parseResult, Range range, in SourceLocation location) => new Token(TokenKind.RegExpLiteral, Tuple.Create(value, parseResult), range, location);
+    public static Token Template(TemplateValue value, Range range, in SourceLocation location) => new Token(TokenKind.Template, value, range, location);
+    public static Token EOF(Range range, in SourceLocation location) => new Token(TokenKind.EOF, TokenValue.EOF, range, location);
 
     internal readonly TokenValue _value;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal Token(TokenKind kind, TokenValue value, Range range, SourceLocation location)
+    internal Token(TokenKind kind, TokenValue value, Range range, in SourceLocation location)
     {
         Kind = kind;
         _value = value;
         _range = range;
-        Location = location;
+        _location = location;
     }
 
     public TokenKind Kind { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
@@ -76,10 +76,11 @@ public readonly struct Token
     public int Start { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _range.Start; }
     public int End { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _range.End; }
 
-    private readonly Range _range;
+    internal readonly Range _range;
     public Range Range { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _range; }
 
-    public SourceLocation Location { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
+    internal readonly SourceLocation _location;
+    public SourceLocation Location { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _location; }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ReadOnlySpan<char> GetRawValue(string input)

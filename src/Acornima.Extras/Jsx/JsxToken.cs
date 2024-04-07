@@ -20,7 +20,7 @@ public static class JsxToken
         return new TokenValue(ValueProvider.IdentifierValueProvider, templateCooked: value);
     }
 
-    public static Token Identifier(string value, Range range, SourceLocation location)
+    public static Token Identifier(string value, Range range, in SourceLocation location)
     {
         return new Token(TokenKind.Extension, IdentifierValue(value ?? throw new ArgumentNullException(nameof(value))), range, location);
     }
@@ -31,7 +31,7 @@ public static class JsxToken
         return new TokenValue(ValueProvider.TextValueProvider, templateCooked: value);
     }
 
-    public static Token Text(string value, Range range, SourceLocation location)
+    public static Token Text(string value, Range range, in SourceLocation location)
     {
         return new Token(TokenKind.Extension, TextValue(value ?? throw new ArgumentNullException(nameof(value))), range, location);
     }

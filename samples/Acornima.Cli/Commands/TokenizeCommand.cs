@@ -93,22 +93,22 @@ internal sealed class TokenizeCommand
         public abstract string Type { get; }
     }
 
-    private sealed record class TokenData(string Kind, object? Value, string RawValue, Range Range, SourceLocation Location) : SyntaxElementData
+    private sealed record class TokenData(string Kind, object? Value, string RawValue, Range Range, in SourceLocation Location) : SyntaxElementData
     {
         public static TokenData From(in Token token, string code)
         {
-            return new TokenData(token.KindText, token.Value, token.GetRawValue(code).ToString(), token.Range, token.Location);
+            return new TokenData(token.KindText, token.Value, token.GetRawValue(code).ToString(), token.Range, token.LocationRef());
         }
 
         [JsonPropertyOrder(-1)]
         public override string Type => "Token";
     }
 
-    private sealed record class CommentData(CommentKind Kind, string Content, Range Range, SourceLocation Location) : SyntaxElementData
+    private sealed record class CommentData(CommentKind Kind, string Content, Range Range, in SourceLocation Location) : SyntaxElementData
     {
         public static CommentData From(in Comment comment, string code)
         {
-            return new CommentData(comment.Kind, comment.GetContent(code).ToString(), comment.Range, comment.Location);
+            return new CommentData(comment.Kind, comment.GetContent(code).ToString(), comment.Range, comment.LocationRef());
         }
 
         [JsonPropertyOrder(-1)]
