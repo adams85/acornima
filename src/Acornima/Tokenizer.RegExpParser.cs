@@ -7,7 +7,6 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using Acornima.Helpers;
-using Acornima.Properties;
 
 namespace Acornima;
 
@@ -149,7 +148,7 @@ public partial class Tokenizer
                 RegExpConversionError.s_factory, code);
         }
 
-        private readonly RegExpConversionError ReportConversionFailure(int index, string reasonFormat, object[] args,
+        private readonly RegExpConversionError ReportConversionFailure(int index, string reasonFormat, object?[] args,
             [CallerArgumentExpression(nameof(reasonFormat))] string code = Tokenizer.UnknownError)
         {
             return ReportConversionFailure(index, string.Format(reasonFormat, args), code);

@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Acornima.Cli.Helpers;
+using Acornima.Jsx;
 using McMaster.Extensions.CommandLineUtils;
 
 namespace Acornima.Cli.Commands;
@@ -22,6 +24,9 @@ internal sealed class TokenizeCommand
     [Option("--type", Description = "Type of the JS code to parse.")]
     public SourceType SourceType { get; set; } = SourceType.Script;
 
+    [Option("--jsx", Description = "Allow JSX expressions.")]
+    public bool AllowJsx { get; set; }
+
     [Option("-c|--comments", Description = "Also include comments.")]
     public bool Comments { get; set; }
 
@@ -33,6 +38,12 @@ internal sealed class TokenizeCommand
     [Argument(0, Description = "The JS code to tokenize. If omitted, the code will be read from the standard input.")]
     public string? Code { get; }
 
+    private T CreateTokenizerOptions<T>(OnCommentHandler? commentHandler) where T : TokenizerOptions, new() => new T
+    {
+        Tolerant = Tolerant,
+        OnComment = commentHandler
+    };
+
     public int OnExecute()
     {
         Console.InputEncoding = System.Text.Encoding.UTF8;
@@ -40,16 +51,13 @@ internal sealed class TokenizeCommand
         var code = Code ?? _console.ReadString();
 
         var comments = new List<CommentData>();
+        OnCommentHandler? commentHandler = Comments
+            ? (in Comment comment) => comments.Add(CommentData.From(comment, code))
+            : null;
 
-        var tokenizerOptions = new TokenizerOptions
-        {
-            Tolerant = Tolerant,
-            OnComment = Comments
-                ? (in Comment comment) => comments.Add(CommentData.From(comment, code))
-                : null
-        };
-
-        var tokenizer = new Tokenizer(code, SourceType, sourceFile: null, tokenizerOptions);
+        ITokenizer tokenizer = AllowJsx
+            ? new JsxTokenizer(code, SourceType, sourceFile: null, CreateTokenizerOptions<JsxTokenizerOptions>(commentHandler))
+            : new Tokenizer(code, SourceType, sourceFile: null, CreateTokenizerOptions<TokenizerOptions>(commentHandler));
 
         var tokensAndComments = new List<object>();
         tokensAndComments.AddRange(comments);
@@ -66,6 +74,7 @@ internal sealed class TokenizeCommand
 
         var serializerOptions = new JsonSerializerOptions
         {
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
             IncludeFields = true,
             WriteIndented = true,
             Converters =
@@ -84,11 +93,11 @@ internal sealed class TokenizeCommand
         public abstract string Type { get; }
     }
 
-    private sealed record class TokenData(TokenKind Kind, object? Value, string RawValue, Range Range, SourceLocation Location) : SyntaxElementData
+    private sealed record class TokenData(string Kind, object? Value, string RawValue, Range Range, SourceLocation Location) : SyntaxElementData
     {
         public static TokenData From(in Token token, string code)
         {
-            return new TokenData(token.Kind, token.Value, token.GetRawValue(code).ToString(), token.Range, token.Location);
+            return new TokenData(token.KindText, token.Value, token.GetRawValue(code).ToString(), token.Range, token.Location);
         }
 
         [JsonPropertyOrder(-1)]

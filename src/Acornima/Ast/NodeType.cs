@@ -78,4 +78,5 @@ public enum NodeType
     WhileStatement,
     WithStatement,
     YieldExpression,
+    Extension = -1
 };

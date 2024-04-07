@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Acornima.Ast;
+using Acornima.Jsx;
 
 namespace Acornima;
 
@@ -15,26 +16,26 @@ public record class AstToJavaScriptOptions
 
 public static class AstToJavaScript
 {
-    private static readonly AstToJavaScriptOptions s_nodeToDebugDisplayTextOptions = AstToJavaScriptOptions.Default with { IgnoreExtensions = true };
+    private static readonly JsxAstToJavaScriptOptions s_nodeToDebugDisplayTextOptions = JsxAstToJavaScriptOptions.Default with { IgnoreExtensions = true };
 
-    internal static string ToDebugDisplayText(this Node node) => node.ToJavaScriptString(KnRJavaScriptTextFormatterOptions.Default, s_nodeToDebugDisplayTextOptions);
+    internal static string ToDebugDisplayText(this Node node) => node.ToJavaScript(KnRJavaScriptTextFormatterOptions.Default, s_nodeToDebugDisplayTextOptions);
 
-    public static string ToJavaScriptString(this Node node)
+    public static string ToJavaScript(this Node node)
     {
-        return ToJavaScriptString(node, JavaScriptTextWriterOptions.Default, AstToJavaScriptOptions.Default);
+        return ToJavaScript(node, JavaScriptTextWriterOptions.Default, AstToJavaScriptOptions.Default);
     }
 
-    public static string ToJavaScriptString(this Node node, KnRJavaScriptTextFormatterOptions formattingOptions)
+    public static string ToJavaScript(this Node node, KnRJavaScriptTextFormatterOptions formattingOptions)
     {
-        return ToJavaScriptString(node, formattingOptions, AstToJavaScriptOptions.Default);
+        return ToJavaScript(node, formattingOptions, AstToJavaScriptOptions.Default);
     }
 
-    public static string ToJavaScriptString(this Node node, bool format)
+    public static string ToJavaScript(this Node node, bool format)
     {
-        return ToJavaScriptString(node, format ? KnRJavaScriptTextFormatterOptions.Default : JavaScriptTextWriterOptions.Default, AstToJavaScriptOptions.Default);
+        return ToJavaScript(node, format ? KnRJavaScriptTextFormatterOptions.Default : JavaScriptTextWriterOptions.Default, AstToJavaScriptOptions.Default);
     }
 
-    public static string ToJavaScriptString(this Node node, JavaScriptTextWriterOptions writerOptions, AstToJavaScriptOptions options)
+    public static string ToJavaScript(this Node node, JavaScriptTextWriterOptions writerOptions, AstToJavaScriptOptions options)
     {
         using (var writer = new StringWriter())
         {

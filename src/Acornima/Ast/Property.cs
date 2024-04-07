@@ -27,8 +27,6 @@ public abstract partial class Property : Node, IProperty
     /// When property of an object pattern: <see cref="Identifier"/> | <see cref="MemberExpression"/> (in assignment contexts only) | <see cref="ArrayPattern"/> | <see cref="ObjectPattern"/> | <see cref="AssignmentPattern"/> | <see cref="RestElement"/>
     /// </remarks>
     public Node Value { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
-    Node? IProperty.Value => Value;
-
     public bool Computed { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public bool Method { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public bool Shorthand { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }

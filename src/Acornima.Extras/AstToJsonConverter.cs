@@ -30,8 +30,6 @@ public class AstToJsonConverter : AstVisitor
         _locationMembersPlacement = options.LocationMembersPlacement;
     }
 
-    protected virtual string GetNodeType(Node node) => node.Type.ToString();
-
     private void WriteLocationInfo(Node node)
     {
         if (_includeRange)
@@ -113,7 +111,7 @@ public class AstToJsonConverter : AstVisitor
     protected NodeObject StartNodeObject(Node node)
     {
         OnStartNodeObject(node);
-        Member("type", GetNodeType(node));
+        Member("type", node.TypeText);
         return new NodeObject(this, node);
     }
 

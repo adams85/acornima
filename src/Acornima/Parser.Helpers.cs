@@ -4,7 +4,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Acornima.Ast;
 using Acornima.Helpers;
-using Acornima.Properties;
 
 namespace Acornima;
 
@@ -13,20 +12,20 @@ using static SyntaxErrorMessages;
 public partial class Parser
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void Next(bool ignoreEscapeSequenceInKeyword = false, bool requireValidEscapeSequenceInTemplate = true)
+    internal void Next(bool ignoreEscapeSequenceInKeyword = false, bool requireValidEscapeSequenceInTemplate = true)
     {
         _tokenizer.Next(new TokenizerContext(_strict, ignoreEscapeSequenceInKeyword, requireValidEscapeSequenceInTemplate));
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private Marker StartNode()
+    internal Marker StartNode()
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/node.js > `pp.startNode = function`
 
         return new Marker(_tokenizer._start, _tokenizer._startLocation);
     }
 
-    private T FinishNodeAt<T>(in Marker startMarker, in Marker endMarker, T node) where T : Node
+    internal T FinishNodeAt<T>(in Marker startMarker, in Marker endMarker, T node) where T : Node
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/node.js > `function finishNodeAt`, `pp.finishNodeAt = function`
 
@@ -37,7 +36,7 @@ public partial class Parser
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private T FinishNode<T>(in Marker startMarker, T node) where T : Node
+    internal T FinishNode<T>(in Marker startMarker, T node) where T : Node
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/node.js > `pp.finishNode = function`
 
@@ -53,14 +52,14 @@ public partial class Parser
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void EnterRecursion()
+    internal void EnterRecursion()
     {
         _recursionDepth++;
         StackGuard.EnsureSufficientExecutionStack(_recursionDepth);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private T ExitRecursion<T>(T node)
+    internal T ExitRecursion<T>(T node)
     {
         _recursionDepth--;
         return node;
@@ -338,7 +337,7 @@ public partial class Parser
 #if DEBUG
     [DebuggerDisplay($"{nameof(Index)} = {{{nameof(Index)}}}, {nameof(Position)} = {{{nameof(Position)}}}")]
 #endif
-    private readonly struct Marker
+    internal readonly struct Marker
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Marker(int index, Position position)
@@ -379,7 +378,7 @@ public partial class Parser
     }
 
     [Flags]
-    private enum ExpressionContext : byte
+    internal enum ExpressionContext : byte
     {
         Default = 0,
         ForInit = 1 << 1,
@@ -388,7 +387,7 @@ public partial class Parser
         Decorator = 1 << 3,
     }
 
-    private struct DestructuringErrors
+    internal struct DestructuringErrors
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public DestructuringErrors()

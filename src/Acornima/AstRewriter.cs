@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Acornima.Ast;
-using Acornima.Properties;
 
 namespace Acornima;
 

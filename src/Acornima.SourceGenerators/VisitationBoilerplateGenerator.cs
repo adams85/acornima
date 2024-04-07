@@ -261,11 +261,16 @@ public partial class VisitationBoilerplateGenerator : IIncrementalGenerator
                 .Where(method => IsMatchingUpdateWithMethodSignature(method, childProperties))
                 .Any();
 
+        var generateChildNodesEnumeratorHelper = generateNextChildNodeMethod
+            // We can't add methods to a partial class (ChildNodes.Enumerator) in another assembly than the containing one.
+            && SymbolEqualityComparer.Default.Equals(classType.ContainingAssembly, nodeType.ContainingAssembly);
+
         return new VisitableNodeInfo(className)
         {
             VisitorTypeName = visitorTypeName,
             ChildPropertyInfos = childPropertyInfos,
             SealOverrideMethods = sealOverrideMethods,
+            GenerateChildNodesEnumeratorHelper = generateChildNodesEnumeratorHelper,
             GenerateNextChildNodeMethod = generateNextChildNodeMethod,
             GenerateAcceptMethod = generateAcceptMethod,
             GenerateUpdateWithMethod = generateUpdateWithMethod,
@@ -415,10 +420,13 @@ public partial class VisitationBoilerplateGenerator : IIncrementalGenerator
             sb.Reset();
         }
 
-        GenerateChildNodesEnumeratorHelpers(sb, visitableNodeInfos, context.CancellationToken);
+        if (visitableNodeInfos.Any(nodeInfo => nodeInfo.GenerateChildNodesEnumeratorHelper))
+        {
+            GenerateChildNodesEnumeratorHelpers(sb, visitableNodeInfos, context.CancellationToken);
 
-        context.AddSource($"ChildNodes.Helpers.g.cs", sb.ToString());
-        sb.Reset();
+            context.AddSource($"ChildNodes.Helpers.g.cs", sb.ToString());
+            sb.Reset();
+        }
 
         var nodeLookupByVisitorType = visitableNodeInfos
             .ToLookup(nodeInfo => nodeInfo.VisitorTypeName?.ToString() ?? AstVisitorCSharpTypeName);
@@ -489,6 +497,7 @@ internal sealed record class VisitableNodeInfo
 
     public bool SealOverrideMethods { get; init; }
 
+    public bool GenerateChildNodesEnumeratorHelper { get; init; }
     public bool GenerateNextChildNodeMethod { get; init; }
     public bool GenerateAcceptMethod { get; init; }
     public bool GenerateUpdateWithMethod { get; init; }

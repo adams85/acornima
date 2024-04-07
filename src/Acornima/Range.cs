@@ -3,11 +3,11 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.CompilerServices;
-using Acornima.Properties;
+using Acornima.Helpers;
 
 namespace Acornima;
 
-using static Helpers.ExceptionHelper;
+using static ExceptionHelper;
 
 public readonly struct Range : IEquatable<Range>
 {

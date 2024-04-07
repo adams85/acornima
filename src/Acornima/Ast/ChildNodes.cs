@@ -36,8 +36,8 @@ public readonly partial struct ChildNodes : IEnumerable<Node>
     public partial struct Enumerator : IEnumerator<Node>
     {
         private readonly object? _source; // Node | IEnumerator<Node> | null
-        private int _propertyIndex;
-        private int _listIndex;
+        internal int _propertyIndex;
+        internal int _listIndex;
         private Node? _current;
 
         public Enumerator(in ChildNodes childNodes)

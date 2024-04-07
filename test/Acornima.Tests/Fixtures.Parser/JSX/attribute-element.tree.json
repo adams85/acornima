@@ -1,0 +1,290 @@
+{
+  "type": "Program",
+  "body": [
+    {
+      "type": "ExpressionStatement",
+      "expression": {
+        "type": "JSXElement",
+        "openingElement": {
+          "type": "JSXOpeningElement",
+          "name": {
+            "type": "JSXIdentifier",
+            "name": "america",
+            "range": [
+              1,
+              8
+            ],
+            "loc": {
+              "start": {
+                "line": 1,
+                "column": 1
+              },
+              "end": {
+                "line": 1,
+                "column": 8
+              }
+            }
+          },
+          "selfClosing": true,
+          "attributes": [
+            {
+              "type": "JSXAttribute",
+              "name": {
+                "type": "JSXIdentifier",
+                "name": "state",
+                "range": [
+                  9,
+                  14
+                ],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 9
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 14
+                  }
+                }
+              },
+              "value": {
+                "type": "JSXElement",
+                "openingElement": {
+                  "type": "JSXOpeningElement",
+                  "name": {
+                    "type": "JSXMemberExpression",
+                    "object": {
+                      "type": "JSXIdentifier",
+                      "name": "usa",
+                      "range": [
+                        16,
+                        19
+                      ],
+                      "loc": {
+                        "start": {
+                          "line": 1,
+                          "column": 16
+                        },
+                        "end": {
+                          "line": 1,
+                          "column": 19
+                        }
+                      }
+                    },
+                    "property": {
+                      "type": "JSXIdentifier",
+                      "name": "california",
+                      "range": [
+                        20,
+                        30
+                      ],
+                      "loc": {
+                        "start": {
+                          "line": 1,
+                          "column": 20
+                        },
+                        "end": {
+                          "line": 1,
+                          "column": 30
+                        }
+                      }
+                    },
+                    "range": [
+                      16,
+                      30
+                    ],
+                    "loc": {
+                      "start": {
+                        "line": 1,
+                        "column": 16
+                      },
+                      "end": {
+                        "line": 1,
+                        "column": 30
+                      }
+                    }
+                  },
+                  "selfClosing": false,
+                  "attributes": [],
+                  "range": [
+                    15,
+                    31
+                  ],
+                  "loc": {
+                    "start": {
+                      "line": 1,
+                      "column": 15
+                    },
+                    "end": {
+                      "line": 1,
+                      "column": 31
+                    }
+                  }
+                },
+                "children": [],
+                "closingElement": {
+                  "type": "JSXClosingElement",
+                  "name": {
+                    "type": "JSXMemberExpression",
+                    "object": {
+                      "type": "JSXIdentifier",
+                      "name": "usa",
+                      "range": [
+                        33,
+                        36
+                      ],
+                      "loc": {
+                        "start": {
+                          "line": 1,
+                          "column": 33
+                        },
+                        "end": {
+                          "line": 1,
+                          "column": 36
+                        }
+                      }
+                    },
+                    "property": {
+                      "type": "JSXIdentifier",
+                      "name": "california",
+                      "range": [
+                        37,
+                        47
+                      ],
+                      "loc": {
+                        "start": {
+                          "line": 1,
+                          "column": 37
+                        },
+                        "end": {
+                          "line": 1,
+                          "column": 47
+                        }
+                      }
+                    },
+                    "range": [
+                      33,
+                      47
+                    ],
+                    "loc": {
+                      "start": {
+                        "line": 1,
+                        "column": 33
+                      },
+                      "end": {
+                        "line": 1,
+                        "column": 47
+                      }
+                    }
+                  },
+                  "range": [
+                    31,
+                    48
+                  ],
+                  "loc": {
+                    "start": {
+                      "line": 1,
+                      "column": 31
+                    },
+                    "end": {
+                      "line": 1,
+                      "column": 48
+                    }
+                  }
+                },
+                "range": [
+                  15,
+                  48
+                ],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 15
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 48
+                  }
+                }
+              },
+              "range": [
+                9,
+                48
+              ],
+              "loc": {
+                "start": {
+                  "line": 1,
+                  "column": 9
+                },
+                "end": {
+                  "line": 1,
+                  "column": 48
+                }
+              }
+            }
+          ],
+          "range": [
+            0,
+            51
+          ],
+          "loc": {
+            "start": {
+              "line": 1,
+              "column": 0
+            },
+            "end": {
+              "line": 1,
+              "column": 51
+            }
+          }
+        },
+        "children": [],
+        "closingElement": null,
+        "range": [
+          0,
+          51
+        ],
+        "loc": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 51
+          }
+        }
+      },
+      "range": [
+        0,
+        51
+      ],
+      "loc": {
+        "start": {
+          "line": 1,
+          "column": 0
+        },
+        "end": {
+          "line": 1,
+          "column": 51
+        }
+      }
+    }
+  ],
+  "sourceType": "script",
+  "strict": false,
+  "range": [
+    0,
+    52
+  ],
+  "loc": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 2,
+      "column": 0
+    }
+  }
+}

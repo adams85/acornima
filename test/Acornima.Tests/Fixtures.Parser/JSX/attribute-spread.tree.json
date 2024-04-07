@@ -1,0 +1,164 @@
+{
+  "type": "Program",
+  "body": [
+    {
+      "type": "ExpressionStatement",
+      "expression": {
+        "type": "JSXElement",
+        "openingElement": {
+          "type": "JSXOpeningElement",
+          "name": {
+            "type": "JSXIdentifier",
+            "name": "span",
+            "range": [
+              1,
+              5
+            ],
+            "loc": {
+              "start": {
+                "line": 1,
+                "column": 1
+              },
+              "end": {
+                "line": 1,
+                "column": 5
+              }
+            }
+          },
+          "selfClosing": false,
+          "attributes": [
+            {
+              "type": "JSXSpreadAttribute",
+              "argument": {
+                "type": "Identifier",
+                "name": "style",
+                "range": [
+                  11,
+                  16
+                ],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 11
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 16
+                  }
+                }
+              },
+              "range": [
+                6,
+                17
+              ],
+              "loc": {
+                "start": {
+                  "line": 1,
+                  "column": 6
+                },
+                "end": {
+                  "line": 1,
+                  "column": 17
+                }
+              }
+            }
+          ],
+          "range": [
+            0,
+            18
+          ],
+          "loc": {
+            "start": {
+              "line": 1,
+              "column": 0
+            },
+            "end": {
+              "line": 1,
+              "column": 18
+            }
+          }
+        },
+        "children": [],
+        "closingElement": {
+          "type": "JSXClosingElement",
+          "name": {
+            "type": "JSXIdentifier",
+            "name": "span",
+            "range": [
+              20,
+              24
+            ],
+            "loc": {
+              "start": {
+                "line": 1,
+                "column": 20
+              },
+              "end": {
+                "line": 1,
+                "column": 24
+              }
+            }
+          },
+          "range": [
+            18,
+            25
+          ],
+          "loc": {
+            "start": {
+              "line": 1,
+              "column": 18
+            },
+            "end": {
+              "line": 1,
+              "column": 25
+            }
+          }
+        },
+        "range": [
+          0,
+          25
+        ],
+        "loc": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 25
+          }
+        }
+      },
+      "range": [
+        0,
+        25
+      ],
+      "loc": {
+        "start": {
+          "line": 1,
+          "column": 0
+        },
+        "end": {
+          "line": 1,
+          "column": 25
+        }
+      }
+    }
+  ],
+  "sourceType": "script",
+  "strict": false,
+  "range": [
+    0,
+    26
+  ],
+  "loc": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 2,
+      "column": 0
+    }
+  }
+}

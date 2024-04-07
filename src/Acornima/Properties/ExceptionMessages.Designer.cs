@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Acornima.Properties {
+namespace Acornima {
     using System;
     
     

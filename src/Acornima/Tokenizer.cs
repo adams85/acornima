@@ -6,7 +6,6 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using Acornima.Helpers;
-using Acornima.Properties;
 
 namespace Acornima;
 
@@ -14,15 +13,17 @@ using static SyntaxErrorMessages;
 
 // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js
 
-public sealed partial class Tokenizer
+public sealed partial class Tokenizer : ITokenizer
 {
     internal const string UnknownError = nameof(UnknownError);
 
     private readonly TokenizerOptions _options;
+    private readonly IExtension? _extension;
 
-    internal Tokenizer(TokenizerOptions options)
+    internal Tokenizer(TokenizerOptions options, IExtension? extension)
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
+        _extension = extension;
         _input = null!;
         _type = null!;
     }
@@ -37,7 +38,7 @@ public sealed partial class Tokenizer
         : this(input ?? throw new ArgumentNullException(nameof(input)), 0, input.Length, sourceType, sourceFile, options) { }
 
     public Tokenizer(string input, int start, int length, SourceType sourceType, string? sourceFile, TokenizerOptions options)
-        : this(options)
+        : this(options, extension: null)
     {
         Reset(input, start, length, sourceType, sourceFile);
     }
@@ -115,9 +116,17 @@ public sealed partial class Tokenizer
             return;
         }
 
-        ReadToken(currentContext);
+        if (_extension is null)
+        {
+            ReadToken(currentContext);
+        }
+        else
+        {
+            _extension.ReadToken(currentContext);
+        }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void ReadToken(TokenContext currentContext)
     {
         if (currentContext != TokenContext.QuoteInTemplate
@@ -129,7 +138,7 @@ public sealed partial class Tokenizer
         }
     }
 
-    private bool TryReadToken(int cp)
+    internal bool TryReadToken(int cp)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readToken = function`, `pp.getTokenFromCode = function`
 
@@ -399,7 +408,7 @@ public sealed partial class Tokenizer
     // maintains `context` and `exprAllowed`, and skips the space after
     // the token, so that the next one's `start` will point at the
     // right position.
-    private bool FinishToken(TokenType type, TokenValue value)
+    internal bool FinishToken(TokenType type, TokenValue value)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.finishToken = function`
 
@@ -412,10 +421,19 @@ public sealed partial class Tokenizer
 
         if (_trackRegExpContext)
         {
-            UpdateContext(prevType);
+            if (_extension is null)
+            {
+                UpdateContext(prevType);
+            }
+            else
+            {
+                _extension.UpdateContext(prevType);
+            }
         }
         else if (_type.Kind == TokenKind.Punctuator)
         {
+            Debug.Assert(_extension is null || _extension.SupportsMinimalContextTracking);
+
             UpdateContextMinimal(prevType);
         }
 
@@ -750,18 +768,15 @@ public sealed partial class Tokenizer
 
     // Read an integer in the given radix. Return the number of digits read,
     // excluding the potential separators.
-    private int ReadInt(out ulong value, out bool overflow, out bool hasSeparator, byte radix, bool startsWithZero = false, int? len = null)
+    internal int ReadInt(out ulong value, out bool overflow, out bool hasSeparator, byte radix, bool allowSeparators = false, bool startsWithZero = false, int len = int.MaxValue)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readInt = function`
-
-        // `len` is used for character escape sequences. In that case, disallow separators.
-        var allowSeparators = len is null && _options._ecmaVersion >= EcmaVersion.ES12;
 
         value = 0;
         overflow = hasSeparator = false;
         char lastCh = default;
         var numDigits = 0;
-        for (int i = 0, e = len ?? int.MaxValue; i < e; i++, _position++)
+        for (int i = 0, e = len; i < e; i++, _position++)
         {
             var ch = CharCodeAtPosition();
 
@@ -830,7 +845,9 @@ public sealed partial class Tokenizer
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readRadixNumber = function`
 
         _position += 2; // 0x
-        if (!(ReadInt(out var intValue, out var overflow, out _, radix) > 0))
+
+        var allowSeparators = _options._ecmaVersion >= EcmaVersion.ES12;
+        if (!(ReadInt(out var intValue, out var overflow, out _, radix, allowSeparators) > 0))
         {
             // Raise(_start + 2, "Expected number in radix " + radix); // original acornjs error reporting
             Unexpected();
@@ -884,20 +901,20 @@ public sealed partial class Tokenizer
 
         int numDigits, nextCh;
         ulong intValue;
-        bool overflow, hasSeparator;
+        bool overflow, hasSeparator, allowSeparators = _options._ecmaVersion >= EcmaVersion.ES12;
         TokenValue val;
         ReadOnlySpan<char> slice;
 
         if (startsWithZero)
         {
-            numDigits = ReadInt(out intValue, out overflow, out hasSeparator, startsWithZero: true, radix: 8);
+            numDigits = ReadInt(out intValue, out overflow, out hasSeparator, radix: 8, allowSeparators, startsWithZero: true);
             Debug.Assert(numDigits > 0);
 
             nextCh = CharCodeAtPosition();
             if (nextCh is '8' or '9') // literals like 08 are valid in non-strict mode, so reparse them as a decimal number
             {
                 _position = start;
-                numDigits = ReadInt(out intValue, out overflow, out hasSeparator, startsWithZero: true, radix: 10);
+                numDigits = ReadInt(out intValue, out overflow, out hasSeparator, radix: 10, allowSeparators, startsWithZero: true);
                 Debug.Assert(numDigits > 0);
 
                 nextCh = CharCodeAtPosition();
@@ -946,7 +963,7 @@ public sealed partial class Tokenizer
         }
         else
         {
-            numDigits = ReadInt(out intValue, out overflow, out hasSeparator, radix: 10);
+            numDigits = ReadInt(out intValue, out overflow, out hasSeparator, radix: 10, allowSeparators);
             Debug.Assert(numDigits > 0);
             nextCh = CharCodeAtPosition();
         }
@@ -980,7 +997,7 @@ public sealed partial class Tokenizer
         if (nextCh == '.')
         {
             ++_position;
-            ReadInt(out _, out _, out hasSeparator2, radix: 10);
+            ReadInt(out _, out _, out hasSeparator2, radix: 10, allowSeparators);
             hasSeparator = hasSeparator || hasSeparator2;
             nextCh = CharCodeAtPosition();
         }
@@ -993,7 +1010,7 @@ public sealed partial class Tokenizer
             {
                 ++_position;
             }
-            if (!(ReadInt(out _, out _, out hasSeparator2, radix: 10) > 0))
+            if (!(ReadInt(out _, out _, out hasSeparator2, radix: 10, allowSeparators) > 0))
             {
                 // Raise(start, "Invalid number"); // original acornjs error reporting
                 Unexpected(start);
@@ -1128,7 +1145,7 @@ public sealed partial class Tokenizer
 
     // Reads template string tokens.
 
-    private bool TryReadTemplateToken()
+    internal bool TryReadTemplateToken()
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.tryReadTemplateToken = function`
 
@@ -1553,8 +1570,6 @@ public sealed partial class Tokenizer
 
     #endregion
 
-    #region Token-specific context update code (TokenType.UpdateContext implementations)
-
     private bool InGeneratorContext()
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokencontext.js > `pp.inGeneratorContext = function`
@@ -1571,7 +1586,7 @@ public sealed partial class Tokenizer
         return false;
     }
 
-    private void UpdateContextMinimal(TokenType previousType)
+    internal void UpdateContextMinimal(TokenType previousType)
     {
         // The minimal context tracking necessary for dealing with nested template literals.
         // Should be used when the tokenizer doesn't need to deal with regex disambiguation
@@ -1605,7 +1620,7 @@ public sealed partial class Tokenizer
         }
     }
 
-    private void UpdateContext(TokenType previousType)
+    internal void UpdateContext(TokenType previousType)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokencontext.js > `pp.updateContext = function`
 
@@ -1636,6 +1651,8 @@ public sealed partial class Tokenizer
         }
     }
 
+    #region Token-specific context update code (TokenType.UpdateContext implementations)
+
     internal static void UpdateContext_ParenOrBraceRight(Tokenizer tokenizer, TokenType previousType)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokencontext.js > `tt.parenR.updateContext = tt.braceR.updateContext = function`
@@ -1664,6 +1681,8 @@ public sealed partial class Tokenizer
 
         static bool BraceIsBlock(Tokenizer tokenizer, TokenType previousType)
         {
+            //  https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokencontext.js > `pp.braceIsBlock = function`
+
             var parent = tokenizer.CurrentContext;
             if (parent == TokenContext.FunctionInExpression || parent == TokenContext.FunctionInStatement)
             {
@@ -1951,5 +1970,13 @@ public sealed partial class Tokenizer
         };
 
         return new RegExpParser(pattern, flags, tokenizerOptions).Parse();
+    }
+
+    internal interface IExtension
+    {
+        bool SupportsMinimalContextTracking { get; }
+
+        void ReadToken(TokenContext currentContext);
+        void UpdateContext(TokenType previousType);
     }
 }

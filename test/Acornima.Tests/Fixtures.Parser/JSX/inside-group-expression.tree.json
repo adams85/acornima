@@ -1,0 +1,132 @@
+{
+  "type": "Program",
+  "body": [
+    {
+      "type": "VariableDeclaration",
+      "declarations": [
+        {
+          "type": "VariableDeclarator",
+          "id": {
+            "type": "Identifier",
+            "name": "el",
+            "range": [
+              4,
+              6
+            ],
+            "loc": {
+              "start": {
+                "line": 1,
+                "column": 4
+              },
+              "end": {
+                "line": 1,
+                "column": 6
+              }
+            }
+          },
+          "init": {
+            "type": "JSXElement",
+            "openingElement": {
+              "type": "JSXOpeningElement",
+              "name": {
+                "type": "JSXIdentifier",
+                "name": "span",
+                "range": [
+                  12,
+                  16
+                ],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 12
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 16
+                  }
+                }
+              },
+              "selfClosing": true,
+              "attributes": [],
+              "range": [
+                11,
+                19
+              ],
+              "loc": {
+                "start": {
+                  "line": 1,
+                  "column": 11
+                },
+                "end": {
+                  "line": 1,
+                  "column": 19
+                }
+              }
+            },
+            "children": [],
+            "closingElement": null,
+            "range": [
+              11,
+              19
+            ],
+            "loc": {
+              "start": {
+                "line": 1,
+                "column": 11
+              },
+              "end": {
+                "line": 1,
+                "column": 19
+              }
+            }
+          },
+          "range": [
+            4,
+            21
+          ],
+          "loc": {
+            "start": {
+              "line": 1,
+              "column": 4
+            },
+            "end": {
+              "line": 1,
+              "column": 21
+            }
+          }
+        }
+      ],
+      "kind": "var",
+      "range": [
+        0,
+        21
+      ],
+      "loc": {
+        "start": {
+          "line": 1,
+          "column": 0
+        },
+        "end": {
+          "line": 1,
+          "column": 21
+        }
+      }
+    }
+  ],
+  "sourceType": "script",
+  "strict": false,
+  "range": [
+    0,
+    22
+  ],
+  "loc": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 2,
+      "column": 0
+    }
+  }
+}

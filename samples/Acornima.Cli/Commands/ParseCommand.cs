@@ -1,6 +1,7 @@
 using System;
 using Acornima.Ast;
 using Acornima.Cli.Helpers;
+using Acornima.Jsx;
 using McMaster.Extensions.CommandLineUtils;
 
 namespace Acornima.Cli.Commands;
@@ -27,8 +28,8 @@ internal sealed class ParseCommand
     [Option("--type", Description = "Type of the JS code to parse.")]
     public JavaScriptCodeType CodeType { get; set; }
 
-    //[Option("--jsx", Description = "Allow JSX expressions.")]
-    //public bool AllowJsx { get; set; }
+    [Option("--jsx", Description = "Allow JSX expressions.")]
+    public bool AllowJsx { get; set; }
 
     [Option("--skip-regexp", Description = "Skip parsing of regular expressions.")]
     public bool SkipRegExp { get; set; }
@@ -50,19 +51,27 @@ internal sealed class ParseCommand
     [Argument(0, Description = "The JS code to parse. If omitted, the code will be read from the standard input.")]
     public string? Code { get; }
 
+    private T CreateParserOptions<T>() where T : ParserOptions, new() => new T
+    {
+        RegExpParseMode = SkipRegExp ? RegExpParseMode.Skip : RegExpParseMode.Validate,
+        Tolerant = Tolerant,
+    };
+
+    private T CreateAstToJsonOptions<T>() where T : AstToJsonOptions, new() => new T
+    {
+        IncludeLineColumn = IncludeLineColumn,
+        IncludeRange = IncludeRange,
+    };
+
     public int OnExecute()
     {
         Console.InputEncoding = System.Text.Encoding.UTF8;
 
         var code = Code ?? _console.ReadString();
 
-        var parserOptions = new ParserOptions
-        {
-            RegExpParseMode = SkipRegExp ? RegExpParseMode.Skip : RegExpParseMode.Validate,
-            Tolerant = Tolerant
-        };
-
-        var parser = new Parser(parserOptions);
+        IParser parser = AllowJsx
+            ? new JsxParser(CreateParserOptions<JsxParserOptions>())
+            : new Parser(CreateParserOptions<ParserOptions>());
 
         Node rootNode = CodeType switch
         {
@@ -86,13 +95,11 @@ internal sealed class ParseCommand
         }
         else
         {
-            var astToJsonOptions = new AstToJsonOptions
-            {
-                IncludeLineColumn = IncludeLineColumn,
-                IncludeRange = IncludeRange,
-            };
+            var astToJsonOptions = AllowJsx
+                ? CreateAstToJsonOptions<JsxAstToJsonOptions>()
+                : CreateAstToJsonOptions<AstToJsonOptions>();
 
-            _console.WriteLine(rootNode.ToJsonString(astToJsonOptions, indent: "  "));
+            _console.WriteLine(rootNode.ToJson(astToJsonOptions, indent: "  "));
         }
 
         return 0;

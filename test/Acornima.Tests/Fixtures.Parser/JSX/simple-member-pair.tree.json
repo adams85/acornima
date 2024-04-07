@@ -1,0 +1,198 @@
+{
+  "type": "Program",
+  "body": [
+    {
+      "type": "ExpressionStatement",
+      "expression": {
+        "type": "JSXElement",
+        "openingElement": {
+          "type": "JSXOpeningElement",
+          "name": {
+            "type": "JSXMemberExpression",
+            "object": {
+              "type": "JSXIdentifier",
+              "name": "milky-way",
+              "range": [
+                1,
+                10
+              ],
+              "loc": {
+                "start": {
+                  "line": 1,
+                  "column": 1
+                },
+                "end": {
+                  "line": 1,
+                  "column": 10
+                }
+              }
+            },
+            "property": {
+              "type": "JSXIdentifier",
+              "name": "solar-system",
+              "range": [
+                11,
+                23
+              ],
+              "loc": {
+                "start": {
+                  "line": 1,
+                  "column": 11
+                },
+                "end": {
+                  "line": 1,
+                  "column": 23
+                }
+              }
+            },
+            "range": [
+              1,
+              23
+            ],
+            "loc": {
+              "start": {
+                "line": 1,
+                "column": 1
+              },
+              "end": {
+                "line": 1,
+                "column": 23
+              }
+            }
+          },
+          "selfClosing": false,
+          "attributes": [],
+          "range": [
+            0,
+            24
+          ],
+          "loc": {
+            "start": {
+              "line": 1,
+              "column": 0
+            },
+            "end": {
+              "line": 1,
+              "column": 24
+            }
+          }
+        },
+        "children": [],
+        "closingElement": {
+          "type": "JSXClosingElement",
+          "name": {
+            "type": "JSXMemberExpression",
+            "object": {
+              "type": "JSXIdentifier",
+              "name": "milky-way",
+              "range": [
+                26,
+                35
+              ],
+              "loc": {
+                "start": {
+                  "line": 1,
+                  "column": 26
+                },
+                "end": {
+                  "line": 1,
+                  "column": 35
+                }
+              }
+            },
+            "property": {
+              "type": "JSXIdentifier",
+              "name": "solar-system",
+              "range": [
+                36,
+                48
+              ],
+              "loc": {
+                "start": {
+                  "line": 1,
+                  "column": 36
+                },
+                "end": {
+                  "line": 1,
+                  "column": 48
+                }
+              }
+            },
+            "range": [
+              26,
+              48
+            ],
+            "loc": {
+              "start": {
+                "line": 1,
+                "column": 26
+              },
+              "end": {
+                "line": 1,
+                "column": 48
+              }
+            }
+          },
+          "range": [
+            24,
+            49
+          ],
+          "loc": {
+            "start": {
+              "line": 1,
+              "column": 24
+            },
+            "end": {
+              "line": 1,
+              "column": 49
+            }
+          }
+        },
+        "range": [
+          0,
+          49
+        ],
+        "loc": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 49
+          }
+        }
+      },
+      "range": [
+        0,
+        49
+      ],
+      "loc": {
+        "start": {
+          "line": 1,
+          "column": 0
+        },
+        "end": {
+          "line": 1,
+          "column": 49
+        }
+      }
+    }
+  ],
+  "sourceType": "script",
+  "strict": false,
+  "range": [
+    0,
+    50
+  ],
+  "loc": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 2,
+      "column": 0
+    }
+  }
+}

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Acornima.Ast;
 using Acornima.Helpers;
+using Acornima.Jsx;
 using Xunit;
 
 namespace Acornima.Tests;
@@ -40,7 +41,7 @@ public class AstToJavaScriptTests
             for (var elem of list) { }
             """);
 
-        var code = program.ToJavaScriptString(s_customCompactWriterOptions, AstToJavaScriptOptions.Default);
+        var code = program.ToJavaScript(s_customCompactWriterOptions, AstToJavaScriptOptions.Default);
 
         Assert.Equal("if(true){p();}switch(foo){case'A':p();break;}switch(foo){default:p();break;}for(var a=[];;){}for(var elem of list){}", code);
     }
@@ -68,7 +69,7 @@ public class AstToJavaScriptTests
 
         var parser = new Parser();
         var program = parser.ParseScript(source);
-        var code = program.ToJavaScriptString(s_customCompactWriterOptions, AstToJavaScriptOptions.Default);
+        var code = program.ToJavaScript(s_customCompactWriterOptions, AstToJavaScriptOptions.Default);
 
         var expected = Regex.Replace(
             "let tips=[\"Click on any AST node with a '+' to expand it\",\"Hovering over a node highlights the \\\n   corresponding location in the source code\",\"Shift click on an AST node to expand the whole subtree\"];function printTips(){tips.forEach((tip,i)=>console.log(`Tip ${i}:`+tip));}",
@@ -94,7 +95,7 @@ public class AstToJavaScriptTests
                 }
             }
             """);
-        var code = program.ToJavaScriptString(s_customCompactWriterOptions, AstToJavaScriptOptions.Default);
+        var code = program.ToJavaScript(s_customCompactWriterOptions, AstToJavaScriptOptions.Default);
 
         Assert.Equal("export class aa extends HTMLElement{constructor(a,b){super(a);this._div=document.createElement('div');}static get is(){return'aa';}}", code);
     }
@@ -162,7 +163,7 @@ public class AstToJavaScriptTests
 
         var parser = new Parser();
         var program = parser.ParseModule(source);
-        var code = AstToJavaScript.ToJavaScriptString(program, s_formattingOptions);
+        var code = AstToJavaScript.ToJavaScript(program, s_formattingOptions);
 
         var expected = """
             import { MccDialog } from '../mccDialogHandler';
@@ -249,7 +250,7 @@ public class AstToJavaScriptTests
 
         var parser = new Parser();
         var program = parser.ParseScript(source);
-        var code = AstToJavaScript.ToJavaScriptString(program, s_formattingOptions);
+        var code = AstToJavaScript.ToJavaScript(program, s_formattingOptions);
 
         var expected =
             """
@@ -287,7 +288,7 @@ public class AstToJavaScriptTests
 
         var parser = new Parser();
         var program = parser.ParseScript(source);
-        var code = program.ToJavaScriptString(s_customCompactWriterOptions, AstToJavaScriptOptions.Default);
+        var code = program.ToJavaScript(s_customCompactWriterOptions, AstToJavaScriptOptions.Default);
 
         Assert.Equal("function _createClass(Constructor,protoProps,staticProps){if(protoProps)_defineProperties(Constructor.prototype,protoProps);if(staticProps)_defineProperties(Constructor,staticProps);return Constructor;}", code);
     }
@@ -302,7 +303,7 @@ public class AstToJavaScriptTests
             {
             }
             """);
-        var code = program.ToJavaScriptString(s_customCompactWriterOptions, AstToJavaScriptOptions.Default);
+        var code = program.ToJavaScript(s_customCompactWriterOptions, AstToJavaScriptOptions.Default);
 
         Assert.Equal("if((x?a.nodeName.toLowerCase()===f:1===a.nodeType)&&++d&&(p&&((i=(o=a[S]||(a[S]={}))[a.uniqueID]||(o[a.uniqueID]={}))[h]=[k,d]),a===e)){}", code);
     }
@@ -323,7 +324,7 @@ public class AstToJavaScriptTests
                 r='cc';
             }
             """);
-        var code = program.ToJavaScriptString(s_customCompactWriterOptions, AstToJavaScriptOptions.Default);
+        var code = program.ToJavaScript(s_customCompactWriterOptions, AstToJavaScriptOptions.Default);
 
         Assert.Equal("class a extends b{constructor(){super();this.g=1;}q=1;r='cc';}", code);
     }
@@ -336,7 +337,7 @@ public class AstToJavaScriptTests
             """
             d = (s = (r = (i = (o = (a = c)[S] || (a[S] = {}))[a.uniqueID] || (o[a.uniqueID] = {}))[h] || [])[0] === k && r[1]) && r[2], a = s && c.childNodes[s];
             """);
-        var code = program.ToJavaScriptString(s_customCompactWriterOptions, AstToJavaScriptOptions.Default);
+        var code = program.ToJavaScript(s_customCompactWriterOptions, AstToJavaScriptOptions.Default);
 
         Assert.Equal("d=(s=(r=(i=(o=(a=c)[S]||(a[S]={}))[a.uniqueID]||(o[a.uniqueID]={}))[h]||[])[0]===k&&r[1])&&r[2],a=s&&c.childNodes[s];", code);
     }
@@ -349,7 +350,7 @@ public class AstToJavaScriptTests
             """
             m = (z.document, !!v.documentElement && !!v.head && 'function' == typeof v.addEventListener && v.createElement, ~a.indexOf('MSIE') || a.indexOf('Trident/'), '___FONT_AWESOME___')
             """);
-        var code = program.ToJavaScriptString(s_customCompactWriterOptions, AstToJavaScriptOptions.Default);
+        var code = program.ToJavaScript(s_customCompactWriterOptions, AstToJavaScriptOptions.Default);
 
         Assert.Equal("m=(z.document,!!v.documentElement&&!!v.head&&'function'==typeof v.addEventListener&&v.createElement,~a.indexOf('MSIE')||a.indexOf('Trident/'),'___FONT_AWESOME___');", code);
     }
@@ -373,7 +374,7 @@ public class AstToJavaScriptTests
                     }
                 }();
             """);
-        var code = program.ToJavaScriptString(s_customCompactWriterOptions, AstToJavaScriptOptions.Default);
+        var code = program.ToJavaScript(s_customCompactWriterOptions, AstToJavaScriptOptions.Default);
 
         Assert.Equal("var h=(c.navigator||{}).userAgent,a=void 0===h?'':h,z=c,v=l,m=(z.document,!!v.documentElement&&!!v.head&&'function'==typeof v.addEventListener&&v.createElement,~a.indexOf('MSIE')||a.indexOf('Trident/'),'___FONT_AWESOME___'),e=function(){try{return!0;}catch(c){return!1;}}();", code);
     }
@@ -388,7 +389,7 @@ public class AstToJavaScriptTests
             children: (b = O, 'g' === b.tag ? b.children : [b])
             }
             """);
-        var code = program.ToJavaScriptString(s_customCompactWriterOptions, AstToJavaScriptOptions.Default);
+        var code = program.ToJavaScript(s_customCompactWriterOptions, AstToJavaScriptOptions.Default);
 
         Assert.Equal("var a={children:(b=O,'g'===b.tag?b.children:[b])};", code);
     }
@@ -407,7 +408,7 @@ public class AstToJavaScriptTests
             		Trace.Write('Error: data.setProperty(', SelectionLanguage, ', ', XPath, ') because ' + l.message)
             	} else h = e.HttpRequest.responseText;
             """);
-        var code = program.ToJavaScriptString(s_customCompactWriterOptions, AstToJavaScriptOptions.Default);
+        var code = program.ToJavaScript(s_customCompactWriterOptions, AstToJavaScriptOptions.Default);
 
         Assert.Equal("if(e.IsWebService)if(h=e.HttpRequest.responseXML,'undefined'==typeof h)Trace.Write('Error: '+e.UniqueId+' data has no properties!'),m=!0;else try{h.setProperty('SelectionLanguage','XPath');}catch(l){Trace.Write('Error: data.setProperty(',SelectionLanguage,', ',XPath,') because '+l.message);}else h=e.HttpRequest.responseText;", code);
     }
@@ -429,7 +430,7 @@ public class AstToJavaScriptTests
 
         var parser = new Parser();
         var program = parser.ParseScript(source);
-        var code = AstToJavaScript.ToJavaScriptString(program, s_formattingOptions);
+        var code = AstToJavaScript.ToJavaScript(program, s_formattingOptions);
 
         var expected =
             """
@@ -460,7 +461,7 @@ public class AstToJavaScriptTests
             """
             h='M'+(+new Date).toString(36)
             """);
-        var code = program.ToJavaScriptString(s_customCompactWriterOptions, AstToJavaScriptOptions.Default);
+        var code = program.ToJavaScript(s_customCompactWriterOptions, AstToJavaScriptOptions.Default);
 
         Assert.Equal("h='M'+(+new Date).toString(36);", code);
     }
@@ -477,7 +478,7 @@ public class AstToJavaScriptTests
                 resolve(files);
             };
             """);
-        var code = program.ToJavaScriptString(s_customCompactWriterOptions, AstToJavaScriptOptions.Default);
+        var code = program.ToJavaScript(s_customCompactWriterOptions, AstToJavaScriptOptions.Default);
 
         Assert.Equal("input.onchange=async e=>{const files=await readFiles(input.files,readMode);document.body.removeChild(input);resolve(files);};", code);
     }
@@ -490,7 +491,7 @@ public class AstToJavaScriptTests
             """
             export const Base = LegacyElementMixin(HTMLElement).prototype;
             """);
-        var code = program.ToJavaScriptString(s_customCompactWriterOptions, AstToJavaScriptOptions.Default);
+        var code = program.ToJavaScript(s_customCompactWriterOptions, AstToJavaScriptOptions.Default);
 
         Assert.Equal("export const Base=LegacyElementMixin(HTMLElement).prototype;", code);
     }
@@ -503,7 +504,7 @@ public class AstToJavaScriptTests
             """
             let {is} = getIsExtends(element);
             """);
-        var code = program.ToJavaScriptString(s_customCompactWriterOptions, AstToJavaScriptOptions.Default);
+        var code = program.ToJavaScript(s_customCompactWriterOptions, AstToJavaScriptOptions.Default);
 
         Assert.Equal("let{is}=getIsExtends(element);", code);
     }
@@ -517,7 +518,7 @@ public class AstToJavaScriptTests
             export const wrap =
               (window['ShadyDOM'] && window['ShadyDOM']['wrap']) || (node => node);
             """);
-        var code = program.ToJavaScriptString(s_customCompactWriterOptions, AstToJavaScriptOptions.Default);
+        var code = program.ToJavaScript(s_customCompactWriterOptions, AstToJavaScriptOptions.Default);
 
         Assert.Equal("export const wrap=window['ShadyDOM']&&window['ShadyDOM']['wrap']||(node=>node);", code);
     }
@@ -530,7 +531,7 @@ public class AstToJavaScriptTests
             """
             export {}
             """);
-        var code = program.ToJavaScriptString(s_customCompactWriterOptions, AstToJavaScriptOptions.Default);
+        var code = program.ToJavaScript(s_customCompactWriterOptions, AstToJavaScriptOptions.Default);
 
         Assert.Equal("export{};", code);
     }
@@ -545,7 +546,7 @@ public class AstToJavaScriptTests
               mutablePropertyChange = MutableData._mutablePropertyChange;
             })();
             """);
-        var code = program.ToJavaScriptString(s_customCompactWriterOptions, AstToJavaScriptOptions.Default);
+        var code = program.ToJavaScript(s_customCompactWriterOptions, AstToJavaScriptOptions.Default);
 
         Assert.Equal("(()=>{mutablePropertyChange=MutableData._mutablePropertyChange;})();", code);
     }
@@ -561,7 +562,7 @@ public class AstToJavaScriptTests
                 return l = c
             }())
             """);
-        var code = program.ToJavaScriptString(s_customCompactWriterOptions, AstToJavaScriptOptions.Default);
+        var code = program.ToJavaScript(s_customCompactWriterOptions, AstToJavaScriptOptions.Default);
 
         Assert.Equal("var Ol,jl=new(function(){var l,h,z;return l=c;}());", code);
     }
@@ -578,7 +579,7 @@ public class AstToJavaScriptTests
                 },a:5
             }]
             """);
-        var code = program.ToJavaScriptString(s_customCompactWriterOptions, AstToJavaScriptOptions.Default);
+        var code = program.ToJavaScript(s_customCompactWriterOptions, AstToJavaScriptOptions.Default);
 
         Assert.Equal("[y,{[Symbol.iterator](){return b;},a:5}];", code);
     }
@@ -602,7 +603,7 @@ public class AstToJavaScriptTests
 
         var parser = new Parser();
         var program = parser.ParseScript(source);
-        var code = AstToJavaScript.ToJavaScriptString(program, s_formattingOptions);
+        var code = AstToJavaScript.ToJavaScript(program, s_formattingOptions);
 
         var expected =
             """
@@ -638,7 +639,7 @@ public class AstToJavaScriptTests
 
         var parser = new Parser();
         var program = parser.ParseScript(source);
-        var code = AstToJavaScript.ToJavaScriptString(program, s_formattingOptions);
+        var code = AstToJavaScript.ToJavaScript(program, s_formattingOptions);
 
         var expected =
             """
@@ -680,7 +681,7 @@ public class AstToJavaScriptTests
 
         var parser = new Parser();
         var program = parser.ParseScript(source);
-        var code = AstToJavaScript.ToJavaScriptString(program, s_formattingOptions);
+        var code = AstToJavaScript.ToJavaScript(program, s_formattingOptions);
 
         Assert.Equal(source, code);
     }
@@ -790,7 +791,7 @@ public class AstToJavaScriptTests
 
         var parser = new Parser();
         var program = parser.ParseExpression(source);
-        var code = AstToJavaScript.ToJavaScriptString(program, format);
+        var code = AstToJavaScript.ToJavaScript(program, format);
         Assert.Equal(expectedCode ?? source, code);
 
         var programReparsed = parser.ParseExpression(code);
@@ -833,7 +834,7 @@ public class AstToJavaScriptTests
         if (!expectParseError)
         {
             var program = parser.ParseExpression(source);
-            var code = AstToJavaScript.ToJavaScriptString(program, format: true);
+            var code = AstToJavaScript.ToJavaScript(program, format: true);
             Assert.Equal(source, code);
         }
         else
@@ -854,7 +855,7 @@ public class AstToJavaScriptTests
         if (!expectParseError)
         {
             var program = parser.ParseModule(source);
-            var code = AstToJavaScript.ToJavaScriptString(program, format: true);
+            var code = AstToJavaScript.ToJavaScript(program, format: true);
             Assert.Equal(source, code);
         }
         else
@@ -894,9 +895,13 @@ public class AstToJavaScriptTests
             ExperimentalESFeatures = experimentalESFeatures,
         };
 
-        var (parserOptionsFactory, parserFactory, convertToCode) = (new Func<bool, RegExpParseMode, ExperimentalESFeatures, bool, ParserOptions>(CreateParserOptions<ParserOptions>),
-            new Func<ParserOptions, Parser>(opts => new Parser(opts)),
-            new Func<Node, bool, string>((node, format) => node.ToJavaScriptString(format)));
+        var (parserOptionsFactory, parserFactory, convertToCode) = fixture.StartsWith("JSX", StringComparison.Ordinal)
+            ? (CreateParserOptions<JsxParserOptions>,
+                opts => new JsxParser((JsxParserOptions)opts),
+                (node, format) => node.ToJsx(format))
+            : (new Func<bool, RegExpParseMode, ExperimentalESFeatures, bool, ParserOptions>(CreateParserOptions<ParserOptions>),
+                new Func<ParserOptions, IParser>(opts => new Parser(opts)),
+                new Func<Node, bool, string>((node, format) => node.ToJavaScript(format)));
 
         string treeFilePath, failureFilePath, moduleFilePath;
         var jsFilePath = Path.Combine(ParserTests.GetFixturesPath(), ParserTests.FixturesDirName, fixture);
@@ -976,7 +981,7 @@ public class AstToJavaScriptTests
 
         var actualAst = Parse(sourceType, generatedScript, parserOptions, parserFactory);
 
-        // This compares just the node type.
+        // This compares the node types only.
         // TODO: more detailed comparison.
         Assert.Equal(expectedAst.DescendantNodesAndSelf(), actualAst.DescendantNodesAndSelf(), NodeTypeEqualityComparer.Default);
 
@@ -984,13 +989,13 @@ public class AstToJavaScriptTests
 
         actualAst = Parse(sourceType, generatedScript, parserOptions, parserFactory);
 
-        // This compares just the node type.
+        // This compares the node types only.
         // TODO: more detailed comparison.
         Assert.Equal(expectedAst.DescendantNodesAndSelf(), actualAst.DescendantNodesAndSelf(), NodeTypeEqualityComparer.Default);
     }
 
     private static Program Parse(SourceType sourceType, string source,
-        ParserOptions parserOptions, Func<ParserOptions, Parser> parserFactory)
+        ParserOptions parserOptions, Func<ParserOptions, IParser> parserFactory)
     {
         var parser = parserFactory(parserOptions);
         var program = sourceType == SourceType.Script ? (Program)parser.ParseScript(source) : parser.ParseModule(source);

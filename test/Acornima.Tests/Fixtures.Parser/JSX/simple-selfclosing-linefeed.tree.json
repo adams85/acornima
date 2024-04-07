@@ -1,0 +1,94 @@
+{
+  "type": "Program",
+  "body": [
+    {
+      "type": "ExpressionStatement",
+      "expression": {
+        "type": "JSXElement",
+        "openingElement": {
+          "type": "JSXOpeningElement",
+          "name": {
+            "type": "JSXIdentifier",
+            "name": "a",
+            "range": [
+              1,
+              2
+            ],
+            "loc": {
+              "start": {
+                "line": 1,
+                "column": 1
+              },
+              "end": {
+                "line": 1,
+                "column": 2
+              }
+            }
+          },
+          "selfClosing": true,
+          "attributes": [],
+          "range": [
+            0,
+            5
+          ],
+          "loc": {
+            "start": {
+              "line": 1,
+              "column": 0
+            },
+            "end": {
+              "line": 2,
+              "column": 2
+            }
+          }
+        },
+        "children": [],
+        "closingElement": null,
+        "range": [
+          0,
+          5
+        ],
+        "loc": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 2,
+            "column": 2
+          }
+        }
+      },
+      "range": [
+        0,
+        5
+      ],
+      "loc": {
+        "start": {
+          "line": 1,
+          "column": 0
+        },
+        "end": {
+          "line": 2,
+          "column": 2
+        }
+      }
+    }
+  ],
+  "sourceType": "script",
+  "strict": false,
+  "range": [
+    0,
+    6
+  ],
+  "loc": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 3,
+      "column": 0
+    }
+  }
+}

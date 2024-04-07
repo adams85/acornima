@@ -1,7 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
 using Acornima.Ast;
-using Acornima.Extras.Properties;
 using Acornima.Helpers;
 
 namespace Acornima;
@@ -261,7 +260,7 @@ public partial class AstToJavaScriptConverter : AstVisitor
         }
 
         var op = AssignmentExpression.OperatorToString(node.Operator)
-            ?? throw new InvalidOperationException(ExceptionMessages.InvalidAssignmentOperator);
+            ?? throw new InvalidOperationException(ExtrasExceptionMessages.InvalidAssignmentOperator);
 
         _writeContext.SetNodeProperty(nameof(node.Operator), static node => node.As<AssignmentExpression>().Operator);
         Writer.WritePunctuator(op, TokenFlags.InBetween | TokenFlags.SurroundingSpaceRecommended | TokenFlags.IsAssignmentOperator, ref _writeContext);
@@ -336,7 +335,7 @@ public partial class AstToJavaScriptConverter : AstVisitor
         var op = (node.Type == NodeType.LogicalExpression
             ? LogicalExpression.OperatorToString(node.Operator)
             : NonLogicalBinaryExpression.OperatorToString(node.Operator))
-            ?? throw new InvalidOperationException(ExceptionMessages.InvalidBinaryOperator);
+            ?? throw new InvalidOperationException(ExtrasExceptionMessages.InvalidBinaryOperator);
 
         _writeContext.SetNodeProperty(nameof(node.Operator), static node => node.As<BinaryExpression>().Operator);
         if (op[0].IsBasicLatinLetter())
@@ -1695,7 +1694,7 @@ public partial class AstToJavaScriptConverter : AstVisitor
         var op = (node.Type == NodeType.UpdateExpression
             ? UpdateExpression.OperatorToString(node.Operator)
             : NonUpdateUnaryExpression.OperatorToString(node.Operator))
-            ?? throw new InvalidOperationException(ExceptionMessages.InvalidUnaryOperator);
+            ?? throw new InvalidOperationException(ExtrasExceptionMessages.InvalidUnaryOperator);
 
         if (node.Prefix)
         {

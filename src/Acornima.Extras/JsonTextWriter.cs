@@ -20,7 +20,6 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using Acornima.Extras.Properties;
 using Acornima.Helpers;
 
 namespace Acornima;
@@ -56,7 +55,7 @@ internal sealed class JsonTextWriter : JsonWriter
         _writer = writer ?? throw new ArgumentNullException(nameof(writer));
 
         if (!string.IsNullOrWhiteSpace(indent))
-            throw new ArgumentException(ExceptionMessages.InvalidIndent, nameof(indent));
+            throw new ArgumentException(ExtrasExceptionMessages.InvalidIndent, nameof(indent));
         _indent = indent ?? "";
 
         _counters = new ArrayList<int>();
@@ -91,10 +90,10 @@ internal sealed class JsonTextWriter : JsonWriter
             throw new ArgumentNullException(nameof(name));
 
         if (Depth == 0 || _structures.Peek() != StructureKind.Object)
-            throw new InvalidOperationException(ExceptionMessages.JsonMemberOutsideObject);
+            throw new InvalidOperationException(ExtrasExceptionMessages.JsonMemberOutsideObject);
 
         if (_memberName != null)
-            throw new InvalidOperationException(string.Format(ExceptionMessages.MissingJsonMemberValue, _memberName));
+            throw new InvalidOperationException(string.Format(ExtrasExceptionMessages.MissingJsonMemberValue, _memberName));
 
         _memberName = name;
     }
@@ -171,10 +170,10 @@ internal sealed class JsonTextWriter : JsonWriter
     private void EndStructured()
     {
         if (Depth == 0)
-            throw new InvalidOperationException(ExceptionMessages.NoUnterminatedJsonStructure);
+            throw new InvalidOperationException(ExtrasExceptionMessages.NoUnterminatedJsonStructure);
 
         if (_memberName != null)
-            throw new InvalidOperationException(string.Format(ExceptionMessages.MissingJsonMemberValue, _memberName));
+            throw new InvalidOperationException(string.Format(ExtrasExceptionMessages.MissingJsonMemberValue, _memberName));
 
         if (_counters.Peek() > 0)
         {
@@ -193,14 +192,14 @@ internal sealed class JsonTextWriter : JsonWriter
         Debug.Assert(kind == TokenKind.String || !string.IsNullOrEmpty(token));
 
         if (Depth == 0 && kind == TokenKind.Scalar)
-            throw new InvalidOperationException(ExceptionMessages.JsonTextMustStartWithObjectOrArray);
+            throw new InvalidOperationException(ExtrasExceptionMessages.JsonTextMustStartWithObjectOrArray);
 
         var writer = _writer;
 
         if (Depth > 0)
         {
             if (_structures.Peek() == StructureKind.Object && _memberName == null)
-                throw new InvalidOperationException(ExceptionMessages.UndefinedJsonMemberName);
+                throw new InvalidOperationException(ExtrasExceptionMessages.UndefinedJsonMemberName);
 
             if (_counters.Peek() > 0)
                 writer.Write(',');

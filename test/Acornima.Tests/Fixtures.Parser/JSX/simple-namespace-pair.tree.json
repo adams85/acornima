@@ -1,0 +1,198 @@
+{
+  "type": "Program",
+  "body": [
+    {
+      "type": "ExpressionStatement",
+      "expression": {
+        "type": "JSXElement",
+        "openingElement": {
+          "type": "JSXOpeningElement",
+          "name": {
+            "type": "JSXNamespacedName",
+            "namespace": {
+              "type": "JSXIdentifier",
+              "name": "svg",
+              "range": [
+                1,
+                4
+              ],
+              "loc": {
+                "start": {
+                  "line": 1,
+                  "column": 1
+                },
+                "end": {
+                  "line": 1,
+                  "column": 4
+                }
+              }
+            },
+            "name": {
+              "type": "JSXIdentifier",
+              "name": "path",
+              "range": [
+                5,
+                9
+              ],
+              "loc": {
+                "start": {
+                  "line": 1,
+                  "column": 5
+                },
+                "end": {
+                  "line": 1,
+                  "column": 9
+                }
+              }
+            },
+            "range": [
+              1,
+              9
+            ],
+            "loc": {
+              "start": {
+                "line": 1,
+                "column": 1
+              },
+              "end": {
+                "line": 1,
+                "column": 9
+              }
+            }
+          },
+          "selfClosing": false,
+          "attributes": [],
+          "range": [
+            0,
+            10
+          ],
+          "loc": {
+            "start": {
+              "line": 1,
+              "column": 0
+            },
+            "end": {
+              "line": 1,
+              "column": 10
+            }
+          }
+        },
+        "children": [],
+        "closingElement": {
+          "type": "JSXClosingElement",
+          "name": {
+            "type": "JSXNamespacedName",
+            "namespace": {
+              "type": "JSXIdentifier",
+              "name": "svg",
+              "range": [
+                12,
+                15
+              ],
+              "loc": {
+                "start": {
+                  "line": 1,
+                  "column": 12
+                },
+                "end": {
+                  "line": 1,
+                  "column": 15
+                }
+              }
+            },
+            "name": {
+              "type": "JSXIdentifier",
+              "name": "path",
+              "range": [
+                16,
+                20
+              ],
+              "loc": {
+                "start": {
+                  "line": 1,
+                  "column": 16
+                },
+                "end": {
+                  "line": 1,
+                  "column": 20
+                }
+              }
+            },
+            "range": [
+              12,
+              20
+            ],
+            "loc": {
+              "start": {
+                "line": 1,
+                "column": 12
+              },
+              "end": {
+                "line": 1,
+                "column": 20
+              }
+            }
+          },
+          "range": [
+            10,
+            21
+          ],
+          "loc": {
+            "start": {
+              "line": 1,
+              "column": 10
+            },
+            "end": {
+              "line": 1,
+              "column": 21
+            }
+          }
+        },
+        "range": [
+          0,
+          21
+        ],
+        "loc": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 21
+          }
+        }
+      },
+      "range": [
+        0,
+        21
+      ],
+      "loc": {
+        "start": {
+          "line": 1,
+          "column": 0
+        },
+        "end": {
+          "line": 1,
+          "column": 21
+        }
+      }
+    }
+  ],
+  "sourceType": "script",
+  "strict": false,
+  "range": [
+    0,
+    22
+  ],
+  "loc": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 2,
+      "column": 0
+    }
+  }
+}

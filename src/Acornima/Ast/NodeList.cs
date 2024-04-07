@@ -7,7 +7,7 @@ using Acornima.Helpers;
 
 namespace Acornima.Ast;
 
-using static Helpers.ExceptionHelper;
+using static ExceptionHelper;
 
 [DebuggerDisplay($"{nameof(Count)} = {{{nameof(Count)}}}")]
 [DebuggerTypeProxy(typeof(NodeList<>.DebugView))]

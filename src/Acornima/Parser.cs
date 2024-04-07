@@ -2,27 +2,33 @@ using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Acornima.Ast;
-using Acornima.Properties;
+using Acornima.Helpers;
 
 namespace Acornima;
 
-using static Helpers.ExceptionHelper;
+using static ExceptionHelper;
 
 // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/index.js
 
-public sealed partial class Parser
+public sealed partial class Parser : IParser
 {
     private readonly ParserOptions _options;
     private readonly TokenizerOptions _tokenizerOptions;
-    private Tokenizer _tokenizer;
+    internal Tokenizer _tokenizer;
+    private readonly IExtension? _extension;
 
     public Parser() : this(ParserOptions.Default) { }
 
-    public Parser(ParserOptions options)
+    public Parser(ParserOptions options) : this(options, extension: null) { }
+
+    internal Parser(ParserOptions options, IExtension? extension)
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
-        _tokenizerOptions = options.GetTokenizerOptions();
-        _tokenizer = new Tokenizer(_tokenizerOptions);
+        _extension = extension;
+        _tokenizer = extension is null
+            ? new Tokenizer(options.GetTokenizerOptions(), extension: null)
+            : extension.CreateTokenizer(options.GetTokenizerOptions());
+        _tokenizerOptions = _tokenizer.Options;
         _isReservedWord = _isReservedWordBind = null!;
     }
 
@@ -30,9 +36,7 @@ public sealed partial class Parser
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Script ParseScript(string input, string? sourceFile = null, bool strict = false)
-    {
-        return ParseScript(input ?? ThrowArgumentNullException<string>(nameof(input)), 0, input.Length, sourceFile, strict);
-    }
+        => ParseScript(input ?? ThrowArgumentNullException<string>(nameof(input)), 0, input.Length, sourceFile, strict);
 
     public Script ParseScript(string input, int start, int length, string? sourceFile = null, bool strict = false)
     {
@@ -60,9 +64,7 @@ public sealed partial class Parser
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Module ParseModule(string input, string? sourceFile = null)
-    {
-        return ParseModule(input ?? ThrowArgumentNullException<string>(nameof(input)), 0, input.Length, sourceFile);
-    }
+        => ParseModule(input ?? ThrowArgumentNullException<string>(nameof(input)), 0, input.Length, sourceFile);
 
     public Module ParseModule(string input, int start, int length, string? sourceFile = null)
     {
@@ -90,9 +92,7 @@ public sealed partial class Parser
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Expression ParseExpression(string input, string? sourceFile = null, bool strict = false)
-    {
-        return ParseExpression(input ?? ThrowArgumentNullException<string>(nameof(input)), 0, input.Length, sourceFile, strict);
-    }
+        => ParseExpression(input ?? ThrowArgumentNullException<string>(nameof(input)), 0, input.Length, sourceFile, strict);
 
     public Expression ParseExpression(string input, int start, int length, string? sourceFile = null, bool strict = false)
     {
@@ -117,5 +117,12 @@ public sealed partial class Parser
         {
             ReleaseLargeBuffers();
         }
+    }
+
+    internal interface IExtension
+    {
+        Tokenizer CreateTokenizer(TokenizerOptions tokenizerOptions);
+
+        Expression ParseExprAtom();
     }
 }

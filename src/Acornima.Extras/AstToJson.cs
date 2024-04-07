@@ -23,22 +23,22 @@ public record class AstToJsonOptions
 
 public static class AstToJson
 {
-    public static string ToJsonString(this Node node)
+    public static string ToJson(this Node node)
     {
-        return ToJsonString(node, indent: null);
+        return ToJson(node, indent: null);
     }
 
-    public static string ToJsonString(this Node node, string? indent)
+    public static string ToJson(this Node node, string? indent)
     {
-        return ToJsonString(node, AstToJsonOptions.Default, indent);
+        return ToJson(node, AstToJsonOptions.Default, indent);
     }
 
-    public static string ToJsonString(this Node node, AstToJsonOptions options)
+    public static string ToJson(this Node node, AstToJsonOptions options)
     {
-        return ToJsonString(node, options, indent: null);
+        return ToJson(node, options, indent: null);
     }
 
-    public static string ToJsonString(this Node node, AstToJsonOptions options, string? indent)
+    public static string ToJson(this Node node, AstToJsonOptions options, string? indent)
     {
         using (var writer = new StringWriter())
         {

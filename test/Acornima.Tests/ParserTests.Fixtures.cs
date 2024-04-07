@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Acornima.Ast;
+using Acornima.Jsx;
 using DiffEngine;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -59,9 +60,13 @@ public partial class ParserTests
             ExperimentalESFeatures = experimentalESFeatures,
         };
 
-        var (parserOptionsFactory, parserFactory, conversionDefaultOptions) = (new Func<bool, RegExpParseMode, ExperimentalESFeatures, ParserOptions>(CreateParserOptions<ParserOptions>),
-            new Func<ParserOptions, Parser>(opts => new Parser(opts)),
-            AstToJsonOptions.Default);
+        var (parserOptionsFactory, parserFactory, conversionDefaultOptions) = fixture.StartsWith("JSX", StringComparison.Ordinal)
+            ? (CreateParserOptions<JsxParserOptions>,
+                opts => new JsxParser((JsxParserOptions)opts),
+                JsxAstToJsonOptions.Default)
+            : (new Func<bool, RegExpParseMode, ExperimentalESFeatures, ParserOptions>(CreateParserOptions<ParserOptions>),
+                new Func<ParserOptions, IParser>(opts => new Parser(opts)),
+                AstToJsonOptions.Default);
 
         string treeFilePath, failureFilePath, moduleFilePath;
         var jsFilePath = Path.Combine(GetFixturesPath(), FixturesDirName, fixture);
@@ -204,13 +209,13 @@ public partial class ParserTests
     }
 
     private static string ParseAndFormat(SourceType sourceType, string source,
-        ParserOptions parserOptions, Func<ParserOptions, Parser> parserFactory,
+        ParserOptions parserOptions, Func<ParserOptions, IParser> parserFactory,
         AstToJsonOptions conversionOptions, bool minimize = false)
     {
         var parser = parserFactory(parserOptions);
         var program = sourceType == SourceType.Script ? (Program)parser.ParseScript(source) : parser.ParseModule(source);
 
-        var json = program.ToJsonString(conversionOptions, indent: "  ");
+        var json = program.ToJson(conversionOptions, indent: "  ");
         if (minimize)
         {
             json = JsonConvert.DeserializeObject<JObject>(json, JsonDeserializationSettings)!.ToString(Formatting.None);

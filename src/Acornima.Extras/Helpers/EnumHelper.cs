@@ -16,29 +16,25 @@ internal static class EnumHelper
         value ? flag : fallbackFlag;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe bool HasFlagFast<TEnum>(this TEnum flags, TEnum flag) where TEnum : unmanaged, Enum
+    public static bool HasFlagFast<TEnum>(this TEnum flags, TEnum flag) where TEnum : unmanaged, Enum
     {
         // Based on: https://github.com/dotnet/csharplang/discussions/1993#discussioncomment-104840
 
-        // NOTE: We could as well use the Unsafe class to avoid pointer casting.
-        // However, AllowUnsafeBlocks needs to be enabled anyway because of SkipLocalsInit, plus
-        // Unsafe.As achieves pretty much the same while resulting in code that's harder to read.
-
-        if (sizeof(TEnum) == sizeof(sbyte))
+        if (Unsafe.SizeOf<TEnum>() == Unsafe.SizeOf<byte>())
         {
-            return (*(sbyte*)&flags & *(sbyte*)&flag) == *(sbyte*)&flag;
+            return (Unsafe.As<TEnum, byte>(ref flags) & Unsafe.As<TEnum, byte>(ref flag)) == Unsafe.As<TEnum, byte>(ref flag);
         }
-        else if (sizeof(TEnum) == sizeof(short))
+        else if (Unsafe.SizeOf<TEnum>() == Unsafe.SizeOf<ushort>())
         {
-            return (*(short*)&flags & *(short*)&flag) == *(short*)&flag;
+            return (Unsafe.As<TEnum, ushort>(ref flags) & Unsafe.As<TEnum, ushort>(ref flag)) == Unsafe.As<TEnum, ushort>(ref flag);
         }
-        else if (sizeof(TEnum) == sizeof(int))
+        else if (Unsafe.SizeOf<TEnum>() == Unsafe.SizeOf<uint>())
         {
-            return (*(int*)&flags & *(int*)&flag) == *(int*)&flag;
+            return (Unsafe.As<TEnum, uint>(ref flags) & Unsafe.As<TEnum, uint>(ref flag)) == Unsafe.As<TEnum, uint>(ref flag);
         }
-        else if (sizeof(TEnum) == sizeof(long))
+        else if (Unsafe.SizeOf<TEnum>() == Unsafe.SizeOf<ulong>())
         {
-            return (*(long*)&flags & *(long*)&flag) == *(long*)&flag;
+            return (Unsafe.As<TEnum, ulong>(ref flags) & Unsafe.As<TEnum, ulong>(ref flag)) == Unsafe.As<TEnum, ulong>(ref flag);
         }
         else
         {

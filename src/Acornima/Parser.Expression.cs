@@ -6,7 +6,6 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using Acornima.Ast;
 using Acornima.Helpers;
-using Acornima.Properties;
 
 namespace Acornima;
 
@@ -133,7 +132,7 @@ public partial class Parser
     // property assignment in contexts where both object expression
     // and object pattern might appear (so it's possible to raise
     // delayed syntax error at correct position).
-    private Expression ParseExpression(ref DestructuringErrors destructuringErrors, ExpressionContext context = ExpressionContext.Default)
+    internal Expression ParseExpression(ref DestructuringErrors destructuringErrors, ExpressionContext context = ExpressionContext.Default)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/expression.js > `pp.parseExpression = function`
 
@@ -159,7 +158,7 @@ public partial class Parser
     // Parse an assignment expression. This includes applications of
     // operators like `+=`.
     [MethodImpl((MethodImplOptions)512  /* AggressiveOptimization */)]
-    private Expression ParseMaybeAssign(ref DestructuringErrors destructuringErrors, ExpressionContext context = ExpressionContext.Default)
+    internal Expression ParseMaybeAssign(ref DestructuringErrors destructuringErrors, ExpressionContext context = ExpressionContext.Default)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/expression.js > `pp.parseMaybeAssign = function`
 
@@ -758,7 +757,7 @@ public partial class Parser
     // `new`, or an expression wrapped in punctuation like `()`, `[]`,
     // or `{}`.
     [MethodImpl((MethodImplOptions)512  /* AggressiveOptimization */)]
-    private Expression ParseExprAtom(ref DestructuringErrors destructuringErrors, ExpressionContext context = ExpressionContext.Default)
+    internal Expression ParseExprAtom(ref DestructuringErrors destructuringErrors, ExpressionContext context = ExpressionContext.Default)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/expression.js > `pp.parseExprAtom = function`
 
@@ -766,6 +765,7 @@ public partial class Parser
 
         var startMarker = StartNode();
 
+        Expression? expr;
         bool canBeArrow;
 
         switch (_tokenizer._type.Kind)
@@ -908,7 +908,7 @@ public partial class Parser
 
             case TokenKind.Punctuator when _tokenizer._type == TokenType.ParenLeft:
                 canBeArrow = _potentialArrowAt == _tokenizer._start;
-                var expr = ParseParenAndDistinguishExpression(canBeArrow, context & ~ExpressionContext.ForNew);
+                expr = ParseParenAndDistinguishExpression(canBeArrow, context & ~ExpressionContext.ForNew);
                 if (!IsNullRef(ref destructuringErrors))
                 {
                     if (destructuringErrors.ParenthesizedAssign < 0 && !IsSimpleAssignTarget(expr))
@@ -953,6 +953,11 @@ public partial class Parser
                 return ExitRecursion(ParseDecoratedClassExpression(startMarker));
 
             default:
+                if (_extension is not null)
+                {
+                    return _extension.ParseExprAtom();
+                }
+
                 return Unexpected<Expression>();
         }
     }

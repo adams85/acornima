@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Acornima\Acornima.csproj" />
+    <ProjectReference Include="..\Acornima.SourceGenerators\Acornima.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>
@@ -31,19 +32,30 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Properties\ExceptionMessages.Designer.cs">
-      <DependentUpon>ExceptionMessages.resx</DependentUpon>
+    <Compile Update="Properties\ExtrasExceptionMessages.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ExtrasExceptionMessages.resx</DependentUpon>
+    </Compile>
+    <Compile Update="Properties\JsxSyntaxErrorMessages.Designer.cs">
+      <DependentUpon>JsxSyntaxErrorMessages.resx</DependentUpon>
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
     </Compile>
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Update="Properties\ExceptionMessages.resx">
+    <EmbeddedResource Update="Properties\ExtrasExceptionMessages.resx">
       <SubType>Designer</SubType>
-      <LastGenOutput>ExceptionMessages.Designer.cs</LastGenOutput>
+      <LastGenOutput>ExtrasExceptionMessages.Designer.cs</LastGenOutput>
       <Generator>ResXFileCodeGenerator</Generator>
-      <CustomToolNamespace>Acornima.Extras.Properties</CustomToolNamespace>
+      <CustomToolNamespace>Acornima</CustomToolNamespace>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Properties\JsxSyntaxErrorMessages.resx">
+      <SubType>Designer</SubType>
+      <LastGenOutput>JsxSyntaxErrorMessages.Designer.cs</LastGenOutput>
+      <Generator>ResXFileCodeGenerator</Generator>
+      <CustomToolNamespace>Acornima.Jsx</CustomToolNamespace>
     </EmbeddedResource>
   </ItemGroup>
 

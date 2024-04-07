@@ -23,7 +23,7 @@ public sealed partial class FunctionDeclaration : Declaration, IFunction
     }
 
     /// <remarks>
-    /// Diverging from the ESTree specification, <see langword="null"/> is used to represent an anonymous default exported function (instead of introducing <see langword="AnonymousDefaultExportedFunctionDeclaration"/>).
+    /// Diverging from the ESTree specification, <see langword="null"/> is used to indicate an anonymous default exported function (instead of introducing <see langword="AnonymousDefaultExportedFunctionDeclaration"/>).
     /// </remarks>
     public Identifier? Id { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     /// <remarks>

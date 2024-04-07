@@ -2,7 +2,6 @@ using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Acornima.Ast;
-using Acornima.Extras.Properties;
 using Acornima.Helpers;
 
 namespace Acornima;
@@ -73,7 +72,7 @@ public partial class JavaScriptTextWriter
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private readonly Delegate EnsureNodePropertyAccessor()
         {
-            return _nodePropertyAccessor ?? ThrowInvalidOperationException<Delegate>(ExceptionMessages.WriteContextHasNoAssociatedProperty);
+            return _nodePropertyAccessor ?? ThrowInvalidOperationException<Delegate>(ExtrasExceptionMessages.WriteContextHasNoAssociatedProperty);
         }
 
         private readonly NodePropertyValueAccessor EnsureNodePropertyValueAccessor()
@@ -84,7 +83,7 @@ public partial class JavaScriptTextWriter
             }
 
             EnsureNodePropertyAccessor();
-            return ThrowInvalidOperationException<NodePropertyValueAccessor>(ExceptionMessages.WriteContextHasAssociatedNodeListProperty);
+            return ThrowInvalidOperationException<NodePropertyValueAccessor>(ExtrasExceptionMessages.WriteContextHasAssociatedNodeListProperty);
         }
 
         private readonly NodePropertyListValueHelper EnsureNodePropertyListValueAccessor()
@@ -96,7 +95,7 @@ public partial class JavaScriptTextWriter
             }
 
             EnsureNodePropertyAccessor();
-            return ThrowInvalidOperationException<NodePropertyListValueHelper>(ExceptionMessages.WriteContextHasAssociatedSingleNodeProperty);
+            return ThrowInvalidOperationException<NodePropertyListValueHelper>(ExtrasExceptionMessages.WriteContextHasAssociatedSingleNodeProperty);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

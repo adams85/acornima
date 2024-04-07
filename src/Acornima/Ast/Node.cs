@@ -5,7 +5,6 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Acornima.Helpers;
-using Acornima.Properties;
 
 namespace Acornima.Ast;
 
@@ -13,7 +12,7 @@ namespace Acornima.Ast;
 // * https://github.com/estree/estree
 // * https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/estree
 
-[DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(), nq}}")]
+[DebuggerDisplay($"{{{nameof(GetDebugDisplayText)}(), nq}}")]
 public abstract class Node : INode
 {
     protected Node(NodeType type)
@@ -22,6 +21,8 @@ public abstract class Node : INode
     }
 
     public NodeType Type { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
+
+    public virtual string TypeText => Type.ToString();
 
     public ChildNodes ChildNodes { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => new ChildNodes(this); }
 
@@ -75,11 +76,11 @@ public abstract class Node : INode
         return visitor.VisitExtension(this);
     }
 
-    private static Func<Node, string>? s_getDebugDisplayText;
+    private static Func<Node, string>? s_toDebugDisplayText;
 
-    private protected virtual string GetDebuggerDisplay()
+    protected virtual string GetDebugDisplayText()
     {
-        var getDebugDisplayText = LazyInitializer.EnsureInitialized(ref s_getDebugDisplayText, () =>
+        var toDebugDisplayText = LazyInitializer.EnsureInitialized(ref s_toDebugDisplayText, () =>
         {
             var astToJavaScriptType = System.Type.GetType("Acornima.AstToJavaScript, Acornima.Extras", throwOnError: false, ignoreCase: false);
             if (astToJavaScriptType is not null
@@ -92,6 +93,6 @@ public abstract class Node : INode
             return node => node.ToString()!;
         });
 
-        return $"/*{Type}*/  {getDebugDisplayText!(this)}";
+        return $"/*{TypeText}*/  {toDebugDisplayText!(this)}";
     }
 }

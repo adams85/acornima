@@ -12,18 +12,18 @@ namespace Acornima;
 #endif
 internal sealed class TokenContext
 {
-    public static readonly TokenContext BracketsInStatement = new(TokenContextKind.BraceLeft, false);
-    public static readonly TokenContext BracketsInExpression = new(TokenContextKind.BraceLeft, true);
-    public static readonly TokenContext BracketsInTemplate = new(TokenContextKind.DollarBraceLeft, false);
-    public static readonly TokenContext ParensInStatement = new(TokenContextKind.ParenLeft, false);
-    public static readonly TokenContext ParensInExpression = new(TokenContextKind.ParenLeft, true);
-    public static readonly TokenContext QuoteInTemplate = new(TokenContextKind.BackQuote, true, preserveSpace: true);
-    public static readonly TokenContext FunctionInStatement = new(TokenContextKind.Function, false);
-    public static readonly TokenContext FunctionInExpression = new(TokenContextKind.Function, true);
-    public static readonly TokenContext GeneratorFunctionInStatement = new(TokenContextKind.Function, false, generator: true);
-    public static readonly TokenContext GeneratorFunctionInExpression = new(TokenContextKind.Function, true, generator: true);
+    public static readonly TokenContext BracketsInStatement = new(TokenContextKind.BraceLeft, isExpression: false);
+    public static readonly TokenContext BracketsInExpression = new(TokenContextKind.BraceLeft, isExpression: true);
+    public static readonly TokenContext BracketsInTemplate = new(TokenContextKind.DollarBraceLeft, isExpression: false);
+    public static readonly TokenContext ParensInStatement = new(TokenContextKind.ParenLeft, isExpression: false);
+    public static readonly TokenContext ParensInExpression = new(TokenContextKind.ParenLeft, isExpression: true);
+    public static readonly TokenContext QuoteInTemplate = new(TokenContextKind.BackQuote, isExpression: true, preserveSpace: true);
+    public static readonly TokenContext FunctionInStatement = new(TokenContextKind.Function, isExpression: false);
+    public static readonly TokenContext FunctionInExpression = new(TokenContextKind.Function, isExpression: true);
+    public static readonly TokenContext GeneratorFunctionInStatement = new(TokenContextKind.Function, isExpression: false, generator: true);
+    public static readonly TokenContext GeneratorFunctionInExpression = new(TokenContextKind.Function, isExpression: true, generator: true);
 
-    private TokenContext(TokenContextKind kind, bool isExpression, bool preserveSpace = false, bool generator = false)
+    public TokenContext(TokenContextKind kind, bool isExpression, bool preserveSpace = false, bool generator = false)
     {
         Kind = kind;
         IsExpression = isExpression;

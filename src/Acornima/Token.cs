@@ -11,19 +11,19 @@ namespace Acornima;
 // used for the onToken callback and the external tokenizer.
 public readonly struct Token
 {
-    public static Token Punctuator(string value, Range range, SourceLocation location) => new Token(TokenKind.Punctuator, value, range, location);
-    public static Token Keyword(string value, Range range, SourceLocation location) => new Token(TokenKind.Keyword, value, range, location);
-    public static Token Identifier(string value, Range range, SourceLocation location) => new Token(TokenKind.Identifier, value, range, location);
+    public static Token Punctuator(string value, Range range, SourceLocation location) => new Token(TokenKind.Punctuator, value ?? throw new ArgumentNullException(nameof(value)), range, location);
+    public static Token Keyword(string value, Range range, SourceLocation location) => new Token(TokenKind.Keyword, value ?? throw new ArgumentNullException(nameof(value)), range, location);
+    public static Token Identifier(string value, Range range, SourceLocation location) => new Token(TokenKind.Identifier, value ?? throw new ArgumentNullException(nameof(value)), range, location);
     public static Token NullLiteral(Range range, SourceLocation location) => new Token(TokenKind.NullLiteral, new TokenValue(null), range, location);
     public static Token BooleanLiteral(bool value, Range range, SourceLocation location) => new Token(TokenKind.BooleanLiteral, new TokenValue(value.AsCachedObject()), range, location);
-    public static Token StringLiteral(string value, Range range, SourceLocation location) => new Token(TokenKind.StringLiteral, value, range, location);
+    public static Token StringLiteral(string value, Range range, SourceLocation location) => new Token(TokenKind.StringLiteral, value ?? throw new ArgumentNullException(nameof(value)), range, location);
     public static Token NumericLiteral(double value, Range range, SourceLocation location) => new Token(TokenKind.NumericLiteral, value, range, location);
     public static Token BigIntLiteral(BigInteger value, Range range, SourceLocation location) => new Token(TokenKind.BigIntLiteral, value, range, location);
     public static Token RegExpLiteral(RegExpValue value, RegExpParseResult parseResult, Range range, SourceLocation location) => new Token(TokenKind.RegExpLiteral, Tuple.Create(value, parseResult), range, location);
     public static Token Template(TemplateValue value, Range range, SourceLocation location) => new Token(TokenKind.Template, value, range, location);
     public static Token EOF(Range range, SourceLocation location) => new Token(TokenKind.EOF, TokenValue.EOF, range, location);
 
-    private readonly TokenValue _value;
+    internal readonly TokenValue _value;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal Token(TokenKind kind, TokenValue value, Range range, SourceLocation location)
@@ -35,6 +35,8 @@ public readonly struct Token
     }
 
     public TokenKind Kind { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
+
+    public string KindText => Kind != TokenKind.Extension ? Kind.ToString() : ((ExtensionValueProvider)_value.Value!).KindText;
 
     /// <remarks>
     /// Return value type depends on <see cref="Kind"/> as follows:<br/>
@@ -49,18 +51,13 @@ public readonly struct Token
     /// </remarks>
     public object? Value => Kind switch
     {
-        TokenKind.Punctuator or
-        TokenKind.Keyword or
-        TokenKind.Identifier or
-        TokenKind.NullLiteral or
-        TokenKind.BooleanLiteral or
-        TokenKind.StringLiteral or
-        TokenKind.EOF => _value.Value,
+        TokenKind.NullLiteral => null,
         TokenKind.NumericLiteral => _value.NumericValue,
         TokenKind.BigIntLiteral => _value.BigIntValue,
         TokenKind.RegExpLiteral => ((Tuple<RegExpValue, RegExpParseResult>)_value.Value!).Item1,
         TokenKind.Template => new TemplateValue(_value.TemplateCooked, (string)_value.Value!),
-        _ => null
+        TokenKind.Extension => ((ExtensionValueProvider)_value.Value!).GetValue(_value),
+        _ => _value.Value
     };
 
     public bool? BooleanValue { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _value.Value as bool?; }
@@ -103,7 +100,17 @@ public readonly struct Token
             TokenKind.BigIntLiteral => $"{Kind} ({_value.BigIntValue.ToString(CultureInfo.InvariantCulture)})",
             TokenKind.RegExpLiteral => $"{Kind} ({((Tuple<RegExpValue, RegExpParseResult>)_value.Value!).Item1})",
             TokenKind.Template => $"{Kind} ({new TemplateValue(_value.TemplateCooked, (string)_value.Value!)})",
+            TokenKind.Extension => ((ExtensionValueProvider)_value.Value!).ToString(_value),
             _ => Kind.ToString()
         };
+    }
+
+    internal abstract class ExtensionValueProvider
+    {
+        public abstract string KindText { get; }
+
+        public abstract object? GetValue(in TokenValue value);
+
+        public abstract string ToString(in TokenValue value);
     }
 }

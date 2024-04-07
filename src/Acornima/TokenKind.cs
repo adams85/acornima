@@ -14,4 +14,5 @@ public enum TokenKind
     RegExpLiteral,
     Template,
     EOF,
+    Extension = -1
 }

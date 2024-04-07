@@ -16,6 +16,13 @@ public record class ParserOptions
 {
     public static readonly ParserOptions Default = new();
 
+    public ParserOptions() : this(new TokenizerOptions()) { }
+
+    protected ParserOptions(TokenizerOptions tokenizerOptions)
+    {
+        _tokenizerOptions = tokenizerOptions;
+    }
+
     protected ParserOptions(ParserOptions original)
     {
         _tokenizerOptions = original._tokenizerOptions with { };
@@ -32,7 +39,7 @@ public record class ParserOptions
         _preserveParens = original._preserveParens;
     }
 
-    private readonly TokenizerOptions _tokenizerOptions = new();
+    private readonly TokenizerOptions _tokenizerOptions;
 
     public TokenizerOptions GetTokenizerOptions() => _tokenizerOptions;
 

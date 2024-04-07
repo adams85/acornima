@@ -2,7 +2,6 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Acornima.Helpers;
-using Acornima.Properties;
 
 namespace Acornima;
 

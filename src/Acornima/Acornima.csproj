@@ -60,15 +60,18 @@
     <EmbeddedResource Update="Properties\RegExpConversionErrorMessages.resx">
       <LastGenOutput>RegExpConversionErrorMessages.Designer.cs</LastGenOutput>
       <Generator>ResXFileCodeGenerator</Generator>
+      <CustomToolNamespace>Acornima</CustomToolNamespace>
     </EmbeddedResource>
     <EmbeddedResource Update="Properties\ExceptionMessages.resx">
       <SubType>Designer</SubType>
       <LastGenOutput>ExceptionMessages.Designer.cs</LastGenOutput>
       <Generator>ResXFileCodeGenerator</Generator>
+      <CustomToolNamespace>Acornima</CustomToolNamespace>
     </EmbeddedResource>
     <EmbeddedResource Update="Properties\SyntaxErrorMessages.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>SyntaxErrorMessages.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>Acornima</CustomToolNamespace>
     </EmbeddedResource>
   </ItemGroup>
 

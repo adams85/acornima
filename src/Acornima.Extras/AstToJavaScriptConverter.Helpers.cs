@@ -2,7 +2,6 @@ using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Acornima.Ast;
-using Acornima.Extras.Properties;
 using Acornima.Helpers;
 
 namespace Acornima;
@@ -382,7 +381,7 @@ public partial class AstToJavaScriptConverter
         }
         else
         {
-            throw new NotImplementedException(string.Format(ExceptionMessages.OperatorPrecedenceNotDefined, expression.GetType()));
+            throw new NotImplementedException(string.Format(ExtrasExceptionMessages.OperatorPrecedenceNotDefined, expression.GetType()));
         }
     }
 

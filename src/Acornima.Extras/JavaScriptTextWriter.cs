@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 using Acornima.Ast;
-using Acornima.Extras.Properties;
 using Acornima.Helpers;
 
 namespace Acornima;
@@ -168,7 +167,7 @@ public partial class JavaScriptTextWriter
             case TokenKind.Template:
                 break;
             default:
-                throw new InvalidOperationException(ExceptionMessages.InvalidTokenType);
+                throw new InvalidOperationException(ExtrasExceptionMessages.InvalidTokenType);
         }
     }
 
@@ -223,7 +222,7 @@ public partial class JavaScriptTextWriter
             case TokenKind.Template:
                 break;
             default:
-                throw new InvalidOperationException(ExceptionMessages.InvalidTokenType);
+                throw new InvalidOperationException(ExtrasExceptionMessages.InvalidTokenType);
         }
     }
 
@@ -286,7 +285,7 @@ public partial class JavaScriptTextWriter
                 }
                 break;
             default:
-                throw new InvalidOperationException(ExceptionMessages.InvalidTokenType);
+                throw new InvalidOperationException(ExtrasExceptionMessages.InvalidTokenType);
         }
     }
 

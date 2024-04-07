@@ -2,7 +2,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Acornima.Ast;
-using Acornima.Properties;
 
 namespace Acornima;
 
@@ -15,7 +14,7 @@ public partial class Parser
     // Predicate that tests whether the next token is of the given
     // type, and if yes, consumes it as a side effect.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private bool Eat(TokenType type)
+    internal bool Eat(TokenType type)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/parseutil.js > `pp.eat = function`
 
@@ -134,7 +133,7 @@ public partial class Parser
 
     // Expect a token of a given type. If found, consume it, otherwise,
     // raise an unexpected token error.
-    private void Expect(TokenType type)
+    internal void Expect(TokenType type)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/parseutil.js > `pp.expect = function`
 
@@ -144,7 +143,7 @@ public partial class Parser
         }
     }
 
-    private static string GetUnexpectedTokenMessage(TokenType tokenType, object? tokenValue, out string code)
+    internal static string GetUnexpectedTokenMessage(TokenType tokenType, object? tokenValue, out string code)
     {
         switch (tokenType.Kind)
         {
@@ -191,57 +190,57 @@ public partial class Parser
     }
 
     [DoesNotReturn]
-    private void Unexpected()
+    internal void Unexpected()
     {
         Unexpected(new TokenState(_tokenizer));
     }
 
     [DoesNotReturn]
-    private void Unexpected(int position, TokenType tokenType, object? tokenValue)
+    internal void Unexpected(int position, TokenType tokenType, object? tokenValue)
     {
         Unexpected(new TokenState(position, tokenType, tokenValue));
     }
 
     [DoesNotReturn]
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void Unexpected(TokenState tokenState)
+    internal void Unexpected(TokenState tokenState)
     {
         Raise(tokenState.Position, GetUnexpectedTokenMessage(tokenState.TokenType, tokenState.TokenValue, out var code), code: code);
     }
 
     [DoesNotReturn]
-    private T Unexpected<T>()
+    internal T Unexpected<T>()
     {
         Unexpected();
         return default!;
     }
 
     [DoesNotReturn]
-    private void Raise(int pos, string message, [CallerArgumentExpression(nameof(message))] string code = Tokenizer.UnknownError)
+    internal void Raise(int pos, string message, [CallerArgumentExpression(nameof(message))] string code = Tokenizer.UnknownError)
     {
         _tokenizer.Raise(pos, message, code: code);
     }
 
     [DoesNotReturn]
-    private void Raise(int pos, string messageFormat, object[] args, [CallerArgumentExpression(nameof(messageFormat))] string code = Tokenizer.UnknownError)
+    internal void Raise(int pos, string messageFormat, object?[] args, [CallerArgumentExpression(nameof(messageFormat))] string code = Tokenizer.UnknownError)
     {
         Raise(pos, string.Format(messageFormat, args), code);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private ParseError RaiseRecoverable(int pos, string message, [CallerArgumentExpression(nameof(message))] string code = Tokenizer.UnknownError)
+    internal ParseError RaiseRecoverable(int pos, string message, [CallerArgumentExpression(nameof(message))] string code = Tokenizer.UnknownError)
     {
         return _tokenizer.RaiseRecoverable(pos, message, code: code);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private ParseError RaiseRecoverable(int pos, string messageFormat, object[] args, [CallerArgumentExpression(nameof(messageFormat))] string code = Tokenizer.UnknownError)
+    internal ParseError RaiseRecoverable(int pos, string messageFormat, object?[] args, [CallerArgumentExpression(nameof(messageFormat))] string code = Tokenizer.UnknownError)
     {
         return RaiseRecoverable(pos, string.Format(messageFormat, args), code);
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private ParseError RaiseRecoverable(int pos, TokenType tokenType, object? tokenValue)
+    internal ParseError RaiseRecoverable(int pos, TokenType tokenType, object? tokenValue)
     {
         return RaiseRecoverable(pos, GetUnexpectedTokenMessage(tokenType, tokenValue, out var code), code);
     }
@@ -349,7 +348,7 @@ public partial class Parser
         }
     }
 
-    private readonly struct TokenState
+    internal readonly struct TokenState
     {
         public TokenState(int position, TokenType tokenType, object? tokenValue)
         {

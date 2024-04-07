@@ -21,7 +21,7 @@ public sealed partial class ClassDeclaration : Declaration, IClass
     }
 
     /// <remarks>
-    /// Diverging from the ESTree specification, <see langword="null"/> is used to represent an anonymous default exported class (instead of introducing <see langword="AnonymousDefaultExportedClassDeclaration"/>).
+    /// Diverging from the ESTree specification, <see langword="null"/> is used to indicate an anonymous default exported class (instead of introducing <see langword="AnonymousDefaultExportedClassDeclaration"/>).
     /// </remarks>
     public Identifier? Id { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public Expression? SuperClass { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }

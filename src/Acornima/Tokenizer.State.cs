@@ -7,6 +7,8 @@ using Acornima.Helpers;
 
 namespace Acornima;
 
+using static ExceptionHelper;
+
 // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/state.js
 
 public partial class Tokenizer
@@ -28,8 +30,8 @@ public partial class Tokenizer
 
     // The current position of the tokenizer in the input.
     internal int _position;
-    private int _lineStart;
-    private int _currentLine;
+    internal int _lineStart;
+    internal int _currentLine;
 
     // Properties of the current token:
     // Its type
@@ -64,14 +66,10 @@ public partial class Tokenizer
     internal StringPool _stringPool;
 
     public void Reset(string input, SourceType sourceType = SourceType.Script, string? sourceFile = null)
-    {
-        Reset(input, start: 0, sourceType, sourceFile);
-    }
+        => Reset(input, start: 0, sourceType, sourceFile);
 
     public void Reset(string input, int start, SourceType sourceType = SourceType.Script, string? sourceFile = null)
-    {
-        Reset(input ?? throw new ArgumentNullException(nameof(input)), start, input.Length - start, sourceType, sourceFile);
-    }
+        => Reset(input ?? ThrowArgumentNullException<string>(nameof(input)), start, input.Length - start, sourceType, sourceFile);
 
     public void Reset(string input, int start, int length, SourceType sourceType = SourceType.Script, string? sourceFile = null)
     {
@@ -119,7 +117,7 @@ public partial class Tokenizer
         _contextStack.Clear();
         _contextStack.Push(TokenContext.BracketsInStatement);
 
-        _expressionAllowed = _trackRegExpContext = trackRegExpContext;
+        _expressionAllowed = _trackRegExpContext = trackRegExpContext || _extension is not null && !_extension.SupportsMinimalContextTracking;
 
         _inModule = _strict = sourceType == SourceType.Module;
 
@@ -150,10 +148,10 @@ public partial class Tokenizer
 
     private Position CurrentPosition { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => new Position(_currentLine, _position - _lineStart); }
 
-    private TokenContext CurrentContext { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _contextStack.Peek(); }
+    internal TokenContext CurrentContext { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _contextStack.Peek(); }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void AcquireStringBuilder([NotNull] out StringBuilder? sb)
+    internal void AcquireStringBuilder([NotNull] out StringBuilder? sb)
     {
         Debug.Assert(_sb is not null, $"String builder is already in use.");
         sb = _sb!.Clear();
@@ -161,7 +159,7 @@ public partial class Tokenizer
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void ReleaseStringBuilder(ref StringBuilder? sb)
+    internal void ReleaseStringBuilder(ref StringBuilder? sb)
     {
         Debug.Assert(_sb is null, $"String builder is not in use currently.");
         _sb = sb;

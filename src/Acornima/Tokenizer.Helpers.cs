@@ -110,19 +110,19 @@ public partial class Tokenizer
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private int CharCodeAtPosition()
+    internal int CharCodeAtPosition()
     {
         return _input.CharCodeAt(_position, _endPosition);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private int CharCodeAtPosition(int offset)
+    internal int CharCodeAtPosition(int offset)
     {
         return _input.CharCodeAt(_position + offset, _endPosition);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private int FullCharCodeAtPosition()
+    internal int FullCharCodeAtPosition()
     {
         return _input.CodePointAt(_position, _endPosition);
     }
