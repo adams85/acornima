@@ -6,17 +6,19 @@ using Acornima.Helpers;
 
 namespace Acornima;
 
+using static ExceptionHelper;
+
 // Object type used to represent tokens. Note that normally, tokens
 // simply exist as properties on the parser object. This is only
 // used for the onToken callback and the external tokenizer.
 public readonly struct Token
 {
-    public static Token Punctuator(string value, Range range, in SourceLocation location) => new Token(TokenKind.Punctuator, value ?? throw new ArgumentNullException(nameof(value)), range, location);
-    public static Token Keyword(string value, Range range, in SourceLocation location) => new Token(TokenKind.Keyword, value ?? throw new ArgumentNullException(nameof(value)), range, location);
-    public static Token Identifier(string value, Range range, in SourceLocation location) => new Token(TokenKind.Identifier, value ?? throw new ArgumentNullException(nameof(value)), range, location);
+    public static Token Punctuator(string value, Range range, in SourceLocation location) => new Token(TokenKind.Punctuator, value ?? ThrowArgumentNullException<string>(nameof(value)), range, location);
+    public static Token Keyword(string value, Range range, in SourceLocation location) => new Token(TokenKind.Keyword, value ?? ThrowArgumentNullException<string>(nameof(value)), range, location);
+    public static Token Identifier(string value, Range range, in SourceLocation location) => new Token(TokenKind.Identifier, value ?? ThrowArgumentNullException<string>(nameof(value)), range, location);
     public static Token NullLiteral(Range range, in SourceLocation location) => new Token(TokenKind.NullLiteral, new TokenValue(null), range, location);
     public static Token BooleanLiteral(bool value, Range range, in SourceLocation location) => new Token(TokenKind.BooleanLiteral, new TokenValue(value.AsCachedObject()), range, location);
-    public static Token StringLiteral(string value, Range range, in SourceLocation location) => new Token(TokenKind.StringLiteral, value ?? throw new ArgumentNullException(nameof(value)), range, location);
+    public static Token StringLiteral(string value, Range range, in SourceLocation location) => new Token(TokenKind.StringLiteral, value ?? ThrowArgumentNullException<string>(nameof(value)), range, location);
     public static Token NumericLiteral(double value, Range range, in SourceLocation location) => new Token(TokenKind.NumericLiteral, value, range, location);
     public static Token BigIntLiteral(BigInteger value, Range range, in SourceLocation location) => new Token(TokenKind.BigIntLiteral, value, range, location);
     public static Token RegExpLiteral(RegExpValue value, RegExpParseResult parseResult, Range range, in SourceLocation location) => new Token(TokenKind.RegExpLiteral, Tuple.Create(value, parseResult), range, location);
@@ -85,7 +87,7 @@ public readonly struct Token
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ReadOnlySpan<char> GetRawValue(string input)
     {
-        return input.SliceBetween(Start, End);
+        return (input ?? ThrowArgumentNullException<string>(nameof(input))).SliceBetween(Start, End);
     }
 
     public override string ToString()

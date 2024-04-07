@@ -1,7 +1,10 @@
 using System.Runtime.CompilerServices;
 using System;
+using Acornima.Helpers;
 
 namespace Acornima;
+
+using static ExceptionHelper;
 
 public readonly struct Comment
 {
@@ -29,12 +32,12 @@ public readonly struct Comment
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ReadOnlySpan<char> GetContent(string input)
     {
-        return input.SliceBetween(ContentRange.Start, ContentRange.End);
+        return (input ?? ThrowArgumentNullException<string>(nameof(input))).SliceBetween(ContentRange.Start, ContentRange.End);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ReadOnlySpan<char> GetRawValue(string input)
     {
-        return input.SliceBetween(Start, End);
+        return (input ?? ThrowArgumentNullException<string>(nameof(input))).SliceBetween(Start, End);
     }
 }
