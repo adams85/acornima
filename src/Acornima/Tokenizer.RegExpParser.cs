@@ -1301,7 +1301,11 @@ public partial class Tokenizer
 
         public RegExpGroupAlternate? FirstAlternate;
 
-        public readonly RegExpGroupAlternate? LastAlternate => _additionalAlternates.Count == 0 ? FirstAlternate : _additionalAlternates.LastItemRef();
+        public readonly RegExpGroupAlternate? LastAlternate
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _additionalAlternates.Count == 0 ? FirstAlternate : _additionalAlternates.LastItemRef();
+        }
 
         public void AddAlternate()
         {

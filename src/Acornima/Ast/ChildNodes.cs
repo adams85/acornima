@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace Acornima.Ast;
 
@@ -35,16 +36,24 @@ public readonly partial struct ChildNodes : IEnumerable<Node>
 
     public partial struct Enumerator : IEnumerator<Node>
     {
-        private readonly object? _source; // Node | IEnumerator<Node> | null
+        private readonly Node? _parentNode;
+        private readonly IEnumerator<Node>? _enumerator;
         internal int _propertyIndex;
         internal int _listIndex;
         private Node? _current;
 
         public Enumerator(in ChildNodes childNodes)
         {
-            _source = childNodes._parentNode is not null
-                ? childNodes._parentNode.GetChildNodes() ?? (object)childNodes._parentNode
-                : null;
+            if (childNodes._parentNode is { } parentNode)
+            {
+                _enumerator = parentNode.GetChildNodes();
+                _parentNode = _enumerator is null ? parentNode : null;
+            }
+            else
+            {
+                _parentNode = null;
+                _enumerator = null;
+            }
             _propertyIndex = 0;
             _listIndex = 0;
             _current = null;
@@ -52,47 +61,43 @@ public readonly partial struct ChildNodes : IEnumerable<Node>
 
         public readonly void Dispose()
         {
-            if (_source is IEnumerator<Node> enumerator)
-            {
-                enumerator.Dispose();
-            }
+            _enumerator?.Dispose();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext()
         {
-            if (_source is Node parentNode)
-            {
-                _current = parentNode.NextChildNode(ref this);
-                return _current is not null;
-            }
-            else if (_source is IEnumerator<Node> enumerator)
-            {
-                if (enumerator.MoveNext())
-                {
-                    _current = enumerator.Current;
-                    return true;
-                }
+            return _parentNode is not null
+                ? (_current = _parentNode.NextChildNode(ref this)) is not null
+                : MoveNextRare();
+        }
 
-                _current = null;
+        private bool MoveNextRare()
+        {
+            if (_enumerator is not null && _enumerator.MoveNext())
+            {
+                _current = _enumerator.Current;
+                return true;
             }
 
+            _current = null;
             return false;
         }
 
-        public readonly Node Current => _current!;
+        public readonly Node Current { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _current!; }
 
         readonly object? IEnumerator.Current => Current;
 
         void IEnumerator.Reset()
         {
-            if (_source is Node)
+            if (_parentNode is not null)
             {
                 _propertyIndex = 0;
                 _listIndex = 0;
             }
-            else if (_source is IEnumerator<Node> enumerator)
+            else if (_enumerator is not null)
             {
-                enumerator.Reset();
+                _enumerator.Reset();
             }
 
             _current = null;

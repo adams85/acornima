@@ -53,11 +53,7 @@ public sealed partial class Tokenizer : ITokenizer
     public Token Current
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get
-        {
-            return new Token(_type.Kind, _value, new Range(_start, _end),
-                new SourceLocation(_startLocation, _endLocation, _sourceFile));
-        }
+        get => new Token(_type.Kind, _value, new Range(_start, _end), new SourceLocation(_startLocation, _endLocation, _sourceFile));
     }
 
     public Token GetToken(in TokenizerContext context = default)

@@ -34,7 +34,6 @@ public sealed partial class Parser : IParser
 
     public ParserOptions Options => _options;
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Script ParseScript(string input, string? sourceFile = null, bool strict = false)
         => ParseScript(input ?? ThrowArgumentNullException<string>(nameof(input)), 0, input.Length, sourceFile, strict);
 
@@ -62,7 +61,6 @@ public sealed partial class Parser : IParser
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Module ParseModule(string input, string? sourceFile = null)
         => ParseModule(input ?? ThrowArgumentNullException<string>(nameof(input)), 0, input.Length, sourceFile);
 
@@ -90,7 +88,6 @@ public sealed partial class Parser : IParser
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Expression ParseExpression(string input, string? sourceFile = null, bool strict = false)
         => ParseExpression(input ?? ThrowArgumentNullException<string>(nameof(input)), 0, input.Length, sourceFile, strict);
 
