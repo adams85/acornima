@@ -6,9 +6,9 @@ namespace Acornima.Jsx.Ast;
 [VisitableNode(VisitorType = typeof(IJsxAstVisitor), ChildProperties = new[] { nameof(Name), nameof(Attributes) })]
 public sealed partial class JsxOpeningElement : JsxOpeningTag
 {
-    private readonly NodeList<JsxAttributeBase> _attributes;
+    private readonly NodeList<JsxAttributeLike> _attributes;
 
-    public JsxOpeningElement(JsxName name, in NodeList<JsxAttributeBase> attributes, bool selfClosing)
+    public JsxOpeningElement(JsxName name, in NodeList<JsxAttributeLike> attributes, bool selfClosing)
         : base(JsxNodeType.OpeningElement)
     {
         Name = name;
@@ -20,11 +20,11 @@ public sealed partial class JsxOpeningElement : JsxOpeningTag
     /// <see cref="JsxIdentifier"/> | <see cref="JsxNamespacedName"/> | <see cref="JsxMemberExpression"/>
     /// </remarks>
     public JsxName Name { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
-    public ref readonly NodeList<JsxAttributeBase> Attributes { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref _attributes; }
+    public ref readonly NodeList<JsxAttributeLike> Attributes { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref _attributes; }
     public new bool SelfClosing { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     private protected override bool GetSelfClosing() => SelfClosing;
 
-    private JsxOpeningElement Rewrite(JsxName name, in NodeList<JsxAttributeBase> attributes)
+    private JsxOpeningElement Rewrite(JsxName name, in NodeList<JsxAttributeLike> attributes)
     {
         return new JsxOpeningElement(name, attributes, SelfClosing);
     }

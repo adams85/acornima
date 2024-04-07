@@ -160,7 +160,7 @@ public sealed class JsxParser : IParser, IExtension
     {
         // https://github.com/acornjs/acorn-jsx/blob/f5c107b85872230d5016dbb97d71788575cda9c3/index.js > `jsx_parseOpeningElementAt(startPos, startLoc) {`
 
-        var attributes = new ArrayList<JsxAttributeBase>();
+        var attributes = new ArrayList<JsxAttributeLike>();
         var nodeName = ParseElementName();
         ref readonly var tokenizer = ref _parser._tokenizer;
         while (tokenizer._type != TokenType.Slash && tokenizer._type != JsxTokenType.TagEnd)
@@ -258,7 +258,7 @@ public sealed class JsxParser : IParser, IExtension
 
     // Parses following JSX attribute name-value pair.
 
-    private JsxAttributeBase ParseAttribute()
+    private JsxAttributeLike ParseAttribute()
     {
         // https://github.com/acornjs/acorn-jsx/blob/f5c107b85872230d5016dbb97d71788575cda9c3/index.js > `jsx_parseAttribute() {`
 

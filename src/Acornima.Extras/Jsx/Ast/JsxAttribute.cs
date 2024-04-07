@@ -4,7 +4,7 @@ using Acornima.Ast;
 namespace Acornima.Jsx.Ast;
 
 [VisitableNode(VisitorType = typeof(IJsxAstVisitor), ChildProperties = new[] { nameof(Name), nameof(Value) })]
-public sealed partial class JsxAttribute : JsxAttributeBase
+public sealed partial class JsxAttribute : JsxAttributeLike
 {
     public JsxAttribute(JsxName name, Expression? value)
         : base(JsxNodeType.Attribute)
