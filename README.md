@@ -13,7 +13,7 @@ It should also be mentioned that there is an earlier .NET port of acornjs, [Acor
 
 * The tokenizer is mostly a direct translation of the acornjs tokenizer to C# (with many smaller and bigger performance improvements, partly inspired by Esprima.NET) - apart from the regex validation/conversion logic, which has been borrowed from Esprima.NET currently.
 * The parser is ~99% acornjs (also with a bunch of minor improvements) and ~1% Esprima.NET (strict mode detection, public API). It is also worth mentioning that the error reporting has been changed to use the error messages of V8.
-* It includes protection against the non-catchable `StackOverflowException` using the same approach as Roslyn.
+* It includes protection against the non-catchable `StackOverflowException` using [the same approach](https://github.com/adams85/acornima/blob/v1.0.0/src/Acornima/Helpers/StackGuard.cs) as Roslyn.
 * Both projects follow the ESTree specification, so is Acornima. The actual AST implementation is based on that of Esprima.NET, with further minor improvements to the class hierarchy that bring it even closer to the spec and allow encoding a bit more information.
 * The built-in AST visitors and additional utility functionality stems from Esprima.NET as well.
 
@@ -27,13 +27,13 @@ It should also be mentioned that there is an earlier .NET port of acornjs, [Acor
 
 ### Getting started
 
-#### 1. Install the [package](https://www.nuget.org/packages/Acornima) from [NuGet](https://learn.microsoft.com/en-us/nuget/quickstart/install-and-use-a-package-using-the-dotnet-cli).
+#### 1. Install the [package](https://www.nuget.org/packages/Acornima) from [NuGet](https://learn.microsoft.com/en-us/nuget/quickstart/install-and-use-a-package-using-the-dotnet-cli)
 
 ```bash
 dotnet add package Acornima
 ```
 
-Or, if you want to use additional features like AST to JavaScript or AST to JSON conversion:
+Or, if you want to use additional features like JSX parsing, JavaScript generation from AST or AST to JSON conversion:
 
 ```bash
 dotnet add package Acornima.Extras
@@ -57,7 +57,7 @@ Or, if you want to tweak the available settings:
 var parser = new Parser(new ParserOptions { /* ... */ });
 ```
 
-#### 4. Use it to parse your JavaScript code:
+#### 4. Use the parser instance to parse your JavaScript code
 
 ```csharp
 var ast = parser.ParseScript("console.log('Hello world!')");
@@ -178,7 +178,7 @@ Legend:
 
 ### JSX
 
-The library also supports the syntax extensions [JSX](https://facebook.github.io/jsx/).
+The library also supports the syntax extension [JSX](https://facebook.github.io/jsx/).
 However, mostly for performance reasons, the related functionality is separated from the core parser: it is available in the `Acornima.Extras` package, in the `Acornima.Jsx` namespace.
 
 #### Installation & usage
@@ -221,51 +221,79 @@ Node [x]
           └─JsxText [v,s]
 ```
 
+### Migration from Esprima.NET
+
+Projects using Esprima.NET can be converted to Acornima relatively easily as the public API of the two libraries are very similar.
+(A pretty good proof of this statement is [this PR](https://github.com/sebastienros/jint/pull/1820), which migrates Jint to Acornima.)
+
+The most notable changes to keep in mind with regard to migration are the following:
+
+* The default value of the `ParserOptions.RegExpParseMode` property has been changed to `RegExpParseMode.Validate`.
+* The default value of the `ParserOptions.RegexTimeout` property has been changed to 5 seconds.
+* The default value of the `ParserOptions.Tolerant` property has been changed to `false`.
+* The `Location` struct has been renamed to `SourceLocation`.
+* The `TokenType` and `CommentType` enums have been renamed named to `TokenKind` and `CommentKind`, respectively. Also, some of the member names have been changed.
+* The `Token` and `Comment` structs have been completely reworked. The `SyntaxToken` and `SyntaxComment` classes have been removed.
+* The `SyntaxElement` class has been removed, that is, the `Node` class has become the root of the AST node type hierarchy. (This also means that tokens and comments are not attached to the root nodes of the AST. You can obtain those via the `ParserOptions.OnToken` and `ParserOptions.OnComment` callbacks).
+* The `Nodes` enum has been renamed named to `NodeType`.
+* The `Node.AssociatedData` property has been renamed to `UserData`.
+* The `AssignmentOperator`, `BinaryOperator` and `UnaryOperator` enums have been merged into a single enum named `Operator`. Also, some of the member names have been changed.
+* The `Literal` node class has been changed to only provide an `object? Value { get; }` property for accessing literal value. There are sealed subclasses for the different kinds of literals. Use those to access literal values in a type-safe (and more efficient) manner.
+* The `Property` node class has been made abstract and two sealed subclasses have been introduced: `AssignmentProperty` and `ObjectProperty` (for representing properties of object destructuring patterns and object literals, respectively). Also, the `VisitProperty` method has been replaced with `VisitAssignmentProperty` and `VisitObjectProperty` in visitors.
+* Similar changes have been made to the `BlockStatement` node class. Two new sealed subclasses have been introduced: `FunctionBody` and `NestedBlockStatement` (for representing bodies of function expressions/declarations and actual block statements that occurs within function bodies, respectively). Also, to conform to the ESTree spec, `StaticBlock` has been changed to be a subclass of `BlockStatement`. The `VisitBlockStatement` method has been kept in visitors, but only `NestedBlockStatement` is dispatched to it. The other two subclasses has dedicated visitation methods (`VisitFunctionBody` and `VisitStaticBlock`).
+* The `ClassElement` node base class has been replaced with the `IClassElement` interface.
+* The `Strict` property of function expression/declaration node classes has been moved to `FunctionBody`.
+* The `JsxExpression` node class has been renamed to `JsxNode`.
+* The `JsxElement` node class has been renamed to `JsxElementOrFragment` and two sealed subclasses have been introduced: `JsxElement` and `JsxFragment`.
+* The `ParserException` class has been renamed to `ParseErrorException` and been made abstract. Two concrete subclasses (`SyntaxErrorException` and `RegExpConversionError`) have been introduced to indicate different kinds of errors that can occur during parsing.
+* The message format of the `ParseErrorException` class has been changed. The reported messages are translatable text resources, so it is not recommended to rely on them to determine the reason of the error. For such purposes, you can use the `ParseErrorException.Error.Code` property.
+* The `ParseErrorException.Column` property has been changed to store zero-based indices. (The exception message still includes one-based column indices though.)
+
 ### Benchmarks
 
 | Method          | Runtime            | FileName            |      Mean |  Allocated |
 |-----------------|--------------------|---------------------|----------:|-----------:|
-| Acornima v0.9.0 | .NET 8.0           | angular-1.2.5       | 10.656 ms | 4067.62 KB |
-| Acornima v0.9.0 | .NET Framework 4.8 | angular-1.2.5       | 21.035 ms | 4088.56 KB |
+| Acornima v1.0.0 | .NET 8.0           | angular-1.2.5       | 10.679 ms | 3978.22 KB |
+| Acornima v1.0.0 | .NET Framework 4.8 | angular-1.2.5       | 22.905 ms | 3999.01 KB |
 |                 |                    |                     |           |            |
-| Esprima v3.0.4  | .NET 8.0           | angular-1.2.5       | 11.291 ms | 3828.11 KB |
-| Esprima v3.0.4  | .NET Framework 4.8 | angular-1.2.5       | 20.673 ms | 3879.54 KB |
+| Esprima v3.0.5  | .NET 8.0           | angular-1.2.5       | 11.443 ms | 3828.11 KB |
+| Esprima v3.0.5  | .NET Framework 4.8 | angular-1.2.5       | 20.483 ms | 3879.53 KB |
 |                 |                    |                     |           |            |
-| Acornima v0.9.0 | .NET 8.0           | backbone-1.1.0      |  1.430 ms |  638.85 KB |
-| Acornima v0.9.0 | .NET Framework 4.8 | backbone-1.1.0      |  3.145 ms |  642.71 KB |
+| Acornima v1.0.0 | .NET 8.0           | backbone-1.1.0      |  1.428 ms |  629.26 KB |
+| Acornima v1.0.0 | .NET Framework 4.8 | backbone-1.1.0      |  3.218 ms |  633.09 KB |
 |                 |                    |                     |           |            |
-| Esprima v3.0.4  | .NET 8.0           | backbone-1.1.0      |  1.452 ms |  613.88 KB |
-| Esprima v3.0.4  | .NET Framework 4.8 | backbone-1.1.0      |  2.883 ms |   620.3 KB |
+| Esprima v3.0.5  | .NET 8.0           | backbone-1.1.0      |  1.440 ms |  613.88 KB |
+| Esprima v3.0.5  | .NET Framework 4.8 | backbone-1.1.0      |  2.903 ms |   620.3 KB |
 |                 |                    |                     |           |            |
-| Acornima v0.9.0 | .NET 8.0           | jquery-1.9.1        |  8.438 ms | 3324.14 KB |
-| Acornima v0.9.0 | .NET Framework 4.8 | jquery-1.9.1        | 17.668 ms | 3340.91 KB |
+| Acornima v1.0.0 | .NET 8.0           | jquery-1.9.1        |  8.066 ms | 3271.63 KB |
+| Acornima v1.0.0 | .NET Framework 4.8 | jquery-1.9.1        | 18.210 ms | 3288.41 KB |
 |                 |                    |                     |           |            |
-| Esprima v3.0.4  | .NET 8.0           | jquery-1.9.1        |  8.453 ms | 3305.23 KB |
-| Esprima v3.0.4  | .NET Framework 4.8 | jquery-1.9.1        | 16.625 ms | 3355.15 KB |
+| Esprima v3.0.5  | .NET 8.0           | jquery-1.9.1        |  8.391 ms | 3305.23 KB |
+| Esprima v3.0.5  | .NET Framework 4.8 | jquery-1.9.1        | 16.456 ms | 3355.15 KB |
 |                 |                    |                     |           |            |
-| Acornima v0.9.0 | .NET 8.0           | jquery.mobile-1.4.2 | 14.394 ms | 5505.68 KB |
-| Acornima v0.9.0 | .NET Framework 4.8 | jquery.mobile-1.4.2 | 28.905 ms | 5536.94 KB |
+| Acornima v1.0.0 | .NET 8.0           | jquery.mobile-1.4.2 | 14.253 ms | 5449.24 KB |
+| Acornima v1.0.0 | .NET Framework 4.8 | jquery.mobile-1.4.2 | 29.750 ms | 5480.16 KB |
 |                 |                    |                     |           |            |
-| Esprima v3.0.4  | .NET 8.0           | jquery.mobile-1.4.2 | 14.566 ms | 5428.48 KB |
-| Esprima v3.0.4  | .NET Framework 4.8 | jquery.mobile-1.4.2 | 27.031 ms | 5497.48 KB |
+| Esprima v3.0.5  | .NET 8.0           | jquery.mobile-1.4.2 | 14.566 ms | 5428.48 KB |
+| Esprima v3.0.5  | .NET Framework 4.8 | jquery.mobile-1.4.2 | 27.084 ms | 5497.48 KB |
 |                 |                    |                     |           |            |
-| Acornima v0.9.0 | .NET 8.0           | mootools-1.4.5      |  6.788 ms | 2811.17 KB |
-| Acornima v0.9.0 | .NET Framework 4.8 | mootools-1.4.5      | 14.466 ms |  2826.9 KB |
+| Acornima v1.0.0 | .NET 8.0           | mootools-1.4.5      |  6.735 ms |  2755.9 KB |
+| Acornima v1.0.0 | .NET Framework 4.8 | mootools-1.4.5      | 14.818 ms | 2771.45 KB |
 |                 |                    |                     |           |            |
-| Esprima v3.0.4  | .NET 8.0           | mootools-1.4.5      |  6.875 ms | 2777.83 KB |
-| Esprima v3.0.4  | .NET Framework 4.8 | mootools-1.4.5      | 13.628 ms | 2816.33 KB |
+| Esprima v3.0.5  | .NET 8.0           | mootools-1.4.5      |  6.877 ms | 2777.83 KB |
+| Esprima v3.0.5  | .NET Framework 4.8 | mootools-1.4.5      | 13.740 ms | 2816.33 KB |
 |                 |                    |                     |           |            |
-| Acornima v0.9.0 | .NET 8.0           | underscore-1.5.2    |  1.234 ms |  541.64 KB |
-| Acornima v0.9.0 | .NET Framework 4.8 | underscore-1.5.2    |  2.720 ms |  544.34 KB |
+| Acornima v1.0.0 | .NET 8.0           | underscore-1.5.2    |  1.214 ms |  529.61 KB |
+| Acornima v1.0.0 | .NET Framework 4.8 | underscore-1.5.2    |  2.775 ms |  532.29 KB |
 |                 |                    |                     |           |            |
-| Esprima v3.0.4  | .NET 8.0           | underscore-1.5.2    |  1.239 ms |  539.42 KB |
-| Esprima v3.0.4  | .NET Framework 4.8 | underscore-1.5.2    |  2.501 ms |  547.18 KB |
+| Esprima v3.0.5  | .NET 8.0           | underscore-1.5.2    |  1.235 ms |  539.42 KB |
+| Esprima v3.0.5  | .NET Framework 4.8 | underscore-1.5.2    |  2.501 ms |  547.18 KB |
 |                 |                    |                     |           |            |
-| Acornima v0.9.0 | .NET 8.0           | yui-3.12.0          |  6.359 ms | 2639.25 KB |
-| Acornima v0.9.0 | .NET Framework 4.8 | yui-3.12.0          | 13.410 ms | 2656.09 KB |
+| Acornima v1.0.0 | .NET 8.0           | yui-3.12.0          |  6.408 ms | 2611.82 KB |
+| Acornima v1.0.0 | .NET Framework 4.8 | yui-3.12.0          | 13.831 ms | 2628.61 KB |
 |                 |                    |                     |           |            |
-| Esprima v3.0.4  | .NET 8.0           | yui-3.12.0          |  6.516 ms | 2585.78 KB |
-| Esprima v3.0.4  | .NET Framework 4.8 | yui-3.12.0          | 12.346 ms | 2624.92 KB |
+| Esprima v3.0.5  | .NET 8.0           | yui-3.12.0          |  6.667 ms | 2585.78 KB |
+| Esprima v3.0.5  | .NET Framework 4.8 | yui-3.12.0          | 12.636 ms | 2624.92 KB |
 
 ### Known issues and limitations
 
