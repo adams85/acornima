@@ -192,7 +192,7 @@ public partial class Parser
 
     internal delegate bool IsReservedWordDelegate(ReadOnlySpan<char> word, bool strict);
 
-    private static void GetIsReservedWord(bool inModule, EcmaVersion ecmaVersion, AllowReservedOption allowReserved,
+    internal static void GetIsReservedWord(bool inModule, EcmaVersion ecmaVersion, AllowReservedOption allowReserved,
         out IsReservedWordDelegate isReservedWord, out IsReservedWordDelegate isReservedWordBind)
     {
         switch (ecmaVersion)

@@ -24,6 +24,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Acornima.SourceGenerators",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Acornima.Tests", "test\Acornima.Tests\Acornima.Tests.csproj", "{460A0A53-B9F6-47DB-83D7-763A39562A55}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Acornima.Tests.SourceGenerators", "test\Acornima.Tests.SourceGenerators\Acornima.Tests.SourceGenerators.csproj", "{DEC405F4-0329-4975-8E36-F7FDC4863CE6}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Acornima.Tests.Test262", "test\Acornima.Tests.Test262\Acornima.Tests.Test262.csproj", "{A7CA9D3E-5247-4212-9E08-BDECBC63B8E1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{C428FBAE-48E0-4C47-B9D2-688866714516}"
@@ -63,6 +65,10 @@ Global
 		{460A0A53-B9F6-47DB-83D7-763A39562A55}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{460A0A53-B9F6-47DB-83D7-763A39562A55}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{460A0A53-B9F6-47DB-83D7-763A39562A55}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DEC405F4-0329-4975-8E36-F7FDC4863CE6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DEC405F4-0329-4975-8E36-F7FDC4863CE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DEC405F4-0329-4975-8E36-F7FDC4863CE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DEC405F4-0329-4975-8E36-F7FDC4863CE6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A7CA9D3E-5247-4212-9E08-BDECBC63B8E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A7CA9D3E-5247-4212-9E08-BDECBC63B8E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A7CA9D3E-5247-4212-9E08-BDECBC63B8E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
