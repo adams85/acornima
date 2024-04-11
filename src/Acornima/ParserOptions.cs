@@ -64,6 +64,7 @@ public record class ParserOptions
 
     /// <summary>
     /// Gets or sets which experimental ECMAScript language features to enable.
+    /// Defaults to <see cref="ExperimentalESFeatures.None"/>.
     /// </summary>
     public ExperimentalESFeatures ExperimentalESFeatures
     {

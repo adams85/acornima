@@ -415,12 +415,12 @@ public partial class JavaScriptTextWriter
 
     public virtual void StartObject(int propertyCount, ref WriteContext context)
     {
-        WritePunctuator("{", TokenFlags.Leading | TokenFlags.TrailingSpaceRecommended, ref context);
+        WritePunctuator("{", propertyCount > 0 ? TokenFlags.Leading | TokenFlags.TrailingSpaceRecommended : TokenFlags.Leading, ref context);
     }
 
     public virtual void EndObject(int propertyCount, ref WriteContext context)
     {
-        WritePunctuator("}", TokenFlags.Trailing | TokenFlags.LeadingSpaceRecommended, ref context);
+        WritePunctuator("}", propertyCount > 0 ? TokenFlags.Trailing | TokenFlags.LeadingSpaceRecommended : TokenFlags.Trailing, ref context);
     }
 
     public virtual void StartBlock(int statementCount, ref WriteContext context)

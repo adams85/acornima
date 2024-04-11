@@ -19,9 +19,9 @@ public class NodeListTests
 
         return new TheoryData<int, int, Lazy<NodeList<NumericLiteral>>>
         {
-            { start, count, Lazy.Create("Sequence", () => NodeList.Create(array.Select(x => x))) },
-            { start, count, Lazy.Create("Collection", () => NodeList.Create(new BreakingCollection<NumericLiteral>(array))) },
-            { start, count, Lazy.Create("ReadOnlyList", () => NodeList.Create(new BreakingReadOnlyList<NumericLiteral>(array))) }
+            { start, count, Lazy.Create("Sequence", () => NodeList.From(array.Select(x => x))) },
+            { start, count, Lazy.Create("Collection", () => NodeList.From(new BreakingCollection<NumericLiteral>(array))) },
+            { start, count, Lazy.Create("ReadOnlyList", () => NodeList.From(new BreakingReadOnlyList<NumericLiteral>(array))) }
         };
     }
 

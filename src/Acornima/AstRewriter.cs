@@ -44,7 +44,7 @@ public partial class AstRewriter : AstVisitor
             {
                 newNodeList.Add(newNode);
             }
-            else if (newNode != node)
+            else if (!ReferenceEquals(newNode, node))
             {
                 newNodeList = new List<T>();
                 for (var j = 0; j < i; j++)
@@ -92,7 +92,7 @@ public partial class AstRewriter : AstVisitor
         Expression local;
         Expression exported;
 
-        if (node.Exported == node.Local)
+        if (ReferenceEquals(node.Exported, node.Local))
         {
             exported = local = VisitAndConvert(node.Local);
         }
@@ -110,7 +110,7 @@ public partial class AstRewriter : AstVisitor
         Expression imported;
         Identifier local;
 
-        if (node.Imported == node.Local)
+        if (ReferenceEquals(node.Imported, node.Local))
         {
             imported = local = VisitAndConvert(node.Local);
         }

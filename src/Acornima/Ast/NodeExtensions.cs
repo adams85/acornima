@@ -30,7 +30,7 @@ public static class NodeExtensions
             throw new ArgumentNullException(nameof(rootNode));
         }
 
-        if (node == rootNode)
+        if (ReferenceEquals(node, rootNode))
         {
             return new[] { node };
         }
@@ -67,7 +67,7 @@ public static class NodeExtensions
             throw new ArgumentNullException(nameof(rootNode));
         }
 
-        if (node == rootNode)
+        if (ReferenceEquals(node, rootNode))
         {
             return Enumerable.Empty<Node>();
         }

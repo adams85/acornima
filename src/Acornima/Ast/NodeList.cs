@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Acornima.Helpers;
 
@@ -100,6 +101,7 @@ public readonly struct NodeList<T> : IReadOnlyList<T> where T : Node?
         return array;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Enumerator GetEnumerator()
     {
         return new Enumerator(_items, Count);
@@ -175,6 +177,11 @@ public readonly struct NodeList<T> : IReadOnlyList<T> where T : Node?
 
 public static class NodeList
 {
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static NodeList<T> Empty<T>() where T : Node?
+        => default;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static NodeList<T> From<T>(ref ArrayList<T> arrayList) where T : Node?
     {
         arrayList.Yield(out var items, out var count);
@@ -183,7 +190,7 @@ public static class NodeList
         return new NodeList<T>(items, count);
     }
 
-    public static NodeList<T> Create<T>(IEnumerable<T> source) where T : Node?
+    public static NodeList<T> From<T>(IEnumerable<T> source) where T : Node?
     {
         if (source is null)
         {
@@ -233,4 +240,8 @@ public static class NodeList
 
         return From(ref list);
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static NodeList<T> From<T>(params T[] items) where T : Node?
+        => From(items.AsEnumerable());
 }

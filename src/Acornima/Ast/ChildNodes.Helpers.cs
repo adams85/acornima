@@ -21,7 +21,7 @@ public readonly partial struct ChildNodes : IEnumerable<Node>
                 case 1:
                     _propertyIndex++;
 
-                    if (exported == local)
+                    if (ReferenceEquals(exported, local))
                     {
                         goto default;
                     }
@@ -39,7 +39,7 @@ public readonly partial struct ChildNodes : IEnumerable<Node>
                 case 0:
                     _propertyIndex++;
 
-                    if (imported == local)
+                    if (ReferenceEquals(imported, local))
                     {
                         goto case 1;
                     }

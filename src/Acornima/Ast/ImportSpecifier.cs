@@ -5,6 +5,9 @@ namespace Acornima.Ast;
 [VisitableNode(ChildProperties = new[] { nameof(Imported), nameof(Local) })]
 public sealed partial class ImportSpecifier : ImportDeclarationSpecifier
 {
+    public ImportSpecifier(Identifier imported)
+        : this(imported, imported) { }
+
     public ImportSpecifier(Expression imported, Identifier local)
         : base(local, NodeType.ImportSpecifier)
     {

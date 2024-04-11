@@ -40,7 +40,7 @@ public partial class AstVisitor
     {
         Visit(node.Local);
 
-        if (node.Exported != node.Local)
+        if (!ReferenceEquals(node.Exported, node.Local))
         {
             Visit(node.Exported);
         }
@@ -60,7 +60,7 @@ public partial class AstVisitor
 
     protected internal virtual object? VisitImportSpecifier(ImportSpecifier node)
     {
-        if (node.Imported != node.Local)
+        if (!ReferenceEquals(node.Imported, node.Local))
         {
             Visit(node.Imported);
         }

@@ -264,7 +264,7 @@ public class AstToJavaScriptTests
                 }
             });
             a();
-            aa({ });
+            aa({});
             (function aa() {
             });
 
@@ -648,7 +648,7 @@ public class AstToJavaScriptTests
                 if (void 0 !== r)
                     return r.exports;
                 var a = n[i] = {
-                    exports: { }
+                    exports: {}
                 };
                 return t[i](a, a.exports, e), a.exports;
             }(15);

@@ -5,6 +5,9 @@ namespace Acornima.Ast;
 [VisitableNode(ChildProperties = new[] { nameof(Local), nameof(Exported) })]
 public sealed partial class ExportSpecifier : ModuleSpecifier
 {
+    public ExportSpecifier(Expression local)
+        : this(local, local) { }
+
     public ExportSpecifier(Expression local, Expression exported)
         : base(NodeType.ExportSpecifier)
     {

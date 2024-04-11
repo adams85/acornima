@@ -241,7 +241,7 @@ internal struct ArrayList<T> : IList<T>
     {
         // NOTE: Using a growth factor of 3/2 yields better benchmark results than 2.
         // It also results in less excess when the underlying array is returned directly wrapped in a NodeList, Span, etc.
-        return (capacity * 3L) >> 1;
+        return capacity + (capacity >> 1);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -446,7 +446,6 @@ internal struct ArrayList<T> : IList<T>
         return last;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Yield(out T[]? items, out int count)
     {
         AssertUnchanged();
@@ -490,6 +489,7 @@ internal struct ArrayList<T> : IList<T>
         return array;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public readonly Enumerator GetEnumerator()
     {
         AssertUnchanged();

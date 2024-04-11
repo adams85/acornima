@@ -734,7 +734,7 @@ public partial class AstToJavaScriptConverter : AstVisitor
         _writeContext.SetNodeProperty(nameof(node.Local), static node => node.As<ExportSpecifier>().Local);
         VisitExportOrImportSpecifierIdentifier(node.Local);
 
-        if (node.Local != node.Exported)
+        if (!ReferenceEquals(node.Local, node.Exported))
         {
             _writeContext.ClearNodeProperty();
             Writer.WriteKeyword("as", TokenFlags.SurroundingSpaceRecommended, ref _writeContext);
@@ -1178,7 +1178,7 @@ public partial class AstToJavaScriptConverter : AstVisitor
 
     protected internal override object? VisitImportSpecifier(ImportSpecifier node)
     {
-        if (node.Imported != node.Local)
+        if (!ReferenceEquals(node.Imported, node.Local))
         {
             _writeContext.SetNodeProperty(nameof(node.Imported), static node => node.As<ImportSpecifier>().Imported);
             VisitExportOrImportSpecifierIdentifier(node.Imported);
