@@ -43,6 +43,9 @@ internal class JsxToJavaScriptTranspiler : JsxAstRewriter
 
     public Acornima.Ast.Program Transpile(Acornima.Ast.Program root)
     {
+        _needsElementConstructor = _needsWrapSpreadAttributeFunction = _needsBuildAttributeMapFunction = false;
+        _isStrict = false;
+
         return VisitAndConvert(root);
     }
 

@@ -59,7 +59,7 @@ public partial class Parser
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal T ExitRecursion<T>(T node)
+    internal T ExitRecursion<T>(T node) where T : Node
     {
         _recursionDepth--;
         return node;
