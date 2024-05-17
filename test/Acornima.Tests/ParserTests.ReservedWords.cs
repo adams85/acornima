@@ -22,14 +22,13 @@ public partial class ParserTests
     public static IEnumerable<object[]> IsKeywordMatchesAcornImplData =>
         from word in GetAllReservedWords()
         from ecmaVersion in new[] { EcmaVersion.ES3, EcmaVersion.ES5, EcmaVersion.ES6, EcmaVersion.Latest }
-        from isModule in new[] { false, true }
         select new object[]
         {
             word,
             ecmaVersion,
             ecmaVersion < EcmaVersion.ES6 && word is "export" or "import" // in these cases we deliberately deviate from the original acornjs implementation
                 ? false
-                : AcornUtils.WordsRegexp(AcornIdentifier.Keywords[ecmaVersion >= EcmaVersion.ES6 ? "6" : isModule ? "5module" : "5"]).IsMatch(word)
+                : AcornUtils.WordsRegexp(AcornIdentifier.Keywords[ecmaVersion >= EcmaVersion.ES6 ? "6" : "5"]).IsMatch(word)
         };
 
     [Theory]
