@@ -190,6 +190,11 @@ public static class NodeList
         return new NodeList<T>(items, count);
     }
 
+    [Obsolete($"This method has been renamed to '{nameof(From)}' for consistency, so it exists only for maintaining backward compatibility and will be removed from the public API in a future major version.")]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static NodeList<T> Create<T>(IEnumerable<T> source) where T : Node?
+        => From(source);
+
     public static NodeList<T> From<T>(IEnumerable<T> source) where T : Node?
     {
         if (source is null)
