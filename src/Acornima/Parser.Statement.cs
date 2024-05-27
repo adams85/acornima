@@ -972,7 +972,7 @@ public partial class Parser
 
         VariableDeclarator? variableDeclarator;
         if (init is VariableDeclaration variableDeclaration
-            && (variableDeclarator = variableDeclaration.Declarations[0]).Init is { } variableInitializer)
+            && (variableDeclarator = variableDeclaration.Declarations[0]).Init is not null)
         {
             if (!isForIn
                 || _tokenizerOptions._ecmaVersion < EcmaVersion.ES8

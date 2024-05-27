@@ -115,7 +115,7 @@ internal struct StringPool
             int count = _count;
             if (count == entries!.Length)
             {
-                Resize(checked(_count + _count / 2));
+                Resize(checked(_count + (_count >> 1)));
                 bucket = ref GetBucketRef(hashCode);
             }
             index = count;

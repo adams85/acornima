@@ -1690,7 +1690,6 @@ public partial class Parser
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/expression.js > `pp.parseFunctionBody = function`
 
         expression = isArrowFunction && _tokenizer._type != TokenType.BraceLeft;
-        var strict = false;
 
         StatementOrExpression body;
         if (expression)
@@ -1707,7 +1706,7 @@ public partial class Parser
             var oldStrict = _strict;
             Expect(TokenType.BraceLeft);
             var statements = ParseDirectivePrologue(allowStrictDirective: !nonSimple);
-            strict = _strict;
+            var strict = _strict;
 
             // Add the params to varDeclaredNames to ensure that an error is thrown
             // if a let/const declaration in the function clashes with one of the params.
