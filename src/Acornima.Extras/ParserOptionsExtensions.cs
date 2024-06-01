@@ -12,12 +12,10 @@ public static class ParserOptionsExtensions
         }
     };
 
-    /// <remarks>
-    /// WARNING: Setting <see cref="ParserOptions.OnNode"/> after enabling this setting will cancel parent node recording.
-    /// </remarks>
-    public static ParserOptions RecordParentNodeInUserData(this ParserOptions options, bool enable)
+    public static TOptions RecordParentNodeInUserData<TOptions>(this TOptions options, bool enable = true)
+        where TOptions : ParserOptions
     {
-        Delegate.RemoveAll(options.OnNode, s_parentSetter);
+        options._onNode = (OnNodeHandler?)Delegate.RemoveAll(options._onNode, s_parentSetter);
 
         if (enable)
         {
