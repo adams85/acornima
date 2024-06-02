@@ -14,7 +14,6 @@ internal sealed class TokenizeCommand
 {
     public const string CommandName = "tokenize";
 
-
     private static readonly JsonSerializerOptions s_serializerOptions = new()
     {
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,

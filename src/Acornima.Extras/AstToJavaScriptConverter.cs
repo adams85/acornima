@@ -312,7 +312,7 @@ public partial class AstToJavaScriptConverter : AstVisitor
         _writeContext.SetNodeProperty(nameof(node.Value), static node => node.As<Property>().Value);
 
         Expression? valueExpression;
-        if (node is AssignmentProperty)
+        if (node is not null)
         {
             if (_currentAuxiliaryNodeContext != s_bindingPatternAllowsExpressionsFlag)
             {
