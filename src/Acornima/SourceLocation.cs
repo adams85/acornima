@@ -76,7 +76,7 @@ public readonly struct SourceLocation : IEquatable<SourceLocation>
     {
         return Start.Equals(other.Start)
                && End.Equals(other.End)
-               && string.Equals(SourceFile, other.SourceFile);
+               && string.Equals(SourceFile, other.SourceFile, StringComparison.Ordinal);
     }
 
     bool IEquatable<SourceLocation>.Equals(SourceLocation other) => Equals(other);

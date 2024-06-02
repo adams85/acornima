@@ -13,6 +13,8 @@ namespace Acornima.Tests.Test262;
 
 public static class Program
 {
+    private static readonly JsonSerializerOptions serializerOptions = new() { ReadCommentHandling = JsonCommentHandling.Skip };
+
     public static async Task<int> Main(string[] args)
     {
         var rootDirectory = Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location) ?? string.Empty;
@@ -21,10 +23,9 @@ public static class Program
         var allowListFile = Path.Combine(projectRoot, "allow-list.txt");
         var lines = File.Exists(allowListFile) ? await File.ReadAllLinesAsync(allowListFile) : Array.Empty<string>();
         var knownFailing = new HashSet<string>(lines
-            .Where(x => !string.IsNullOrWhiteSpace(x) && !x.StartsWith("#", StringComparison.Ordinal))
+            .Where(x => !string.IsNullOrWhiteSpace(x) && !x.StartsWith('#'))
         );
 
-        var serializerOptions = new JsonSerializerOptions { ReadCommentHandling = JsonCommentHandling.Skip };
         var settings = JsonSerializer.Deserialize<Dictionary<string, object>>(await File.ReadAllTextAsync("Test262Harness.settings.json"), serializerOptions)!;
         var sha = settings["SuiteGitSha"].ToString()!;
         var excludedFeatures = ((JsonElement)settings["ExcludedFeatures"]).EnumerateArray().Select(x => x.ToString()).ToArray();

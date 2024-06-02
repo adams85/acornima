@@ -1,3 +1,5 @@
+#pragma warning disable CS0162 // Unreachable code detected
+
 using System;
 using System.Collections.Generic;
 using System.IO;

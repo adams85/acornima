@@ -8,7 +8,7 @@ namespace Acornima.SourceGenerators.Helpers;
 /// <summary>
 /// Cacheable data structure which helps with dealing with C# type names in source generators.
 /// </summary>
-internal record class CSharpTypeName(CSharpTypeBareName BareName)
+internal sealed record CSharpTypeName(CSharpTypeBareName BareName)
 {
     public static CSharpTypeName? From(ITypeSymbol type)
     {
@@ -153,7 +153,7 @@ internal record class CSharpTypeName(CSharpTypeBareName BareName)
     }
 }
 
-internal record class CSharpTypeBareName(string TypeName)
+internal sealed record CSharpTypeBareName(string TypeName)
 {
     private static bool HasSpecialTypeName(INamedTypeSymbol namedType)
     {

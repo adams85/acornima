@@ -1478,7 +1478,7 @@ public partial class Parser
             : new ObjectProperty(kind, key, value, computed, shorthand, method));
     }
 
-    private Expression ParseGetterSetter(ref Expression key, ref bool computed, PropertyKind kind)
+    private FunctionExpression ParseGetterSetter(ref Expression key, ref bool computed, PropertyKind kind)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/expression.js > `pp.parseGetterSetter = function`
 

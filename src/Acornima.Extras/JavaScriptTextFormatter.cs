@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
 using Acornima.Ast;
@@ -437,7 +438,7 @@ public abstract class JavaScriptTextFormatter : JavaScriptTextWriter
             NodeType.ExportAllDeclaration or
             NodeType.ExportDefaultDeclaration or
             NodeType.ExportNamedDeclaration =>
-                throw new ArgumentException(string.Format(ExtrasExceptionMessages.OperationNotDefinedForNodeType, statement.Type), nameof(statement)),
+                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, ExtrasExceptionMessages.OperationNotDefinedForNodeType, statement.Type), nameof(statement)),
 
             // Extensions
             _ => false,

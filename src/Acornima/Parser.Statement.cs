@@ -892,7 +892,7 @@ public partial class Parser
         return FinishNode(startMarker, new LabeledStatement(expr, body));
     }
 
-    private ExpressionStatement ParseExpressionStatement(in Marker startMarker, Expression expression)
+    private NonSpecialExpressionStatement ParseExpressionStatement(in Marker startMarker, Expression expression)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseExpressionStatement = function`
 
@@ -1599,7 +1599,7 @@ public partial class Parser
 
         return !computed
             && (key is Identifier identifier && identifier.Name == name
-                || key is StringLiteral literal && name.Equals(literal.Value));
+                || key is StringLiteral literal && name.Equals(literal.Value, StringComparison.Ordinal));
     }
 
     // Parses module export declaration.
@@ -1625,7 +1625,7 @@ public partial class Parser
         return ParseExportDeclaration(startMarker, exports);
     }
 
-    private ExportDeclaration ParseExportDeclaration(in Marker startMarker, HashSet<string>? exports)
+    private ExportNamedDeclaration ParseExportDeclaration(in Marker startMarker, HashSet<string>? exports)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseExportDeclaration = function`
 
@@ -1795,14 +1795,10 @@ public partial class Parser
             _ => (string)name
         };
 
-        if (exports.Contains(exportName))
+        if (!exports.Add(exportName))
         {
             // RaiseRecoverable(pos, $"Duplicate export '{exportName}'"); // original acornjs error reporting
             Raise(pos, DuplicateExport, new[] { exportName });
-        }
-        else
-        {
-            exports.Add(exportName);
         }
     }
 

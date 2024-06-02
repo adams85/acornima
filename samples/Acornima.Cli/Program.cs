@@ -33,7 +33,9 @@ public class Program
         }
     }
 
+#pragma warning disable CA1822 // Mark members as static
     public int OnExecute(CommandLineApplication app)
+#pragma warning restore CA1822
     {
         var args = new[] { ParseCommand.CommandName }.Concat(app.RemainingArguments).ToArray();
         return app.Execute(args);

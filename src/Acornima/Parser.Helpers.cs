@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using Acornima.Ast;
 using Acornima.Helpers;
@@ -296,7 +297,7 @@ public partial class Parser
                 break;
 
             default:
-                throw new InvalidOperationException(string.Format(ExceptionMessages.UnsupportedEcmaVersion, ecmaVersion));
+                throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, ExceptionMessages.UnsupportedEcmaVersion, ecmaVersion));
         }
     }
 
@@ -318,7 +319,7 @@ public partial class Parser
                 return strict ? IsReservedWordES6Strict(word) : IsReservedWordES6NonStrict(word);
 
             default:
-                throw new InvalidOperationException(string.Format(ExceptionMessages.UnsupportedEcmaVersion, ecmaVersion));
+                throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, ExceptionMessages.UnsupportedEcmaVersion, ecmaVersion));
         }
     }
 

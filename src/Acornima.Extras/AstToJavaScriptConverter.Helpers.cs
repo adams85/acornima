@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using Acornima.Ast;
 using Acornima.Helpers;
@@ -381,7 +382,7 @@ public partial class AstToJavaScriptConverter
         }
         else
         {
-            throw new NotImplementedException(string.Format(ExtrasExceptionMessages.OperatorPrecedenceNotDefined, expression.GetType()));
+            throw new NotImplementedException(string.Format(CultureInfo.InvariantCulture, ExtrasExceptionMessages.OperatorPrecedenceNotDefined, expression.GetType()));
         }
     }
 

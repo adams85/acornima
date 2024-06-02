@@ -14,7 +14,7 @@ internal enum JavaScriptCodeType
 
 [Command("jsxt", Description = "A command line tool for transpiling JSX templates into executable JavaScript code.")]
 [HelpOption]
-internal class Program
+internal sealed class Program
 {
     public static int Main(string[] args)
     {

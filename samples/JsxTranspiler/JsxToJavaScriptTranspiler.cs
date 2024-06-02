@@ -10,7 +10,7 @@ namespace JsxTranspiler;
 // This approach to transpiling JSX is far from optimal, it is just a demonstration of
 // Acornima's AST transformation and code generation capabilities.
 
-internal class JsxToJavaScriptTranspiler : JsxAstRewriter
+internal sealed class JsxToJavaScriptTranspiler : JsxAstRewriter
 {
     private const string ElementConstructorName = "__$El";
     private const string WrapSpreadAttributeFunctionName = "__$spreadAttrs";

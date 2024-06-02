@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Acornima.SourceGenerators.Helpers;
 
-internal class SourceBuilder
+internal sealed class SourceBuilder
 {
     private readonly StringBuilder _sb;
     private readonly string? _indent;

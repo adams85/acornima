@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using Acornima.Ast;
 
@@ -153,17 +154,17 @@ public partial class Parser
 
             case TokenKind.Punctuator:
                 code = nameof(UnexpectedToken);
-                return string.Format(UnexpectedToken, (string)tokenValue!);
+                return string.Format(CultureInfo.InvariantCulture, UnexpectedToken, (string)tokenValue!);
 
             case TokenKind.Keyword:
             case TokenKind.NullLiteral:
             case TokenKind.BooleanLiteral:
                 code = nameof(UnexpectedToken);
-                return string.Format(UnexpectedToken, tokenType.Label);
+                return string.Format(CultureInfo.InvariantCulture, UnexpectedToken, tokenType.Label);
 
             case TokenKind.Identifier:
                 code = nameof(UnexpectedTokenIdentifier);
-                return string.Format(UnexpectedTokenIdentifier, tokenType == TokenType.PrivateId
+                return string.Format(CultureInfo.InvariantCulture, UnexpectedTokenIdentifier, tokenType == TokenType.PrivateId
                     ? '#'.ToStringCached() + (string)tokenValue!
                     : (string)tokenValue!);
 
@@ -224,7 +225,7 @@ public partial class Parser
     [DoesNotReturn]
     internal void Raise(int pos, string messageFormat, object?[] args, [CallerArgumentExpression(nameof(messageFormat))] string code = Tokenizer.UnknownError)
     {
-        Raise(pos, string.Format(messageFormat, args), code);
+        Raise(pos, string.Format(CultureInfo.InvariantCulture, messageFormat, args), code);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -236,7 +237,7 @@ public partial class Parser
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal ParseError RaiseRecoverable(int pos, string messageFormat, object?[] args, [CallerArgumentExpression(nameof(messageFormat))] string code = Tokenizer.UnknownError)
     {
-        return RaiseRecoverable(pos, string.Format(messageFormat, args), code);
+        return RaiseRecoverable(pos, string.Format(CultureInfo.InvariantCulture, messageFormat, args), code);
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]

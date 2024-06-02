@@ -6,6 +6,7 @@
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>..\..\src\Karambolo.Public.snk</AssemblyOriginatorKeyFile>
     <DefaultItemExcludes>Fixtures.RegExp\Generator\**;$(DefaultItemExcludes)</DefaultItemExcludes>
+    <AnalysisLevel>None</AnalysisLevel>
   </PropertyGroup>
 
   <ItemGroup>

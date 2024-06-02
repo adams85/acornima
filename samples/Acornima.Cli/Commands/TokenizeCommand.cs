@@ -14,6 +14,18 @@ internal sealed class TokenizeCommand
 {
     public const string CommandName = "tokenize";
 
+
+    private static readonly JsonSerializerOptions serializerOptions = new()
+    {
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        IncludeFields = true,
+        WriteIndented = true,
+        Converters =
+        {
+            new JsonStringEnumConverter()
+        },
+    };
+
     private readonly IConsole _console;
 
     public TokenizeCommand(IConsole console)
@@ -71,17 +83,6 @@ internal sealed class TokenizeCommand
             tokensAndComments.Add(TokenData.From(in token, code));
         }
         while (token.Kind != TokenKind.EOF);
-
-        var serializerOptions = new JsonSerializerOptions
-        {
-            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-            IncludeFields = true,
-            WriteIndented = true,
-            Converters =
-            {
-                new JsonStringEnumConverter()
-            },
-        };
 
         _console.WriteLine(JsonSerializer.Serialize(tokensAndComments, serializerOptions));
 

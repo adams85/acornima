@@ -12,7 +12,9 @@ public sealed partial class WithStatement : Statement
         Body = body;
     }
 
+#pragma warning disable
     public Expression Object { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
+#pragma warning restore CA1720
     public Statement Body { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
     private WithStatement Rewrite(Expression @object, Statement body)

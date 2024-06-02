@@ -3,7 +3,16 @@
   <PropertyGroup>
     <LangVersion>12</LangVersion>
     <Nullable>enable</Nullable>
-    <WarningsAsErrors>nullable</WarningsAsErrors>
+    <WarningsAsErrors>true</WarningsAsErrors>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Code Analysis">
+    <AnalysisLevel>latest-Recommended</AnalysisLevel>
+    <NoWarn>$(NoWarn);CA1051</NoWarn>  <!-- Do not declare visible instance fields -->
+    <NoWarn>$(NoWarn);CA1720</NoWarn>  <!-- Identifier contains type name -->
+    <NoWarn>$(NoWarn);CA1716</NoWarn>  <!-- Identifiers should not match keywords -->
+    <NoWarn>$(NoWarn);CA1510</NoWarn>  <!-- Use ArgumentNullException.ThrowIfNull -->
+    <NoWarn>$(NoWarn);CA1711</NoWarn>  <!-- Identifiers should not have incorrect suffix -->
   </PropertyGroup>
 
 </Project>

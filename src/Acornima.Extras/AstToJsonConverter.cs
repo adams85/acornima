@@ -843,7 +843,7 @@ public class AstToJsonConverter : AstVisitor
         return node;
     }
 
-    private object? VisitProperty(Property node)
+    private Property VisitProperty(Property node)
     {
         using (StartNodeObject(node))
         {

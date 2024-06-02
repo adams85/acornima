@@ -135,6 +135,7 @@ internal static class CodeAnalysisHelper
 
         public override SyntaxNode? VisitMethodDeclaration(MethodDeclarationSyntax node)
         {
+#pragma warning disable CA2208 // Replace this argument with one of the method's parameter names.
             return node.Update(attributeLists: default,
                 VisitList(node.Modifiers),
                 (TypeSyntax?)Visit(node.ReturnType) ?? throw new ArgumentNullException("returnType"),
@@ -146,6 +147,7 @@ internal static class CodeAnalysisHelper
                 (BlockSyntax?)Visit(node.Body),
                 (ArrowExpressionClauseSyntax?)Visit(node.ExpressionBody),
                 default);
+#pragma warning restore CA2208
         }
 
         public override SyntaxNode? VisitAliasQualifiedName(AliasQualifiedNameSyntax node)
