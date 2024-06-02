@@ -13,7 +13,7 @@ namespace Acornima.Tests.Test262;
 
 public static class Program
 {
-    private static readonly JsonSerializerOptions serializerOptions = new() { ReadCommentHandling = JsonCommentHandling.Skip };
+    private static readonly JsonSerializerOptions s_serializerOptions = new() { ReadCommentHandling = JsonCommentHandling.Skip };
 
     public static async Task<int> Main(string[] args)
     {
@@ -26,7 +26,7 @@ public static class Program
             .Where(x => !string.IsNullOrWhiteSpace(x) && !x.StartsWith('#'))
         );
 
-        var settings = JsonSerializer.Deserialize<Dictionary<string, object>>(await File.ReadAllTextAsync("Test262Harness.settings.json"), serializerOptions)!;
+        var settings = JsonSerializer.Deserialize<Dictionary<string, object>>(await File.ReadAllTextAsync("Test262Harness.settings.json"), s_serializerOptions)!;
         var sha = settings["SuiteGitSha"].ToString()!;
         var excludedFeatures = ((JsonElement)settings["ExcludedFeatures"]).EnumerateArray().Select(x => x.ToString()).ToArray();
         var stream = await Test262StreamExtensions.FromGitHub(sha);

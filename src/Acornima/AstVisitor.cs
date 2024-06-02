@@ -1,5 +1,4 @@
 using System;
-using System.Globalization;
 using System.Runtime.CompilerServices;
 using Acornima.Ast;
 using Acornima.Helpers;
@@ -10,7 +9,7 @@ namespace Acornima;
 public partial class AstVisitor
 {
     private static NotImplementedException UnsupportedNodeType(Type nodeType, [CallerMemberName] string? callerName = null) =>
-        new NotImplementedException(string.Format(CultureInfo.InvariantCulture, ExceptionMessages.UnsupportedNodeTypeVisited, nodeType, callerName));
+        new NotImplementedException(string.Format(null, ExceptionMessages.UnsupportedNodeTypeVisited, nodeType, callerName));
 
     private int _recursionDepth;
 

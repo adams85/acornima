@@ -1599,7 +1599,7 @@ public partial class Parser
 
         return !computed
             && (key is Identifier identifier && identifier.Name == name
-                || key is StringLiteral literal && name.Equals(literal.Value, StringComparison.Ordinal));
+                || key is StringLiteral literal && name.Equals(literal.Value));
     }
 
     // Parses module export declaration.

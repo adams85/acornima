@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -33,7 +32,7 @@ public abstract class Node : INode
     protected internal virtual IEnumerator<Node>? GetChildNodes() => null;
 
     internal virtual Node? NextChildNode(ref ChildNodes.Enumerator enumerator) =>
-        throw new NotImplementedException(string.Format(CultureInfo.InvariantCulture, ExceptionMessages.OverrideGetChildNodes, nameof(GetChildNodes)));
+        throw new NotImplementedException(string.Format(null, ExceptionMessages.OverrideGetChildNodes, nameof(GetChildNodes)));
 
     public int Start { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _range.Start; }
 

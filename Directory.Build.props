@@ -9,6 +9,8 @@
   <PropertyGroup Label="Code Analysis">
     <AnalysisLevel>latest-Recommended</AnalysisLevel>
     <NoWarn>$(NoWarn);CA1051</NoWarn>  <!-- Do not declare visible instance fields -->
+    <NoWarn>$(NoWarn);CA1069</NoWarn>  <!-- Enums values should not be duplicated -->
+    <NoWarn>$(NoWarn);CA1309</NoWarn>  <!-- Use ordinal string comparison (NOTE: this rule seems broken) -->
     <NoWarn>$(NoWarn);CA1720</NoWarn>  <!-- Identifier contains type name -->
     <NoWarn>$(NoWarn);CA1716</NoWarn>  <!-- Identifiers should not match keywords -->
     <NoWarn>$(NoWarn);CA1510</NoWarn>  <!-- Use ArgumentNullException.ThrowIfNull -->

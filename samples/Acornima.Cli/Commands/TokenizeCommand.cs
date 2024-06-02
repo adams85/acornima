@@ -15,7 +15,7 @@ internal sealed class TokenizeCommand
     public const string CommandName = "tokenize";
 
 
-    private static readonly JsonSerializerOptions serializerOptions = new()
+    private static readonly JsonSerializerOptions s_serializerOptions = new()
     {
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
         IncludeFields = true,
@@ -84,7 +84,7 @@ internal sealed class TokenizeCommand
         }
         while (token.Kind != TokenKind.EOF);
 
-        _console.WriteLine(JsonSerializer.Serialize(tokensAndComments, serializerOptions));
+        _console.WriteLine(JsonSerializer.Serialize(tokensAndComments, s_serializerOptions));
 
         return 0;
     }

@@ -29,7 +29,5 @@ public enum EcmaVersion
     /// <summary>
     /// The latest version which is fully supported (<see cref="ES2023"/>).
     /// </summary>
-#pragma warning disable CA1069 // Enums values should not be duplicated
     Latest = ES2023,
-#pragma warning restore CA1069
 }

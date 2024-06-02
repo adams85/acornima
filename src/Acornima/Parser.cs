@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics;
-using System.Globalization;
 using System.Runtime.CompilerServices;
 using Acornima.Ast;
 using Acornima.Helpers;
@@ -42,7 +41,7 @@ public sealed partial class Parser : IParser
     {
         if (strict && _tokenizerOptions._ecmaVersion < EcmaVersion.ES5)
         {
-            throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, ExceptionMessages.InvalidEcmaVersionForStrictMode, EcmaVersion.ES5));
+            throw new InvalidOperationException(string.Format(null, ExceptionMessages.InvalidEcmaVersionForStrictMode, EcmaVersion.ES5));
         }
 
         Reset(input, start, length, SourceType.Script, sourceFile, strict);
@@ -69,7 +68,7 @@ public sealed partial class Parser : IParser
     {
         if (_tokenizerOptions._ecmaVersion < EcmaVersion.ES6)
         {
-            throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, ExceptionMessages.InvalidEcmaVersionForModule, EcmaVersion.ES6));
+            throw new InvalidOperationException(string.Format(null, ExceptionMessages.InvalidEcmaVersionForModule, EcmaVersion.ES6));
         }
 
         Reset(input, start, length, SourceType.Module, sourceFile, strict: true);
@@ -96,7 +95,7 @@ public sealed partial class Parser : IParser
     {
         if (strict && _tokenizerOptions._ecmaVersion < EcmaVersion.ES5)
         {
-            throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, ExceptionMessages.InvalidEcmaVersionForStrictMode, EcmaVersion.ES5));
+            throw new InvalidOperationException(string.Format(null, ExceptionMessages.InvalidEcmaVersionForStrictMode, EcmaVersion.ES5));
         }
 
         Reset(input, start, length, SourceType.Unknown, sourceFile, strict);

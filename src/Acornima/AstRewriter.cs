@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using Acornima.Ast;
 
 namespace Acornima;
@@ -25,10 +24,10 @@ public partial class AstRewriter : AstVisitor
         };
 
         static Exception MustRewriteToSameNodeNonNullable(Type nodeType) =>
-            new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, ExceptionMessages.MustRewriteToSameNodeNonNullable, nodeType));
+            new InvalidOperationException(string.Format(null, ExceptionMessages.MustRewriteToSameNodeNonNullable, nodeType));
 
         static Exception MustRewriteToSameNodeNullable(Type nodeType) =>
-            new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, ExceptionMessages.MustRewriteToSameNodeNullable, nodeType));
+            new InvalidOperationException(string.Format(null, ExceptionMessages.MustRewriteToSameNodeNullable, nodeType));
     }
 
     public virtual bool VisitAndConvert<T>(in NodeList<T> nodes, out NodeList<T> newNodes, bool allowNullElement = false)

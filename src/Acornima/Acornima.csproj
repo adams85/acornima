@@ -9,7 +9,6 @@
     <NeutralLanguage>en-US</NeutralLanguage>
     <PackageId>Acornima</PackageId>
     <PackageTags>javascript, ecmascript, parser</PackageTags>
-
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net462' OR '$(TargetFramework)' == 'netstandard2.0'">
