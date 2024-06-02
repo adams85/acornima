@@ -95,9 +95,9 @@ public readonly partial struct ChildNodes : IEnumerable<Node>
                 _propertyIndex = 0;
                 _listIndex = 0;
             }
-            else if (_enumerator is not null)
+            else
             {
-                _enumerator.Reset();
+                _enumerator?.Reset();
             }
 
             _current = null;

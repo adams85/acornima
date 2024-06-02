@@ -5,7 +5,7 @@ using McMaster.Extensions.CommandLineUtils;
 namespace Acornima.Cli.Helpers;
 
 // Based on: https://andrewlock.net/creating-an-ascii-art-tree-in-csharp/
-internal class TreePrinter
+internal sealed class TreePrinter
 {
     // Constants for drawing lines and spaces
     private const string Cross = " ├─";

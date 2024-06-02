@@ -352,7 +352,7 @@ public class AstToJsonConverter : AstVisitor
         return node;
     }
 
-    private object? VisitClass(IClass node)
+    private IClass VisitClass(IClass node)
     {
         using (StartNodeObject(node.As<Node>()))
         {
@@ -539,7 +539,7 @@ public class AstToJsonConverter : AstVisitor
         return node;
     }
 
-    private object? VisitFunction(IFunction node)
+    private IFunction VisitFunction(IFunction node)
     {
         using (StartNodeObject(node.As<Node>()))
         {
@@ -843,7 +843,7 @@ public class AstToJsonConverter : AstVisitor
         return node;
     }
 
-    private object? VisitProperty(Property node)
+    private Property VisitProperty(Property node)
     {
         using (StartNodeObject(node))
         {

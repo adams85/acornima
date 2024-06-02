@@ -461,15 +461,10 @@ public partial class Parser
                         Raise(identifier.Start, LetInLexicalBinding);
                     }
 
-                    if (checkClashes is not null)
+                    if (checkClashes is not null && !checkClashes.Add(identifier.Name))
                     {
-                        if (checkClashes.Contains(identifier.Name))
-                        {
-                            // RaiseRecoverable(identifier.Start, "Argument name clash"); // original acornjs error reporting
-                            Raise(identifier.Start, ParamDupe);
-                        }
-
-                        checkClashes.Add(identifier.Name);
+                        // RaiseRecoverable(identifier.Start, "Argument name clash"); // original acornjs error reporting
+                        Raise(identifier.Start, ParamDupe);
                     }
 
                     if (bindingType != BindingType.Outside)

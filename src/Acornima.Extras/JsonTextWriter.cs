@@ -93,7 +93,7 @@ internal sealed class JsonTextWriter : JsonWriter
             throw new InvalidOperationException(ExtrasExceptionMessages.JsonMemberOutsideObject);
 
         if (_memberName != null)
-            throw new InvalidOperationException(string.Format(ExtrasExceptionMessages.MissingJsonMemberValue, _memberName));
+            throw new InvalidOperationException(string.Format(null, ExtrasExceptionMessages.MissingJsonMemberValue, _memberName));
 
         _memberName = name;
     }
@@ -173,7 +173,7 @@ internal sealed class JsonTextWriter : JsonWriter
             throw new InvalidOperationException(ExtrasExceptionMessages.NoUnterminatedJsonStructure);
 
         if (_memberName != null)
-            throw new InvalidOperationException(string.Format(ExtrasExceptionMessages.MissingJsonMemberValue, _memberName));
+            throw new InvalidOperationException(string.Format(null, ExtrasExceptionMessages.MissingJsonMemberValue, _memberName));
 
         if (_counters.Peek() > 0)
         {

@@ -144,21 +144,21 @@ public partial class Tokenizer
             [CallerArgumentExpression(nameof(reason))] string code = Tokenizer.UnknownError)
         {
             return (RegExpConversionError)_tokenizer.RaiseRecoverable(_patternStartIndex + index,
-                string.Format(RegExpConversionFailed, typeof(Regex), _pattern, _flagsOriginal, reason),
+                string.Format(null, RegExpConversionFailed, typeof(Regex), _pattern, _flagsOriginal, reason),
                 RegExpConversionError.s_factory, code);
         }
 
         private readonly RegExpConversionError ReportConversionFailure(int index, string reasonFormat, object?[] args,
             [CallerArgumentExpression(nameof(reasonFormat))] string code = Tokenizer.UnknownError)
         {
-            return ReportConversionFailure(index, string.Format(reasonFormat, args), code);
+            return ReportConversionFailure(index, string.Format(null, reasonFormat, args), code);
         }
 
         [DoesNotReturn]
         private readonly void ReportSyntaxError(int index, string messageFormat,
             [CallerArgumentExpression(nameof(messageFormat))] string code = Tokenizer.UnknownError)
         {
-            _tokenizer.Raise(_patternStartIndex + index, string.Format(messageFormat, _pattern, _flagsOriginal), code: code);
+            _tokenizer.Raise(_patternStartIndex + index, string.Format(null, messageFormat, _pattern, _flagsOriginal), code: code);
         }
 
         public RegExpParseResult Parse()
@@ -737,7 +737,7 @@ public partial class Tokenizer
         {
             switch (ch)
             {
-                // Assertion (word boundary) / Backspace 
+                // Assertion (word boundary) / Backspace
                 case 'b':
                     // NOTE: For the sake of simplicity, we also use this logic for validation in unicode mode,
                     // so we return an unused dummy value for word boundary escapes outside character sets.

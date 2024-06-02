@@ -381,7 +381,7 @@ public partial class AstToJavaScriptConverter
         }
         else
         {
-            throw new NotImplementedException(string.Format(ExtrasExceptionMessages.OperatorPrecedenceNotDefined, expression.GetType()));
+            throw new NotImplementedException(string.Format(null, ExtrasExceptionMessages.OperatorPrecedenceNotDefined, expression.GetType()));
         }
     }
 

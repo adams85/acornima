@@ -153,17 +153,17 @@ public partial class Parser
 
             case TokenKind.Punctuator:
                 code = nameof(UnexpectedToken);
-                return string.Format(UnexpectedToken, (string)tokenValue!);
+                return string.Format(null, UnexpectedToken, (string)tokenValue!);
 
             case TokenKind.Keyword:
             case TokenKind.NullLiteral:
             case TokenKind.BooleanLiteral:
                 code = nameof(UnexpectedToken);
-                return string.Format(UnexpectedToken, tokenType.Label);
+                return string.Format(null, UnexpectedToken, tokenType.Label);
 
             case TokenKind.Identifier:
                 code = nameof(UnexpectedTokenIdentifier);
-                return string.Format(UnexpectedTokenIdentifier, tokenType == TokenType.PrivateId
+                return string.Format(null, UnexpectedTokenIdentifier, tokenType == TokenType.PrivateId
                     ? '#'.ToStringCached() + (string)tokenValue!
                     : (string)tokenValue!);
 
@@ -224,7 +224,7 @@ public partial class Parser
     [DoesNotReturn]
     internal void Raise(int pos, string messageFormat, object?[] args, [CallerArgumentExpression(nameof(messageFormat))] string code = Tokenizer.UnknownError)
     {
-        Raise(pos, string.Format(messageFormat, args), code);
+        Raise(pos, string.Format(null, messageFormat, args), code);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -236,7 +236,7 @@ public partial class Parser
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal ParseError RaiseRecoverable(int pos, string messageFormat, object?[] args, [CallerArgumentExpression(nameof(messageFormat))] string code = Tokenizer.UnknownError)
     {
-        return RaiseRecoverable(pos, string.Format(messageFormat, args), code);
+        return RaiseRecoverable(pos, string.Format(null, messageFormat, args), code);
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]

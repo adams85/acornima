@@ -218,7 +218,7 @@ public partial class RegExpTests
         }
     }
 
-    private sealed record RegExpMatch(string[] Captures, int Index, Dictionary<string, string>? Groups)
+    private sealed record class RegExpMatch(string[] Captures, int Index, Dictionary<string, string>? Groups)
     {
         public static (RegExpMatch[]?, string?) MatchesFrom(Expression expression)
         {
