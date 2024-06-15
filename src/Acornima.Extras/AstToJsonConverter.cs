@@ -178,7 +178,14 @@ public class AstToJsonConverter : AstVisitor
 
     public void Convert(Node node)
     {
-        Visit(node ?? ThrowArgumentNullException<Node>(nameof(node)));
+        if (node is null)
+        {
+            ThrowArgumentNullException<Node>(nameof(node));
+        }
+
+        Reset();
+
+        Visit(node);
     }
 
     public override object? Visit(Node? node)

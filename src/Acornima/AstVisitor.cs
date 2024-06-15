@@ -13,6 +13,11 @@ public partial class AstVisitor
 
     private int _recursionDepth;
 
+    protected virtual void Reset()
+    {
+        _recursionDepth = 0;
+    }
+
     public virtual object? Visit(Node node)
     {
         _recursionDepth++;

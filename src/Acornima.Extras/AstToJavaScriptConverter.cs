@@ -47,14 +47,26 @@ public partial class AstToJavaScriptConverter : AstVisitor
 
     protected Node? ParentNode { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _writeContext.ParentNode; }
 
-    public void Convert(Node node)
+    protected override void Reset()
     {
+        base.Reset();
+
         _writeContext = default;
         _currentStatementFlags = StatementFlags.None;
         _currentExpressionFlags = ExpressionFlags.None;
         _currentAuxiliaryNodeContext = null;
+    }
 
-        Visit(node ?? ThrowArgumentNullException<Node>(nameof(node)));
+    public void Convert(Node node)
+    {
+        if (node is null)
+        {
+            ThrowArgumentNullException<Node>(nameof(node));
+        }
+
+        Reset();
+
+        Visit(node);
 
         Writer.Finish();
     }
