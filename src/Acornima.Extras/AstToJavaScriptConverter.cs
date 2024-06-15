@@ -311,25 +311,16 @@ public partial class AstToJavaScriptConverter : AstVisitor
 
         _writeContext.SetNodeProperty(nameof(node.Value), static node => node.As<Property>().Value);
 
-        Expression? valueExpression;
-        if (node is not null)
+        if (_currentAuxiliaryNodeContext != s_bindingPatternAllowsExpressionsFlag)
         {
-            if (_currentAuxiliaryNodeContext != s_bindingPatternAllowsExpressionsFlag)
-            {
-                VisitAuxiliaryNode(node.Value);
-            }
-            else if ((valueExpression = node.Value as Expression) is null)
-            {
-                VisitAuxiliaryNode(node.Value, static delegate { return s_bindingPatternAllowsExpressionsFlag; }); // propagate flag to sub-patterns
-            }
-            else
-            {
-                VisitRootExpression(valueExpression, RootExpressionFlags(needsParens: ExpressionNeedsParensInList(valueExpression)));
-            }
+            VisitAuxiliaryNode(node.Value);
+        }
+        else if (node.Value is not Expression valueExpression)
+        {
+            VisitAuxiliaryNode(node.Value, static delegate { return s_bindingPatternAllowsExpressionsFlag; }); // propagate flag to sub-patterns
         }
         else
         {
-            valueExpression = node.Value.As<Expression>();
             VisitRootExpression(valueExpression, RootExpressionFlags(needsParens: ExpressionNeedsParensInList(valueExpression)));
         }
 
