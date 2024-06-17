@@ -463,7 +463,7 @@ public partial class AstToJavaScriptConverter : AstVisitor
         }
 
         _writeContext.SetNodeProperty(nameof(node.Body), static node => node.As<CatchClause>().Body);
-        VisitStatement(node.Body, StatementBodyFlags(isRightMost: ParentNode!.As<TryStatement>().Finalizer is null));
+        VisitStatement(node.Body, StatementBodyFlags(isRightMost: ParentNode?.As<TryStatement>().Finalizer is null));
 
         return node;
     }
