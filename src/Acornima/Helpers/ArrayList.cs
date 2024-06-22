@@ -74,9 +74,9 @@ using static ExceptionHelper;
 [DebuggerDisplay($"{nameof(Count)} = {{{nameof(Count)}}}, {nameof(Capacity)} = {{{nameof(Capacity)}}}, Version = {{{nameof(_localVersion)}}}")]
 [DebuggerTypeProxy(typeof(ArrayList<>.DebugView))]
 #endif
-internal partial struct ArrayList<T> : IList<T>
+internal partial struct ArrayList<T> : IList<T>, IReadOnlyList<T>
 {
-    private const int MinAllocatedCount = 4;
+    internal const int MinAllocatedCount = 4;
 
     private T[]? _items;
     private int _count;
@@ -239,7 +239,7 @@ internal partial struct ArrayList<T> : IList<T>
     internal readonly ref T LastItemRef() => ref GetItemRef(_count - 1);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static long GrowCapacity(int capacity)
+    internal static long GrowCapacity(int capacity)
     {
         // NOTE: Using a growth factor of 3/2 yields better benchmark results than 2.
         // It also results in less excess when the underlying array is returned directly wrapped in a NodeList, Span, etc.

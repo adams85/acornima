@@ -693,10 +693,10 @@ public partial class Parser
             cases.Add(current);
         }
 
-        ExitScope();
+        var scope = ExitScope();
         _labels.PopRef();
 
-        return FinishNode(startMarker, new SwitchStatement(discriminant, NodeList.From(ref cases)));
+        return FinishNode(startMarker, new SwitchStatement(discriminant, NodeList.From(ref cases)), scope);
     }
 
     private ThrowStatement ParseThrowStatement(in Marker startMarker)
@@ -737,7 +737,11 @@ public partial class Parser
         }
 
         EnterScope(scopeFlags);
+
         CheckLValPattern(param, bindingType);
+        ref var lexicalList = ref CurrentScope._lexical;
+        lexicalList.ParamCount = lexicalList.Count;
+
         Expect(TokenType.ParenRight);
 
         return param;
@@ -776,9 +780,9 @@ public partial class Parser
 
             blockStartMarker = StartNode();
             var body = ParseBlockStatement(blockStartMarker, createNewLexicalScope: false);
-            ExitScope();
+            var scope = ExitScope();
 
-            handler = FinishNode(clauseStartMarker, new CatchClause(param, body));
+            handler = FinishNode(clauseStartMarker, new CatchClause(param, body), scope);
         }
 
         NestedBlockStatement? finalizer;
@@ -911,12 +915,12 @@ public partial class Parser
         Expect(TokenType.BraceLeft);
 
         var statements = new ArrayList<Statement>();
-        ParseBlock(ref statements, createNewLexicalScope);
+        var scope = ParseBlock(ref statements, createNewLexicalScope);
 
-        return FinishNode(startMarker, new NestedBlockStatement(NodeList.From(ref statements)));
+        return FinishNode(startMarker, new NestedBlockStatement(NodeList.From(ref statements)), scope);
     }
 
-    private void ParseBlock(ref ArrayList<Statement> body, bool createNewLexicalScope = true, bool exitStrict = false)
+    private ReadOnlyRef<Scope> ParseBlock(ref ArrayList<Statement> body, bool createNewLexicalScope = true, bool exitStrict = false)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseBlock = function`
 
@@ -933,10 +937,7 @@ public partial class Parser
 
         _strict = _strict && !exitStrict;
 
-        if (createNewLexicalScope)
-        {
-            ExitScope();
-        }
+        return createNewLexicalScope ? ExitScope() : default;
     }
 
     // Parse a regular `for` loop. The disambiguation code in
@@ -956,10 +957,10 @@ public partial class Parser
 
         var body = ParseStatement(StatementContext.For);
 
-        ExitScope();
+        var scope = ExitScope();
         _labels.PopRef();
 
-        return FinishNode(startMarker, new ForStatement(init, test, update, body));
+        return FinishNode(startMarker, new ForStatement(init, test, update, body), scope);
     }
 
     // Parse a `for`/`in` and `for`/`of` loop, which are almost
@@ -993,12 +994,13 @@ public partial class Parser
 
         var body = ParseStatement(StatementContext.For);
 
-        ExitScope();
+        var scope = ExitScope();
         _labels.PopRef();
 
         return FinishNode<Statement>(startMarker, isForIn
             ? new ForInStatement(left, right, body)
-            : new ForOfStatement(left, right, body, await));
+            : new ForOfStatement(left, right, body, await),
+            scope);
     }
 
     // Parse a list of variable declarations.
@@ -1107,15 +1109,16 @@ public partial class Parser
         }
 
         var parameters = ParseFunctionParams();
-        var body = (FunctionBody)ParseFunctionBody(id, parameters, isArrowFunction: false, isMethod: false, context, out _);
+        var scope = ParseFunctionBody(id, parameters, isArrowFunction: false, isMethod: false, context, out _, out var body);
 
         _yieldPosition = oldYieldPos;
         _awaitPosition = oldAwaitPos;
         _awaitIdentifierPosition = oldAwaitIdentPos;
 
         return FinishNode<StatementOrExpression>(startMarker, isStatement
-            ? new FunctionDeclaration(id, parameters, body, generator, isAsync)
-            : new FunctionExpression(id, parameters, body, generator, isAsync));
+            ? new FunctionDeclaration(id, parameters, (FunctionBody)body, generator, isAsync)
+            : new FunctionExpression(id, parameters, (FunctionBody)body, generator, isAsync),
+            scope);
     }
 
     private NodeList<Node> ParseFunctionParams()
@@ -1140,6 +1143,11 @@ public partial class Parser
         _strict = true;
 
         var id = ParseClassId(flags);
+
+        // Original acornjs implementation doesn't create a scope for classes, however, as Acornima exposes scope information,
+        // it's necessary to create one so consumers can store and look up the class name, which is visible in the scope of the class.
+        EnterScope(ScopeFlags.None);
+
         var superClass = ParseClassSuper();
 
         var privateNameStatusIndex = EnterClassBody();
@@ -1187,11 +1195,14 @@ public partial class Parser
         var classBody = FinishNode(classBodyStartMarker, new ClassBody(NodeList.From(ref body)));
         ExitClassBody();
 
+        var scope = ExitScope();
+
         var isStatement = (flags & FunctionOrClassFlags.Statement) != 0;
 
         return FinishNode<StatementOrExpression>(startMarker, isStatement
             ? new ClassDeclaration(id, superClass, classBody, NodeList.From(ref _decorators))
-            : new ClassExpression(id, superClass, classBody, NodeList.From(ref _decorators)));
+            : new ClassExpression(id, superClass, classBody, NodeList.From(ref _decorators)),
+            scope);
     }
 
     private Node ParseClassElement(bool constructorAllowsSuper)
@@ -1429,13 +1440,13 @@ public partial class Parser
         {
             // To raise SyntaxError if 'arguments' exists in the initializer.
             ref var scope = ref CurrentThisScope(out var thisScopeIndex);
-            var oldScopeFlags = scope.Flags;
-            scope.Flags |= ScopeFlags.InClassFieldInit;
+            var oldScopeFlags = scope._flags;
+            scope._flags |= ScopeFlags.InClassFieldInit;
 
             value = ParseMaybeAssign(ref NullRef<DestructuringErrors>());
 
             scope = _scopeStack.GetItemRef(thisScopeIndex);
-            scope.Flags = oldScopeFlags;
+            scope._flags = oldScopeFlags;
         }
         else
         {
@@ -1464,10 +1475,10 @@ public partial class Parser
             body.Add(statement);
         }
 
-        ExitScope();
+        var scope = ExitScope();
         _labels = oldLabels;
 
-        return FinishNode(startMarker, new StaticBlock(NodeList.From(ref body)));
+        return FinishNode(startMarker, new StaticBlock(NodeList.From(ref body)), scope);
     }
 
     private Identifier? ParseClassId(FunctionOrClassFlags flags)

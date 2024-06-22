@@ -25,29 +25,33 @@ public partial class Parser
         return new Marker(_tokenizer._start, _tokenizer._startLocation);
     }
 
-    internal T FinishNodeAt<T>(in Marker startMarker, in Marker endMarker, T node) where T : Node
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    internal T FinishNodeAt<T>(in Marker startMarker, in Marker endMarker, T node, ReadOnlyRef<Scope> scope = default) where T : Node
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/node.js > `function finishNodeAt`, `pp.finishNodeAt = function`
 
         node._range = new Range(startMarker.Index, endMarker.Index);
         node._location = new SourceLocation(startMarker.Position, endMarker.Position, _tokenizer._sourceFile);
-        _options._onNode?.Invoke(node);
+        _options._onNode?.Invoke(node, new OnNodeContext(scope, _scopeStack));
         return node;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal T FinishNode<T>(in Marker startMarker, T node) where T : Node
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    internal T FinishNode<T>(in Marker startMarker, T node, ReadOnlyRef<Scope> scope = default) where T : Node
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/node.js > `pp.finishNode = function`
 
-        return FinishNodeAt(startMarker, new Marker(_tokenizer._lastTokenEnd, _tokenizer._lastTokenEndLocation), node);
+        node._range = new Range(startMarker.Index, _tokenizer._lastTokenEnd);
+        node._location = new SourceLocation(startMarker.Position, _tokenizer._lastTokenEndLocation, _tokenizer._sourceFile);
+        _options._onNode?.Invoke(node, new OnNodeContext(scope, _scopeStack));
+        return node;
     }
 
     private T ReinterpretNode<T>(Node originalNode, T node) where T : Node
     {
         node._range = originalNode._range;
         node._location = originalNode._location;
-        _options._onNode?.Invoke(node);
+        _options._onNode?.Invoke(node, new OnNodeContext(default, _scopeStack));
         return node;
     }
 

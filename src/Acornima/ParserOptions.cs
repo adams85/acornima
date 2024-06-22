@@ -13,7 +13,12 @@ public delegate void OnInsertedSemicolonHandler(int lastTokenEnd, Position lastT
 
 public delegate void OnTrailingCommaHandler(int lastTokenEnd, Position lastTokenEndLocation);
 
-public delegate void OnNodeHandler(Node node);
+public delegate void OnNodeHandler(Node node, OnNodeContext context);
+
+internal interface IOnNodeHandlerWrapper
+{
+    OnNodeHandler? OnNode { get; set; }
+}
 
 public record class ParserOptions
 {
@@ -210,7 +215,7 @@ public record class ParserOptions
     /// This callback allows you to make changes to the nodes created by the parser.
     /// E.g. you can use it to store a reference to the parent node for later use:
     /// <code>
-    /// OnNode = node =>
+    /// OnNode = (node, _) =>
     /// {
     ///     foreach (var child in node.ChildNodes)
     ///     {
@@ -221,5 +226,19 @@ public record class ParserOptions
     /// Please note that the callback is also executed on nodes which are reinterpreted
     /// later during parsing, that is, on nodes which won't become a part of the final AST.
     /// </remarks>
-    public OnNodeHandler? OnNode { get => _onNode; init => _onNode = value; }
+    public OnNodeHandler? OnNode
+    {
+        get => _onNode?.Target is IOnNodeHandlerWrapper wrapper ? wrapper.OnNode : _onNode;
+        init
+        {
+            if (_onNode?.Target is IOnNodeHandlerWrapper wrapper)
+            {
+                wrapper.OnNode = value;
+            }
+            else
+            {
+                _onNode = value;
+            }
+        }
+    }
 }

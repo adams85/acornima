@@ -1649,13 +1649,13 @@ public partial class Parser
 
         NodeList<Node> parameters = ParseBindingList(close: TokenType.ParenRight, allowEmptyElement: false, allowTrailingComma: _tokenizerOptions._ecmaVersion >= EcmaVersion.ES8)!;
         CheckYieldAwaitInDefaultParams();
-        var body = ParseFunctionBody(id: null, parameters, isArrowFunction: false, isMethod: true, ExpressionContext.Default, out _);
+        var scope = ParseFunctionBody(id: null, parameters, isArrowFunction: false, isMethod: true, ExpressionContext.Default, out _, out var body);
 
         _yieldPosition = oldYieldPos;
         _awaitPosition = oldAwaitPos;
         _awaitIdentifierPosition = oldAwaitIdentPos;
 
-        return FinishNode(startMarker, new FunctionExpression(id: null, parameters, (FunctionBody)body, isGenerator, isAsync));
+        return FinishNode(startMarker, new FunctionExpression(id: null, parameters, (FunctionBody)body, isGenerator, isAsync), scope);
     }
 
     // Parse arrow function expression with given parameters.
@@ -1674,24 +1674,22 @@ public partial class Parser
         EnterScope(FunctionFlags(isAsync, generator: false) | ScopeFlags.Arrow);
 
         NodeList<Node> paramList = ToAssignableList(parameters!, isBinding: true, isParams: true)!;
-        var body = ParseFunctionBody(id: null, paramList, isArrowFunction: true, isMethod: false, context, out var expression);
+        var scope = ParseFunctionBody(id: null, paramList, isArrowFunction: true, isMethod: false, context, out var expression, out var body);
 
         _yieldPosition = oldYieldPos;
         _awaitPosition = oldAwaitPos;
         _awaitIdentifierPosition = oldAwaitIdentPos;
 
-        return FinishNode(startMarker, new ArrowFunctionExpression(paramList, body, expression, isAsync));
+        return FinishNode(startMarker, new ArrowFunctionExpression(paramList, body, expression, isAsync), scope);
     }
 
     // Parse function body and check parameters.
-    private StatementOrExpression ParseFunctionBody(Identifier? id, in NodeList<Node> parameters,
-        bool isArrowFunction, bool isMethod, ExpressionContext context, out bool expression)
+    private ReadOnlyRef<Scope> ParseFunctionBody(Identifier? id, in NodeList<Node> parameters, bool isArrowFunction, bool isMethod, ExpressionContext context,
+        out bool expression, out StatementOrExpression body)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/expression.js > `pp.parseFunctionBody = function`
 
         expression = isArrowFunction && _tokenizer._type != TokenType.BraceLeft;
-
-        StatementOrExpression body;
         if (expression)
         {
             CheckParams(parameters, allowDuplicates: false);
@@ -1722,15 +1720,13 @@ public partial class Parser
             // flag (restore them to their old value afterwards).
             var oldLabels = _labels;
             _labels = new ArrayList<Label>();
-            ParseBlock(ref statements, createNewLexicalScope: false, exitStrict: strict && !oldStrict);
+            var scope = ParseBlock(ref statements, createNewLexicalScope: false, exitStrict: strict && !oldStrict);
             _labels = oldLabels;
 
-            body = FinishNode(startMarker, new FunctionBody(NodeList.From(ref statements), strict));
+            body = FinishNode(startMarker, new FunctionBody(NodeList.From(ref statements), strict), scope);
         }
 
-        ExitScope();
-
-        return body;
+        return ExitScope();
     }
 
     private static bool IsSimpleParamList(in NodeList<Node> parameters)
@@ -1761,6 +1757,9 @@ public partial class Parser
             Debug.Assert(param is not null);
             CheckLValInnerPattern(param!, BindingType.Var, checkClashes: nameHash);
         }
+
+        ref var varList = ref CurrentScope._var;
+        varList.ParamCount = varList.Count;
     }
 
     // Parses a comma-separated list of expressions, and returns them as

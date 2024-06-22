@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Numerics;
-using System.Text.RegularExpressions;
 using Acornima.Ast;
 using Acornima.Helpers;
-using Acornima.Tests.Acorn;
 using Xunit;
 
 namespace Acornima.Tests;
@@ -90,9 +88,9 @@ public partial class ParserTests
 
         var parser = new Parser();
 #if DEBUG
-        const int depth = 400;
+        const int depth = 395;
 #else
-        const int depth = 895;
+        const int depth = 1000;
 #endif
         var input = $"if ({new string('(', depth)}true{new string(')', depth)}) {{ }}";
         parser.ParseScript(input);
@@ -214,13 +212,50 @@ public partial class ParserTests
         Assert.Equal(0, comments[0].Range.Start);
     }
 
-    [Fact]
-    public void RecordsParentNodeInUserDataCorrectly()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void RecordsParentNodeInUserDataCorrectly(bool registerUserHandler)
     {
-        var parser = new Parser(new ParserOptions().RecordParentNodeInUserData(true));
+        var userHandlerCalled = false;
+
+        var options = (registerUserHandler ? new ParserOptions { OnNode = delegate { userHandlerCalled = true; } } : new ParserOptions())
+            .RecordParentNodeInUserData();
+
+        var parser = new Parser(options);
         var script = parser.ParseScript("function toObj(a, b) { return { a, b() { return b } }; }");
 
-        new ParentNodeChecker().Check(script);
+        Func<Node, Node?> parentGetter = node => (Node?)node.UserData;
+
+        new ParentNodeChecker(parentGetter).Check(script);
+
+        Assert.Equal(registerUserHandler, userHandlerCalled);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ShouldPreserveUserOnNodeHandler(bool registerUserHandler)
+    {
+        const string code = "function toObj(a, b) { return { a, b: x => { let y = 2; return x * y } }; }";
+
+        var userHandlerCalled = false;
+        OnNodeHandler? userHandler = registerUserHandler ? delegate { userHandlerCalled = true; } : null;
+
+        var options = new ParserOptions { OnNode = userHandler };
+        Assert.Same(userHandler, options.OnNode);
+
+        options = options.RecordParentNodeInUserData();
+        Assert.Same(userHandler, options.OnNode);
+
+        options = options.RecordParentNodeInUserData(enable: false);
+        Assert.Same(userHandler, options.OnNode);
+
+        var parser = new Parser(options);
+        var script = parser.ParseScript(code);
+
+        Assert.Empty(script.DescendantNodesAndSelf().Where(node => node.UserData is not null));
+        Assert.Equal(registerUserHandler, userHandlerCalled);
     }
 
     [Theory]
@@ -582,16 +617,23 @@ public partial class ParserTests
 
     private sealed class ParentNodeChecker : AstVisitor
     {
+        private readonly Func<Node, Node?> _parentGetter;
+
+        public ParentNodeChecker(Func<Node, Node?> parentGetter)
+        {
+            _parentGetter = parentGetter;
+        }
+
         public void Check(Node node)
         {
-            Assert.Null(node.UserData);
+            Assert.Null(_parentGetter(node));
 
             base.Visit(node);
         }
 
         public override object? Visit(Node node)
         {
-            var parent = (Node?)node.UserData;
+            var parent = _parentGetter(node);
             Assert.NotNull(parent);
             Assert.Contains(node, parent!.ChildNodes);
 

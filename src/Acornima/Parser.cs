@@ -53,7 +53,7 @@ public sealed partial class Parser : IParser
             var body = ParseTopLevel();
 
             Debug.Assert(_tokenizer._type == TokenType.EOF);
-            return FinishNodeAt(startMarker, new Marker(_tokenizer._start, _tokenizer._startLocation), new Script(body, _strict));
+            return FinishNodeAt(startMarker, new Marker(_tokenizer._start, _tokenizer._startLocation), new Script(body, _strict), Scope.GetScopeRef(_scopeStack, 0));
         }
         finally
         {
@@ -80,7 +80,7 @@ public sealed partial class Parser : IParser
             var body = ParseTopLevel();
 
             Debug.Assert(_tokenizer._type == TokenType.EOF);
-            return FinishNodeAt(startMarker, new Marker(_tokenizer._start, _tokenizer._startLocation), new Module(body));
+            return FinishNodeAt(startMarker, new Marker(_tokenizer._start, _tokenizer._startLocation), new Module(body), Scope.GetScopeRef(_scopeStack, 0));
         }
         finally
         {

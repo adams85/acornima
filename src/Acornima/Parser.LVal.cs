@@ -469,7 +469,7 @@ public partial class Parser
 
                     if (bindingType != BindingType.Outside)
                     {
-                        DeclareName(identifier.Name, bindingType, identifier.Start);
+                        DeclareName(identifier, bindingType);
                     }
                 }
                 break;
@@ -561,19 +561,20 @@ public partial class Parser
         }
     }
 
-    private void DeclareName(string name, BindingType bindingType, int pos)
+    private void DeclareName(Identifier id, BindingType bindingType)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/scope.js > `pp.declareName = function`
 
         var redeclared = false;
+        var name = id.Name;
         ref var scope = ref NullRef<Scope>();
         switch (bindingType)
         {
             case BindingType.Lexical:
                 scope = ref CurrentScope;
-                redeclared = scope.Lexical.IndexOf(name) >= 0 || scope.Functions.IndexOf(name) >= 0 || scope.Var.IndexOf(name) >= 0;
-                scope.Lexical.Add(name);
-                if (_inModule && (scope.Flags & ScopeFlags.Top) != 0)
+                redeclared = scope._lexical.Contains(name) || scope._functions.Contains(name) || scope._var.Contains(name);
+                scope._lexical.Add(id);
+                if (_inModule && (scope._flags & ScopeFlags.Top) != 0)
                 {
                     _undefinedExports!.Remove(name);
                 }
@@ -581,34 +582,34 @@ public partial class Parser
 
             case BindingType.SimpleCatch:
                 scope = ref CurrentScope;
-                scope.Lexical.Add(name);
+                scope._lexical.Add(id);
                 break;
 
             case BindingType.Function:
                 scope = ref CurrentScope;
-                redeclared = (scope.Flags & _functionsAsVarInScopeFlags) != 0
-                    ? scope.Lexical.IndexOf(name) >= 0
-                    : scope.Lexical.IndexOf(name) >= 0 || scope.Var.IndexOf(name) >= 0;
-                scope.Functions.Add(name);
+                redeclared = (scope._flags & _functionsAsVarInScopeFlags) != 0
+                    ? scope._lexical.Contains(name)
+                    : scope._lexical.Contains(name) || scope._var.Contains(name);
+                scope._functions.Add(id);
                 break;
 
             default:
                 for (var i = _scopeStack.Count - 1; i >= 0; --i)
                 {
                     scope = ref _scopeStack.GetItemRef(i);
-                    if (scope.Lexical.IndexOf(name) >= 0 && !((scope.Flags & ScopeFlags.SimpleCatch) != 0 && scope.Lexical[0] == name)
-                        || (scope.Flags & _functionsAsVarInScopeFlags) == 0 && scope.Functions.IndexOf(name) >= 0)
+                    if (scope._lexical.Contains(name) && !((scope._flags & ScopeFlags.SimpleCatch) != 0 && scope._lexical[0] == name)
+                        || (scope._flags & _functionsAsVarInScopeFlags) == 0 && scope._functions.Contains(name))
                     {
                         redeclared = true;
                         break;
                     }
 
-                    scope.Var.Add(name);
-                    if (_inModule && (scope.Flags & ScopeFlags.Top) != 0)
+                    scope._var.Add(id);
+                    if (_inModule && (scope._flags & ScopeFlags.Top) != 0)
                     {
                         _undefinedExports!.Remove(name);
                     }
-                    if ((scope.Flags & ScopeFlags.Var) != 0)
+                    if ((scope._flags & ScopeFlags.Var) != 0)
                     {
                         break;
                     }
@@ -618,8 +619,8 @@ public partial class Parser
 
         if (redeclared)
         {
-            // RaiseRecoverable(pos, $"Identifier '{name}' has already been declared"); // original acornjs error reporting
-            Raise(pos, VarRedeclaration, new object[] { name });
+            // RaiseRecoverable(id.Start, $"Identifier '{name}' has already been declared"); // original acornjs error reporting
+            Raise(id.Start, VarRedeclaration, new object[] { name });
         }
     }
 
@@ -629,8 +630,8 @@ public partial class Parser
 
         ref readonly var rootScope = ref _scopeStack.GetItemRef(0);
         // scope.functions must be empty as Module code is always strict.
-        if (rootScope.Lexical.IndexOf(id.Name) < 0
-            && rootScope.Var.IndexOf(id.Name) < 0)
+        if (!rootScope._lexical.Contains(id.Name)
+            && !rootScope._var.Contains(id.Name))
         {
             _undefinedExports![id.Name] = id.Start;
         }

@@ -15,6 +15,7 @@
     <NoWarn>$(NoWarn);CA1716</NoWarn>  <!-- Identifiers should not match keywords -->
     <NoWarn>$(NoWarn);CA1510</NoWarn>  <!-- Use ArgumentNullException.ThrowIfNull -->
     <NoWarn>$(NoWarn);CA1711</NoWarn>  <!-- Identifiers should not have incorrect suffix -->
+    <NoWarn>$(NoWarn);CA1863</NoWarn>  <!-- Cache a 'CompositeFormat' for repeated use in this formatting operation -->
   </PropertyGroup>
 
 </Project>
