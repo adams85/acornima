@@ -74,7 +74,7 @@ using static ExceptionHelper;
 [DebuggerDisplay($"{nameof(Count)} = {{{nameof(Count)}}}, {nameof(Capacity)} = {{{nameof(Capacity)}}}, Version = {{{nameof(_localVersion)}}}")]
 [DebuggerTypeProxy(typeof(ArrayList<>.DebugView))]
 #endif
-internal struct ArrayList<T> : IList<T>
+internal partial struct ArrayList<T> : IList<T>
 {
     private const int MinAllocatedCount = 4;
 
@@ -115,28 +115,30 @@ internal struct ArrayList<T> : IList<T>
 #endif
     }
 
-    [Conditional("DEBUG")]
+#if !DEBUG
+    readonly partial void AssertUnchanged();
+#else
     private readonly void AssertUnchanged()
     {
-#if DEBUG
         if (_localVersion != (_sharedVersion?.Value ?? 0))
         {
             ThrowInvalidOperationException<T>();
         }
-#endif
     }
+#endif
 
-    [Conditional("DEBUG")]
+#if !DEBUG
+    partial void OnChanged();
+#else
     private void OnChanged()
     {
-#if DEBUG
         _sharedVersion ??= new StrongBox<int>();
 
         ref var version = ref _sharedVersion.Value;
         version++;
         _localVersion = version;
-#endif
     }
+#endif
 
     public int Capacity
     {
