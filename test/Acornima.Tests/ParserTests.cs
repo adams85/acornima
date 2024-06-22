@@ -213,21 +213,124 @@ public partial class ParserTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void RecordsParentNodeInUserDataCorrectly(bool registerUserHandler)
+    [InlineData(false, false, false)]
+    [InlineData(false, false, true)]
+    [InlineData(false, true, false)]
+    [InlineData(false, true, true)]
+    [InlineData(true, false, false)]
+    [InlineData(true, false, true)]
+    [InlineData(true, true, false)]
+    [InlineData(true, true, true)]
+    public void RecordsParentNodeInUserDataCorrectly(bool registerUserHandler, bool enableScopeInfoRecording, bool disableScopeInfoRecording)
     {
         var userHandlerCalled = false;
 
         var options = (registerUserHandler ? new ParserOptions { OnNode = delegate { userHandlerCalled = true; } } : new ParserOptions())
             .RecordParentNodeInUserData();
 
+        if (enableScopeInfoRecording)
+        {
+            options = options.RecordScopeInfoInUserData();
+        }
+        if (disableScopeInfoRecording)
+        {
+            options = options.RecordScopeInfoInUserData(enable: false);
+        }
+
         var parser = new Parser(options);
         var script = parser.ParseScript("function toObj(a, b) { return { a, b() { return b } }; }");
 
-        Func<Node, Node?> parentGetter = node => (Node?)node.UserData;
+        Func<Node, Node?> parentGetter = !enableScopeInfoRecording || disableScopeInfoRecording
+            ? node => (Node?)node.UserData
+            : node => (Node?)(node.UserData is ScopeInfo scopeInfo ? scopeInfo.UserData : node.UserData);
 
         new ParentNodeChecker(parentGetter).Check(script);
+
+        Assert.Equal(registerUserHandler, userHandlerCalled);
+    }
+
+    [Theory]
+    [InlineData(false, false, false)]
+    [InlineData(false, false, true)]
+    [InlineData(false, true, false)]
+    [InlineData(false, true, true)]
+    [InlineData(true, false, false)]
+    [InlineData(true, false, true)]
+    [InlineData(true, true, false)]
+    [InlineData(true, true, true)]
+    public void RecordsScopeInfoInUserDataCorrectly(bool registerUserHandler, bool enableParentNodeRecording, bool disableParentNodeRecording)
+    {
+        var userHandlerCalled = false;
+
+        var options = (registerUserHandler ? new ParserOptions { OnNode = delegate { userHandlerCalled = true; } } : new ParserOptions())
+            .RecordScopeInfoInUserData();
+
+        if (enableParentNodeRecording)
+        {
+            options = options.RecordParentNodeInUserData();
+        }
+        if (disableParentNodeRecording)
+        {
+            options = options.RecordParentNodeInUserData(enable: false);
+        }
+
+        var parser = new Parser(options);
+        var script = parser.ParseScript("function toObj(a, b) { return { a, b: x => { let y = 2; return x * y } }; }");
+
+        var nodesWithScopes = script.DescendantNodesAndSelf()
+            .Select(node => node.UserData)
+            .OfType<ScopeInfo>()
+            .ToArray();
+
+        Assert.Equal(5, nodesWithScopes.Length);
+
+        Assert.Same(script, nodesWithScopes[0].AssociatedNode);
+        Assert.Null(nodesWithScopes[0].Parent);
+        Assert.Same(nodesWithScopes[0], nodesWithScopes[0].VarScope);
+        Assert.Same(nodesWithScopes[0], nodesWithScopes[0].ThisScope);
+        Assert.Equal(new[] { "toObj" }, nodesWithScopes[0].Functions.Select(id => id.Name));
+        Assert.Empty(nodesWithScopes[0].LexicalVariables);
+        Assert.Empty(nodesWithScopes[0].VarVariables);
+
+        var functionDeclaration = script.Body[0].As<FunctionDeclaration>();
+        Assert.Same(functionDeclaration, nodesWithScopes[1].AssociatedNode);
+        Assert.Same(nodesWithScopes[0], nodesWithScopes[1].Parent);
+        Assert.Same(nodesWithScopes[0], nodesWithScopes[1].VarScope);
+        Assert.Same(nodesWithScopes[0], nodesWithScopes[1].ThisScope);
+        Assert.Empty(nodesWithScopes[1].Functions);
+        Assert.Empty(nodesWithScopes[1].LexicalVariables);
+        Assert.Equal(new[] { "a", "b", "toObj" }, nodesWithScopes[1].VarVariables.Select(id => id.Name));
+
+        var functionBody = functionDeclaration.Body;
+        Assert.Same(functionBody, nodesWithScopes[2].AssociatedNode);
+        Assert.Same(nodesWithScopes[1], nodesWithScopes[2].Parent);
+        Assert.Same(nodesWithScopes[2], nodesWithScopes[2].VarScope);
+        Assert.Same(nodesWithScopes[2], nodesWithScopes[2].ThisScope);
+        Assert.Empty(nodesWithScopes[2].Functions);
+        Assert.Empty(nodesWithScopes[2].LexicalVariables);
+        Assert.Empty(nodesWithScopes[2].VarVariables);
+
+        var arrowFunctionExpression = functionBody.Body[0]
+            .As<ReturnStatement>().Argument!
+            .As<ObjectExpression>().Properties[1]
+            .As<ObjectProperty>().Value
+            .As<ArrowFunctionExpression>();
+        Assert.Same(arrowFunctionExpression, nodesWithScopes[3].AssociatedNode);
+        Assert.Same(nodesWithScopes[2], nodesWithScopes[3].Parent);
+        Assert.Same(nodesWithScopes[2], nodesWithScopes[3].VarScope);
+        Assert.Same(nodesWithScopes[2], nodesWithScopes[3].ThisScope);
+        Assert.Empty(nodesWithScopes[3].Functions);
+        Assert.Empty(nodesWithScopes[3].LexicalVariables);
+        Assert.Equal(new[] { "x" }, nodesWithScopes[3].VarVariables.Select(id => id.Name));
+
+        functionBody = arrowFunctionExpression.Body.As<FunctionBody>();
+        Assert.Same(functionBody, nodesWithScopes[4].AssociatedNode);
+        Assert.Same(nodesWithScopes[3], nodesWithScopes[4].Parent);
+        Assert.Same(nodesWithScopes[4], nodesWithScopes[4].VarScope);
+        Assert.Same(nodesWithScopes[2], nodesWithScopes[4].ThisScope);
+        Assert.Empty(nodesWithScopes[4].Functions);
+        Assert.Equal(new[] { "y" }, nodesWithScopes[4].LexicalVariables.Select(id => id.Name));
+        Assert.Empty(nodesWithScopes[4].VarVariables);
 
         Assert.Equal(registerUserHandler, userHandlerCalled);
     }
@@ -248,11 +351,39 @@ public partial class ParserTests
         options = options.RecordParentNodeInUserData();
         Assert.Same(userHandler, options.OnNode);
 
+        options = options.RecordScopeInfoInUserData();
+        Assert.Same(userHandler, options.OnNode);
+
         options = options.RecordParentNodeInUserData(enable: false);
+        Assert.Same(userHandler, options.OnNode);
+
+        options = options.RecordScopeInfoInUserData(enable: false);
         Assert.Same(userHandler, options.OnNode);
 
         var parser = new Parser(options);
         var script = parser.ParseScript(code);
+
+        Assert.Empty(script.DescendantNodesAndSelf().Where(node => node.UserData is not null));
+        Assert.Equal(registerUserHandler, userHandlerCalled);
+
+        userHandlerCalled = false;
+
+        Assert.Same(userHandler, options.OnNode);
+
+        options = options.RecordScopeInfoInUserData();
+        Assert.Same(userHandler, options.OnNode);
+
+        options = options.RecordParentNodeInUserData();
+        Assert.Same(userHandler, options.OnNode);
+
+        options = options.RecordScopeInfoInUserData(enable: false);
+        Assert.Same(userHandler, options.OnNode);
+
+        options = options.RecordParentNodeInUserData(enable: false);
+        Assert.Same(userHandler, options.OnNode);
+
+        parser = new Parser(options);
+        script = parser.ParseScript(code);
 
         Assert.Empty(script.DescendantNodesAndSelf().Where(node => node.UserData is not null));
         Assert.Equal(registerUserHandler, userHandlerCalled);

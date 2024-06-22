@@ -18,6 +18,8 @@ public delegate void OnNodeHandler(Node node, OnNodeContext context);
 internal interface IOnNodeHandlerWrapper
 {
     OnNodeHandler? OnNode { get; set; }
+
+    void ReleaseLargeBuffers();
 }
 
 public record class ParserOptions
