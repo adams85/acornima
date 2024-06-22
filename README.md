@@ -7,23 +7,23 @@
 
 This project is an interbreeding of the [acornjs](https://github.com/acornjs/) and the [Esprima.NET](https://github.com/sebastienros/esprima-dotnet) parsers, with the intention of creating an even more complete and performant ECMAScript (a.k.a JavaScript) parser library for .NET by combining the best bits of those.
 
-It should also be mentioned that there is an earlier .NET port of acornjs, [AcornSharp](https://github.com/MatthewSmit/AcornSharp), which though is unmaintained for a long time, served as a good starting point. If it weren't for AcornSharp, this project probably have never started.
+It should also be mentioned that there is an earlier .NET port of acornjs, [AcornSharp](https://github.com/MatthewSmit/AcornSharp), which though is unmaintained for a long time, served as a good starting point. Had it not been for AcornSharp, this project would probably have never started.
 
 ### Here is how this Frankenstein's monster looks like:
 
-* The tokenizer is mostly a direct translation of the acornjs tokenizer to C# (with many smaller and bigger performance improvements, partly inspired by Esprima.NET) - apart from the regex validation/conversion logic, which has been borrowed from Esprima.NET currently.
+* The tokenizer is mostly a direct translation of the acornjs tokenizer to C# (with many bigger and smaller performance improvements, partly inspired by Esprima.NET) - apart from the regex validation/conversion logic, which has been borrowed from Esprima.NET currently.
 * The parser is ~99% acornjs (also with a bunch of minor improvements) and ~1% Esprima.NET (strict mode detection, public API). It is also worth mentioning that the error reporting has been changed to use the error messages of V8.
 * It includes protection against the non-catchable `StackOverflowException` using [the same approach](https://github.com/adams85/acornima/blob/v1.0.0/src/Acornima/Helpers/StackGuard.cs) as Roslyn.
-* Both projects follow the ESTree specification, so is Acornima. The actual AST implementation is based on that of Esprima.NET, with further minor improvements to the class hierarchy that bring it even closer to the spec and allow encoding a bit more information.
-* The built-in AST visitors and additional utility functionality stems from Esprima.NET as well.
+* Both projects follow the ESTree specification, so does Acornima. The actual AST implementation is based on that of Esprima.NET, with further minor improvements to the class hierarchy that bring it even closer to the spec and allow encoding a bit more information.
+* The built-in AST visitors and additional utility features stems from Esprima.NET as well.
 
 ### And what good comes out of this mix?
 
 * A parser which already matches the performance of Esprima.NET, while doing more: it also passes the **complete** [Test262 test suite](https://github.com/tc39/test262) for ECMAScript 2023.
-* It is also more economic with regard to stack usage, so it can parse ~1.7x deeper structures.
+* It is also more economic with regard to stack usage, so it can parse ~2x deeper structures.
 * More options for fine-tuning parsing.
 * A standalone tokenizer which can deal with most of the ambiguities of the JavaScript grammar (thanks to the clever context tracking solution implemented by acornjs).
-* As the parser tracks variable scopes to detect variable redeclarations, it will be possible to expose this information to the consumer.
+* The parser tracks variable scopes to detect variable redeclarations. As of v1.1.0, it's able to expose the collected scope information to the consumer (see also [this PR](https://github.com/adams85/acornima/pull/13) or this [other example of usage](https://github.com/adams85/bundling/blob/3.9.0/source/Bundling.EcmaScript/Internal/Helpers/VariableScopeBuilder.cs)).
 
 ### Getting started
 
