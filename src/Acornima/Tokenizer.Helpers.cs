@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Diagnostics;
 using System.Globalization;
 using System.Numerics;
@@ -40,10 +41,18 @@ public partial class Tokenizer
         return ch is '\n' or '\r' or '\u2028' or '\u2029';
     }
 
+#if NET8_0_OR_GREATER
+#pragma warning disable IDE1006 // Naming Styles
+    private static SearchValues<char> LineBreakChars = SearchValues.Create(new[] { '\r', '\n', '\u2028', '\u2029' });
+#pragma warning restore IDE1006 // Naming Styles
+#else
+    private static ReadOnlySpan<char> LineBreakChars => new[] { '\r', '\n', '\u2028', '\u2029' };
+#endif
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static bool ContainsLineBreak(ReadOnlySpan<char> text)
     {
-        return text.IndexOfAny("\r\n\u2028\u2029".AsSpan()) >= 0;
+        return text.IndexOfAny(LineBreakChars) >= 0;
     }
 
     internal static int NextLineBreak(string text, int startIndex, int endIndex)
