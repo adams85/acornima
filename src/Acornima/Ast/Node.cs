@@ -20,6 +20,8 @@ public abstract class Node : INode
         Type = type;
     }
 
+    Node INode.Node => this;
+
     public NodeType Type { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
     public virtual string TypeText => Type.ToString();

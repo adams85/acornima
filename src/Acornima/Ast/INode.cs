@@ -5,6 +5,7 @@ namespace Acornima.Ast;
 /// </summary>
 public interface INode
 {
+    Node Node { get; }
     NodeType Type { get; }
     ChildNodes ChildNodes { get; }
     int Start { get; }
