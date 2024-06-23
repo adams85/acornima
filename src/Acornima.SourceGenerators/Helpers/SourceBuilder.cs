@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Acornima.SourceGenerators.Helpers;
 
@@ -89,14 +90,14 @@ internal sealed class SourceBuilder
         return this;
     }
 
-    public SourceBuilder AppendEscaped(char c)
+    public SourceBuilder AppendLiteral(char c)
     {
-        return c == '\'' ? Append("\\'") : Append($"{c}");
+        return Append(SymbolDisplay.FormatLiteral(c, quote: true));
     }
 
-    public SourceBuilder AppendEscaped(string s)
+    public SourceBuilder AppendLiteral(string s)
     {
-        return Append(s.Replace("\"", "\\\""));
+        return Append(SymbolDisplay.FormatLiteral(s, quote: true));
     }
 
     public SourceBuilder AppendTypeName(CSharpTypeName typeName, Predicate<CSharpTypeName>? includeNamespace = null)

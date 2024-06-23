@@ -356,8 +356,8 @@ public class StringMatcherGenerator : IIncrementalGenerator
 
                 sb
                     .Append($"{paramName}[{i}]")
-                    .Append(" == '")
-                    .AppendEscaped(target[i]).Append("'");
+                    .Append(" == ")
+                    .AppendLiteral(target[i]);
 
                 addAnd = true;
             }
@@ -375,13 +375,13 @@ public class StringMatcherGenerator : IIncrementalGenerator
                 {
                     sb.Append($"{paramName}.Slice({startIndex})");
                 }
-                sb.Append(".SequenceEqual(\"")
-                    .AppendEscaped(target.AsSpan(startIndex).ToString())
-                    .Append("\".AsSpan())");
+                sb.Append(".SequenceEqual(")
+                    .AppendLiteral(target.AsSpan(startIndex).ToString())
+                    .Append(".AsSpan())");
             }
             else
             {
-                sb.Append($" == \"").AppendEscaped(target).Append("\"");
+                sb.Append($" == ").AppendLiteral(target);
             }
         }
     }
@@ -400,7 +400,7 @@ public class StringMatcherGenerator : IIncrementalGenerator
 
         foreach (var (discriminator, subGroup) in subGroups)
         {
-            sb.Append("'").AppendEscaped(discriminator).Append("' => ");
+            sb.AppendLiteral(discriminator).Append(" => ");
 
             if (subGroup.Length == 1 ||
                 discriminatorIndex == length - 1) // Guard against duplicate strings.
@@ -439,7 +439,7 @@ public class StringMatcherGenerator : IIncrementalGenerator
 
         foreach (var item in group)
         {
-            sb.Append("'").AppendEscaped(item.Target[discriminatorIndex]).Append("' => ");
+            sb.AppendLiteral(item.Target[discriminatorIndex]).Append(" => ");
 
             if (group.Length == 1)
             {
@@ -472,7 +472,7 @@ public class StringMatcherGenerator : IIncrementalGenerator
         }
         else if (returnType != StringMatcherReturnType.Boolean)
         {
-            sb.Append(" ? ").Append("\"").AppendEscaped(item.Target).Append("\"").Append(" : null");
+            sb.Append(" ? ").AppendLiteral(item.Target).Append(" : null");
         }
     }
 
@@ -484,7 +484,7 @@ public class StringMatcherGenerator : IIncrementalGenerator
         }
         else if (returnType != StringMatcherReturnType.Boolean)
         {
-            sb.Append("\"").AppendEscaped(item.Target).Append("\"");
+            sb.AppendLiteral(item.Target);
         }
         else
         {
