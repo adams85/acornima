@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Acornima.Ast;
 using Acornima.Cli.Helpers;
 using Acornima.Jsx;
@@ -46,16 +47,19 @@ internal sealed class ParseCommand
     [Option("-r|--range", Description = "Include range location information.")]
     public bool IncludeRange { get; set; }
 
+    [Option("--scopes", Description = "Include variable scope information. (Applies to simple overview only.)")]
+    public bool IncludeScopes { get; set; }
+
     // TODO: more options
 
     [Argument(0, Description = "The JS code to parse. If omitted, the code will be read from the standard input.")]
     public string? Code { get; }
 
-    private T CreateParserOptions<T>() where T : ParserOptions, new() => new T
+    private T CreateParserOptions<T>(bool recordScopeInfo) where T : ParserOptions, new() => new T
     {
         RegExpParseMode = SkipRegExp ? RegExpParseMode.Skip : RegExpParseMode.Validate,
         Tolerant = Tolerant,
-    };
+    }.RecordScopeInfoInUserData(recordScopeInfo);
 
     private T CreateAstToJsonOptions<T>() where T : AstToJsonOptions, new() => new T
     {
@@ -69,9 +73,11 @@ internal sealed class ParseCommand
 
         var code = Code ?? _console.ReadString();
 
+        var recordScopeInfo = Simple && IncludeScopes;
+
         IParser parser = AllowJsx
-            ? new JsxParser(CreateParserOptions<JsxParserOptions>())
-            : new Parser(CreateParserOptions<ParserOptions>());
+            ? new JsxParser(CreateParserOptions<JsxParserOptions>(recordScopeInfo))
+            : new Parser(CreateParserOptions<ParserOptions>(recordScopeInfo));
 
         Node rootNode = CodeType switch
         {
@@ -83,15 +89,36 @@ internal sealed class ParseCommand
 
         if (Simple)
         {
+            Func<Node, string> getDisplayText = IncludeScopes
+                ? (node =>
+                {
+                    var nodeType = node.TypeText;
+                    if (node.UserData is ScopeInfo scopeInfo)
+                    {
+                        var isHoistingScope = scopeInfo.AssociatedNode is IHoistingScope;
+                        var names = scopeInfo.VarVariables.Select(id => id.Name)
+                            .Concat(scopeInfo.LexicalVariables.Select(id => id.Name))
+                            .Concat(scopeInfo.Functions.Select(id => id.Name))
+                            .Distinct()
+                            .OrderBy(name => name);
+                        return $"{nodeType}{(isHoistingScope ? "*" : string.Empty)} [{string.Join(", ", names)}]";
+                    }
+                    else
+                    {
+                        return nodeType;
+                    }
+                })
+                : (node =>
+                {
+                    var nodeType = node.TypeText;
+                    var nodeClrType = node.GetType().Name;
+                    return string.Equals(nodeType, nodeClrType, StringComparison.OrdinalIgnoreCase) ? nodeType : $"{nodeType} ({nodeClrType})";
+                });
+
             var treePrinter = new TreePrinter(_console);
             treePrinter.Print(new[] { rootNode },
                 node => node.ChildNodes,
-                node =>
-                {
-                    var nodeType = node.Type.ToString();
-                    var nodeClrType = node.GetType().Name;
-                    return nodeType == nodeClrType ? nodeType : $"{nodeType} ({nodeClrType})";
-                });
+                getDisplayText);
         }
         else
         {
