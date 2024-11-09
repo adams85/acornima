@@ -33,7 +33,7 @@ jobs:
         with:
           dotnet-version: |
             6.0
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: 'Run: Compile, Test, Pack'
         run: ./build.cmd Compile Test Pack
   ubuntu-latest:
@@ -44,7 +44,7 @@ jobs:
         with:
           dotnet-version: |
             6.0
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: 'Run: Compile, Test, Pack'
         run: ./build.cmd Compile Test Pack
   windows-latest:
@@ -55,6 +55,6 @@ jobs:
         with:
           dotnet-version: |
             6.0
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: 'Run: Compile, Test, Pack'
         run: ./build.cmd Compile Test Pack
