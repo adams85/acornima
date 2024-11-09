@@ -33,7 +33,7 @@ jobs:
         with:
           dotnet-version: |
             6.0
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: 'Run: Compile, Test, Pack, Publish'
         run: ./build.cmd Compile Test Pack Publish
         env:
@@ -41,12 +41,12 @@ jobs:
           PublicNuGetApiKey: ${{ secrets.PUBLIC_NUGET_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: 'Publish: test-results'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-results
           path: artifacts/test-results
       - name: 'Publish: packages'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: packages
           path: artifacts/packages
