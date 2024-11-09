@@ -9,8 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.13.12" />
-    <PackageReference Include="Esprima" Version="3.0.5" />
+    <PackageReference Include="BenchmarkDotNet" />
+    <PackageReference Include="Esprima" />
   </ItemGroup>
 
   <ItemGroup>
