@@ -26,7 +26,7 @@
   <!-- Configure polyfills -->
 
   <PropertyGroup>
-    <PolySharpIncludeGeneratedTypes Condition="'$(TargetFramework)' == 'net462'">
+    <PolySharpIncludeGeneratedTypes Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))">
       System.Runtime.CompilerServices.IsExternalInit;
     </PolySharpIncludeGeneratedTypes>
   </PropertyGroup>
