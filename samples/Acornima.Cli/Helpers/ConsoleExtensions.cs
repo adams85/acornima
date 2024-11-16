@@ -14,7 +14,7 @@ internal static class ConsoleExtensions
         }
 
         bool isWindowsOS;
-#if NET462
+#if NETFRAMEWORK
         isWindowsOS = true;
 #else
         isWindowsOS = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);

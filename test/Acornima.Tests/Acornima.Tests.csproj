@@ -14,19 +14,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DiffEngine" Version="13.0.2" />
-    <PackageReference Include="GitHubActionsTestLogger" Version="2.3.3" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="UnicodeInformation" Version="2.7.1" />
-    <PackageReference Include="xunit" Version="2.7.0" />
-    <PackageReference Include="xunit.analyzers" Version="1.11.0" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.7" PrivateAssets="all" />
-    <PackageReference Include="xunit.runner.console" Version="2.7.0" PrivateAssets="all" />
+    <PackageReference Include="DiffEngine" VersionOverride="13.0.2" />
+    <PackageReference Include="GitHubActionsTestLogger" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="UnicodeInformation" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.analyzers" />
+    <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="all" />
+    <PackageReference Include="xunit.runner.console" PrivateAssets="all" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
-    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
+  <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))">
+    <PackageReference Include="System.ValueTuple" VersionOverride="4.5.0" />
   </ItemGroup>
 
 </Project>

@@ -13,11 +13,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
-    <PackageReference Include="PolySharp" Version="1.14.1" PrivateAssets="all" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Acornima\Acornima.csproj" />
     <ProjectReference Include="..\Acornima.SourceGenerators\Acornima.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
@@ -62,7 +57,7 @@
   <!-- Configure polyfills -->
 
   <PropertyGroup>
-    <PolySharpIncludeGeneratedTypes Condition="'$(TargetFramework)' == 'net462' OR '$(TargetFramework)' == 'netstandard2.0' OR '$(TargetFramework)' == 'netstandard2.1'">
+    <PolySharpIncludeGeneratedTypes Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))">
       System.Runtime.CompilerServices.IsExternalInit;
       System.Runtime.CompilerServices.SkipLocalsInitAttribute
     </PolySharpIncludeGeneratedTypes>

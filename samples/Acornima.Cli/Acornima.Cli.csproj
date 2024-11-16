@@ -10,9 +10,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="4.*" />
-    <PackageReference Include="PolySharp" Version="1.14.1" PrivateAssets="all" />
-    <PackageReference Include="System.Text.Json" Version="6.0.*" />
+    <PackageReference Include="McMaster.Extensions.CommandLineUtils" />
+    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -22,7 +21,7 @@
   <!-- Configure polyfills -->
 
   <PropertyGroup>
-    <PolySharpIncludeGeneratedTypes Condition="'$(TargetFramework)' == 'net462'">
+    <PolySharpIncludeGeneratedTypes Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))">
       System.Runtime.CompilerServices.IsExternalInit;
     </PolySharpIncludeGeneratedTypes>
   </PropertyGroup>
