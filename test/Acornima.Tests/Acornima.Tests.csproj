@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DiffEngine" />
+    <PackageReference Include="DiffEngine" VersionOverride="13.0.2" />
     <PackageReference Include="GitHubActionsTestLogger" PrivateAssets="all" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="Newtonsoft.Json" />
@@ -26,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))">
-    <PackageReference Include="System.ValueTuple" />
+    <PackageReference Include="System.ValueTuple" VersionOverride="4.5.0" />
   </ItemGroup>
 
 </Project>
