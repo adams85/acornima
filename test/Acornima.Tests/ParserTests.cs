@@ -254,7 +254,7 @@ public partial class ParserTests
         var parser = new Parser(options);
         var script = parser.ParseScript(code);
 
-        Assert.Empty(script.DescendantNodesAndSelf().Where(node => node.UserData is not null));
+        Assert.DoesNotContain(script.DescendantNodesAndSelf(), node => node.UserData is not null);
         Assert.Equal(registerUserHandler, userHandlerCalled);
     }
 
@@ -1924,7 +1924,7 @@ public partial class ParserTests
 
         var program = new Parser().ParseScript(code);
 
-        var objectExpression = Assert.Single(program.DescendantNodes().OfType<PropertyDefinition>().Where(pd => pd.Key is PrivateIdentifier));
+        var objectExpression = Assert.Single(program.DescendantNodes().OfType<PropertyDefinition>(), pd => pd.Key is PrivateIdentifier);
         Assert.Equal("bb", objectExpression.Key.As<PrivateIdentifier>().Name);
 
         var binaryExpression = Assert.Single(program.DescendantNodes().OfType<BinaryExpression>());

@@ -134,7 +134,7 @@ public static class Program
 
             foreach (var (tests, title, label) in items)
             {
-                if (tests.Count == 0)
+                if (tests.IsEmpty)
                 {
                     continue;
                 }

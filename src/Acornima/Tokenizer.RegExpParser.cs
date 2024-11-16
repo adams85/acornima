@@ -1074,7 +1074,12 @@ public partial class Tokenizer
 
         internal static string EncodeGroupName(string groupName)
         {
-            return "__utf8_" + BitConverter.ToString(Encoding.UTF8.GetBytes(groupName)).Replace("-", "");
+            return "__utf8_"
+#if NET5_0_OR_GREATER
+                + Convert.ToHexString(Encoding.UTF8.GetBytes(groupName));
+#else
+                + BitConverter.ToString(Encoding.UTF8.GetBytes(groupName)).Replace("-", "");
+#endif
         }
 
         private readonly bool TryAdjustBackreference(ref ParsePatternContext context, int startIndex, out RegExpConversionError? conversionError)

@@ -1,52 +1,58 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
-        <GenerateProgramFile>false</GenerateProgramFile>
-        <GeneratedTestSuiteDir>Generated</GeneratedTestSuiteDir>
-    </PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <GenerateProgramFile>false</GenerateProgramFile>
+    <GeneratedTestSuiteDir>Generated</GeneratedTestSuiteDir>
+  </PropertyGroup>
 
+  <PropertyGroup Label="Code Analysis">
+    <AnalysisLevel>latest-Recommended</AnalysisLevel>
+    <NoWarn>$(NoWarn);CA1305</NoWarn> <!-- Specify IFormatProvider -->
+    <NoWarn>$(NoWarn);CA1861</NoWarn> <!-- Avoid constant arrays as arguments -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="GitHubActionsTestLogger" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="NUnit" />
+    <PackageReference Include="NUnit3TestAdapter" />
+    <PackageReference Include="Spectre.Console" />
+    <PackageReference Include="Test262Harness" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Acornima\Acornima.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="NUnit.Framework" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include=".config\dotnet-tools.json" />
+  </ItemGroup>
+
+  <!-- Based on the idea presented at https://mhut.ch/journal/2015/06/30/build-time-code-generation-in-msbuild -->
+  <Target Name="GenerateTestSuite" DependsOnTargets="_GenerateTestSuite" BeforeTargets="BeforeBuild" Condition="!Exists($([System.IO.Path]::Combine($(MSBuildThisFileDirectory), $(GeneratedTestSuiteDir))))">
     <ItemGroup>
-      <PackageReference Include="GitHubActionsTestLogger" PrivateAssets="all" />
-      <PackageReference Include="Microsoft.NET.Test.Sdk" />
-      <PackageReference Include="NUnit" />
-      <PackageReference Include="NUnit3TestAdapter" />
-      <PackageReference Include="Spectre.Console" />
-      <PackageReference Include="Test262Harness" />
+      <Compile Include="$(GeneratedTestSuiteDir)\**\*.cs" />
     </ItemGroup>
+  </Target>
 
+  <Target Name="_GenerateTestSuite">
+    <Exec Command="dotnet tool restore" />
+    <Exec Command="dotnet test262 generate" />
+  </Target>
+
+  <Target Name="DeleteTestSuite" DependsOnTargets="_DeleteTestSuite" AfterTargets="AfterClean" Condition="Exists($([System.IO.Path]::Combine($(MSBuildThisFileDirectory), $(GeneratedTestSuiteDir))))">
+    <RemoveDir Directories="$(GeneratedTestSuiteDir)" />
+  </Target>
+
+  <Target Name="_DeleteTestSuite">
     <ItemGroup>
-      <ProjectReference Include="..\..\src\Acornima\Acornima.csproj" />
+      <Compile Remove="$(GeneratedTestSuiteDir)\**\*.cs" />
     </ItemGroup>
-
-    <ItemGroup>
-      <Using Include="NUnit.Framework" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Content Include=".config\dotnet-tools.json" />
-    </ItemGroup>
-
-    <!-- Based on the idea presented at https://mhut.ch/journal/2015/06/30/build-time-code-generation-in-msbuild -->
-    <Target Name="GenerateTestSuite" DependsOnTargets="_GenerateTestSuite" BeforeTargets="BeforeBuild" Condition="!Exists($([System.IO.Path]::Combine($(MSBuildThisFileDirectory), $(GeneratedTestSuiteDir))))">
-      <ItemGroup>
-        <Compile Include="$(GeneratedTestSuiteDir)\**\*.cs" />
-      </ItemGroup>
-    </Target>
-
-    <Target Name="_GenerateTestSuite">
-      <Exec Command="dotnet tool restore" />
-      <Exec Command="dotnet test262 generate" />
-    </Target>
-
-    <Target Name="DeleteTestSuite" DependsOnTargets="_DeleteTestSuite" AfterTargets="AfterClean" Condition="Exists($([System.IO.Path]::Combine($(MSBuildThisFileDirectory), $(GeneratedTestSuiteDir))))">
-      <RemoveDir Directories="$(GeneratedTestSuiteDir)" />
-    </Target>
-
-    <Target Name="_DeleteTestSuite">
-      <ItemGroup>
-        <Compile Remove="$(GeneratedTestSuiteDir)\**\*.cs" />
-      </ItemGroup>
-    </Target>
+  </Target>
 
 </Project>

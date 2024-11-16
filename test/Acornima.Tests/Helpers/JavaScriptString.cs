@@ -8,9 +8,11 @@ public class JavaScriptString
 {
     private static readonly ParserOptions s_parserOptions = new() { RegExpParseMode = RegExpParseMode.Skip, Tolerant = false };
 
+#pragma warning disable CA1865 // Use char overload
     public static bool IsStringLiteral(string value) => value.Length > 2
         && (value.StartsWith("\"", StringComparison.Ordinal) && value.EndsWith("\"", StringComparison.Ordinal)
             || value.StartsWith("'", StringComparison.Ordinal) && value.EndsWith("'", StringComparison.Ordinal));
+#pragma warning restore CA1865 // Use char overload
 
     public static Expression ParseAsExpression(string value) => new Parser(s_parserOptions).ParseExpression(value);
 
@@ -116,6 +118,7 @@ public class JavaScriptString
 
         static void AppendCharAsUnicodeJavaScript(StringBuilder builder, char c)
         {
+#pragma warning disable CA1305 // Specify IFormatProvider
             if (c <= byte.MaxValue)
             {
                 builder.Append(@$"\x{(int)c:x2}");
@@ -124,6 +127,7 @@ public class JavaScriptString
             {
                 builder.Append(@$"\u{(int)c:x4}");
             }
+#pragma warning restore CA1305 // Specify IFormatProvider
         }
     }
 }
