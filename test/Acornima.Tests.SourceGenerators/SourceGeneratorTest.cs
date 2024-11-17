@@ -9,6 +9,6 @@ public class SourceGeneratorTest
 
     protected static string ToSourcePath(string path, string project = MainProject)
     {
-        return Path.Combine($"../../../../../src/{project}/", path);
+        return Path.Combine($"../../../../src/{project}/", path);
     }
 }

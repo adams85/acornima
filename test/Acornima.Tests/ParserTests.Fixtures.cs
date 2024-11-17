@@ -35,7 +35,7 @@ public partial class ParserTests
         var assemblyPath = typeof(RegExpTests).GetTypeInfo().Assembly.Location;
         var assemblyDirectory = new FileInfo(assemblyPath).Directory;
 #endif
-        var root = assemblyDirectory?.Parent?.Parent?.Parent?.FullName;
+        var root = Path.Combine(assemblyDirectory?.Parent?.Parent?.Parent?.Parent?.FullName ?? "", "test", "Acornima.Tests");
         return root ?? "";
     }
 
