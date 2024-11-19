@@ -30,13 +30,12 @@ public partial class ParserTests
     {
 #if NETFRAMEWORK
         var assemblyPath = new Uri(typeof(RegExpTests).GetTypeInfo().Assembly.CodeBase).LocalPath;
-        var assemblyDirectory = new FileInfo(assemblyPath).Directory;
 #else
         var assemblyPath = typeof(RegExpTests).GetTypeInfo().Assembly.Location;
-        var assemblyDirectory = new FileInfo(assemblyPath).Directory;
 #endif
+        var assemblyDirectory = new FileInfo(assemblyPath).Directory;
         var root = Path.Combine(assemblyDirectory?.Parent?.Parent?.Parent?.Parent?.FullName ?? "", "test", "Acornima.Tests");
-        return root ?? "";
+        return root;
     }
 
     public static IEnumerable<object[]> Fixtures(string relativePath)
