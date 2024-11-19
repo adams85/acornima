@@ -34,8 +34,8 @@ public partial class ParserTests
         var assemblyPath = typeof(RegExpTests).GetTypeInfo().Assembly.Location;
 #endif
         var assemblyDirectory = new FileInfo(assemblyPath).Directory;
-        var root = Path.Combine(assemblyDirectory?.Parent?.Parent?.Parent?.Parent?.FullName ?? "", "test", "Acornima.Tests");
-        return root;
+        var root = assemblyDirectory?.Parent?.Parent?.Parent?.FullName;
+        return root ?? "";
     }
 
     public static IEnumerable<object[]> Fixtures(string relativePath)

@@ -7,6 +7,9 @@
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>..\Karambolo.Public.snk</AssemblyOriginatorKeyFile>
 
+    <UseArtifactsOutput>true</UseArtifactsOutput>
+    <ArtifactsPath>$(MSBuildThisFileDirectory)..\artifacts</ArtifactsPath>
+
     <Authors>Adam Simon</Authors>
     <Copyright>Adam Simon</Copyright>
     <PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
@@ -19,6 +22,7 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
 
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
     <NoWarn>1591;$(NoWarn)</NoWarn>
   </PropertyGroup>
 </Project>

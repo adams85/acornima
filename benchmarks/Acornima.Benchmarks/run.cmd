@@ -2,11 +2,11 @@
 
 SETLOCAL
 
-IF NOT [%2] == [] (
-  SET RUNTIMES=%2
+IF NOT [%1] == [] (
+  SET RUNTIMES=%1
 )
 
-IF [%2] == [] (
+IF [%1] == [] (
   SET RUNTIMES=net8.0 net48
 )
 
