@@ -21,8 +21,8 @@ internal static class ConsoleExtensions
 #endif
 
         console.WriteLine(isWindowsOS
-                ? "Input config JSON, press CTRL-Z in an empty line and finally ENTER."
-                : "Input config JSON, then press Ctrl+D.");
+                ? "Input JS code, press CTRL-Z in an empty line and finally ENTER."
+                : "Input JS code, then press Ctrl+D.");
         console.WriteLine();
 
         if (isWindowsOS)
