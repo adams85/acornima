@@ -200,96 +200,103 @@ public partial class Parser
 #endif
     }
 
-    // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/scope.js > `pp.currentScope = function`
-    private ref Scope CurrentScope { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref _scopeStack.PeekRef(); }
+    private ref Scope CurrentScope
+    {
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/scope.js > `pp.currentScope = function`
 
-    private ref Scope CurrentVarScope(out int index)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => ref _scopeStack.PeekRef();
+    }
+
+    private ref Scope CurrentVarScope
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/scope.js > `pp.currentVarScope = function`
 
         // NOTE: to improve performance, we calculate and store the index of the current var scope on the fly
         // instead of looking it up at every call as it's done in acornjs (see also `EnterScope`).
 
-        index = _scopeStack.PeekRef()._currentVarScopeIndex;
-        return ref _scopeStack.GetItemRef(index);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => ref _scopeStack.GetItemRef(_scopeStack.PeekRef()._currentVarScopeIndex);
     }
 
     // Could be useful for `this`, `new.target`, `super()`, `super.property`, and `super[property]`.
-    private ref Scope CurrentThisScope(out int index)
+    private ref Scope CurrentThisScope
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/scope.js > `pp.currentThisScope = function`
 
         // NOTE: to improve performance, we calculate and store the index of the current this scope on the fly
         // instead of looking it up at every call as it's done in acornjs (see also `EnterScope`).
 
-        index = _scopeStack.PeekRef()._currentThisScopeIndex;
-        return ref _scopeStack.GetItemRef(index);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => ref _scopeStack.GetItemRef(_scopeStack.PeekRef()._currentThisScopeIndex);
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private bool InFunction()
+    private bool InFunction
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/state.js > `get inFunction`
 
-        return (CurrentVarScope(out _)._flags & ScopeFlags.Function) != 0;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => (CurrentVarScope._flags & ScopeFlags.Function) != 0;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private bool InGenerator()
+    private bool InGenerator
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/state.js > `get inGenerator`
 
-        return (CurrentVarScope(out _)._flags & (ScopeFlags.Generator | ScopeFlags.InClassFieldInit)) == ScopeFlags.Generator;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => (CurrentVarScope._flags & (ScopeFlags.Generator | ScopeFlags.InClassFieldInit)) == ScopeFlags.Generator;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private bool InAsync()
+    private bool InAsync
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/state.js > `get inAsync`
 
-        return (CurrentVarScope(out _)._flags & (ScopeFlags.Async | ScopeFlags.InClassFieldInit)) == ScopeFlags.Async;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => (CurrentVarScope._flags & (ScopeFlags.Async | ScopeFlags.InClassFieldInit)) == ScopeFlags.Async;
     }
 
-    private bool CanAwait()
+    private bool CanAwait
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/state.js > `get canAwait`
 
-        for (var i = _scopeStack.Count - 1; i >= 0; i--)
+        get
         {
-            ref readonly var scope = ref _scopeStack.GetItemRef(i);
-
-            if ((scope._flags & (ScopeFlags.InClassFieldInit | ScopeFlags.ClassStaticBlock)) != 0)
+            for (var i = _scopeStack.Count - 1; i >= 0; i--)
             {
-                return false;
+                ref readonly var scope = ref _scopeStack.GetItemRef(i);
+
+                if ((scope._flags & (ScopeFlags.InClassFieldInit | ScopeFlags.ClassStaticBlock)) != 0)
+                {
+                    return false;
+                }
+
+                if ((scope._flags & ScopeFlags.Function) != 0)
+                {
+                    return (scope._flags & ScopeFlags.Async) != 0;
+                }
             }
 
-            if ((scope._flags & ScopeFlags.Function) != 0)
-            {
-                return (scope._flags & ScopeFlags.Async) != 0;
-            }
+            return _options._allowAwaitOutsideFunction || _topLevelAwaitAllowed;
         }
-
-        return _options._allowAwaitOutsideFunction || _topLevelAwaitAllowed;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private bool AllowSuper()
+    private bool AllowSuper
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/state.js > `get allowSuper`
 
-        return _options._allowSuperOutsideMethod || (CurrentThisScope(out _)._flags & (ScopeFlags.Super | ScopeFlags.InClassFieldInit)) != 0;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _options._allowSuperOutsideMethod || (CurrentThisScope._flags & (ScopeFlags.Super | ScopeFlags.InClassFieldInit)) != 0;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private bool AllowDirectSuper()
+    private bool AllowDirectSuper
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/state.js > `get allowDirectSuper`
 
-        return (CurrentThisScope(out _)._flags & ScopeFlags.DirectSuper) != 0;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => (CurrentThisScope._flags & ScopeFlags.DirectSuper) != 0;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private bool TreatFunctionsAsVar()
+    private bool TreatFunctionsAsVar
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/state.js > `get treatFunctionsAsVar`
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/scope.js > `pp.treatFunctionsAsVarInScope = function`
@@ -297,30 +304,31 @@ public partial class Parser
         // NOTE: to improve performance, we calculate and store this flag on the fly
         // instead of recalculating it at every call as it's done in acornjs.
 
-        return (CurrentScope._flags & _functionsAsVarInScopeFlags) != 0;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => (CurrentScope._flags & _functionsAsVarInScopeFlags) != 0;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private bool AllowNewDotTarget()
+    private bool AllowNewDotTarget
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/state.js > `get allowNewDotTarget`
 
-        return _options.AllowNewTargetOutsideFunction
-            || (CurrentThisScope(out _)._flags & (ScopeFlags.Function | ScopeFlags.ClassStaticBlock | ScopeFlags.InClassFieldInit)) != 0;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _options._allowNewTargetOutsideFunction
+            || (CurrentThisScope._flags & (ScopeFlags.Function | ScopeFlags.ClassStaticBlock | ScopeFlags.InClassFieldInit)) != 0;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private bool InClassStaticBlock()
+    private bool InClassStaticBlock
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/state.js > `get inClassStaticBlock`
 
-        return (CurrentVarScope(out _)._flags & ScopeFlags.ClassStaticBlock) != 0;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => (CurrentVarScope._flags & ScopeFlags.ClassStaticBlock) != 0;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private bool InClassFieldInit()
+    private bool InClassFieldInit
     {
-        return (CurrentThisScope(out _)._flags & ScopeFlags.InClassFieldInit) != 0;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => (CurrentThisScope._flags & ScopeFlags.InClassFieldInit) != 0;
     }
 
     private enum LabelKind : byte

@@ -441,7 +441,7 @@ public partial class Parser
         int awaitAt;
         if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES9 && IsContextual("await"))
         {
-            if (!CanAwait())
+            if (!CanAwait)
             {
                 Raise(_tokenizer._start, UnexpectedReserved);
             }
@@ -610,7 +610,7 @@ public partial class Parser
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseReturnStatement = function`
 
-        if (!_options._allowReturnOutsideFunction && !InFunction())
+        if (!_options._allowReturnOutsideFunction && !InFunction)
         {
             // Raise(_tokenizer._start, "'return' outside of function"); // original acornjs error reporting
             Raise(_tokenizer._start, IllegalReturn);
@@ -1087,7 +1087,7 @@ public partial class Parser
                 // subject to Annex B semantics (`BindingType.Function`). Otherwise, the binding
                 // mode depends on properties of the current scope (see `TreatFunctionsAsVar`).
                 CheckLValSimple(id, _strict || generator || isAsync
-                    ? (TreatFunctionsAsVar() ? BindingType.Var : BindingType.Lexical)
+                    ? (TreatFunctionsAsVar ? BindingType.Var : BindingType.Lexical)
                     : BindingType.Function);
             }
         }
@@ -1439,13 +1439,14 @@ public partial class Parser
         if (Eat(TokenType.Eq))
         {
             // To raise SyntaxError if 'arguments' exists in the initializer.
-            ref var scope = ref CurrentThisScope(out var thisScopeIndex);
+            var thisScopeIndex = CurrentScope._currentThisScopeIndex;
+            ref var scope = ref _scopeStack.GetItemRef(thisScopeIndex);
             var oldScopeFlags = scope._flags;
             scope._flags |= ScopeFlags.InClassFieldInit;
 
             value = ParseMaybeAssign(ref NullRef<DestructuringErrors>());
 
-            scope = _scopeStack.GetItemRef(thisScopeIndex);
+            scope = ref _scopeStack.GetItemRef(thisScopeIndex);
             scope._flags = oldScopeFlags;
         }
         else

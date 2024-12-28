@@ -166,7 +166,7 @@ public partial class Parser
 
         if (IsContextual("yield"))
         {
-            if (InGenerator())
+            if (InGenerator)
             {
                 return ExitRecursion(ParseYield(context));
             }
@@ -384,7 +384,7 @@ public partial class Parser
 
         Expression expr;
         Operator op;
-        if (IsContextual("await") && CanAwait())
+        if (IsContextual("await") && CanAwait)
         {
             EnterRecursion();
             expr = ExitRecursion(ParseAwait(context));
@@ -774,14 +774,14 @@ public partial class Parser
                 switch (_tokenizer._type.Keyword!.Value)
                 {
                     case Keyword.Super:
-                        if (!AllowSuper())
+                        if (!AllowSuper)
                         {
                             // Raise(_tokenizer._start, "'super' keyword outside a method"); // original acornjs error reporting
                             Raise(_tokenizer._start, UnexpectedSuper);
                         }
 
                         Next();
-                        if (_tokenizer._type == TokenType.ParenLeft && !AllowDirectSuper())
+                        if (_tokenizer._type == TokenType.ParenLeft && !AllowDirectSuper)
                         {
                             // Raise(startMarker.Index, "super() call outside constructor of a subclass"); // original acornjs error reporting
                             Raise(startMarker.Index, UnexpectedSuper);
@@ -1251,7 +1251,7 @@ public partial class Parser
                 // RaiseRecoverable(startMarker.Index, "'new.target' must not contain escaped characters"); // original acornjs error reporting
                 RaiseRecoverable(property.Start, InvalidEscapedMetaProperty, new object[] { "new.target" });
             }
-            if (!AllowNewDotTarget())
+            if (!AllowNewDotTarget)
             {
                 // RaiseRecoverable(startMarker.Index, "'new.target' can only be used in functions and class static block"); // original acornjs error reporting
                 Raise(property.Start, UnexpectedNewTarget);
@@ -1822,7 +1822,7 @@ public partial class Parser
         var name = id.Name;
         var nameSpan = name.AsSpan();
 
-        if (InGenerator() && name == "yield")
+        if (InGenerator && name == "yield")
         {
             // RaiseRecoverable(id.Start, "Can not use 'yield' as identifier inside a generator"); // original acornjs error reporting
             if (_bindingPatternDepth > 1)
@@ -1839,7 +1839,7 @@ public partial class Parser
             }
         }
 
-        if (InAsync() && name == "await")
+        if (InAsync && name == "await")
         {
             // RaiseRecoverable(id.Start, "Can not use 'await' as identifier inside an async function"); // original acornjs error reporting
             if (_bindingPatternDepth > 1)
@@ -1852,13 +1852,13 @@ public partial class Parser
             }
         }
 
-        if (InClassFieldInit() && name == "arguments")
+        if (InClassFieldInit && name == "arguments")
         {
             // RaiseRecoverable(id.Start, "Cannot use 'arguments' in class field initializer"); // original acornjs error reporting
             Raise(id.Start, ArgumentsDisallowedInInitializerAndStaticBlock);
         }
 
-        if (InClassStaticBlock() && (name is "arguments" or "await"))
+        if (InClassStaticBlock && (name is "arguments" or "await"))
         {
             // Raise(id.Start, $"Cannot use {name} in class static initialization block"); // original acornjs error reporting
             if (name == "arguments")

@@ -30,7 +30,7 @@ public partial class Parser
             switch (node.Type)
             {
                 case NodeType.Identifier:
-                    if (InAsync() && node.As<Identifier>().Name == "await")
+                    if (InAsync && node.As<Identifier>().Name == "await")
                     {
                         // Raise(node.Start, "Can not use 'await' as identifier inside an async function"); // original acornjs error reporting
                         Raise(node.Start, AwaitBindingIdentifier);

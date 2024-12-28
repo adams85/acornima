@@ -309,10 +309,7 @@ public partial class Parser
         switch (ecmaVersion)
         {
             case EcmaVersion.ES3:
-                if (strict)
-                {
-                    Debug.Assert(!strict, "Invalid combination of options");
-                }
+                Debug.Assert(!strict, "Invalid combination of options");
                 return IsReservedWordES3NonStrict(word);
 
             case EcmaVersion.ES5:
@@ -326,6 +323,7 @@ public partial class Parser
         }
     }
 
+    [DoesNotReturn]
     private void HandleReservedWordError(Identifier id)
     {
         if ((GetReservedWordKind(id.Name.AsSpan(), _strict, _options.EcmaVersion) & ReservedWordKind.Strict) != 0)
