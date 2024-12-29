@@ -261,22 +261,16 @@ public partial class Parser
 
         get
         {
-            for (var i = _scopeStack.Count - 1; i >= 0; i--)
+            ref var scope = ref CurrentVarScope;
+            if ((scope._flags & ScopeFlags.Function) != 0)
             {
-                ref readonly var scope = ref _scopeStack.GetItemRef(i);
-
-                if ((scope._flags & (ScopeFlags.InClassFieldInit | ScopeFlags.ClassStaticBlock)) != 0)
-                {
-                    return false;
-                }
-
-                if ((scope._flags & ScopeFlags.Function) != 0)
-                {
-                    return (scope._flags & ScopeFlags.Async) != 0;
-                }
+                return (scope._flags & (ScopeFlags.Async | ScopeFlags.InClassFieldInit)) == ScopeFlags.Async;
             }
-
-            return _options._allowAwaitOutsideFunction || _topLevelAwaitAllowed;
+            if ((scope._flags & ScopeFlags.Top) != 0)
+            {
+                return (_options._allowAwaitOutsideFunction || _topLevelAwaitAllowed) && (scope._flags & ScopeFlags.InClassFieldInit) == 0;
+            }
+            return false;
         }
     }
 

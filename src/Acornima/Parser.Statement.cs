@@ -1439,15 +1439,22 @@ public partial class Parser
         if (Eat(TokenType.Eq))
         {
             // To raise SyntaxError if 'arguments' exists in the initializer.
-            var thisScopeIndex = CurrentScope._currentThisScopeIndex;
-            ref var scope = ref _scopeStack.GetItemRef(thisScopeIndex);
-            var oldScopeFlags = scope._flags;
-            scope._flags |= ScopeFlags.InClassFieldInit;
+            ref var currentScope = ref CurrentScope;
+            var thisScopeIndex = currentScope._currentThisScopeIndex;
+            var varScopeIndex = currentScope._currentVarScopeIndex;
+
+            ref var thisScopeFlags = ref _scopeStack.GetItemRef(thisScopeIndex)._flags;
+            ref var varScopeFlags = ref _scopeStack.GetItemRef(varScopeIndex)._flags;
+
+            var oldThisScopeFlags = thisScopeFlags;
+            var oldVarScopeFlags = varScopeFlags;
+            thisScopeFlags |= ScopeFlags.InClassFieldInit;
+            varScopeFlags |= ScopeFlags.InClassFieldInit;
 
             value = ParseMaybeAssign(ref NullRef<DestructuringErrors>());
 
-            scope = ref _scopeStack.GetItemRef(thisScopeIndex);
-            scope._flags = oldScopeFlags;
+            _scopeStack.GetItemRef(thisScopeIndex)._flags = oldThisScopeFlags;
+            _scopeStack.GetItemRef(varScopeIndex)._flags = oldVarScopeFlags;
         }
         else
         {

@@ -815,6 +815,149 @@ public partial class ParserTests
     }
 
     [Theory]
+    [InlineData("script", "(class { x = () => arguments })", EcmaVersion.Latest, "'arguments' is not allowed in class field initializer or static initialization block")]
+    [InlineData("script", "() => { (class { x = () => arguments }) }", EcmaVersion.Latest, "'arguments' is not allowed in class field initializer or static initialization block")]
+    [InlineData("script", "() => class { x = () => { arguments } }", EcmaVersion.Latest, "'arguments' is not allowed in class field initializer or static initialization block")]
+    [InlineData("script", "() => class { x = function() { arguments } }", EcmaVersion.Latest, null)]
+    public void ShouldHandleArgumentsEdgeCases(string sourceType, string input, EcmaVersion ecmaVersion, string? expectedError)
+    {
+        var parser = new Parser(new ParserOptions { EcmaVersion = ecmaVersion });
+        var parseAction = GetParseActionFor(sourceType);
+
+        if (expectedError is null)
+        {
+            Assert.NotNull(parseAction(parser, input));
+        }
+        else
+        {
+            var ex = Assert.Throws<SyntaxErrorException>(() => parseAction(parser, input));
+            Assert.Equal(expectedError, ex.Description);
+        }
+    }
+
+    [Theory]
+    [InlineData("script", "(class { x = () => new.target })", EcmaVersion.Latest, null)]
+    [InlineData("script", "() => { (class { x = () => new.target }) }", EcmaVersion.Latest, null)]
+    [InlineData("script", "() => class { x = () => { new.target } }", EcmaVersion.Latest, null)]
+    [InlineData("script", "() => class { x = function() { new.target } }", EcmaVersion.Latest, null)]
+    public void ShouldHandleNewTargetEdgeCases(string sourceType, string input, EcmaVersion ecmaVersion, string? expectedError)
+    {
+        var parser = new Parser(new ParserOptions { EcmaVersion = ecmaVersion });
+        var parseAction = GetParseActionFor(sourceType);
+
+        if (expectedError is null)
+        {
+            Assert.NotNull(parseAction(parser, input));
+        }
+        else
+        {
+            var ex = Assert.Throws<SyntaxErrorException>(() => parseAction(parser, input));
+            Assert.Equal(expectedError, ex.Description);
+        }
+    }
+
+    [Theory]
+    [InlineData("script", "(class { x = () => super.y })", EcmaVersion.Latest, null)]
+    [InlineData("script", "() => { (class { x = () => super.y }) }", EcmaVersion.Latest, null)]
+    [InlineData("script", "() => class { x = () => { super.y } }", EcmaVersion.Latest, null)]
+    [InlineData("script", "() => class { x = function() { super.y } }", EcmaVersion.Latest, "'super' keyword unexpected here")]
+    [InlineData("script", "class C { x = class extends super.constructor { [super.constructor.name] = super.constructor } }", EcmaVersion.Latest, null)]
+    [InlineData("script", "() => class { x = class extends super.constructor { [super.constructor.name] = super.constructor } }", EcmaVersion.Latest, null)]
+    public void ShouldHandleSuperKeywordEdgeCases(string sourceType, string input, EcmaVersion ecmaVersion, string? expectedError)
+    {
+        var parser = new Parser(new ParserOptions { EcmaVersion = ecmaVersion });
+        var parseAction = GetParseActionFor(sourceType);
+
+        if (expectedError is null)
+        {
+            Assert.NotNull(parseAction(parser, input));
+        }
+        else
+        {
+            var ex = Assert.Throws<SyntaxErrorException>(() => parseAction(parser, input));
+            Assert.Equal(expectedError, ex.Description);
+        }
+    }
+
+    [Theory]
+    [InlineData("script", "(class { x = await })", EcmaVersion.Latest, null)]
+    [InlineData("module", "(class { x = await })", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "(class { x = await 1 })", EcmaVersion.Latest, "await is only valid in async functions and the top level bodies of modules")]
+    [InlineData("module", "(class { x = await 1 })", EcmaVersion.Latest, "Unexpected reserved word")]
+
+    [InlineData("script", "(class { x = () => await })", EcmaVersion.Latest, null)]
+    [InlineData("module", "(class { x = () => await })", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "(class { x = () => await 1 })", EcmaVersion.Latest, "await is only valid in async functions and the top level bodies of modules")]
+    [InlineData("module", "(class { x = () => await 1 })", EcmaVersion.Latest, "Unexpected reserved word")]
+
+    [InlineData("script", "(class { x = async () => await })", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("module", "(class { x = async () => await })", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("script", "(class { x = async () => await 1 })", EcmaVersion.Latest, null)]
+    [InlineData("module", "(class { x = async () => await 1 })", EcmaVersion.Latest, null)]
+
+    [InlineData("script", "() => class { x = await }", EcmaVersion.Latest, null)]
+    [InlineData("module", "() => class { x = await }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "() => class { x = await 1 }", EcmaVersion.Latest, "await is only valid in async functions and the top level bodies of modules")]
+    [InlineData("module", "() => class { x = await 1 }", EcmaVersion.Latest, "Unexpected reserved word")]
+
+    [InlineData("script", "() => class { x = () => await }", EcmaVersion.Latest, null)]
+    [InlineData("module", "() => class { x = () => await }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "() => class { x = () => await 1 }", EcmaVersion.Latest, "await is only valid in async functions and the top level bodies of modules")]
+    [InlineData("module", "() => class { x = () => await 1 }", EcmaVersion.Latest, "Unexpected reserved word")]
+
+    [InlineData("script", "() => class { x = async () => await }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("module", "() => class { x = async () => await }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("script", "() => class { x = async () => await 1 }", EcmaVersion.Latest, null)]
+    [InlineData("module", "() => class { x = async () => await 1 }", EcmaVersion.Latest, null)]
+
+    [InlineData("script", "async () => class { x = await }", EcmaVersion.Latest, null)]
+    [InlineData("module", "async () => class { x = await }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async () => class { x = await 1 }", EcmaVersion.Latest, "Unexpected number")]
+    [InlineData("module", "async () => class { x = await 1 }", EcmaVersion.Latest, "Unexpected reserved word")]
+
+    [InlineData("script", "async () => class { x = () => await }", EcmaVersion.Latest, null)]
+    [InlineData("module", "async () => class { x = () => await }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async () => class { x = () => await 1 }", EcmaVersion.Latest, "Unexpected number")]
+    [InlineData("module", "async () => class { x = () => await 1 }", EcmaVersion.Latest, "Unexpected reserved word")]
+
+    [InlineData("script", "async () => class { x = async () => await }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("module", "async () => class { x = async () => await }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("script", "async () => class { x = async () => await 1 }", EcmaVersion.Latest, null)]
+    [InlineData("module", "async () => class { x = async () => await 1 }", EcmaVersion.Latest, null)]
+
+    [InlineData("script", "async () => class { x = (a = await) => a }", EcmaVersion.Latest, null)]
+    [InlineData("module", "async () => class { x = (a = await) => a }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async () => class { x = (a = await 1) => a }", EcmaVersion.Latest, "Unexpected number")]
+    [InlineData("module", "async () => class { x = (a = await 1) => a }", EcmaVersion.Latest, "Unexpected reserved word")]
+
+    [InlineData("script", "async () => class { x = class await { y = await } }", EcmaVersion.Latest, null)]
+    [InlineData("module", "async () => class { x = class await { y = await } }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async () => class { x = class await { y = await 1 } }", EcmaVersion.Latest, "await is only valid in async functions and the top level bodies of modules")]
+    [InlineData("module", "async () => class { x = class await { y = await 1 } }", EcmaVersion.Latest, "Unexpected reserved word")]
+
+    [InlineData("script", "async () => class { x = () => { { try {} catch (await) { } } } }", EcmaVersion.Latest, null)]
+    [InlineData("module", "async () => class { x = () => { { try {} catch (await) { } } } }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("script", "async () => class { x = () => { { try {} catch { var await = 1 } } } }", EcmaVersion.Latest, null)]
+    [InlineData("module", "async () => class { x = () => { { try {} catch { var await = 1 } } } }", EcmaVersion.Latest, "Unexpected reserved word")]
+    public void ShouldHandleAwaitInClassFieldInitializer(string sourceType, string input, EcmaVersion ecmaVersion, string? expectedError)
+    {
+        // See also: https://github.com/acornjs/acorn/issues/1334, https://github.com/acornjs/acorn/issues/1338
+
+        var parser = new Parser(new ParserOptions { EcmaVersion = ecmaVersion });
+        var parseAction = GetParseActionFor(sourceType);
+
+        if (expectedError is null)
+        {
+            Assert.NotNull(parseAction(parser, input));
+        }
+        else
+        {
+            var ex = Assert.Throws<SyntaxErrorException>(() => parseAction(parser, input));
+            Assert.Equal(expectedError, ex.Description);
+        }
+    }
+
+    [Theory]
     [InlineData("script", "await", EcmaVersion.Latest, null)]
     [InlineData("script", "await", EcmaVersion.ES13, null)]
     [InlineData("script", "await", EcmaVersion.ES8, null)]
