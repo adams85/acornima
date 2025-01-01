@@ -11,10 +11,10 @@ It should also be mentioned that there is an earlier .NET port of acornjs, [Acor
 
 ### Here is how this Frankenstein's monster looks like:
 
-* The tokenizer is mostly a direct translation of the acornjs tokenizer to C# (with many bigger and smaller performance improvements, partly inspired by Esprima.NET) - apart from the regex validation/conversion logic, which has been borrowed from Esprima.NET currently.
+* The tokenizer is mostly a direct translation of the acornjs tokenizer to C# (with many bigger and smaller performance improvements, partly inspired by Esprima.NET) - apart from the regex validation/conversion logic, which has been borrowed from Esprima.NET.
 * The parser is ~99% acornjs (also with a bunch of minor improvements) and ~1% Esprima.NET (strict mode detection, public API). It is also worth mentioning that the error reporting has been changed to use the error messages of V8.
 * It includes protection against the non-catchable `StackOverflowException` using [the same approach](https://github.com/adams85/acornima/blob/v1.0.0/src/Acornima/Helpers/StackGuard.cs) as Roslyn.
-* Both projects follow the ESTree specification, so does Acornima. The actual AST implementation is based on that of Esprima.NET, with further minor improvements to the class hierarchy that bring it even closer to the spec and allow encoding a bit more information.
+* Both parent projects follow the ESTree specification, so does Acornima. The actual AST implementation is based on that of Esprima.NET, with further minor improvements to the class hierarchy that bring it even closer to the spec and allow encoding a bit more information.
 * The built-in AST visitors and additional utility features stems from Esprima.NET as well.
 
 ### And what good comes out of this mix?
