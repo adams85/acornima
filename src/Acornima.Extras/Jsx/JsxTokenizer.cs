@@ -33,7 +33,7 @@ public sealed class JsxTokenizer : ITokenizer, IExtension
     public JsxTokenizer(string input, int start, int length, SourceType sourceType, string? sourceFile, JsxTokenizerOptions options)
         : this(options)
     {
-        Reset(input, start, length, sourceType, sourceFile);
+        _tokenizer.ResetInternal(input, start, length, sourceType, sourceFile, trackRegExpContext: true);
     }
 
     bool IExtension.SupportsMinimalContextTracking => false;

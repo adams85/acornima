@@ -72,11 +72,7 @@ public partial class Tokenizer
         => Reset(input ?? ThrowArgumentNullException<string>(nameof(input)), start, input.Length - start, sourceType, sourceFile);
 
     public void Reset(string input, int start, int length, SourceType sourceType = SourceType.Script, string? sourceFile = null)
-    {
-        ResetInternal(input, start, length, sourceType, sourceFile, trackRegExpContext: true);
-        _stringPool = default;
-        _options._errorHandler.Reset();
-    }
+        => ResetInternal(input, start, length, sourceType, sourceFile, _trackRegExpContext);
 
     internal void ResetInternal(string input, int start, int length, SourceType sourceType, string? sourceFile, bool trackRegExpContext)
     {
@@ -122,6 +118,9 @@ public partial class Tokenizer
         _inModule = _strict = sourceType == SourceType.Module;
 
         _sb = _sb is not null ? _sb.Clear() : new StringBuilder();
+        _stringPool = default;
+
+        _options._errorHandler.Reset();
     }
 
     internal void ReleaseLargeBuffers()
@@ -164,11 +163,5 @@ public partial class Tokenizer
         Debug.Assert(_sb is null, $"String builder is not in use currently.");
         _sb = sb;
         sb = null;
-    }
-
-    internal void MoveTo(int position, bool expressionAllowed)
-    {
-        ResetInternal(_input, position, _endPosition - position, _sourceType, _sourceFile, _trackRegExpContext);
-        _expressionAllowed = _trackRegExpContext && expressionAllowed;
     }
 }

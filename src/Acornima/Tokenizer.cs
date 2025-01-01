@@ -40,7 +40,7 @@ public sealed partial class Tokenizer : ITokenizer
     public Tokenizer(string input, int start, int length, SourceType sourceType, string? sourceFile, TokenizerOptions options)
         : this(options, extension: null)
     {
-        Reset(input, start, length, sourceType, sourceFile);
+        ResetInternal(input, start, length, sourceType, sourceFile, trackRegExpContext: true);
     }
 
     public string Input => _input;

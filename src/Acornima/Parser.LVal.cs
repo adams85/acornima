@@ -209,9 +209,7 @@ public partial class Parser
             && last is RestElement restElement && restElement.Argument.Type != NodeType.Identifier)
         {
             // Unexpected(restElement.Argument.Start); // original acornjs error reporting
-            _tokenizer.MoveTo(restElement.Argument.Start, expressionAllowed: false);
-            Next(ignoreEscapeSequenceInKeyword: true);
-            Unexpected();
+            Raise(restElement.Argument.Start, InvalidDestructuringTarget);
         }
 
         return NodeList.From(ref bindingList);
@@ -640,13 +638,7 @@ public partial class Parser
     [DoesNotReturn]
     private void HandleLeftHandSideError(Node node, bool isBinding, LeftHandSideKind lhsKind)
     {
-        if (isBinding)
-        {
-            _tokenizer.MoveTo(node.Start, expressionAllowed: false);
-            Next(ignoreEscapeSequenceInKeyword: true);
-            Unexpected();
-        }
-        else
+        if (!isBinding)
         {
             switch (lhsKind)
             {
@@ -665,12 +657,10 @@ public partial class Parser
                 case LeftHandSideKind.ForInOf:
                     Raise(node.Start, InvalidLhsInFor);
                     break;
-
-                default:
-                    Raise(node.Start, InvalidDestructuringTarget);
-                    break;
             }
         }
+
+        Raise(node.Start, InvalidDestructuringTarget);
     }
 
     private enum LeftHandSideKind : byte

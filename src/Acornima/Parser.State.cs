@@ -52,8 +52,6 @@ public partial class Parser
     internal void Reset(string input, int start, int length, SourceType sourceType, string? sourceFile, bool strict)
     {
         _tokenizer.ResetInternal(input, start, length, sourceType, sourceFile, trackRegExpContext: _options.OnToken is not null);
-        _tokenizer._stringPool = default;
-        _tokenizerOptions._errorHandler.Reset();
 
         _inModule = _tokenizer._inModule;
         _strict = _tokenizer._strict || strict;
