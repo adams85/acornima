@@ -144,6 +144,8 @@ public partial class Parser
         }
 
         _tokenizer.ReleaseLargeBuffers();
+
+        (_options._onNode?.Target as IOnNodeHandlerWrapper)?.ReleaseLargeBuffers();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
