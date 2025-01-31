@@ -14,7 +14,8 @@ using Nuke.Components;
         OnPullRequestIncludePaths = ["**/*"],
         PublishArtifacts = false,
         InvokedTargets = [nameof(ICompile.Compile), nameof(ITest.Test), nameof(IPack.Pack)],
-        CacheKeyFiles = []
+        CacheKeyFiles = [],
+        ConcurrencyCancelInProgress = true
     )
 ]
 [CustomGitHubActions(
@@ -42,7 +43,7 @@ class CustomGitHubActionsAttribute : GitHubActionsAttribute
         var job = base.GetJobs(image, relevantTargets);
         var newSteps = new List<GitHubActionsStep>(job.Steps);
         // only need to list the ones that are missing from default image
-        newSteps.Insert(0, new GitHubActionsSetupDotNetStep(["6.0", "8.0"]));
+        newSteps.Insert(0, new GitHubActionsSetupDotNetStep(["8.0", "9.0"]));
         job.Steps = newSteps.ToArray();
         return job;
     }
