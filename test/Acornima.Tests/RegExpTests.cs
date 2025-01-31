@@ -148,7 +148,10 @@ public partial class RegExpTests
     [InlineData(@"(?![^\\x28]*\\x29)", false, false)]
     [InlineData(@"(?<!(Saturday|Sunday))", false, false)]
     [InlineData(@"(?:x)", true, true)]
-#if NET7_0_OR_GREATER
+#if NET9_0_OR_GREATER
+    [InlineData(@"(?![^\\x28]*\\x29)", true, true)]
+    [InlineData(@"(?<!(Saturday|Sunday))", true, true)]
+#elif NET7_0_OR_GREATER
     [InlineData(@"(?![^\\x28]*\\x29)", true, false)]
     [InlineData(@"(?<!(Saturday|Sunday))", true, false)]
 #else
