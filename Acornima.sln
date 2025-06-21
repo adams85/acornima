@@ -42,6 +42,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Acornima.Tests.SourceGenera
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Acornima.Tests.Test262", "test\Acornima.Tests.Test262\Acornima.Tests.Test262.csproj", "{A7CA9D3E-5247-4212-9E08-BDECBC63B8E1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TypeScriptSample", "samples\TypeScriptSample\TypeScriptSample.csproj", "{D6184413-E2E1-40DD-A82A-E64495E06BD7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -86,6 +88,10 @@ Global
 		{8AAC2DA8-1478-40DC-8C48-FB15F1BD7F40}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8AAC2DA8-1478-40DC-8C48-FB15F1BD7F40}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8AAC2DA8-1478-40DC-8C48-FB15F1BD7F40}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D6184413-E2E1-40DD-A82A-E64495E06BD7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D6184413-E2E1-40DD-A82A-E64495E06BD7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D6184413-E2E1-40DD-A82A-E64495E06BD7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D6184413-E2E1-40DD-A82A-E64495E06BD7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -96,6 +102,7 @@ Global
 		{F41FD930-C3E8-42C0-AFE8-670C2E47E3D3} = {AEDE20AF-C8E3-4A40-ABCD-333C49230B05}
 		{C428FBAE-48E0-4C47-B9D2-688866714516} = {71570FFF-0BEA-4AF7-8288-9E46627EA676}
 		{8AAC2DA8-1478-40DC-8C48-FB15F1BD7F40} = {AEDE20AF-C8E3-4A40-ABCD-333C49230B05}
+		{D6184413-E2E1-40DD-A82A-E64495E06BD7} = {AEDE20AF-C8E3-4A40-ABCD-333C49230B05}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E0941456-4B6F-44D0-9A68-07E7D70D890F}
