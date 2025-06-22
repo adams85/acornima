@@ -517,6 +517,10 @@ public sealed class TypeScriptTokenizer : ITokenizer, IExtension
                remainingInput.StartsWith("var ", StringComparison.Ordinal) ||
                remainingInput.StartsWith("throw ", StringComparison.Ordinal) ||
                remainingInput.StartsWith("console.", StringComparison.Ordinal) ||
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+               remainingInput.StartsWith('}');
+#else
                remainingInput.StartsWith("}");
+#endif
     }
 }
