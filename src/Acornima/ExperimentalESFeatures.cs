@@ -22,5 +22,10 @@ public enum ExperimentalESFeatures
     /// </summary>
     RegExpDuplicateNamedCapturingGroups = 1 << 2,
 
-    All = Decorators | ImportAttributes | RegExpDuplicateNamedCapturingGroups
+    /// <summary>
+    /// Explicit resource management <seealso href="https://github.com/tc39/proposal-explicit-resource-management">proposal</seealso>.
+    /// </summary>
+    ExplicitResourceManagement = 1 << 3,
+
+    All = Decorators | ImportAttributes | RegExpDuplicateNamedCapturingGroups | ExplicitResourceManagement
 }

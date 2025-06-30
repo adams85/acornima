@@ -110,4 +110,10 @@ public record class TokenizerOptions
     {
         return (_experimentalESFeatures & ExperimentalESFeatures.RegExpDuplicateNamedCapturingGroups) != 0;
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal bool AllowExplicitResourceManagement()
+    {
+        return (_experimentalESFeatures & ExperimentalESFeatures.ExplicitResourceManagement) != 0;
+    }
 }
