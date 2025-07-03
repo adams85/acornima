@@ -309,6 +309,18 @@ public partial class Parser
             || (CurrentThisScope._flags & (ScopeFlags.Function | ScopeFlags.ClassStaticBlock | ScopeFlags.InClassFieldInit)) != 0;
     }
 
+    private bool AllowUsing
+    {
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/state.js > `get allowUsing`
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get
+        {
+            ScopeFlags flags = CurrentVarScope._flags;
+            return (flags & ScopeFlags.Switch) == 0 && (_inModule || (flags & ScopeFlags.Top) == 0);
+        }
+    }
+
     private bool InClassStaticBlock
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/state.js > `get inClassStaticBlock`

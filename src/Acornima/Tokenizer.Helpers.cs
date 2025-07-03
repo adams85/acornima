@@ -133,7 +133,13 @@ public partial class Tokenizer
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal int FullCharCodeAtPosition()
     {
-        return _input.CodePointAt(_position, _endPosition);
+        return FullCharCodeAt(_position);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal int FullCharCodeAt(int position)
+    {
+        return _input.CodePointAt(position, _endPosition);
     }
 
     [StringMatcher(

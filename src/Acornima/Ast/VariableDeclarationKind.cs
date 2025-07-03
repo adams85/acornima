@@ -5,5 +5,7 @@ public enum VariableDeclarationKind
     Unknown,
     Var,
     Let,
-    Const
+    Const,
+    Using,
+    AwaitUsing
 }

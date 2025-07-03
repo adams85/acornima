@@ -54,7 +54,7 @@ public partial class Parser
         }
 
         var next = _tokenizer.NextTokenPosition();
-        var nextCh = _tokenizer._input.CharCodeAt(next, _tokenizer._endPosition);
+        var nextCh = _tokenizer.FullCharCodeAt(next);
 
         // For ambiguous cases, determine if a LexicalDeclaration (or only a
         // Statement) is allowed here. If context is not empty then only a Statement
@@ -79,7 +79,7 @@ public partial class Parser
         if (Tokenizer.IsIdentifierStart(nextCh, allowAstral: true))
         {
             var pos = next + 1;
-            while (Tokenizer.IsIdentifierChar(nextCh = _tokenizer._input.CharCodeAt(pos, _tokenizer._endPosition), allowAstral: true))
+            while (Tokenizer.IsIdentifierChar(nextCh = _tokenizer.FullCharCodeAt(pos), allowAstral: true))
             {
                 ++pos;
             }
@@ -127,6 +127,78 @@ public partial class Parser
         }
 
         return false;
+    }
+
+    private bool IsUsingKeyword(bool isAwaitUsing, bool isFor)
+    {
+        // https://github.com/acornjs/acorn/blob/8bcc8974b518bb5c543e81cacf57bf86b5739e4d/acorn/src/statement.js > `pp.isUsingKeyword = function`
+
+        if (!_tokenizerOptions.AllowExplicitResourceManagement() || !IsContextual(isAwaitUsing ? "await" : "using"))
+        {
+            return false;
+        }
+
+        var next = _tokenizer.NextTokenPosition();
+
+        if (Tokenizer.ContainsLineBreak(_tokenizer._input.SliceBetween(_tokenizer._position, next)))
+        {
+            return false;
+        }
+
+        if (isAwaitUsing)
+        {
+            var awaitEndPos = next + 5 /* await */;
+            int after;
+            if (_tokenizer._input.SliceBetween(next, awaitEndPos) is not "using"
+                || awaitEndPos == _tokenizer._input.Length
+                || Tokenizer.IsIdentifierChar(after = _tokenizer._input.CharCodeAt(awaitEndPos))
+                || after is > 0xd7ff and < 0xdc00)
+            {
+                return false;
+            }
+
+            // TODO check this
+            var skipAfterUsing = _tokenizer.NextTokenPosition();
+            if (skipAfterUsing != -1 && Tokenizer.ContainsLineBreak(_tokenizer._input.SliceBetween(awaitEndPos, next)))
+            {
+                return false;
+            }
+        }
+
+        var ch = _tokenizer.FullCharCodeAt(next);
+        if (!Tokenizer.IsIdentifierStart(ch, true) && ch != '\\')
+        {
+            return false;
+        }
+
+        var idStart = next;
+        do
+        {
+            next += ch <= 0xffff ? 1 : 2;
+        } while (Tokenizer.IsIdentifierChar(ch = _tokenizer.FullCharCodeAt(next)));
+
+        if (ch == '\\')
+        {
+            return true;
+        }
+
+        var id = _tokenizer._input.SliceBetween(idStart, next);
+        if (IsKeywordRelationalOperator(id) || isFor && id is "of")
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private bool IsAwaitUsing(bool isFor)
+    {
+        return IsUsingKeyword(isAwaitUsing: true, isFor);
+    }
+
+    private bool IsUsing(bool isFor)
+    {
+        return IsUsingKeyword(isAwaitUsing: false, isFor);
     }
 
     // Parse a single statement.
@@ -311,6 +383,32 @@ public partial class Parser
             return ExitRecursion(ParseDecoratedClassStatement(startMarker));
         }
 
+        VariableDeclarationKind usingKind = IsAwaitUsing(isFor: false)
+            ? VariableDeclarationKind.AwaitUsing
+            : IsUsing(isFor: false) ? VariableDeclarationKind.Using : VariableDeclarationKind.Unknown;
+
+        if (usingKind != VariableDeclarationKind.Unknown)
+        {
+            if (!AllowUsing)
+            {
+                Raise(_tokenizer._start, "Using declaration cannot appear in the top level when source type is `script` or in the bare case statement");
+            }
+            if (usingKind == VariableDeclarationKind.AwaitUsing)
+            {
+                if (!CanAwait)
+                {
+                    Raise(_tokenizer._start, "Await using cannot appear outside of async function");
+                }
+
+                Next();
+            }
+
+            Next();
+            var variableDeclaration = ParseVar(usingKind, isFor: false);
+            Semicolon();
+            return ExitRecursion(FinishNode(startMarker, variableDeclaration));
+        }
+
         var maybeName = _tokenizer._value.Value;
         var expr = ParseExpression(ref NullRef<DestructuringErrors>());
         if (startType == TokenType.Name && expr is Identifier identifier && Eat(TokenType.Colon))
@@ -473,9 +571,11 @@ public partial class Parser
         if (_tokenizer._type == TokenType.Var || _tokenizer._type == TokenType.Const || (isLet = IsLet()))
         {
             var initStartMarker = StartNode();
-            var kind = isLet
-                ? VariableDeclarationKind.Let
-                : (_tokenizer._type.Keyword!.Value == Keyword.Var ? VariableDeclarationKind.Var : VariableDeclarationKind.Const);
+            VariableDeclarationKind kind;
+            if (isLet)
+                kind = VariableDeclarationKind.Let;
+            else
+                kind = _tokenizer._type.Keyword!.Value == Keyword.Var ? VariableDeclarationKind.Var : VariableDeclarationKind.Const;
 
             Next();
 
@@ -512,6 +612,31 @@ public partial class Parser
         else
         {
             var startsWithLet = IsContextual("let");
+
+            VariableDeclarationKind usingKind = IsUsing(isFor: true)
+                ? VariableDeclarationKind.Using
+                : IsAwaitUsing(true) ? VariableDeclarationKind.AwaitUsing : VariableDeclarationKind.Unknown;
+
+            if (usingKind != VariableDeclarationKind.Unknown)
+            {
+                var marker = StartNode();
+                Next();
+                if (usingKind == VariableDeclarationKind.AwaitUsing)
+                {
+                    if (!CanAwait)
+                    {
+                        Raise(_tokenizer._start, "Await using cannot appear outside of async function");
+                    }
+
+                    Next();
+                }
+
+                VariableDeclaration variableDeclaration = ParseVar(usingKind, isFor: true);
+                FinishNode(marker, variableDeclaration);
+                return ParseForAfterInit(marker, variableDeclaration, awaitAt);
+            }
+
+
             var containsEscape = _tokenizer._containsEscape;
             var destructuringErrors = new DestructuringErrors();
 
@@ -572,6 +697,38 @@ public partial class Parser
         }
 
         return ParseFor(startMarker, init);
+    }
+
+    // Helper method to parse for loop after variable initialization
+    private Statement ParseForAfterInit(in Marker node, VariableDeclaration init, int awaitAt)
+    {
+        // https://github.com/acornjs/acorn/blob/8.15.0/acorn/src/statement.js#L325 > `pp.parseForAfterInit = function`
+        if ((_tokenizer._type == TokenType.In || (_options.EcmaVersion >= EcmaVersion.ES6 && IsContextual("of"))) && init.Declarations.Count == 1)
+        {
+            var await = false;
+            if (_options.EcmaVersion >= EcmaVersion.ES9)
+            {
+                if (_tokenizer._type == TokenType.In)
+                {
+                    if (awaitAt > -1)
+                    {
+                        Unexpected(awaitAt, TokenType.Name, "await");
+                    }
+                }
+                else
+                {
+                    await = awaitAt > -1;
+                }
+            }
+
+            return ParseForInOf(node, isForIn: true, await, init);
+        }
+
+        if (awaitAt > -1)
+        {
+            Unexpected(awaitAt, TokenType.Name, "await");
+        }
+        return ParseFor(node, init);
     }
 
     private FunctionDeclaration ParseFunctionStatement(in Marker startMarker, bool isAsync, bool declarationPosition)
@@ -647,7 +804,7 @@ public partial class Parser
         Expect(TokenType.BraceLeft);
 
         _labels.PushRef().Reset(LabelKind.Switch);
-        EnterScope(ScopeFlags.None);
+        EnterScope(ScopeFlags.Switch);
 
         var sawDefault = false;
         while (!Eat(TokenType.BraceRight))
@@ -1006,7 +1163,7 @@ public partial class Parser
     // Parse a list of variable declarations.
     private VariableDeclaration ParseVar(VariableDeclarationKind kind, bool isFor)
     {
-        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseVar = function`
+        // https://github.com/acornjs/acorn/blob/8.15.0/acorn/src/statement.js > `pp.parseVar = function`
 
         var declarations = new ArrayList<VariableDeclarator>();
         do
@@ -1027,6 +1184,12 @@ public partial class Parser
                     // Unexpected(); // original acornjs error reporting
                     Raise(_tokenizer._lastTokenEnd, DeclarationMissingInitializer_Const);
                 }
+                else if (kind is VariableDeclarationKind.Using or VariableDeclarationKind.AwaitUsing && _tokenizerOptions.AllowExplicitResourceManagement() && _tokenizer._type != TokenType.In && !IsContextual("of"))
+                {
+                    // Raise(_tokenizer._lastTokenEnd, `Missing initializer in ${kind} declaration`); // original acornjs error reporting
+                    // TODO
+                    Raise(_tokenizer._lastTokenEnd, DeclarationMissingInitializer_Destructuring);
+                }
                 else if (id.Type != NodeType.Identifier && !(isFor && (_tokenizer._type == TokenType.In || IsContextual("of"))))
                 {
                     // Raise(_tokenizer._lastTokenEnd, "Complex binding patterns require an initialization value"); // original acornjs error reporting
@@ -1044,9 +1207,12 @@ public partial class Parser
 
     private Node ParseVarId(VariableDeclarationKind kind)
     {
-        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseVarId = function`
+        // https://github.com/acornjs/acorn/blob/8.15.0/acorn/src/statement.js > `pp.parseVarId = function`
 
-        var id = ParseBindingAtom();
+        var id = kind is VariableDeclarationKind.Using or VariableDeclarationKind.AwaitUsing
+            ? ParseIdentifier()
+            : ParseBindingAtom();
+
         CheckLValPattern(id, kind == VariableDeclarationKind.Var ? BindingType.Var : BindingType.Lexical);
         return id;
     }
