@@ -317,7 +317,7 @@ public partial class Parser
         get
         {
             ScopeFlags flags = CurrentVarScope._flags;
-            return (flags & ScopeFlags.Switch) == 0 && (_inModule || (flags & ScopeFlags.Top) == 0);
+            return (flags & ScopeFlags.Switch) == 0 && (_inModule || (flags & ScopeFlags.Top) == 0 || _options._allowTopLevelUsing);
         }
     }
 

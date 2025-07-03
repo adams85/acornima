@@ -127,6 +127,13 @@ public record class ParserOptions
     /// </summary>
     public bool AllowSuperOutsideMethod { get => _allowSuperOutsideMethod; init => _allowSuperOutsideMethod = value; }
 
+    internal readonly bool _allowTopLevelUsing;
+    /// <summary>
+    /// Gets or sets whether to allow using declarations to appear on top-level scope.
+    /// Defaults to <see langword="false"/>.
+    /// </summary>
+    public bool AllowTopLevelUsing { get => _allowTopLevelUsing; init => _allowTopLevelUsing = value; }
+
     /// <summary>
     /// Gets or sets whether to allow hashbang directive at the beginning of file and treat it as a line comment.
     /// Defaults to <see langword="null"/>, in which case hashbang comment is allowed if <see cref="EcmaVersion"/> >= ES2023.
