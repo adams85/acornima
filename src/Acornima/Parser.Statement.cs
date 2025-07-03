@@ -157,9 +157,8 @@ public partial class Parser
                 return false;
             }
 
-            // TODO check this
-            var skipAfterUsing = _tokenizer.NextTokenPosition();
-            if (skipAfterUsing != -1 && Tokenizer.ContainsLineBreak(_tokenizer._input.SliceBetween(awaitEndPos, next)))
+            next = _tokenizer.NextTokenPosition();
+            if (Tokenizer.ContainsLineBreak(_tokenizer._input.SliceBetween(_tokenizer._position, next)))
             {
                 return false;
             }
