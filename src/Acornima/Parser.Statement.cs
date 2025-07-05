@@ -390,13 +390,13 @@ public partial class Parser
         {
             if (!AllowUsing)
             {
-                Raise(_tokenizer._start, "Using declaration cannot appear in the top level when source type is `script` or in the bare case statement");
+                Raise(_tokenizer._start, UsingInTopLevel);
             }
             if (usingKind == VariableDeclarationKind.AwaitUsing)
             {
                 if (!CanAwait)
                 {
-                    Raise(_tokenizer._start, "Await using cannot appear outside of async function");
+                    Raise(_tokenizer._start, AwaitNotInAsyncContext);
                 }
 
                 Next();
@@ -624,7 +624,7 @@ public partial class Parser
                 {
                     if (!CanAwait)
                     {
-                        Raise(_tokenizer._start, "Await using cannot appear outside of async function");
+                        Raise(_tokenizer._start, AwaitNotInAsyncContext);
                     }
 
                     Next();
