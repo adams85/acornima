@@ -15,9 +15,6 @@ public enum EcmaVersion
     ES12 = 12,
     ES13 = 13,
     ES14 = 14,
-    ES15 = 15,
-    ES16 = 16,
-    ES17 = 17,
 
     ES2015 = ES6,
     ES2016 = ES7,
