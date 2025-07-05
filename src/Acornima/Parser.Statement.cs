@@ -149,8 +149,8 @@ public partial class Parser
         {
             var awaitEndPos = next + 5 /* await */;
             int after;
-            if (_tokenizer._input.SliceBetween(next, awaitEndPos) is not "using"
-                || awaitEndPos == _tokenizer._input.Length
+            if (awaitEndPos >= _tokenizer._input.Length
+                || _tokenizer._input.SliceBetween(next, awaitEndPos) is not "using"
                 || Tokenizer.IsIdentifierChar(after = _tokenizer._input.CharCodeAt(awaitEndPos))
                 || after is > 0xd7ff and < 0xdc00)
             {
