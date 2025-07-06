@@ -21,7 +21,7 @@ public abstract class Property : Node, IProperty
     public Expression Key { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
     /// <remarks>
-    /// When property of an object literal: <see cref="Expression"/> (incl. <see cref="SpreadElement"/> and <see cref="FunctionExpression"/> for getters/setters/methods) <br />
+    /// When property of an object literal: <see cref="Expression"/> (incl. <see cref="SpreadElement"/> and <see cref="FunctionExpression"/> for getters/setters/methods)<br />
     /// When property of an object pattern: <see cref="Identifier"/> | <see cref="MemberExpression"/> (in assignment contexts only) | <see cref="ArrayPattern"/> | <see cref="ObjectPattern"/> | <see cref="AssignmentPattern"/> | <see cref="RestElement"/>
     /// </remarks>
     public Node Value { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
