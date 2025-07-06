@@ -128,11 +128,14 @@ public partial class Parser
         return false;
     }
 
-    private bool IsUsingKeyword(bool isAwaitUsing, bool isFor)
+    private bool IsUsingKeyword(bool isFor, out VariableDeclarationKind kind)
     {
         // https://github.com/acornjs/acorn/blob/e37a9c31423db95ee8de97a2e645a702240e2aa8/acorn/src/statement.js > `pp.isUsingKeyword = function`
 
-        if (!_tokenizerOptions.AllowExplicitResourceManagement() || !IsContextual(isAwaitUsing ? "await" : "using"))
+        SkipInit(out kind);
+        bool isAwaitUsing;
+
+        if (!_tokenizerOptions.AllowExplicitResourceManagement() || !((isAwaitUsing = IsContextual("await")) || IsContextual("using")))
         {
             return false;
         }
@@ -186,19 +189,8 @@ public partial class Parser
             return false;
         }
 
+        kind = isAwaitUsing ? VariableDeclarationKind.AwaitUsing : VariableDeclarationKind.Using;
         return true;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private bool IsAwaitUsing(bool isFor)
-    {
-        return IsUsingKeyword(isAwaitUsing: true, isFor);
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private bool IsUsing(bool isFor)
-    {
-        return IsUsingKeyword(isAwaitUsing: false, isFor);
     }
 
     // Parse a single statement.
@@ -383,12 +375,7 @@ public partial class Parser
             return ExitRecursion(ParseDecoratedClassStatement(startMarker));
         }
 
-        var usingKind =
-            IsAwaitUsing(isFor: false) ? VariableDeclarationKind.AwaitUsing
-            : IsUsing(isFor: false) ? VariableDeclarationKind.Using
-            : VariableDeclarationKind.Unknown;
-
-        if (usingKind != VariableDeclarationKind.Unknown)
+        if (IsUsingKeyword(isFor: false, out var usingKind))
         {
             if (!AllowUsing)
             {
@@ -569,12 +556,13 @@ public partial class Parser
         }
 
         var isLet = false;
+        Marker initStartMarker;
         VariableDeclaration initDeclaration;
         StatementOrExpression? init;
         Statement? forStatement;
         if (_tokenizer._type == TokenType.Var || _tokenizer._type == TokenType.Const || (isLet = IsLet()))
         {
-            var initStartMarker = StartNode();
+            initStartMarker = StartNode();
 
             var kind =
                 isLet ? VariableDeclarationKind.Let :
@@ -593,94 +581,88 @@ public partial class Parser
 
             init = initDeclaration;
         }
+        else if (IsUsingKeyword(isFor: true, out var usingKind))
+        {
+            initStartMarker = StartNode();
+
+            Next();
+
+            if (usingKind == VariableDeclarationKind.AwaitUsing)
+            {
+                if (!CanAwait)
+                {
+                    Raise(_tokenizer._start, AwaitNotInAsyncContext);
+                }
+
+                Next();
+            }
+
+            initDeclaration = FinishNode(initStartMarker, ParseVar(usingKind, isFor: true));
+
+            forStatement = ParseForAfterInit(startMarker, initDeclaration, awaitAt);
+            if (forStatement is not null)
+            {
+                return forStatement;
+            }
+
+            init = initDeclaration;
+        }
         else
         {
-            var usingKind =
-                IsUsing(isFor: true) ? VariableDeclarationKind.Using
-                : IsAwaitUsing(true) ? VariableDeclarationKind.AwaitUsing
-                : VariableDeclarationKind.Unknown;
+            var startsWithLet = IsContextual("let");
 
-            if (usingKind != VariableDeclarationKind.Unknown)
+            var containsEscape = _tokenizer._containsEscape;
+            var destructuringErrors = new DestructuringErrors();
+
+            var oldForInitPosition = _forInitPosition;
+            _forInitPosition = _tokenizer._start;
+
+            init = awaitAt < 0
+                ? ParseExpression(ref destructuringErrors, ExpressionContext.ForInit)
+                : ParseExprSubscripts(ref destructuringErrors, ExpressionContext.AwaitForInit);
+
+            // Swap variables using XOR
+            _forInitPosition ^= oldForInitPosition;
+            oldForInitPosition ^= _forInitPosition;
+            _forInitPosition ^= oldForInitPosition;
+
+            if (_tokenizer._type == TokenType.In)
             {
-                var initStartMarker = StartNode();
-                Next();
-                if (usingKind == VariableDeclarationKind.AwaitUsing)
+                if (awaitAt >= 0) // this implies _ecmaVersion >= EcmaVersion.ES9
                 {
-                    if (!CanAwait)
-                    {
-                        Raise(_tokenizer._start, AwaitNotInAsyncContext);
-                    }
-
-                    Next();
+                    Unexpected(awaitAt, TokenType.Name, "await");
                 }
 
-                initDeclaration = FinishNode(initStartMarker, ParseVar(usingKind, isFor: true));
+                var initPattern = ToAssignable(init, ref destructuringErrors, isBinding: false, lhsKind: LeftHandSideKind.ForInOf);
+                CheckLValPattern(initPattern, lhsKind: LeftHandSideKind.ForInOf);
 
-                forStatement = ParseForAfterInit(startMarker, initDeclaration, awaitAt);
-                if (forStatement is not null)
-                {
-                    return forStatement;
-                }
-
-                init = initDeclaration;
+                return ParseForInOf(startMarker, isForIn: true, await: false, initPattern);
             }
-            else
+            else if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES6 && IsContextual("of"))
             {
-                var startsWithLet = IsContextual("let");
-
-                var containsEscape = _tokenizer._containsEscape;
-                var destructuringErrors = new DestructuringErrors();
-
-                var oldForInitPosition = _forInitPosition;
-                _forInitPosition = _tokenizer._start;
-
-                init = awaitAt < 0
-                    ? ParseExpression(ref destructuringErrors, ExpressionContext.ForInit)
-                    : ParseExprSubscripts(ref destructuringErrors, ExpressionContext.AwaitForInit);
-
-                // Swap variables using XOR
-                _forInitPosition ^= oldForInitPosition;
-                oldForInitPosition ^= _forInitPosition;
-                _forInitPosition ^= oldForInitPosition;
-
-                if (_tokenizer._type == TokenType.In)
+                if (awaitAt < 0 && _tokenizerOptions._ecmaVersion >= EcmaVersion.ES8
+                    && oldForInitPosition == init.Start && !containsEscape && init is Identifier { Name: "async" })
                 {
-                    if (awaitAt >= 0) // this implies _ecmaVersion >= EcmaVersion.ES9
-                    {
-                        Unexpected(awaitAt, TokenType.Name, "await");
-                    }
-
-                    var initPattern = ToAssignable(init, ref destructuringErrors, isBinding: false, lhsKind: LeftHandSideKind.ForInOf);
-                    CheckLValPattern(initPattern, lhsKind: LeftHandSideKind.ForInOf);
-
-                    return ParseForInOf(startMarker, isForIn: true, await: false, initPattern);
-                }
-                else if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES6 && IsContextual("of"))
-                {
-                    if (awaitAt < 0 && _tokenizerOptions._ecmaVersion >= EcmaVersion.ES8
-                        && oldForInitPosition == init.Start && !containsEscape && init is Identifier { Name: "async" })
-                    {
-                        Raise(init.Start, ForOfAsync);
-                    }
-
-                    if (startsWithLet)
-                    {
-                        // Raise(init.Start, "The left-hand side of a for-of loop may not start with 'let'"); // original acornjs error reporting
-                        Raise(init.Start, ForOfLet);
-                    }
-
-                    var initPattern = ToAssignable(init, ref destructuringErrors, isBinding: false, lhsKind: LeftHandSideKind.ForInOf);
-                    CheckLValPattern(initPattern, lhsKind: LeftHandSideKind.ForInOf);
-
-                    return ParseForInOf(startMarker, isForIn: false, await: awaitAt >= 0, initPattern);
-                }
-                else if (awaitAt >= 0)
-                {
-                    Unexpected();
+                    Raise(init.Start, ForOfAsync);
                 }
 
-                CheckExpressionErrors(ref destructuringErrors, andThrow: true);
+                if (startsWithLet)
+                {
+                    // Raise(init.Start, "The left-hand side of a for-of loop may not start with 'let'"); // original acornjs error reporting
+                    Raise(init.Start, ForOfLet);
+                }
+
+                var initPattern = ToAssignable(init, ref destructuringErrors, isBinding: false, lhsKind: LeftHandSideKind.ForInOf);
+                CheckLValPattern(initPattern, lhsKind: LeftHandSideKind.ForInOf);
+
+                return ParseForInOf(startMarker, isForIn: false, await: awaitAt >= 0, initPattern);
             }
+            else if (awaitAt >= 0)
+            {
+                Unexpected();
+            }
+
+            CheckExpressionErrors(ref destructuringErrors, andThrow: true);
         }
 
         if (awaitAt >= 0)
