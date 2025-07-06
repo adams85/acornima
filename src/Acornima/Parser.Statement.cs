@@ -702,7 +702,8 @@ public partial class Parser
     private Statement ParseForAfterInit(in Marker node, VariableDeclaration init, int awaitAt)
     {
         // https://github.com/acornjs/acorn/blob/8.15.0/acorn/src/statement.js#L325 > `pp.parseForAfterInit = function`
-        if ((_tokenizer._type == TokenType.In || (_options.EcmaVersion >= EcmaVersion.ES6 && IsContextual("of"))) && init.Declarations.Count == 1)
+        var isOf = false;
+        if ((_tokenizer._type == TokenType.In || (_options.EcmaVersion >= EcmaVersion.ES6 && (isOf = IsContextual("of")))) && init.Declarations.Count == 1)
         {
             var await = false;
             if (_options.EcmaVersion >= EcmaVersion.ES9)
@@ -720,7 +721,7 @@ public partial class Parser
                 }
             }
 
-            return ParseForInOf(node, isForIn: true, await, init);
+            return ParseForInOf(node, isForIn: !isOf, await, init);
         }
 
         if (awaitAt > -1)
