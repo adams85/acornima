@@ -316,7 +316,7 @@ public partial class Parser
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
         {
-            ScopeFlags flags = CurrentScope._flags;
+            var flags = CurrentScope._flags;
             return (flags & ScopeFlags.Switch) == 0 && (_inModule || (flags & ScopeFlags.Top) == 0 || _options._allowTopLevelUsing);
         }
     }
