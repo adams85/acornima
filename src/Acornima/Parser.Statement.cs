@@ -46,7 +46,7 @@ public partial class Parser
 
     private bool IsLet(StatementContext context = StatementContext.Default)
     {
-        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.isLet = function`
+        // https://github.com/acornjs/acorn/blob/e37a9c31423db95ee8de97a2e645a702240e2aa8/acorn/src/statement.js > `pp.isLet = function`
 
         if (_tokenizerOptions._ecmaVersion < EcmaVersion.ES6 || !IsContextual("let"))
         {
@@ -71,25 +71,24 @@ public partial class Parser
             return false;
         }
 
-        if (nextCh is '{' || ((char)nextCh).IsHighSurrogate())
+        if (nextCh is '{')
         {
             return true;
         }
 
         if (Tokenizer.IsIdentifierStart(nextCh, allowAstral: true))
         {
-            var pos = next + 1;
-            while (Tokenizer.IsIdentifierChar(nextCh = _tokenizer.FullCharCodeAt(pos), allowAstral: true))
-            {
-                ++pos;
-            }
+            var start = next;
+            do { next += UnicodeHelper.GetCodePointLength((uint)nextCh); }
+            while (Tokenizer.IsIdentifierChar(nextCh = _tokenizer.FullCharCodeAt(next), allowAstral: true));
 
-            if (nextCh is '\\' || ((char)nextCh).IsHighSurrogate())
+            if (nextCh is '\\')
             {
                 return true;
             }
 
-            if (!IsKeywordRelationalOperator(_tokenizer._input.SliceBetween(next, pos)))
+            var ident = _tokenizer._input.SliceBetween(start, next);
+            if (!IsKeywordRelationalOperator(ident))
             {
                 return true;
             }
