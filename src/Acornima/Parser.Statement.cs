@@ -1187,8 +1187,7 @@ public partial class Parser
                 else if (kind is VariableDeclarationKind.Using or VariableDeclarationKind.AwaitUsing && _tokenizerOptions.AllowExplicitResourceManagement() && _tokenizer._type != TokenType.In && !IsContextual("of"))
                 {
                     // Raise(_tokenizer._lastTokenEnd, `Missing initializer in ${kind} declaration`); // original acornjs error reporting
-                    // TODO
-                    Raise(_tokenizer._lastTokenEnd, DeclarationMissingInitializer_Destructuring);
+                    Raise(_tokenizer._lastTokenEnd, DeclarationMissingInitializer_Using);
                 }
                 else if (id.Type != NodeType.Identifier && !(isFor && (_tokenizer._type == TokenType.In || IsContextual("of"))))
                 {

@@ -204,6 +204,15 @@ namespace Acornima {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Missing initializer in using declaration.
+        /// </summary>
+        internal static string DeclarationMissingInitializer_Using {
+            get {
+                return ResourceManager.GetString("DeclarationMissingInitializer_Using", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Decorators cannot be applied to static initialization blocks.
         /// </summary>
         internal static string DecoratorAppliedToStaticBlock {
