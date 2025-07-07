@@ -110,18 +110,19 @@ public partial class Parser
         }
 
         var next = _tokenizer.NextTokenPosition();
-        int after;
 
         if (!Tokenizer.ContainsLineBreak(_tokenizer._input.SliceBetween(_tokenizer._position, next)))
         {
             var keyword = TokenType.Function.Label;
             var endIndex = next + keyword.Length;
+            int after;
 
-            if (endIndex <= _tokenizer._endPosition
-                && _tokenizer._input.AsSpan(next, keyword.Length).SequenceEqual(keyword.AsSpan()))
+            if (endIndex < _tokenizer._endPosition
+                && _tokenizer._input.AsSpan(next, keyword.Length).SequenceEqual(keyword.AsSpan())
+                && !Tokenizer.IsIdentifierChar(after = _tokenizer.FullCharCodeAt(endIndex), allowAstral: true)
+                && after != '\\')
             {
-                return endIndex == _tokenizer._endPosition
-                    || !(Tokenizer.IsIdentifierChar(after = _tokenizer._input.CharCodeAt(endIndex)) || ((char)after).IsHighSurrogate());
+                return true;
             }
         }
 
@@ -155,8 +156,8 @@ public partial class Parser
             int after;
             if (usingEndPos >= _tokenizer._endPosition
                 || _tokenizer._input.SliceBetween(next, usingEndPos) is not "using"
-                || Tokenizer.IsIdentifierChar(after = _tokenizer._input.CharCodeAt(usingEndPos))
-                || ((char)after).IsHighSurrogate())
+                || Tokenizer.IsIdentifierChar(after = _tokenizer.FullCharCodeAt(usingEndPos), allowAstral: true)
+                || after == '\\')
             {
                 return false;
             }
