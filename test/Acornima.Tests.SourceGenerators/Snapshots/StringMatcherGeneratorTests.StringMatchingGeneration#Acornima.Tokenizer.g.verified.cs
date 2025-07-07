@@ -103,6 +103,7 @@ partial class Tokenizer
                     'f' => source[1] == 'a' && source[2] == 'l' && source[3] == 's' && source[4] == 'e' ? "false" : null,
                     's' => source[1] == 'u' && source[2] == 'p' && source[3] == 'e' && source[4] == 'r' ? "super" : null,
                     't' => source[1] == 'h' && source[2] == 'r' && source[3] == 'o' && source[4] == 'w' ? "throw" : null,
+                    'u' => source[1] == 's' && source[2] == 'i' && source[3] == 'n' && source[4] == 'g' ? "using" : null,
                     'v' => source[1] == 'a' && source[2] == 'l' && source[3] == 'u' && source[4] == 'e' ? "value" : null,
                     'w' => source[1] == 'h' && source[2] == 'i' && source[3] == 'l' && source[4] == 'e' ? "while" : null,
                     'y' => source[1] == 'i' && source[2] == 'e' && source[3] == 'l' && source[4] == 'd' ? "yield" : null,
