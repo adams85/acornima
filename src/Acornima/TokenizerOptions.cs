@@ -114,6 +114,6 @@ public record class TokenizerOptions
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal bool AllowExplicitResourceManagement()
     {
-        return (_experimentalESFeatures & ExperimentalESFeatures.ExplicitResourceManagement) != 0;
+        return _ecmaVersion >= EcmaVersion.ES2017 && (_experimentalESFeatures & ExperimentalESFeatures.ExplicitResourceManagement) != 0;
     }
 }

@@ -23,7 +23,7 @@ public enum ExperimentalESFeatures
     RegExpDuplicateNamedCapturingGroups = 1 << 2,
 
     /// <summary>
-    /// Explicit resource management feature as specified by this <seealso href="https://github.com/tc39/proposal-explicit-resource-management">proposal</seealso>.
+    /// Explicit resource management feature as specified by this <seealso href="https://github.com/tc39/proposal-explicit-resource-management">proposal</seealso>. Available only when <see cref="ParserOptions.EcmaVersion"/> >= ES2017.
     /// </summary>
     ExplicitResourceManagement = 1 << 3,
 
