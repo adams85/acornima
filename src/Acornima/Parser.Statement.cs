@@ -560,20 +560,21 @@ public partial class Parser
         var isLet = false;
         Marker initStartMarker;
         VariableDeclaration initDeclaration;
+        VariableDeclarationKind declarationKind;
         StatementOrExpression? init;
         Statement? forStatement;
         if (_tokenizer._type == TokenType.Var || _tokenizer._type == TokenType.Const || (isLet = IsLet()))
         {
             initStartMarker = StartNode();
 
-            var kind =
+            declarationKind =
                 isLet ? VariableDeclarationKind.Let :
                 _tokenizer._type.Keyword!.Value == Keyword.Var ? VariableDeclarationKind.Var
                 : VariableDeclarationKind.Const;
 
             Next();
 
-            initDeclaration = FinishNode(initStartMarker, ParseVar(kind, isFor: true));
+            initDeclaration = FinishNode(initStartMarker, ParseVar(declarationKind, isFor: true));
 
             forStatement = ParseForAfterInit(startMarker, initDeclaration, awaitAt);
             if (forStatement is not null)
@@ -583,13 +584,13 @@ public partial class Parser
 
             init = initDeclaration;
         }
-        else if (IsUsingKeyword(isFor: true, out var usingKind))
+        else if (IsUsingKeyword(isFor: true, out declarationKind))
         {
             initStartMarker = StartNode();
 
             Next();
 
-            if (usingKind == VariableDeclarationKind.AwaitUsing)
+            if (declarationKind == VariableDeclarationKind.AwaitUsing)
             {
                 if (!CanAwait)
                 {
@@ -599,7 +600,7 @@ public partial class Parser
                 Next();
             }
 
-            initDeclaration = FinishNode(initStartMarker, ParseVar(usingKind, isFor: true));
+            initDeclaration = FinishNode(initStartMarker, ParseVar(declarationKind, isFor: true));
 
             forStatement = ParseForAfterInit(startMarker, initDeclaration, awaitAt);
             if (forStatement is not null)
