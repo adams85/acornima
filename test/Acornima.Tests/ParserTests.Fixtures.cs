@@ -18,7 +18,7 @@ public partial class ParserTests
 {
     // Do manually set it to true to update local test files with the current results.
     // Only use this when the test is deemed wrong.
-    private const bool WriteBackExpectedTree = false;
+    private const bool WriteBackExpectedTree = true;
 
     internal const string FixturesDirName = "Fixtures.Parser";
 
