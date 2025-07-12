@@ -41,20 +41,6 @@ public partial class Tokenizer
         return ch is '\n' or '\r' or '\u2028' or '\u2029';
     }
 
-#if NET8_0_OR_GREATER
-#pragma warning disable IDE1006 // Naming Styles
-    private static SearchValues<char> LineBreakChars = SearchValues.Create(new[] { '\r', '\n', '\u2028', '\u2029' });
-#pragma warning restore IDE1006 // Naming Styles
-#else
-    private static ReadOnlySpan<char> LineBreakChars => new[] { '\r', '\n', '\u2028', '\u2029' };
-#endif
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static bool ContainsLineBreak(ReadOnlySpan<char> text)
-    {
-        return text.IndexOfAny(LineBreakChars) >= 0;
-    }
-
     internal static int NextLineBreak(string text, int startIndex, int endIndex)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/whitespace.js > `export function nextLineBreak`
@@ -119,6 +105,12 @@ public partial class Tokenizer
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal int CharCodeAt(int position)
+    {
+        return _input.CharCodeAt(position, _endPosition);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal int CharCodeAtPosition()
     {
         return _input.CharCodeAt(_position, _endPosition);
@@ -131,15 +123,15 @@ public partial class Tokenizer
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal int FullCharCodeAtPosition()
-    {
-        return FullCharCodeAt(_position);
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal int FullCharCodeAt(int position)
     {
         return _input.CodePointAt(position, _endPosition);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal int FullCharCodeAtPosition()
+    {
+        return _input.CodePointAt(_position, _endPosition);
     }
 
     [StringMatcher(

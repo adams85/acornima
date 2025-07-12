@@ -1331,7 +1331,7 @@ public partial class Parser
                 || _tokenizer._type.Kind is TokenKind.StringLiteral or TokenKind.NumericLiteral or TokenKind.BigIntLiteral
                 || _tokenizer._type.Keyword is not null
                 || _tokenizerOptions._ecmaVersion >= EcmaVersion.ES9 && _tokenizer._type == TokenType.Star)
-            && !Tokenizer.ContainsLineBreak(_tokenizer._input.SliceBetween(_tokenizer._lastTokenEnd, _tokenizer._start));
+            && _tokenizer._lastTokenEndLocation.Line == _tokenizer._startLocation.Line;
     }
 
     // Parse an object literal or binding pattern.

@@ -53,7 +53,7 @@ public partial class Parser
             return false;
         }
 
-        var next = _tokenizer.NextTokenPosition();
+        var next = _tokenizer.NextTokenPosition(out _, out _);
         var nextCh = _tokenizer.FullCharCodeAt(next);
 
         // For ambiguous cases, determine if a LexicalDeclaration (or only a
@@ -109,9 +109,9 @@ public partial class Parser
             return false;
         }
 
-        var next = _tokenizer.NextTokenPosition();
+        var next = _tokenizer.NextTokenPosition(out var nextLine, out _);
 
-        if (!Tokenizer.ContainsLineBreak(_tokenizer._input.SliceBetween(_tokenizer._position, next)))
+        if (_tokenizer._currentLine == nextLine)
         {
             var keyword = TokenType.Function.Label;
             var endIndex = next + keyword.Length;
@@ -141,11 +141,9 @@ public partial class Parser
             return false;
         }
 
-        var nextLine = _tokenizer._currentLine;
-        var nextLineStart = _tokenizer._lineStart;
-        var next = _tokenizer.NextTokenPositionAt(_tokenizer._position, ref nextLine, ref nextLineStart);
+        var next = _tokenizer.NextTokenPosition(out var nextLine, out var nextLineStart);
 
-        if (Tokenizer.ContainsLineBreak(_tokenizer._input.SliceBetween(_tokenizer._position, next)))
+        if (_tokenizer._currentLine != nextLine)
         {
             return false;
         }
@@ -163,7 +161,7 @@ public partial class Parser
             }
 
             next = _tokenizer.NextTokenPositionAt(usingEndPos, ref nextLine, ref nextLineStart);
-            if (Tokenizer.ContainsLineBreak(_tokenizer._input.SliceBetween(_tokenizer._position, next)))
+            if (_tokenizer._currentLine != nextLine)
             {
                 return false;
             }
@@ -311,8 +309,8 @@ public partial class Parser
                 case Keyword.Export or Keyword.Import:
                     if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES10 && startType.Keyword.Value == Keyword.Import)
                     {
-                        var next = _tokenizer.NextTokenPosition();
-                        var nextCh = _tokenizer._input.CharCodeAt(next, _tokenizer._endPosition);
+                        var next = _tokenizer.NextTokenPosition(out _, out _);
+                        var nextCh = _tokenizer.CharCodeAt(next);
                         if (nextCh is '(' or '.')
                         {
                             return ExitRecursion(ParseExpressionStatement(startMarker, ParseExpression(ref NullRef<DestructuringErrors>())));
@@ -840,7 +838,7 @@ public partial class Parser
 
         Next();
 
-        if (Tokenizer.ContainsLineBreak(_tokenizer._input.SliceBetween(_tokenizer._lastTokenEnd, _tokenizer._start)))
+        if (_tokenizer._lastTokenEndLocation.Line != _tokenizer._startLocation.Line)
         {
             // Raise(_tokenizer._lastTokenEnd, "Illegal newline after throw"); // original acornjs error reporting
             RaiseRecoverable(_tokenizer._lastTokenEnd, NewlineAfterThrow);

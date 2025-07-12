@@ -71,7 +71,7 @@ public partial class Parser
 
         return _tokenizer._type == TokenType.EOF
             || _tokenizer._type == TokenType.BraceRight
-            || Tokenizer.ContainsLineBreak(_tokenizer._input.SliceBetween(_tokenizer._lastTokenEnd, _tokenizer._start));
+            || _tokenizer._lastTokenEndLocation.Line != _tokenizer._startLocation.Line;
     }
 
     private bool InsertSemicolon()

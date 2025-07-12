@@ -381,7 +381,7 @@ public sealed partial class Tokenizer : ITokenizer
         }
     }
 
-    internal int NextTokenPosition()
+    internal int NextTokenPosition(out int line, out int lineStart)
     {
         // Replacement for the usage of the `skipWhiteSpace` regex in the original acornjs implementation.
 
@@ -392,6 +392,8 @@ public sealed partial class Tokenizer : ITokenizer
         SkipSpace(onComment: null);
 
         var position = _position;
+        line = _currentLine;
+        lineStart = _lineStart;
 
         _position = originalPosition;
         _currentLine = originalLineNumber;
@@ -585,7 +587,7 @@ public sealed partial class Tokenizer : ITokenizer
         {
             if (_sourceType == SourceType.Script && nextCh == '-'
                 && CharCodeAtPosition(2) == '>'
-                && (_lastTokenEnd == 0 || ContainsLineBreak(_input.SliceBetween(_lastTokenEnd, _position))))
+                && (_lastTokenEnd == 0 || _lastTokenEndLocation.Line != _currentLine))
             {
                 // A `-->` line comment
                 SkipLineComment(startSkip: 3, CommentKind.Line, _options._onComment);
@@ -1719,7 +1721,7 @@ public sealed partial class Tokenizer : ITokenizer
             // after a `yield` or `of` construct. See `UpdateContext_Name` for `TokenType.Name`.
             if (previousType == TokenType.Return || previousType == TokenType.Name && tokenizer._expressionAllowed)
             {
-                return ContainsLineBreak(tokenizer._input.SliceBetween(tokenizer._lastTokenEnd, tokenizer._start));
+                return tokenizer._lastTokenEndLocation.Line != tokenizer._startLocation.Line;
             }
 
             if (previousType == TokenType.Else || previousType == TokenType.Semicolon || previousType == TokenType.EOF || previousType == TokenType.ParenRight || previousType == TokenType.Arrow)
@@ -1771,7 +1773,7 @@ public sealed partial class Tokenizer : ITokenizer
 
         if (previousType.BeforeExpression && previousType != TokenType.Else
             && !(previousType == TokenType.Semicolon && tokenizer.CurrentContext != TokenContext.ParensInStatement)
-            && !(previousType == TokenType.Return && ContainsLineBreak(tokenizer._input.SliceBetween(tokenizer._lastTokenEnd, tokenizer._start)))
+            && !(previousType == TokenType.Return && tokenizer._lastTokenEndLocation.Line != tokenizer._startLocation.Line)
             && !((previousType == TokenType.Colon || previousType == TokenType.BraceLeft) && tokenizer.CurrentContext == TokenContext.BracketsInStatement))
         {
             tokenizer._contextStack.Push(TokenContext.FunctionInExpression);
