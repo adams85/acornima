@@ -1,0 +1,1 @@
+{ using {[key]: value} = obj; }

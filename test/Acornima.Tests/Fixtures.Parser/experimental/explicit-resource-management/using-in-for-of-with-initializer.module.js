@@ -1,0 +1,1 @@
+for (using x = resource of arr) {}

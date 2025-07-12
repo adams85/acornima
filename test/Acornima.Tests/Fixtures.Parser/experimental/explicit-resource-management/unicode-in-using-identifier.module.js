@@ -1,0 +1,1 @@
+{ using \u{61} = resource; }

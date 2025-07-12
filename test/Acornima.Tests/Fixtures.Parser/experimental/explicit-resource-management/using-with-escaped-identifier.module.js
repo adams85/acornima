@@ -1,0 +1,1 @@
+{ using \u0078 = resource; }

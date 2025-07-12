@@ -1,0 +1,1 @@
+{ using café = resource; }

@@ -1,0 +1,1 @@
+if (condition) { using x = resource; }

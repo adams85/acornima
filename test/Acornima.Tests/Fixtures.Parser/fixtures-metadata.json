@@ -11,22 +11,27 @@
     "flags": [ "Minimize" ],
     "files": [
       "3rdparty/angular-1.2.5.js",
-      "3rdparty/angular-1.2.5.tree.json",
       "3rdparty/angular-1.7.9.js",
       "3rdparty/backbone-1.1.0.js",
-      "3rdparty/backbone-1.1.0.tree.json",
       "3rdparty/bundle.js",
       "3rdparty/jquery-1.9.1.js",
-      "3rdparty/jquery-1.9.1.tree.json",
       "3rdparty/jquery.mobile-1.4.2.js",
-      "3rdparty/jquery.mobile-1.4.2.tree.json",
       "3rdparty/mootools-1.4.5.js",
-      "3rdparty/mootools-1.4.5.tree.json",
       "3rdparty/raptor_frida_ios_trace.js",
       "3rdparty/underscore-1.5.2.js",
-      "3rdparty/underscore-1.5.2.tree.json",
-      "3rdparty/yui-3.12.0.js",
-      "3rdparty/yui-3.12.0.tree.json"
+      "3rdparty/yui-3.12.0.js"
+    ]
+  },
+  {
+    "ecmaVersion": 16,
+    "flags": [ "IncludesLocation", "IncludesRange" ],
+    "files": [
+      "experimental/explicit-resource-management/await-using-as-identifier-es16.js",
+      "experimental/explicit-resource-management/top-level-using-es16.module.js",
+      "experimental/explicit-resource-management/using-as-identifier-for-of-es16.js",
+      "experimental/explicit-resource-management/using-as-identifier-logical-expr-es16.js",
+      "experimental/explicit-resource-management/using-as-identifier-method-call-es16.js",
+      "experimental/explicit-resource-management/using-as-identifier-method-call-es16.js"
     ]
   }
 ]

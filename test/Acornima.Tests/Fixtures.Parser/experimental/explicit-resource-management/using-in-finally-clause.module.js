@@ -1,0 +1,1 @@
+try {} finally { using x = resource; }

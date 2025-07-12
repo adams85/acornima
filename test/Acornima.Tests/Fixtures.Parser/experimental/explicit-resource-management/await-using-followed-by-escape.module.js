@@ -1,0 +1,1 @@
+async () => { await using\u0061 b = c }

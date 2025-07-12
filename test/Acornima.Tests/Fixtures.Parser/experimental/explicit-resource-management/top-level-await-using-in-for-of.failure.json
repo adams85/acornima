@@ -1,0 +1,1 @@
+{"index":11,"lineNumber":1,"column":11,"message":"await is only valid in async functions and the top level bodies of modules (1:12)","description":"await is only valid in async functions and the top level bodies of modules"}

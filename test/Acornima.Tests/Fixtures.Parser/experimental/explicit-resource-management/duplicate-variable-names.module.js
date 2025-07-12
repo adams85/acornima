@@ -1,0 +1,1 @@
+{ using x = resource1, x = resource2; }

@@ -18,7 +18,7 @@ public partial class ParserTests
 {
     // Do manually set it to true to update local test files with the current results.
     // Only use this when the test is deemed wrong.
-    private const bool WriteBackExpectedTree = true;
+    private const bool WriteBackExpectedTree = false;
 
     internal const string FixturesDirName = "Fixtures.Parser";
 
@@ -53,8 +53,9 @@ public partial class ParserTests
     [MemberData(nameof(Fixtures), FixturesDirName)]
     public void ExecuteTestCase(string fixture)
     {
-        static T CreateParserOptions<T>(bool tolerant, RegExpParseMode regExpParseMode, ExperimentalESFeatures experimentalESFeatures) where T : ParserOptions, new() => new T
+        static T CreateParserOptions<T>(bool tolerant, RegExpParseMode regExpParseMode, EcmaVersion ecmaVersion, ExperimentalESFeatures experimentalESFeatures) where T : ParserOptions, new() => new T
         {
+            EcmaVersion = ecmaVersion,
             Tolerant = tolerant,
             RegExpParseMode = regExpParseMode,
             AllowReturnOutsideFunction = tolerant,
@@ -65,7 +66,7 @@ public partial class ParserTests
             ? (CreateParserOptions<JsxParserOptions>,
                 opts => new JsxParser((JsxParserOptions)opts),
                 JsxAstToJsonOptions.Default)
-            : (new Func<bool, RegExpParseMode, ExperimentalESFeatures, ParserOptions>(CreateParserOptions<ParserOptions>),
+            : (new Func<bool, RegExpParseMode, EcmaVersion, ExperimentalESFeatures, ParserOptions>(CreateParserOptions<ParserOptions>),
                 new Func<ParserOptions, IParser>(opts => new Parser(opts)),
                 AstToJsonOptions.Default);
 
@@ -125,9 +126,12 @@ public partial class ParserTests
             : SourceType.Script;
 
         var regExpParseMode = !metadata.IgnoresRegex ? RegExpParseMode.AdaptToInterpreted : RegExpParseMode.Skip;
-        var experimentalESFeatures = jsFilePath.Contains("experimental") ? ExperimentalESFeatures.All : ExperimentalESFeatures.None;
+        var ecmaVersion = metadata.EcmaVersion ?? ParserOptions.Default.EcmaVersion;
+        var experimentalESFeatures = metadata.EcmaVersion is null && jsFilePath.Contains("experimental")
+            ? ExperimentalESFeatures.All
+            : ExperimentalESFeatures.None;
 
-        var parserOptions = parserOptionsFactory(false, regExpParseMode, experimentalESFeatures);
+        var parserOptions = parserOptionsFactory(false, regExpParseMode, ecmaVersion, experimentalESFeatures);
 
         var conversionOptions = metadata.CreateConversionOptions(conversionDefaultOptions);
         if (File.Exists(moduleFilePath))
@@ -192,7 +196,7 @@ public partial class ParserTests
 
         if (!invalid)
         {
-            parserOptions = parserOptionsFactory(true, parserOptions.RegExpParseMode, parserOptions.ExperimentalESFeatures);
+            parserOptions = parserOptionsFactory(true, parserOptions.RegExpParseMode, parserOptions.EcmaVersion, parserOptions.ExperimentalESFeatures);
 
             var actual = ParseAndFormat(sourceType, script, parserOptions, parserFactory, conversionOptions);
             CompareTreesAndAssert(actual, expected);
@@ -202,7 +206,7 @@ public partial class ParserTests
         }
         else
         {
-            parserOptions = parserOptionsFactory(false, parserOptions.RegExpParseMode, parserOptions.ExperimentalESFeatures);
+            parserOptions = parserOptionsFactory(false, parserOptions.RegExpParseMode, parserOptions.EcmaVersion, parserOptions.ExperimentalESFeatures);
 
             // TODO: check the accuracy of the message and of the location
             Assert.Throws<SyntaxErrorException>(() => ParseAndFormat(sourceType, script, parserOptions, parserFactory, conversionOptions));
@@ -272,6 +276,7 @@ public partial class ParserTests
 
         private sealed class Group
         {
+            public EcmaVersion? EcmaVersion { get; init; }
             public HashSet<string> Flags { get; } = new();
             public HashSet<string> Files { get; } = new();
         }
@@ -290,7 +295,7 @@ public partial class ParserTests
             return (groups ?? Array.Empty<Group>())
                 .SelectMany(group =>
                 {
-                    var metadata = CreateFrom(group.Flags);
+                    var metadata = From(group);
 
                     return group.Files.Select(file =>
                     (
@@ -301,10 +306,12 @@ public partial class ParserTests
                 .ToDictionary(item => item.filePath, item => item.metadata);
         }
 
-        private static FixtureMetadata CreateFrom(HashSet<string> flags)
+        private static FixtureMetadata From(Group group)
         {
+            var flags = group.Flags;
             return new FixtureMetadata
             {
+                EcmaVersion = group.EcmaVersion,
                 IncludesLocation = flags.Contains("IncludesLocation"),
                 IncludesRange = flags.Contains("IncludesRange"),
                 IgnoresRegex = flags.Contains("IgnoresRegex"),
@@ -315,6 +322,7 @@ public partial class ParserTests
 
         private FixtureMetadata() { }
 
+        public EcmaVersion? EcmaVersion { get; init; }
         public bool IncludesLocation { get; init; }
         public bool IncludesRange { get; init; }
         public bool IgnoresRegex { get; init; }

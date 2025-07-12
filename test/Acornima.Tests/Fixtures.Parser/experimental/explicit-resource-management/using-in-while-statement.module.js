@@ -1,0 +1,1 @@
+while (condition) { using x = resource; break; }

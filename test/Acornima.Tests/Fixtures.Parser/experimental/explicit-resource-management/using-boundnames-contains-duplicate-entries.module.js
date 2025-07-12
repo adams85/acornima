@@ -1,0 +1,1 @@
+let await using x = resource;
