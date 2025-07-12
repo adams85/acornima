@@ -578,7 +578,9 @@ public class AstToJsonConverter : AstVisitor
             Member("params", node.Params);
             Member("body", node.Body);
             Member("generator", node.Generator);
+#pragma warning disable CS0618 // Type or member is obsolete
             Member("expression", node.Expression);
+#pragma warning restore CS0618 // Type or member is obsolete
             Member("async", node.Async);
         }
 

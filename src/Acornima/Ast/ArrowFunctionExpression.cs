@@ -1,3 +1,4 @@
+using System;
 using System.Runtime.CompilerServices;
 
 namespace Acornima.Ast;
@@ -16,7 +17,9 @@ public sealed partial class ArrowFunctionExpression : Expression, IFunction
     {
         _params = parameters;
         Body = body;
+#pragma warning disable CS0618 // Type or member is obsolete
         Expression = expression;
+#pragma warning restore CS0618 // Type or member is obsolete
         Async = async;
     }
 
@@ -30,11 +33,14 @@ public sealed partial class ArrowFunctionExpression : Expression, IFunction
     /// </remarks>
     public StatementOrExpression Body { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     bool IFunction.Generator => false;
+    [Obsolete("This property is deprecated in the ESTree specification and therefore will be removed from the public API in a future major version.")]
     public bool Expression { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public bool Async { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
     private ArrowFunctionExpression Rewrite(in NodeList<Node> @params, StatementOrExpression body)
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         return new ArrowFunctionExpression(@params, body, Expression, Async);
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 }
