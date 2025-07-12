@@ -613,7 +613,6 @@ public partial class Parser
         else
         {
             var startsWithLet = IsContextual("let");
-
             var containsEscape = _tokenizer._containsEscape;
             var destructuringErrors = new DestructuringErrors();
 
