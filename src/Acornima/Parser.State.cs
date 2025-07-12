@@ -272,6 +272,14 @@ public partial class Parser
         }
     }
 
+    private bool AllowReturn
+    {
+        // https://github.com/acornjs/acorn/blob/2e1550534005a8d02030df99e20f06c0392ac28b/acorn/src/state.js > `get allowReturn`
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => InFunction || (_options.AllowReturnOutsideFunction && (CurrentVarScope._flags & ScopeFlags.Top) != 0);
+    }
+
     private bool AllowSuper
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/state.js > `get allowSuper`

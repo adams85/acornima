@@ -743,7 +743,7 @@ public partial class Parser
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseReturnStatement = function`
 
-        if (!_options._allowReturnOutsideFunction && !InFunction)
+        if (!AllowReturn)
         {
             // Raise(_tokenizer._start, "'return' outside of function"); // original acornjs error reporting
             Raise(_tokenizer._start, IllegalReturn);

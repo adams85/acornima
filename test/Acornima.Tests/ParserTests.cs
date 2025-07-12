@@ -2278,6 +2278,18 @@ public partial class ParserTests
         Assert.Throws<SyntaxErrorException>(() => parseAction(parser, code));
     }
 
+    [Fact]
+    public void ShouldDisallowReturnInClassStaticBlock()
+    {
+        var parser = new Parser(new ParserOptions
+        {
+            AllowReturnOutsideFunction = true,
+        });
+
+        var ex = Assert.Throws<SyntaxErrorException>(() => parser.ParseScript("class X { static { return; } }"));
+        Assert.Equal("Illegal return statement", ex.Description);
+    }
+
     [Theory]
     [InlineData("as")]
     [InlineData("do")]
