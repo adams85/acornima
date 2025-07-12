@@ -129,7 +129,7 @@ public record class ParserOptions
 
     internal readonly bool _allowTopLevelUsing;
     /// <summary>
-    /// Gets or sets whether to allow using declarations to appear on top-level scope.
+    /// Gets or sets whether to allow using declarations to appear at the top level of scripts as well.
     /// Defaults to <see langword="false"/>.
     /// </summary>
     public bool AllowTopLevelUsing { get => _allowTopLevelUsing; init => _allowTopLevelUsing = value; }
