@@ -1,0 +1,1 @@
+function* generator() { using x = resource; yield x; }

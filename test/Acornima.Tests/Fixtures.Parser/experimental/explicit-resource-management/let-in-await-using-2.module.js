@@ -1,0 +1,1 @@
+async function test() { await using x = resource1, let = resource2; }

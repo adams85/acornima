@@ -1,0 +1,205 @@
+{
+  "type": "Program",
+  "body": [
+    {
+      "type": "FunctionDeclaration",
+      "id": {
+        "type": "Identifier",
+        "name": "test",
+        "range": [
+          15,
+          19
+        ],
+        "loc": {
+          "start": {
+            "line": 1,
+            "column": 15
+          },
+          "end": {
+            "line": 1,
+            "column": 19
+          }
+        }
+      },
+      "params": [],
+      "body": {
+        "type": "BlockStatement",
+        "body": [
+          {
+            "type": "VariableDeclaration",
+            "declarations": [
+              {
+                "type": "VariableDeclarator",
+                "id": {
+                  "type": "Identifier",
+                  "name": "a",
+                  "range": [
+                    36,
+                    37
+                  ],
+                  "loc": {
+                    "start": {
+                      "line": 1,
+                      "column": 36
+                    },
+                    "end": {
+                      "line": 1,
+                      "column": 37
+                    }
+                  }
+                },
+                "init": {
+                  "type": "Identifier",
+                  "name": "resource1",
+                  "range": [
+                    40,
+                    49
+                  ],
+                  "loc": {
+                    "start": {
+                      "line": 1,
+                      "column": 40
+                    },
+                    "end": {
+                      "line": 1,
+                      "column": 49
+                    }
+                  }
+                },
+                "range": [
+                  36,
+                  49
+                ],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 36
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 49
+                  }
+                }
+              },
+              {
+                "type": "VariableDeclarator",
+                "id": {
+                  "type": "Identifier",
+                  "name": "b",
+                  "range": [
+                    51,
+                    52
+                  ],
+                  "loc": {
+                    "start": {
+                      "line": 1,
+                      "column": 51
+                    },
+                    "end": {
+                      "line": 1,
+                      "column": 52
+                    }
+                  }
+                },
+                "init": {
+                  "type": "Identifier",
+                  "name": "resource2",
+                  "range": [
+                    55,
+                    64
+                  ],
+                  "loc": {
+                    "start": {
+                      "line": 1,
+                      "column": 55
+                    },
+                    "end": {
+                      "line": 1,
+                      "column": 64
+                    }
+                  }
+                },
+                "range": [
+                  51,
+                  64
+                ],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 51
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 64
+                  }
+                }
+              }
+            ],
+            "kind": "await using",
+            "range": [
+              24,
+              65
+            ],
+            "loc": {
+              "start": {
+                "line": 1,
+                "column": 24
+              },
+              "end": {
+                "line": 1,
+                "column": 65
+              }
+            }
+          }
+        ],
+        "strict": true,
+        "range": [
+          22,
+          67
+        ],
+        "loc": {
+          "start": {
+            "line": 1,
+            "column": 22
+          },
+          "end": {
+            "line": 1,
+            "column": 67
+          }
+        }
+      },
+      "generator": false,
+      "expression": false,
+      "async": true,
+      "range": [
+        0,
+        67
+      ],
+      "loc": {
+        "start": {
+          "line": 1,
+          "column": 0
+        },
+        "end": {
+          "line": 1,
+          "column": 67
+        }
+      }
+    }
+  ],
+  "sourceType": "module",
+  "range": [
+    0,
+    67
+  ],
+  "loc": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 1,
+      "column": 67
+    }
+  }
+}

@@ -1,0 +1,1 @@
+{"index":37,"lineNumber":1,"column":37,"message":"Using declaration cannot appear in the top level when source type is `script` or in the bare case statement (1:38)","description":"Using declaration cannot appear in the top level when source type is `script` or in the bare case statement"}

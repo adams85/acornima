@@ -13,7 +13,8 @@ public sealed partial class VariableDeclarator : Node
     }
 
     /// <remarks>
-    /// <see cref="Identifier"/> | <see cref="ArrayPattern"/> | <see cref="ObjectPattern"/>
+    /// In the case of var, let or const variable declarations: <see cref="Identifier"/> | <see cref="ArrayPattern"/> | <see cref="ObjectPattern"/><br />
+    /// In the case of using and await using const variable declarations: <see cref="Identifier"/>
     /// </remarks>
     public Node Id { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public Expression? Init { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }

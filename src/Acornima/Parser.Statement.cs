@@ -46,7 +46,7 @@ public partial class Parser
 
     private bool IsLet(StatementContext context = StatementContext.Default)
     {
-        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.isLet = function`
+        // https://github.com/acornjs/acorn/blob/e37a9c31423db95ee8de97a2e645a702240e2aa8/acorn/src/statement.js > `pp.isLet = function`
 
         if (_tokenizerOptions._ecmaVersion < EcmaVersion.ES6 || !IsContextual("let"))
         {
@@ -54,7 +54,7 @@ public partial class Parser
         }
 
         var next = _tokenizer.NextTokenPosition();
-        var nextCh = _tokenizer._input.CharCodeAt(next, _tokenizer._endPosition);
+        var nextCh = _tokenizer.FullCharCodeAt(next);
 
         // For ambiguous cases, determine if a LexicalDeclaration (or only a
         // Statement) is allowed here. If context is not empty then only a Statement
@@ -71,25 +71,24 @@ public partial class Parser
             return false;
         }
 
-        if (nextCh is '{' || ((char)nextCh).IsHighSurrogate())
+        if (nextCh is '{')
         {
             return true;
         }
 
         if (Tokenizer.IsIdentifierStart(nextCh, allowAstral: true))
         {
-            var pos = next + 1;
-            while (Tokenizer.IsIdentifierChar(nextCh = _tokenizer._input.CharCodeAt(pos, _tokenizer._endPosition), allowAstral: true))
-            {
-                ++pos;
-            }
+            var start = next;
+            do { next += UnicodeHelper.GetCodePointLength((uint)nextCh); }
+            while (Tokenizer.IsIdentifierChar(nextCh = _tokenizer.FullCharCodeAt(next), allowAstral: true));
 
-            if (nextCh is '\\' || ((char)nextCh).IsHighSurrogate())
+            if (nextCh is '\\')
             {
                 return true;
             }
 
-            if (!IsKeywordRelationalOperator(_tokenizer._input.SliceBetween(next, pos)))
+            var id = _tokenizer._input.SliceBetween(start, next);
+            if (!IsKeywordRelationalOperator(id))
             {
                 return true;
             }
@@ -103,7 +102,7 @@ public partial class Parser
     // - 'async /*\n*/ function' is invalid.
     private bool IsAsyncFunction()
     {
-        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.isAsyncFunction = function`
+        // https://github.com/acornjs/acorn/blob/e37a9c31423db95ee8de97a2e645a702240e2aa8/acorn/src/statement.js > `pp.isAsyncFunction = function`
 
         if (_tokenizerOptions._ecmaVersion < EcmaVersion.ES8 || !IsContextual("async"))
         {
@@ -111,22 +110,88 @@ public partial class Parser
         }
 
         var next = _tokenizer.NextTokenPosition();
-        int after;
 
         if (!Tokenizer.ContainsLineBreak(_tokenizer._input.SliceBetween(_tokenizer._position, next)))
         {
             var keyword = TokenType.Function.Label;
             var endIndex = next + keyword.Length;
+            int after;
 
-            if (endIndex <= _tokenizer._endPosition
-                && _tokenizer._input.AsSpan(next, keyword.Length).SequenceEqual(keyword.AsSpan()))
+            if (endIndex < _tokenizer._endPosition
+                && _tokenizer._input.AsSpan(next, keyword.Length).SequenceEqual(keyword.AsSpan())
+                && !Tokenizer.IsIdentifierChar(after = _tokenizer.FullCharCodeAt(endIndex), allowAstral: true)
+                && after != '\\')
             {
-                return endIndex == _tokenizer._endPosition
-                    || !(Tokenizer.IsIdentifierChar(after = _tokenizer._input.CharCodeAt(endIndex)) || ((char)after).IsHighSurrogate());
+                return true;
             }
         }
 
         return false;
+    }
+
+    private bool IsUsingKeyword(bool isFor, out VariableDeclarationKind kind)
+    {
+        // https://github.com/acornjs/acorn/blob/e37a9c31423db95ee8de97a2e645a702240e2aa8/acorn/src/statement.js > `pp.isUsingKeyword = function`
+
+        SkipInit(out kind);
+        bool isAwaitUsing;
+
+        if (!_tokenizerOptions.AllowExplicitResourceManagement() || !((isAwaitUsing = IsContextual("await")) || IsContextual("using")))
+        {
+            return false;
+        }
+
+        var nextLine = _tokenizer._currentLine;
+        var nextLineStart = _tokenizer._lineStart;
+        var next = _tokenizer.NextTokenPositionAt(_tokenizer._position, ref nextLine, ref nextLineStart);
+
+        if (Tokenizer.ContainsLineBreak(_tokenizer._input.SliceBetween(_tokenizer._position, next)))
+        {
+            return false;
+        }
+
+        if (isAwaitUsing)
+        {
+            var usingEndPos = next + 5 /* using */;
+            int after;
+            if (usingEndPos >= _tokenizer._endPosition
+                || _tokenizer._input.SliceBetween(next, usingEndPos) is not "using"
+                || Tokenizer.IsIdentifierChar(after = _tokenizer.FullCharCodeAt(usingEndPos), allowAstral: true)
+                || after == '\\')
+            {
+                return false;
+            }
+
+            next = _tokenizer.NextTokenPositionAt(usingEndPos, ref nextLine, ref nextLineStart);
+            if (Tokenizer.ContainsLineBreak(_tokenizer._input.SliceBetween(_tokenizer._position, next)))
+            {
+                return false;
+            }
+        }
+
+        var ch = _tokenizer.FullCharCodeAt(next);
+        if (!Tokenizer.IsIdentifierStart(ch, allowAstral: true) && ch != '\\')
+        {
+            return false;
+        }
+
+        var idStart = next;
+        do { next += UnicodeHelper.GetCodePointLength((uint)ch); }
+        while (Tokenizer.IsIdentifierChar(ch = _tokenizer.FullCharCodeAt(next), allowAstral: true));
+
+        if (ch == '\\')
+        {
+            return true;
+        }
+
+        var id = _tokenizer._input.SliceBetween(idStart, next);
+        if (IsKeywordRelationalOperator(id) || isFor && id is "of")
+        {
+            return false;
+        }
+
+        kind = isAwaitUsing ? VariableDeclarationKind.AwaitUsing : VariableDeclarationKind.Using;
+        return true;
     }
 
     // Parse a single statement.
@@ -311,6 +376,30 @@ public partial class Parser
             return ExitRecursion(ParseDecoratedClassStatement(startMarker));
         }
 
+        // We deviate a bit from the original acornjs implementation here to match the error reporting behavior of V8.
+        if (AllowUsing && IsUsingKeyword(isFor: false, out var usingKind))
+        {
+            //if (!AllowUsing)
+            //{
+            //    Raise(_tokenizer._start, UsingInTopLevel);
+            //}
+
+            if (usingKind == VariableDeclarationKind.AwaitUsing)
+            {
+                if (!CanAwait)
+                {
+                    Raise(_tokenizer._start, AwaitNotInAsyncContext);
+                }
+
+                Next();
+            }
+
+            Next();
+            var variableDeclaration = ParseVar(usingKind, isFor: false);
+            Semicolon();
+            return ExitRecursion(FinishNode(startMarker, variableDeclaration));
+        }
+
         var maybeName = _tokenizer._value.Value;
         var expr = ParseExpression(ref NullRef<DestructuringErrors>());
         if (startType == TokenType.Name && expr is Identifier identifier && Eat(TokenType.Colon))
@@ -434,7 +523,7 @@ public partial class Parser
     // is a regular `for` loop.
     private Statement ParseForStatement(in Marker startMarker)
     {
-        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseForStatement = function`
+        // https://github.com/acornjs/acorn/blob/8.15.0/acorn/src/statement.js > `pp.parseForStatement = function`
 
         Next();
 
@@ -469,42 +558,54 @@ public partial class Parser
         }
 
         var isLet = false;
+        Marker initStartMarker;
+        VariableDeclaration initDeclaration;
+        VariableDeclarationKind declarationKind;
         StatementOrExpression? init;
+        Statement? forStatement;
         if (_tokenizer._type == TokenType.Var || _tokenizer._type == TokenType.Const || (isLet = IsLet()))
         {
-            var initStartMarker = StartNode();
-            var kind = isLet
-                ? VariableDeclarationKind.Let
-                : (_tokenizer._type.Keyword!.Value == Keyword.Var ? VariableDeclarationKind.Var : VariableDeclarationKind.Const);
+            initStartMarker = StartNode();
+
+            declarationKind =
+                isLet ? VariableDeclarationKind.Let :
+                _tokenizer._type.Keyword!.Value == Keyword.Var ? VariableDeclarationKind.Var
+                : VariableDeclarationKind.Const;
 
             Next();
 
-            var initDeclaration = FinishNode(initStartMarker, ParseVar(kind, isFor: true));
+            initDeclaration = FinishNode(initStartMarker, ParseVar(declarationKind, isFor: true));
 
-            if (_tokenizer._type == TokenType.In)
+            forStatement = ParseForAfterInit(startMarker, initDeclaration, awaitAt);
+            if (forStatement is not null)
             {
-                if (initDeclaration.Declarations.Count != 1)
-                {
-                    // This error is not reported by the original acornjs implementation.
-                    Raise(initDeclaration.Start, ForInOfLoopMultiBindings, new object[] { "for-in" });
-                }
-
-                if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES9 && awaitAt >= 0)
-                {
-                    Unexpected(awaitAt, TokenType.Name, "await");
-                }
-
-                return ParseForInOf(startMarker, isForIn: true, await: false, initDeclaration);
+                return forStatement;
             }
-            else if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES6 && IsContextual("of"))
+
+            init = initDeclaration;
+        }
+        else if (IsUsingKeyword(isFor: true, out declarationKind))
+        {
+            initStartMarker = StartNode();
+
+            Next();
+
+            if (declarationKind == VariableDeclarationKind.AwaitUsing)
             {
-                if (initDeclaration.Declarations.Count != 1)
+                if (!CanAwait)
                 {
-                    // This error is not reported by the original acornjs implementation.
-                    Raise(initDeclaration.Start, ForInOfLoopMultiBindings, new object[] { "for-of" });
+                    Raise(_tokenizer._start, AwaitNotInAsyncContext);
                 }
 
-                return ParseForInOf(startMarker, isForIn: false, await: awaitAt >= 0, initDeclaration);
+                Next();
+            }
+
+            initDeclaration = FinishNode(initStartMarker, ParseVar(declarationKind, isFor: true));
+
+            forStatement = ParseForAfterInit(startMarker, initDeclaration, awaitAt);
+            if (forStatement is not null)
+            {
+                return forStatement;
             }
 
             init = initDeclaration;
@@ -572,6 +673,40 @@ public partial class Parser
         }
 
         return ParseFor(startMarker, init);
+    }
+
+    // Helper method to parse for loop after variable initialization
+    private Statement? ParseForAfterInit(in Marker startMarker, VariableDeclaration init, int awaitAt)
+    {
+        // https://github.com/acornjs/acorn/blob/8.15.0/acorn/src/statement.js#L325 > `pp.parseForAfterInit = function`
+
+        if (_tokenizer._type == TokenType.In)
+        {
+            if (init.Declarations.Count != 1)
+            {
+                // This error is not reported by the original acornjs implementation.
+                Raise(init.Start, ForInOfLoopMultiBindings, new object[] { "for-in" });
+            }
+
+            if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES9 && awaitAt >= 0)
+            {
+                Unexpected(awaitAt, TokenType.Name, "await");
+            }
+
+            return ParseForInOf(startMarker, isForIn: true, await: false, init);
+        }
+        else if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES6 && IsContextual("of"))
+        {
+            if (init.Declarations.Count != 1)
+            {
+                // This error is not reported by the original acornjs implementation.
+                Raise(init.Start, ForInOfLoopMultiBindings, new object[] { "for-of" });
+            }
+
+            return ParseForInOf(startMarker, isForIn: false, await: awaitAt >= 0, init);
+        }
+
+        return null;
     }
 
     private FunctionDeclaration ParseFunctionStatement(in Marker startMarker, bool isAsync, bool declarationPosition)
@@ -647,7 +782,7 @@ public partial class Parser
         Expect(TokenType.BraceLeft);
 
         _labels.PushRef().Reset(LabelKind.Switch);
-        EnterScope(ScopeFlags.None);
+        EnterScope(ScopeFlags.Switch);
 
         var sawDefault = false;
         while (!Eat(TokenType.BraceRight))
@@ -1006,7 +1141,7 @@ public partial class Parser
     // Parse a list of variable declarations.
     private VariableDeclaration ParseVar(VariableDeclarationKind kind, bool isFor)
     {
-        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseVar = function`
+        // https://github.com/acornjs/acorn/blob/8.15.0/acorn/src/statement.js > `pp.parseVar = function`
 
         var declarations = new ArrayList<VariableDeclarator>();
         do
@@ -1027,6 +1162,11 @@ public partial class Parser
                     // Unexpected(); // original acornjs error reporting
                     Raise(_tokenizer._lastTokenEnd, DeclarationMissingInitializer_Const);
                 }
+                else if (kind is VariableDeclarationKind.Using or VariableDeclarationKind.AwaitUsing && _tokenizerOptions.AllowExplicitResourceManagement() && _tokenizer._type != TokenType.In && !IsContextual("of"))
+                {
+                    // Raise(_tokenizer._lastTokenEnd, `Missing initializer in ${kind} declaration`); // original acornjs error reporting
+                    Raise(_tokenizer._lastTokenEnd, DeclarationMissingInitializer_Using);
+                }
                 else if (id.Type != NodeType.Identifier && !(isFor && (_tokenizer._type == TokenType.In || IsContextual("of"))))
                 {
                     // Raise(_tokenizer._lastTokenEnd, "Complex binding patterns require an initialization value"); // original acornjs error reporting
@@ -1044,9 +1184,12 @@ public partial class Parser
 
     private Node ParseVarId(VariableDeclarationKind kind)
     {
-        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseVarId = function`
+        // https://github.com/acornjs/acorn/blob/8.15.0/acorn/src/statement.js > `pp.parseVarId = function`
 
-        var id = ParseBindingAtom();
+        var id = kind is VariableDeclarationKind.Using or VariableDeclarationKind.AwaitUsing
+            ? ParseIdentifier()
+            : ParseBindingAtom();
+
         CheckLValPattern(id, kind == VariableDeclarationKind.Var ? BindingType.Var : BindingType.Lexical);
         return id;
     }

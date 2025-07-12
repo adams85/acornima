@@ -1,0 +1,1 @@
+try {} catch (e) { using x = resource; }

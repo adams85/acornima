@@ -15,6 +15,8 @@ public sealed partial class VariableDeclaration : Declaration
             VariableDeclarationKind.Var => "var",
             VariableDeclarationKind.Let => "let",
             VariableDeclarationKind.Const => "const",
+            VariableDeclarationKind.Using => "using",
+            VariableDeclarationKind.AwaitUsing => "await using",
             _ => ThrowArgumentOutOfRangeException(nameof(kind), kind.ToString(), null)
         };
     }

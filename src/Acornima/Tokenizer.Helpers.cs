@@ -133,7 +133,13 @@ public partial class Tokenizer
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal int FullCharCodeAtPosition()
     {
-        return _input.CodePointAt(_position, _endPosition);
+        return FullCharCodeAt(_position);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal int FullCharCodeAt(int position)
+    {
+        return _input.CodePointAt(position, _endPosition);
     }
 
     [StringMatcher(
@@ -142,7 +148,7 @@ public partial class Tokenizer
         "while", "break", "catch", "throw", "const", "yield", "class", "super", "return", "typeof", "delete", "switch",
         "export", "import", "default", "finally", "extends", "function", "continue", "debugger", "instanceof",
         // contextual keywords (should at least include "null", "false" and "true")
-        "as", "of", "get", "set", "false", "from", "null", "true", "async", "await", "static", "constructor",
+        "as", "of", "get", "set", "from", "null", "false", "true", "async", "await", "using", "static", "constructor",
         // some common identifiers/literals in our test data set (benchmarks + test suite)
         "undefined", "length", "object", "Object", "obj", "Array", "Math", "data", "done", "args", "arguments", "Symbol", "prototype",
         "options", "value", "name", "self", "key", "\"use strict\"", "use strict"

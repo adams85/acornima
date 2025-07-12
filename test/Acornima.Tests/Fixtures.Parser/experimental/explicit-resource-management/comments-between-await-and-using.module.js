@@ -1,0 +1,1 @@
+async function test() { await /* comment */ using x = resource; }

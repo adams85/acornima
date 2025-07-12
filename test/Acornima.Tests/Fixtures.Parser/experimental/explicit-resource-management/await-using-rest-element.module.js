@@ -1,0 +1,1 @@
+async function test() { await using [first, ...rest] = arr; }

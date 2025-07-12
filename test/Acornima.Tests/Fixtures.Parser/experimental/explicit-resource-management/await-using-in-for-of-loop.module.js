@@ -1,0 +1,1 @@
+async function test() { for (await using x of resources) {} }

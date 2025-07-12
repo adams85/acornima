@@ -152,16 +152,41 @@ public class AstToJsonConverter : AstVisitor
         _writer.Number(value);
     }
 
-    private static readonly ConditionalWeakTable<Type, IDictionary> s_enumMap = new();
-
-    protected void Member<T>(string name, T value) where T : struct, Enum
+    protected void Member(string name, SourceType sourceType)
     {
-        var map = (Dictionary<T, string>)s_enumMap.GetValue(value.GetType(), t =>
-            t.GetRuntimeFields()
-                .Where(f => f.IsStatic)
-                .ToDictionary(f => (T)f.GetValue(null)!, f => f.Name.ToLowerInvariant()));
+        var value = sourceType switch
+        {
+            SourceType.Script => "script",
+            SourceType.Module => "module",
+            _ => "unknown"
+        };
 
-        Member(name, map[value]);
+        Member(name, value);
+    }
+
+    protected void Member(string name, PropertyKind propertyKind)
+    {
+        var value = propertyKind switch
+        {
+            PropertyKind.Init => "init",
+            PropertyKind.Get => "get",
+            PropertyKind.Set => "set",
+            PropertyKind.Constructor => "constructor",
+            PropertyKind.Method => "method",
+            PropertyKind.Property => "property",
+            _ => "unknown"
+        };
+
+        Member(name, value);
+    }
+
+    protected void Member(string name, VariableDeclarationKind declarationKind)
+    {
+        var value = declarationKind is >= VariableDeclarationKind.Var and <= VariableDeclarationKind.AwaitUsing
+            ? VariableDeclaration.GetVariableDeclarationKindToken(declarationKind)
+            : "unknown";
+
+        Member(name, value);
     }
 
     protected void Member<T>(string name, in NodeList<T> nodes) where T : Node?
@@ -514,7 +539,6 @@ public class AstToJsonConverter : AstVisitor
             Member("left", node.Left);
             Member("right", node.Right);
             Member("body", node.Body);
-            Member("each", false);
         }
 
         return node;

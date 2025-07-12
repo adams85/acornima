@@ -1,0 +1,1 @@
+{ using x = condition ? resource1 : resource2; }

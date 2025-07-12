@@ -1,0 +1,1 @@
+{ using {x: y, z} = obj; }

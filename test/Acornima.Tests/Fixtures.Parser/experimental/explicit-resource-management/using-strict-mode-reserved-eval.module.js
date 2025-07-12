@@ -1,0 +1,1 @@
+'use strict'; { using eval = resource; }

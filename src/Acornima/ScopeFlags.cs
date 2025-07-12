@@ -18,6 +18,7 @@ internal enum ScopeFlags
     Super = 1 << 6,
     DirectSuper = 1 << 7,
     ClassStaticBlock = 1 << 8,
+    Switch = 1 << 9,
 
     Var = Top | Function | ClassStaticBlock,
 

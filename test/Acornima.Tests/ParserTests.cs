@@ -1797,6 +1797,49 @@ public partial class ParserTests
         }
     }
 
+    [Theory]
+    [InlineData("script", "using x = resource", false, false, "Unexpected identifier 'x'")]
+    [InlineData("module", "using x = resource", false, false, null)]
+    [InlineData("script", "using x = resource", true, false, null)]
+    [InlineData("module", "using x = resource", true, false, null)]
+    [InlineData("script", "await using x = resource", false, false, "await is only valid in async functions and the top level bodies of modules")]
+    [InlineData("module", "await using x = resource", false, false, null)]
+    [InlineData("script", "await using x = resource", false, true, "Unexpected identifier 'x'")]
+    [InlineData("script", "await using x = resource", true, false, "await is only valid in async functions and the top level bodies of modules")]
+    [InlineData("module", "await using x = resource", true, false, null)]
+    [InlineData("script", "await using x = resource", true, true, null)]
+
+    [InlineData("script", "switch (0) { case 0: using x = resource }", false, false, "Unexpected identifier 'x'")]
+    [InlineData("module", "switch (0) { case 0: using x = resource }", false, false, "Unexpected identifier 'x'")]
+    [InlineData("script", "switch (0) { case 0: using x = resource }", true, false, "Unexpected identifier 'x'")]
+    [InlineData("module", "switch (0) { case 0: using x = resource }", true, false, "Unexpected identifier 'x'")]
+    [InlineData("script", "switch (0) { case 0: await using x = resource }", false, false, "await is only valid in async functions and the top level bodies of modules")]
+    [InlineData("module", "switch (0) { case 0: await using x = resource }", false, false, "Unexpected identifier 'x'")]
+    [InlineData("script", "switch (0) { case 0: await using x = resource }", false, true, "Unexpected identifier 'x'")]
+    [InlineData("script", "switch (0) { case 0: await using x = resource }", true, false, "await is only valid in async functions and the top level bodies of modules")]
+    [InlineData("module", "switch (0) { case 0: await using x = resource }", true, false, "Unexpected identifier 'x'")]
+    [InlineData("script", "switch (0) { case 0: await using x = resource }", true, true, "Unexpected identifier 'x'")]
+    public void ShouldHandleUsingEdgeCases(string sourceType, string input, bool allowTopLevelUsing, bool allowAwaitOutsideFunction, string? expectedError)
+    {
+        var parser = new Parser(new ParserOptions
+        {
+            AllowAwaitOutsideFunction = allowAwaitOutsideFunction,
+            AllowTopLevelUsing = allowTopLevelUsing,
+            ExperimentalESFeatures = ExperimentalESFeatures.ExplicitResourceManagement
+        });
+        var parseAction = GetParseActionFor(sourceType);
+
+        if (expectedError is null)
+        {
+            Assert.NotNull(parseAction(parser, input));
+        }
+        else
+        {
+            var ex = Assert.Throws<SyntaxErrorException>(() => parseAction(parser, input));
+            Assert.Equal(expectedError, ex.Description);
+        }
+    }
+
     [Fact]
     public void LabelSetShouldPointToStatement()
     {

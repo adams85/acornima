@@ -1,0 +1,1 @@
+export await using x = resource;

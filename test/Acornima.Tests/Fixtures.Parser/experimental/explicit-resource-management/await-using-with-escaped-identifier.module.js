@@ -1,0 +1,1 @@
+async function test() { await using \u03B1 = resource; }

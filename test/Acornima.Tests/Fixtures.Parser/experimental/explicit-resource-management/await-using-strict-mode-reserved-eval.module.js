@@ -1,0 +1,1 @@
+'use strict'; async function test() { await using eval = resource; }

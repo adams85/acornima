@@ -1,0 +1,1 @@
+for (using x = resource; i < 10; i++) {}

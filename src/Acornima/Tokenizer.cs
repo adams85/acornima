@@ -383,7 +383,7 @@ public sealed partial class Tokenizer : ITokenizer
 
     internal int NextTokenPosition()
     {
-        // Replacement for `skipWhiteSpace` regex usage in the original acornjs implementation.
+        // Replacement for the usage of the `skipWhiteSpace` regex in the original acornjs implementation.
 
         var originalPosition = _position;
         var originalLineNumber = _currentLine;
@@ -392,6 +392,31 @@ public sealed partial class Tokenizer : ITokenizer
         SkipSpace(onComment: null);
 
         var position = _position;
+
+        _position = originalPosition;
+        _currentLine = originalLineNumber;
+        _lineStart = originalLineStart;
+
+        return position;
+    }
+
+    internal int NextTokenPositionAt(int position, ref int line, ref int lineStart)
+    {
+        // Replacement for the usage of the `skipWhiteSpace` regex in the original acornjs implementation.
+
+        var originalPosition = _position;
+        var originalLineNumber = _currentLine;
+        var originalLineStart = _lineStart;
+
+        _position = position;
+        _currentLine = line;
+        _lineStart = lineStart;
+
+        SkipSpace(onComment: null);
+
+        position = _position;
+        line = _currentLine;
+        lineStart = _lineStart;
 
         _position = originalPosition;
         _currentLine = originalLineNumber;

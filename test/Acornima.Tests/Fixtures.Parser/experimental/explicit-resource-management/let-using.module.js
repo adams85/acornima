@@ -1,0 +1,1 @@
+let using x = resource;

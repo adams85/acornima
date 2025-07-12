@@ -122,8 +122,8 @@
                   }
                 },
                 "kind": "init",
-                "method": false,
                 "shorthand": true,
+                "method": false,
                 "range": [
                   13,
                   14
@@ -214,8 +214,8 @@
                   }
                 },
                 "kind": "init",
-                "method": false,
                 "shorthand": true,
+                "method": false,
                 "range": [
                   15,
                   18
@@ -493,8 +493,8 @@
                   }
                 },
                 "kind": "init",
-                "method": false,
                 "shorthand": false,
+                "method": false,
                 "range": [
                   19,
                   46
@@ -578,7 +578,6 @@
           }
         }
       },
-      "each": false,
       "range": [
         0,
         55

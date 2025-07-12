@@ -1,0 +1,1 @@
+async function* asyncGenerator() { await using x = resource; yield x; }
