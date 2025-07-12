@@ -376,12 +376,13 @@ public partial class Parser
             return ExitRecursion(ParseDecoratedClassStatement(startMarker));
         }
 
-        if (IsUsingKeyword(isFor: false, out var usingKind))
+        // We deviate a bit from the original acornjs implementation here to match the error reporting behavior of V8.
+        if (AllowUsing && IsUsingKeyword(isFor: false, out var usingKind))
         {
-            if (!AllowUsing)
-            {
-                Raise(_tokenizer._start, UsingInTopLevel);
-            }
+            //if (!AllowUsing)
+            //{
+            //    Raise(_tokenizer._start, UsingInTopLevel);
+            //}
 
             if (usingKind == VariableDeclarationKind.AwaitUsing)
             {

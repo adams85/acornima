@@ -1104,15 +1104,6 @@ namespace Acornima {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Using declaration cannot appear in the top level when source type is `script` or in the bare case statement.
-        /// </summary>
-        internal static string UsingInTopLevel {
-            get {
-                return ResourceManager.GetString("UsingInTopLevel", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Identifier &apos;{0}&apos; has already been declared.
         /// </summary>
         internal static string VarRedeclaration {

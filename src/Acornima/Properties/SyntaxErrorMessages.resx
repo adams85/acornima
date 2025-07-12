@@ -181,6 +181,11 @@
     <value>Missing initializer in destructuring declaration</value>
     <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
   </data>
+  <data name="DeclarationMissingInitializer_Using" xml:space="preserve">
+    <value>Missing initializer in using declaration</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
+  </data>
+
   <data name="DecoratorAppliedToStaticBlock" xml:space="preserve">
     <value>Decorators cannot be applied to static initialization blocks</value>
   </data>
@@ -584,11 +589,5 @@
   <data name="ZeroDigitNumericSeparator" xml:space="preserve">
     <value>Numeric separator can not be used after leading 0</value>
     <comment>https://github.com/v8/v8/blob/12.4.194/src/common/message-template.h</comment>
-  </data>
-  <data name="UsingInTopLevel" xml:space="preserve">
-    <value>Using declaration cannot appear in the top level when source type is `script` or in the bare case statement</value>
-  </data>
-  <data name="DeclarationMissingInitializer_Using" xml:space="preserve">
-    <value>Missing initializer in using declaration</value>
   </data>
 </root>
