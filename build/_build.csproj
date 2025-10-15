@@ -17,7 +17,7 @@
   <ItemGroup>
     <PackageReference Include="Nuke.Components" Version="9.0.4" />
     <!-- TODO: These can be removed once Nuke updates its transitive dependencies. -->
-    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="17.11.31" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="17.11.48" />
     <PackageReference Include="System.Formats.Asn1" Version="8.0.2" />
   </ItemGroup>
 
