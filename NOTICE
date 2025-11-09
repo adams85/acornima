@@ -36,7 +36,7 @@ https://github.com/sebastienros/esprima-dotnet/blob/main/LICENSE.txt
 
 ---
 
-This software also adopts ideas and solution invented by other free and open
+This software also adopts ideas and solutions invented by other free and open
 source software projects, including but not limited to:
 * acorn (MIT License) - https://github.com/acornjs/acorn
 * AcornSharp (MIT License) - https://github.com/MatthewSmit/AcornSharp
