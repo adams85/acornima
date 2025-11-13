@@ -765,14 +765,7 @@ public partial class Tokenizer
                         }
                         else
                         {
-                            if (!context.WithinSet)
-                            {
-                                parser.ReportSyntaxError(startIndex, RegExpInvalidDecimalEscape);
-                            }
-                            else
-                            {
-                                parser.ReportSyntaxError(startIndex, RegExpInvalidClassEscape);
-                            }
+                            parser.ReportSyntaxError(startIndex, RegExpInvalidDecimalEscape);
                         }
                         break;
 
@@ -800,7 +793,7 @@ public partial class Tokenizer
                         }
                         else
                         {
-                            parser.ReportSyntaxError(startIndex, RegExpInvalidClassEscape);
+                            parser.ReportSyntaxError(startIndex, RegExpInvalidDecimalEscape);
                         }
                         break;
 

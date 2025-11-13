@@ -49,8 +49,8 @@ public partial class RegExpTests
                     continue;
                 }
 
-#if !NET8_0_OR_GREATER
-                if (hintArray.Contains("!skip-before-net8.0"))
+#if !NET10_0_OR_GREATER
+                if (hintArray.Contains("!skip-before-net10.0"))
                 {
                     continue;
                 }

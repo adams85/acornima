@@ -3,7 +3,7 @@
   <PropertyGroup>
     <AssemblyName>Acornima.Tests</AssemblyName>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>..\..\..\..\src\Karambolo.Public.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>

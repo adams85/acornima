@@ -33,11 +33,10 @@ jobs:
     name: macos-latest
     runs-on: macos-latest
     steps:
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: |
-            8.0
-            9.0
+            10.0
       - uses: actions/checkout@v4
       - name: 'Run: Compile, Test, Pack'
         run: ./build.cmd Compile Test Pack
@@ -45,23 +44,21 @@ jobs:
     name: ubuntu-latest
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: |
-            8.0
-            9.0
-      - uses: actions/checkout@v4
+            10.0
+      - uses: actions/checkout@v5
       - name: 'Run: Compile, Test, Pack'
         run: ./build.cmd Compile Test Pack
   windows-latest:
     name: windows-latest
     runs-on: windows-latest
     steps:
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: |
-            8.0
-            9.0
-      - uses: actions/checkout@v4
+            10.0
+      - uses: actions/checkout@v5
       - name: 'Run: Compile, Test, Pack'
         run: ./build.cmd Compile Test Pack

@@ -55,7 +55,7 @@ while ((line = reader.ReadLine()) is not null)
 {
     ++lineNumber;
 
-    if (string.IsNullOrWhiteSpace(line) || line.StartsWith("#", StringComparison.Ordinal))
+    if (string.IsNullOrWhiteSpace(line) || line.StartsWith('#'))
     {
         writer.WriteLine(line);
         continue;

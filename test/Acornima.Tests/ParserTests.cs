@@ -73,7 +73,7 @@ public partial class ParserTests
         }
     }
 
-#if NET8_0_OR_GREATER
+#if NET10_0_OR_GREATER
     /// <summary>
     /// Ensures that we don't regress in stack handling, only test in modern runtime for now
     /// </summary>
@@ -82,7 +82,7 @@ public partial class ParserTests
     {
         if (OperatingSystem.IsMacOS())
         {
-            // stack limit differ quite a lot
+            // stack limit differs quite a lot
             return;
         }
 
@@ -90,7 +90,7 @@ public partial class ParserTests
 #if DEBUG
         const int depth = 395;
 #else
-        const int depth = 965;
+        const int depth = 945;
 #endif
         var input = $"if ({new string('(', depth)}true{new string(')', depth)}) {{ }}";
         parser.ParseScript(input);

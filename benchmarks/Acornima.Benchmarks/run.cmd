@@ -7,7 +7,7 @@ IF NOT [%1] == [] (
 )
 
 IF [%1] == [] (
-  SET RUNTIMES=net8.0 net48
+  SET RUNTIMES=net10.0 net48
 )
 
-dotnet run -c Release -f net8.0 -- --job medium --runtimes %RUNTIMES%
+dotnet run -c Release -f net10.0 -- --job medium --runtimes %RUNTIMES%

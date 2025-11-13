@@ -23,7 +23,7 @@ async function processInputAsync(rl) {
             try { regexp = new RegExp(pattern, flags + 'g'); }
             catch (err) {
                 let match;
-                if (err instanceof SyntaxError && (match = /^Invalid regular expression: .*\/: (.*)$/.exec(err.message))) {
+                if (err instanceof SyntaxError && (match = /^Invalid regular expression: .*\/[dgimsuvy]*: (.*)$/.exec(err.message))) {
                     syntaxError = match[1];
                 }
                 else {
