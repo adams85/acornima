@@ -33,7 +33,7 @@ jobs:
         with:
           dotnet-version: |
             10.0
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: 'Run: Compile, Test, Pack, Publish'
         run: ./build.cmd Compile Test Pack Publish
         env:

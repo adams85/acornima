@@ -9,16 +9,12 @@
     <NukeScriptDirectory>..</NukeScriptDirectory>
     <NukeTelemetryVersion>1</NukeTelemetryVersion>
     <IsPackable>false</IsPackable>
-    <EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Nuke.Components" Version="9.0.4" />
-    <!-- TODO: These can be removed once Nuke updates its transitive dependencies. -->
-    <PackageReference Include="Microsoft.Build" Version="18.0.2" />
-    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="18.0.2" />
+    <PackageReference Include="Nuke.Components" Version="10.1.0" />
   </ItemGroup>
 
 </Project>
