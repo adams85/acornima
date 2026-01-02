@@ -10,6 +10,10 @@
     <NeutralLanguage>en-US</NeutralLanguage>
     <PackageId>Acornima.Extras</PackageId>
     <PackageTags>javascript, ecmascript, parser</PackageTags>
+
+    <!-- Ensure support for trimming and AOT compilation -->
+    <IsTrimmable Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net5.0'))">true</IsTrimmable>
+    <IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net7.0'))">true</IsAotCompatible>
   </PropertyGroup>
 
   <ItemGroup>
