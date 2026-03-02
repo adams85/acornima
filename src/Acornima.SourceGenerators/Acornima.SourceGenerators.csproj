@@ -19,7 +19,8 @@
     <PolySharpIncludeGeneratedTypes>
       System.Runtime.CompilerServices.IsExternalInit;
       System.Runtime.CompilerServices.InterpolatedStringHandlerAttribute;
-      System.Runtime.CompilerServices.InterpolatedStringHandlerArgumentAttribute
+      System.Runtime.CompilerServices.InterpolatedStringHandlerArgumentAttribute;
+      $(PolySharpIncludeGeneratedTypes)
     </PolySharpIncludeGeneratedTypes>
   </PropertyGroup>
 

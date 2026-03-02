@@ -80,15 +80,16 @@
     <PolySharpIncludeGeneratedTypes Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))">
       System.Runtime.CompilerServices.CallerArgumentExpressionAttribute;
       System.Runtime.CompilerServices.IsExternalInit;
-      System.Runtime.CompilerServices.SkipLocalsInitAttribute
+      System.Runtime.CompilerServices.SkipLocalsInitAttribute;
+      $(PolySharpIncludeGeneratedTypes)
     </PolySharpIncludeGeneratedTypes>
 
     <PolySharpIncludeGeneratedTypes Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.1'))">
-      $(PolySharpIncludeGeneratedTypes);
       System.Diagnostics.CodeAnalysis.NotNullAttribute;
       System.Diagnostics.CodeAnalysis.NotNullIfNotNullAttribute;
       System.Diagnostics.CodeAnalysis.NotNullWhenAttribute;
       System.Diagnostics.CodeAnalysis.DoesNotReturnAttribute;
+      $(PolySharpIncludeGeneratedTypes)
     </PolySharpIncludeGeneratedTypes>
   </PropertyGroup>
 

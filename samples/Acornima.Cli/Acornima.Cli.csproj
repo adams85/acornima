@@ -23,6 +23,7 @@
   <PropertyGroup>
     <PolySharpIncludeGeneratedTypes Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))">
       System.Runtime.CompilerServices.IsExternalInit;
+      $(PolySharpIncludeGeneratedTypes)
     </PolySharpIncludeGeneratedTypes>
   </PropertyGroup>
 
