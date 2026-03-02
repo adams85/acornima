@@ -13,7 +13,7 @@ public abstract class ParseError
     public bool IsIndexDefined => Index >= 0;
 
     /// <summary>
-    /// Zero-based index within the parsed code string. (Can be negative if location information is available.)
+    /// Zero-based index within the parsed code string. (A negative value is also possible, indicating that index is not available.)
     /// </summary>
     public int Index { get; }
 
@@ -22,7 +22,7 @@ public abstract class ParseError
     public Position Position { get; }
 
     /// <summary>
-    /// One-based line number. (Can be zero if location information is not available.)
+    /// One-based line number. (A non-positive value is also possible, indicating that position is not available.)
     /// </summary>
     public int LineNumber => Position.Line;
 
