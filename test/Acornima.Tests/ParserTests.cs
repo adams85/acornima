@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Numerics;
+using System.Xml.Linq;
 using Acornima.Ast;
 using Acornima.Helpers;
 using Xunit;
@@ -2288,6 +2289,27 @@ public partial class ParserTests
 
         var ex = Assert.Throws<SyntaxErrorException>(() => parser.ParseScript("class X { static { return; } }"));
         Assert.Equal("Illegal return statement", ex.Description);
+    }
+
+    [Fact]
+    public void ShouldDisallowTestOfConditionalExpressionToBeAnUnparenthesizedArrowFunction()
+    {
+        var parser = new Parser(new ParserOptions { Tolerant = false });
+        var ex = Assert.Throws<SyntaxErrorException>(() => parser.ParseScript("() => {} ? 1 : 0"));
+        Assert.Equal(9, ex.Error.Index);
+        Assert.Equal(1, ex.LineNumber);
+        Assert.Equal(9, ex.Column);
+        Assert.Equal("UnexpectedToken", ex.Error.Code);
+    }
+
+    [Fact]
+    public void ShouldAllowTestOfConditionalExpressionToBeAParenthesizedArrowFunction()
+    {
+        var parser = new Parser(new ParserOptions { Tolerant = false });
+        var ast = parser.ParseScript("(() => {}) ? 1 : 0");
+        var conditionalExpression = ast.DescendantNodesAndSelf().OfType<ConditionalExpression>().FirstOrDefault();
+        Assert.NotNull(conditionalExpression);
+        Assert.IsType<ArrowFunctionExpression>(conditionalExpression.Test);
     }
 
     [Theory]

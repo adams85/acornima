@@ -265,7 +265,7 @@ public partial class Parser
             return expr;
         }
 
-        if (Eat(TokenType.Question))
+        if (!(expr.Type == NodeType.ArrowFunctionExpression && expr._range.Start == startMarker.Index) && Eat(TokenType.Question))
         {
             var consequent = ParseMaybeAssign(ref NullRef<DestructuringErrors>());
 
