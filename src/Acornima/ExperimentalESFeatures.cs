@@ -27,5 +27,10 @@ public enum ExperimentalESFeatures
     /// </summary>
     ExplicitResourceManagement = 1 << 3,
 
-    All = Decorators | ImportAttributes | RegExpDuplicateNamedCapturingGroups | ExplicitResourceManagement
+    /// <summary>
+    /// Regular expression modifiers feature as specified by this <seealso href="https://github.com/tc39/proposal-regexp-modifiers">proposal</seealso>.
+    /// </summary>
+    RegExpModifiers = 1 << 4,
+
+    All = Decorators | ImportAttributes | RegExpDuplicateNamedCapturingGroups | ExplicitResourceManagement | RegExpModifiers
 }
