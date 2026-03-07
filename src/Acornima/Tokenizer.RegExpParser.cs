@@ -234,6 +234,8 @@ public partial class Tokenizer
                         ? new ArrayList<RegExpGroup> { new RegExpGroup() { FirstAlternate = new RegExpGroupAlternate(null) } }
                         : default,
                     SetStartIndex = -1,
+                    EffectiveMultiline = (_flags & RegExpFlags.Multiline) != 0,
+                    EffectiveDotAll = (_flags & RegExpFlags.DotAll) != 0,
                 };
                 context.SetFollowingQuantifierError(RegExpNothingToRepeat);
 
@@ -519,6 +521,92 @@ public partial class Tokenizer
                             context.SetFollowingQuantifierError(RegExpNothingToRepeat);
                             break;
                         }
+                        else if (groupType == RegExpGroupType.ModifierGroup)
+                        {
+                            // Parse modifier flags and emit .NET equivalent
+                            var j = i + 2; // skip '(?'
+                            var addIgnoreCase = false;
+                            var removeIgnoreCase = false;
+                            var addMultiline = false;
+                            var removeMultiline = false;
+                            var addDotAll = false;
+                            var removeDotAll = false;
+
+                            // Parse add modifiers
+                            while (_pattern[j] is 'i' or 'm' or 's')
+                            {
+                                switch (_pattern[j])
+                                {
+                                    case 'i': addIgnoreCase = true; break;
+                                    case 'm': addMultiline = true; break;
+                                    case 's': addDotAll = true; break;
+                                }
+                                j++;
+                            }
+
+                            // Parse remove modifiers
+                            if (_pattern[j] == '-')
+                            {
+                                j++;
+                                while (_pattern[j] is 'i' or 'm' or 's')
+                                {
+                                    switch (_pattern[j])
+                                    {
+                                        case 'i': removeIgnoreCase = true; break;
+                                        case 'm': removeMultiline = true; break;
+                                        case 's': removeDotAll = true; break;
+                                    }
+                                    j++;
+                                }
+                            }
+
+                            Debug.Assert(_pattern[j] == ':');
+
+                            // Save current modifier state before updating
+                            var savedMultiline = context.EffectiveMultiline;
+                            var savedDotAll = context.EffectiveDotAll;
+
+                            // Update effective flags
+                            if (addMultiline) context.EffectiveMultiline = true;
+                            if (removeMultiline) context.EffectiveMultiline = false;
+                            if (addDotAll) context.EffectiveDotAll = true;
+                            if (removeDotAll) context.EffectiveDotAll = false;
+
+                            // Emit .NET inline modifier group for 'i' flag (delegated to .NET regex engine)
+                            // For 'm' and 's', we handle them via scope-aware rewriting of ^, $, and .
+                            if (sb is not null)
+                            {
+                                if (addIgnoreCase || removeIgnoreCase)
+                                {
+                                    sb.Append('(').Append('?');
+                                    if (addIgnoreCase) sb.Append('i');
+                                    if (removeIgnoreCase) sb.Append('-').Append('i');
+                                    sb.Append(':');
+                                }
+                                else
+                                {
+                                    // No 'i' modifier changes — emit as non-capturing group
+                                    sb.Append('(').Append('?').Append(':');
+                                }
+                            }
+
+                            i = j; // advance past the ':' in the modifier prefix
+
+                            ref var modifierGroup = ref context.GroupStack.PushRef();
+                            if (currentGroupAlternate is not null)
+                            {
+                                modifierGroup.Reset(groupType, parent: currentGroupAlternate);
+                            }
+                            else
+                            {
+                                modifierGroup = new RegExpGroup(groupType);
+                            }
+                            modifierGroup.SavedMultiline = savedMultiline;
+                            modifierGroup.SavedDotAll = savedDotAll;
+
+                            context.SetFollowingQuantifierError(RegExpNothingToRepeat);
+                            break;
+                        }
                         else if (!s_canCompileNegativeLookaroundAssertions && groupType is RegExpGroupType.NegativeLookaheadAssertion or RegExpGroupType.NegativeLookbehindAssertion)
                         {
                             context.CanCompile = false;
@@ -557,7 +645,17 @@ public partial class Tokenizer
                             context.GroupStack.PeekRef().HoistGroupNamesToParent();
                         }
 
-                        groupType = context.GroupStack.PopRef().Type;
+                        ref var poppedGroup = ref context.GroupStack.PeekRef();
+                        groupType = poppedGroup.Type;
+
+                        if (groupType == RegExpGroupType.ModifierGroup)
+                        {
+                            // Restore modifier flags saved in the group
+                            context.EffectiveMultiline = poppedGroup.SavedMultiline;
+                            context.EffectiveDotAll = poppedGroup.SavedDotAll;
+                        }
+
+                        context.GroupStack.Pop();
 
                         if (sb is not null)
                         {
@@ -586,7 +684,7 @@ public partial class Tokenizer
                     case '^' when !context.WithinSet:
                         if (sb is not null)
                         {
-                            _ = (_flags & RegExpFlags.Multiline) != 0
+                            _ = context.EffectiveMultiline
                                 ? sb.Append("(?<=").Append(MatchNewLineRegex).Append('|').Append(ch).Append(')')
                                 : sb.Append(ch);
                         }
@@ -597,7 +695,7 @@ public partial class Tokenizer
                     case '$' when !context.WithinSet:
                         if (sb is not null)
                         {
-                            _ = (_flags & RegExpFlags.Multiline) != 0
+                            _ = context.EffectiveMultiline
                                 ? sb.Append("(?=").Append(MatchNewLineRegex).Append('|').Append(ch).Append(')')
                                 : sb.Append(ch);
                         }
@@ -611,7 +709,7 @@ public partial class Tokenizer
                         //   We need to rewrite dots even in the latter case because RegexOptions.ECMAScript doesn't handle them correctly as
                         //   it only treats '\n' as new line while JS treats a few other characters like that as well.
                         // * Flag 'u' also changes the behavior (it must match code points instead of characters).
-                        mode.RewriteDot(ref context, (_flags & RegExpFlags.DotAll) != 0);
+                        mode.RewriteDot(ref context, context.EffectiveDotAll);
 
                         context.ClearFollowingQuantifierError();
                         break;
@@ -866,19 +964,64 @@ public partial class Tokenizer
                 return RegExpGroupType.Unknown;
             }
 
-            return _pattern[i] switch
+            switch (_pattern[i])
             {
-                ':' => RegExpGroupType.NonCapturing,
-                '=' => RegExpGroupType.LookaheadAssertion,
-                '!' => RegExpGroupType.NegativeLookaheadAssertion,
-                '<' when _tokenizer._options._ecmaVersion >= EcmaVersion.ES9 => (++i < _pattern.Length ? _pattern[i] : char.MinValue) switch
+                case ':':
+                    return RegExpGroupType.NonCapturing;
+                case '=':
+                    return RegExpGroupType.LookaheadAssertion;
+                case '!':
+                    return RegExpGroupType.NegativeLookaheadAssertion;
+                case '<' when _tokenizer._options._ecmaVersion >= EcmaVersion.ES9:
+                    return (++i < _pattern.Length ? _pattern[i] : char.MinValue) switch
+                    {
+                        '=' => RegExpGroupType.LookbehindAssertion,
+                        '!' => RegExpGroupType.NegativeLookbehindAssertion,
+                        _ => RegExpGroupType.NamedCapturing,
+                    };
+                case 'i' or 'm' or 's' or '-' when _tokenizer._options.AllowRegExpModifiers():
+                    return IsValidModifierGroupPrefix(i) ? RegExpGroupType.ModifierGroup : RegExpGroupType.Unknown;
+                default:
+                    return RegExpGroupType.Unknown;
+            }
+        }
+
+        /// <summary>
+        /// Checks whether the pattern at position <paramref name="i"/> (after '(?') starts a valid modifier group.
+        /// Validates format: [ims]*(-[ims]*)?: with no duplicate flags and no flag in both add and remove.
+        /// </summary>
+        private readonly bool IsValidModifierGroupPrefix(int i)
+        {
+            var j = i;
+            var addFlags = 0;
+
+            // Parse add modifiers
+            while (j < _pattern.Length && _pattern[j] is 'i' or 'm' or 's')
+            {
+                var flag = 1 << (_pattern[j] - 'a');
+                if ((addFlags & flag) != 0) return false; // duplicate
+                addFlags |= flag;
+                j++;
+            }
+
+            var removeFlags = 0;
+
+            // Parse optional remove modifiers
+            if (j < _pattern.Length && _pattern[j] == '-')
+            {
+                var removeStart = ++j;
+                while (j < _pattern.Length && _pattern[j] is 'i' or 'm' or 's')
                 {
-                    '=' => RegExpGroupType.LookbehindAssertion,
-                    '!' => RegExpGroupType.NegativeLookbehindAssertion,
-                    _ => RegExpGroupType.NamedCapturing,
-                },
-                _ => RegExpGroupType.Unknown
-            };
+                    var flag = 1 << (_pattern[j] - 'a');
+                    if ((removeFlags & flag) != 0) return false; // duplicate
+                    if ((addFlags & flag) != 0) return false; // same in add and remove
+                    removeFlags |= flag;
+                    j++;
+                }
+            }
+
+            // Must end with ':' and have at least one modifier flag (add or remove)
+            return j < _pattern.Length && _pattern[j] == ':' && (addFlags | removeFlags) != 0;
         }
 
         private string? ReadNormalizedCapturingGroupName(ref int i)
@@ -1248,6 +1391,12 @@ public partial class Tokenizer
             public ArrayList<CodePointRange> UnicodeSet;
 
             public bool CanCompile;
+
+            // Effective modifier flags for the current scope (for RegExp modifiers feature).
+            // These track whether m/s flags are active at the current position, which may differ
+            // from the global _flags due to inline modifier groups like (?s:...) or (?-m:...).
+            public bool EffectiveMultiline;
+            public bool EffectiveDotAll;
         }
 
         private interface IMode
@@ -1281,6 +1430,7 @@ public partial class Tokenizer
         NegativeLookaheadAssertion = 2 * 4 + 3, // x(?!y)
         LookbehindAssertion = 3 * 4 + 0, // (?<=y)x
         NegativeLookbehindAssertion = 3 * 4 + 1, // (?<!y)x
+        ModifierGroup = 0xFF, // (?ims-ims:x) — prefix length varies, handled specially
     }
 
     private struct RegExpGroup
@@ -1303,6 +1453,10 @@ public partial class Tokenizer
         }
 
         public RegExpGroupType Type;
+
+        // Saved modifier flags for ModifierGroup scope restoration.
+        public bool SavedMultiline;
+        public bool SavedDotAll;
 
         public RegExpGroupAlternate? FirstAlternate;
 

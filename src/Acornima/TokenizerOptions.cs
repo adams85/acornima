@@ -116,4 +116,10 @@ public record class TokenizerOptions
     {
         return _ecmaVersion >= EcmaVersion.ES2017 && (_experimentalESFeatures & ExperimentalESFeatures.ExplicitResourceManagement) != 0;
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal bool AllowRegExpModifiers()
+    {
+        return (_experimentalESFeatures & ExperimentalESFeatures.RegExpModifiers) != 0;
+    }
 }
