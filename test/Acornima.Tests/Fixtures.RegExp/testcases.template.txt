@@ -2710,52 +2710,27 @@ c\b	u	abc
 (?<!){1}?x		xxyx
 (?<!){1}?x	u	xxyx
 
-# Issues
-
-# https://github.com/sebastienros/esprima-dotnet/issues/358
-
-^[\\d--\\d]+$		012abc
-^[\\d--\\d]+$	u	012abc
-
-^[\d--\d]+$		012abc
-^[\d--\d]+$	u	012abc
-
-# https://github.com/sebastienros/esprima-dotnet/issues/371
-
-\<sub>		
-\<sub>	u	
-
-\<sub>		<a><sub></sub></a>
-\<sub>	u	<a><sub></sub></a>
-
-# https://github.com/sebastienros/jint/issues/506
-
-[^]?(:[rp][el]a[\w-]+)[^]		:reagent-
-[^]?(:[rp][el]a[\w-]+)[^]	u	:reagent-
-
-[^]?(:[rp][el]a[\w-]+)[^]		xx:reagent-1/y
-[^]?(:[rp][el]a[\w-]+)[^]	u	xx:reagent-1/y
 
 # RegExp modifiers ((?ims-ims:pattern))
 
-# Basic ignoreCase modifier
+## Basic ignoreCase modifier
 (?i:abc)		ABC
 (?i:abc)		abc
 (?i:abc)		AbC
 (?i:abc)	u	ABC
 (?i:abc)	u	abc
 
-# Basic multiline modifier
+## Basic multiline modifier
 (?m:^a)		"b\na"
 (?m:a$)		"a\nb"
 (?m:^a$)		"b\na\nb"
 
-# Basic dotAll modifier
+## Basic dotAll modifier
 (?s:.)		"\n"
 (?s:.)		a
 (?s:.)		"\r"
 
-# Remove modifiers
+## Remove modifiers
 (?-i:abc)	i	abc
 (?-i:abc)	i	ABC
 (?-s:.)	s	a
@@ -2763,50 +2738,50 @@ c\b	u	abc
 (?-m:^a)	m	"b\na"
 (?-m:^a)	m	a
 
-# Combined add modifiers
+## Combined add modifiers
 (?im:^abc)		"b\nabc"
 (?im:^abc)		"b\nABC"
 (?is:.abc)		"\nabc"
 (?is:.abc)		"\nABC"
 (?ims:^.a)		"b\n\na"
 
-# Add + remove modifiers
+## Add + remove modifiers
 (?i-m:^abc)	m	abc
 (?i-m:^abc)	m	ABC
 (?i-m:^abc)	m	"b\nabc"
 (?m-i:^abc)	i	"b\nabc"
 (?m-i:^abc)	i	"b\nABC"
 
-# Empty remove syntax
+## Empty remove syntax
 (?s-:.)		"\n"
 (?s-:.)		a
 (?m-:^a)		"b\na"
 
-# Scoping — modifier only applies inside group
+## Scoping — modifier only applies inside group
 a(?i:b)c		aBc
 a(?i:b)c		ABc
 a(?i:b)c		aBC
 a(?i:b)c		abc
 
-# Nested modifier groups
+## Nested modifier groups
 (?s:(?-s:.).)		"a\n"
 (?s:(?-s:.).)		"\n\n"
 (?i:(?-i:a)b)		aB
 (?i:(?-i:a)b)		AB
 (?i:(?-i:a)b)		ab
 
-# Quantifier after modifier group
+## Quantifier after modifier group
 (?i:a)+		aAaA
 (?s:.){2}		"a\n"
 (?i:a)*		aA
 
-# Alternation inside modifier group
+## Alternation inside modifier group
 (?i:a|B)		a
 (?i:a|B)		b
 (?i:a|B)		A
 (?i:a|B)		B
 
-# Capturing group inside modifier group
+## Capturing group inside modifier group
 (?i:(a)b)		AB
 
 # With u flag
@@ -2814,21 +2789,48 @@ a(?i:b)c		abc
 (?s:.)	u	"\n"
 (?m:^a)	u	"b\na"
 
-# Error cases — these should produce syntax errors
+## Error cases (these should produce syntax errors)
 (?z:a)		a
-(?ii:a)		a	!ignore-error-message
-(?i-i:a)		a	!ignore-error-message
-(?-:a)		a	!ignore-error-message
+(?ii:a)		a
+(?i-i:a)		a
+(?i-s-i:a)		a
+(?-:a)		a
 (?I:a)		a
 (?1:a)		a
-(?-ss:a)		a	!ignore-error-message
-(?mm:a)		a	!ignore-error-message
+(?-ss:a)		a
+(?mm:a)		a
 
-# Sequential modifier groups
+## Sequential modifier groups
 (?i:a)(?s:.)		"A\n"
 (?i:a)b		Ab
 
-# Empty content modifier groups
+## Empty content modifier groups
 (?i:)		a
 (?s:)		a
 (?m:)		a
+
+# Issues
+
+## https://github.com/sebastienros/esprima-dotnet/issues/358
+
+^[\\d--\\d]+$		012abc
+^[\\d--\\d]+$	u	012abc
+
+^[\d--\d]+$		012abc
+^[\d--\d]+$	u	012abc
+
+## https://github.com/sebastienros/esprima-dotnet/issues/371
+
+\<sub>		
+\<sub>	u	
+
+\<sub>		<a><sub></sub></a>
+\<sub>	u	<a><sub></sub></a>
+
+## https://github.com/sebastienros/jint/issues/506
+
+[^]?(:[rp][el]a[\w-]+)[^]		:reagent-
+[^]?(:[rp][el]a[\w-]+)[^]	u	:reagent-
+
+[^]?(:[rp][el]a[\w-]+)[^]		xx:reagent-1/y
+[^]?(:[rp][el]a[\w-]+)[^]	u	xx:reagent-1/y

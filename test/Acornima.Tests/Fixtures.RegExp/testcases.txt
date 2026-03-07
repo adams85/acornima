@@ -1,4 +1,4 @@
-﻿# Generated from testcases.template.txt at 2026-03-07T12:15:06
+﻿# Generated from testcases.template.txt at 2026-03-07T20:30:39
 
 # This file defines test cases for regular expression conversion testing (see RegExpTests.ExecuteTestCase).
 # Each uncommented, non-whitespace line specifies a test case in a tab-delimited format, with the following fields:
@@ -2712,52 +2712,27 @@ c\b	u	"c\\b"	abc	[{"captures":["c"],"index":2}]
 (?<!){1}?x		)syntax-error(	xxyx	"Invalid quantifier"
 (?<!){1}?x	u	)syntax-error(	xxyx	"Invalid quantifier"
 
-# Issues
-
-# https://github.com/sebastienros/esprima-dotnet/issues/358
-
-^[\\d--\\d]+$		)syntax-error(	012abc	"Range out of order in character class"
-^[\\d--\\d]+$	u	)syntax-error(	012abc	"Range out of order in character class"
-
-^[\d--\d]+$		"^[\\d\\x2D\\x2D\\d]+$"	012abc	[]
-^[\d--\d]+$	u	)syntax-error(	012abc	"Invalid character class"
-
-# https://github.com/sebastienros/esprima-dotnet/issues/371
-
-\<sub>		<sub>		[]
-\<sub>	u	)syntax-error(		"Invalid escape"
-
-\<sub>		<sub>	<a><sub></sub></a>	[{"captures":["<sub>"],"index":3}]
-\<sub>	u	)syntax-error(	<a><sub></sub></a>	"Invalid escape"
-
-# https://github.com/sebastienros/jint/issues/506
-
-[^]?(:[rp][el]a[\w-]+)[^]		"[\\s\\S]?(:[rp][el]a[\\w-]+)[\\s\\S]"	:reagent-	[{"captures":[":reagent-",":reagent"],"index":0}]
-[^]?(:[rp][el]a[\w-]+)[^]	u	"(?:[\ud800-\udbff][\udc00-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]|[^\ud800-\udfff])?(:(?:[\\x70\\x72])(?:[\\x65\\x6C])a(?:[\\x2D\\x30-\\x39\\x41-\\x5A\\x5F\\x61-\\x7A])+)(?:[\ud800-\udbff][\udc00-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]|[^\ud800-\udfff])"	:reagent-	[{"captures":[":reagent-",":reagent"],"index":0}]
-
-[^]?(:[rp][el]a[\w-]+)[^]		"[\\s\\S]?(:[rp][el]a[\\w-]+)[\\s\\S]"	xx:reagent-1/y	[{"captures":["x:reagent-1/",":reagent-1"],"index":1}]
-[^]?(:[rp][el]a[\w-]+)[^]	u	"(?:[\ud800-\udbff][\udc00-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]|[^\ud800-\udfff])?(:(?:[\\x70\\x72])(?:[\\x65\\x6C])a(?:[\\x2D\\x30-\\x39\\x41-\\x5A\\x5F\\x61-\\x7A])+)(?:[\ud800-\udbff][\udc00-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]|[^\ud800-\udfff])"	xx:reagent-1/y	[{"captures":["x:reagent-1/",":reagent-1"],"index":1}]
 
 # RegExp modifiers ((?ims-ims:pattern))
 
-# Basic ignoreCase modifier
+## Basic ignoreCase modifier
 (?i:abc)		(?i:abc)	ABC	[{"captures":["ABC"],"index":0}]
 (?i:abc)		(?i:abc)	abc	[{"captures":["abc"],"index":0}]
 (?i:abc)		(?i:abc)	AbC	[{"captures":["AbC"],"index":0}]
 (?i:abc)	u	(?i:abc)	ABC	[{"captures":["ABC"],"index":0}]
 (?i:abc)	u	(?i:abc)	abc	[{"captures":["abc"],"index":0}]
 
-# Basic multiline modifier
+## Basic multiline modifier
 (?m:^a)		"(?:(?<=[\n\r\u2028\u2029]|^)a)"	"b\na"	[{"captures":["a"],"index":2}]
 (?m:a$)		"(?:a(?=[\n\r\u2028\u2029]|$))"	"a\nb"	[{"captures":["a"],"index":0}]
 (?m:^a$)		"(?:(?<=[\n\r\u2028\u2029]|^)a(?=[\n\r\u2028\u2029]|$))"	"b\na\nb"	[{"captures":["a"],"index":2}]
 
-# Basic dotAll modifier
+## Basic dotAll modifier
 (?s:.)		"(?:[\\s\\S])"	"\n"	[{"captures":["\n"],"index":0}]
 (?s:.)		"(?:[\\s\\S])"	a	[{"captures":["a"],"index":0}]
 (?s:.)		"(?:[\\s\\S])"	"\r"	[{"captures":["\r"],"index":0}]
 
-# Remove modifiers
+## Remove modifiers
 (?-i:abc)	i	(?-i:abc)	abc	[{"captures":["abc"],"index":0}]
 (?-i:abc)	i	(?-i:abc)	ABC	[]
 (?-s:.)	s	"(?:[^\n\r\u2028\u2029])"	a	[{"captures":["a"],"index":0}]
@@ -2765,50 +2740,50 @@ c\b	u	"c\\b"	abc	[{"captures":["c"],"index":2}]
 (?-m:^a)	m	(?:^a)	"b\na"	[]
 (?-m:^a)	m	(?:^a)	a	[{"captures":["a"],"index":0}]
 
-# Combined add modifiers
+## Combined add modifiers
 (?im:^abc)		"(?i:(?<=[\n\r\u2028\u2029]|^)abc)"	"b\nabc"	[{"captures":["abc"],"index":2}]
 (?im:^abc)		"(?i:(?<=[\n\r\u2028\u2029]|^)abc)"	"b\nABC"	[{"captures":["ABC"],"index":2}]
 (?is:.abc)		"(?i:[\\s\\S]abc)"	"\nabc"	[{"captures":["\nabc"],"index":0}]
 (?is:.abc)		"(?i:[\\s\\S]abc)"	"\nABC"	[{"captures":["\nABC"],"index":0}]
 (?ims:^.a)		"(?i:(?<=[\n\r\u2028\u2029]|^)[\\s\\S]a)"	"b\n\na"	[{"captures":["\na"],"index":2}]
 
-# Add + remove modifiers
+## Add + remove modifiers
 (?i-m:^abc)	m	(?i:^abc)	abc	[{"captures":["abc"],"index":0}]
 (?i-m:^abc)	m	(?i:^abc)	ABC	[{"captures":["ABC"],"index":0}]
 (?i-m:^abc)	m	(?i:^abc)	"b\nabc"	[]
 (?m-i:^abc)	i	"(?-i:(?<=[\n\r\u2028\u2029]|^)abc)"	"b\nabc"	[{"captures":["abc"],"index":2}]
 (?m-i:^abc)	i	"(?-i:(?<=[\n\r\u2028\u2029]|^)abc)"	"b\nABC"	[]
 
-# Empty remove syntax
+## Empty remove syntax
 (?s-:.)		"(?:[\\s\\S])"	"\n"	[{"captures":["\n"],"index":0}]
 (?s-:.)		"(?:[\\s\\S])"	a	[{"captures":["a"],"index":0}]
 (?m-:^a)		"(?:(?<=[\n\r\u2028\u2029]|^)a)"	"b\na"	[{"captures":["a"],"index":2}]
 
-# Scoping — modifier only applies inside group
+## Scoping — modifier only applies inside group
 a(?i:b)c		a(?i:b)c	aBc	[{"captures":["aBc"],"index":0}]
 a(?i:b)c		a(?i:b)c	ABc	[]
 a(?i:b)c		a(?i:b)c	aBC	[]
 a(?i:b)c		a(?i:b)c	abc	[{"captures":["abc"],"index":0}]
 
-# Nested modifier groups
+## Nested modifier groups
 (?s:(?-s:.).)		"(?:(?:[^\n\r\u2028\u2029])[\\s\\S])"	"a\n"	[{"captures":["a\n"],"index":0}]
 (?s:(?-s:.).)		"(?:(?:[^\n\r\u2028\u2029])[\\s\\S])"	"\n\n"	[]
 (?i:(?-i:a)b)		(?i:(?-i:a)b)	aB	[{"captures":["aB"],"index":0}]
 (?i:(?-i:a)b)		(?i:(?-i:a)b)	AB	[]
 (?i:(?-i:a)b)		(?i:(?-i:a)b)	ab	[{"captures":["ab"],"index":0}]
 
-# Quantifier after modifier group
+## Quantifier after modifier group
 (?i:a)+		(?i:a)+	aAaA	[{"captures":["aAaA"],"index":0}]
 (?s:.){2}		"(?:[\\s\\S]){2}"	"a\n"	[{"captures":["a\n"],"index":0}]
 (?i:a)*		(?i:a)*	aA	[{"captures":["aA"],"index":0},{"captures":[""],"index":2}]
 
-# Alternation inside modifier group
+## Alternation inside modifier group
 (?i:a|B)		(?i:a|B)	a	[{"captures":["a"],"index":0}]
 (?i:a|B)		(?i:a|B)	b	[{"captures":["b"],"index":0}]
 (?i:a|B)		(?i:a|B)	A	[{"captures":["A"],"index":0}]
 (?i:a|B)		(?i:a|B)	B	[{"captures":["B"],"index":0}]
 
-# Capturing group inside modifier group
+## Capturing group inside modifier group
 (?i:(a)b)		(?i:(a)b)	AB	[{"captures":["AB","A"],"index":0}]
 
 # With u flag
@@ -2816,21 +2791,48 @@ a(?i:b)c		a(?i:b)c	abc	[{"captures":["abc"],"index":0}]
 (?s:.)	u	"(?:(?:[\ud800-\udbff][\udc00-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]|[^\ud800-\udfff]))"	"\n"	[{"captures":["\n"],"index":0}]
 (?m:^a)	u	"(?:(?<=[\n\r\u2028\u2029]|^)a)"	"b\na"	[{"captures":["a"],"index":2}]
 
-# Error cases — these should produce syntax errors
+## Error cases (these should produce syntax errors)
 (?z:a)		)syntax-error(	a	"Invalid group"
-(?ii:a)		)syntax-error(	a	"Repeated flag in flag group"	!ignore-error-message
-(?i-i:a)		)syntax-error(	a	"Repeated flag in flag group"	!ignore-error-message
-(?-:a)		)syntax-error(	a	"Invalid flag group"	!ignore-error-message
+(?ii:a)		)syntax-error(	a	"Repeated flag in flag group"
+(?i-i:a)		)syntax-error(	a	"Repeated flag in flag group"
+(?i-s-i:a)		)syntax-error(	a	"Multiple dashes in flag group"
+(?-:a)		)syntax-error(	a	"Invalid flag group"
 (?I:a)		)syntax-error(	a	"Invalid group"
 (?1:a)		)syntax-error(	a	"Invalid group"
-(?-ss:a)		)syntax-error(	a	"Repeated flag in flag group"	!ignore-error-message
-(?mm:a)		)syntax-error(	a	"Repeated flag in flag group"	!ignore-error-message
+(?-ss:a)		)syntax-error(	a	"Repeated flag in flag group"
+(?mm:a)		)syntax-error(	a	"Repeated flag in flag group"
 
-# Sequential modifier groups
+## Sequential modifier groups
 (?i:a)(?s:.)		"(?i:a)(?:[\\s\\S])"	"A\n"	[{"captures":["A\n"],"index":0}]
 (?i:a)b		(?i:a)b	Ab	[{"captures":["Ab"],"index":0}]
 
-# Empty content modifier groups
+## Empty content modifier groups
 (?i:)		(?i:)	a	[{"captures":[""],"index":0},{"captures":[""],"index":1}]
 (?s:)		(?:)	a	[{"captures":[""],"index":0},{"captures":[""],"index":1}]
 (?m:)		(?:)	a	[{"captures":[""],"index":0},{"captures":[""],"index":1}]
+
+# Issues
+
+## https://github.com/sebastienros/esprima-dotnet/issues/358
+
+^[\\d--\\d]+$		)syntax-error(	012abc	"Range out of order in character class"
+^[\\d--\\d]+$	u	)syntax-error(	012abc	"Range out of order in character class"
+
+^[\d--\d]+$		"^[\\d\\x2D\\x2D\\d]+$"	012abc	[]
+^[\d--\d]+$	u	)syntax-error(	012abc	"Invalid character class"
+
+## https://github.com/sebastienros/esprima-dotnet/issues/371
+
+\<sub>		<sub>		[]
+\<sub>	u	)syntax-error(		"Invalid escape"
+
+\<sub>		<sub>	<a><sub></sub></a>	[{"captures":["<sub>"],"index":3}]
+\<sub>	u	)syntax-error(	<a><sub></sub></a>	"Invalid escape"
+
+## https://github.com/sebastienros/jint/issues/506
+
+[^]?(:[rp][el]a[\w-]+)[^]		"[\\s\\S]?(:[rp][el]a[\\w-]+)[\\s\\S]"	:reagent-	[{"captures":[":reagent-",":reagent"],"index":0}]
+[^]?(:[rp][el]a[\w-]+)[^]	u	"(?:[\ud800-\udbff][\udc00-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]|[^\ud800-\udfff])?(:(?:[\\x70\\x72])(?:[\\x65\\x6C])a(?:[\\x2D\\x30-\\x39\\x41-\\x5A\\x5F\\x61-\\x7A])+)(?:[\ud800-\udbff][\udc00-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]|[^\ud800-\udfff])"	:reagent-	[{"captures":[":reagent-",":reagent"],"index":0}]
+
+[^]?(:[rp][el]a[\w-]+)[^]		"[\\s\\S]?(:[rp][el]a[\\w-]+)[\\s\\S]"	xx:reagent-1/y	[{"captures":["x:reagent-1/",":reagent-1"],"index":1}]
+[^]?(:[rp][el]a[\w-]+)[^]	u	"(?:[\ud800-\udbff][\udc00-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]|[^\ud800-\udfff])?(:(?:[\\x70\\x72])(?:[\\x65\\x6C])a(?:[\\x2D\\x30-\\x39\\x41-\\x5A\\x5F\\x61-\\x7A])+)(?:[\ud800-\udbff][\udc00-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]|[^\ud800-\udfff])"	xx:reagent-1/y	[{"captures":["x:reagent-1/",":reagent-1"],"index":1}]

@@ -143,33 +143,6 @@ public partial class RegExpTests
         Assert.Equal(expectedAdaptedPattern, actualAdaptedPattern);
     }
 
-    // === RegExp Modifiers: Conversion tests ===
-    // Verify that modifier groups produce the correct adapted .NET regex patterns.
-
-    // ignoreCase modifier emits (?i:...) / (?-i:...) inline groups in .NET
-    [InlineData("(?i:abc)", "", "(?i:abc)")]
-    [InlineData("(?-i:abc)", "i", "(?-i:abc)")]
-    [InlineData("(?i:a)b", "", "(?i:a)b")]
-    // ignoreCase combined with other modifiers
-    [InlineData("(?is:.)", "", "(?i:[\\s\\S])")]
-    // remove modifiers
-    [InlineData("(?-s:.)", "s", "(?:[^\n\r\u2028\u2029])")]
-    // quantifier after modifier group
-    [InlineData("(?i:a)+", "", "(?i:a)+")]
-    [Theory]
-    public void ShouldConvertRegExpModifiers(string pattern, string flags, string expectedAdaptedPattern)
-    {
-        var parser = new Tokenizer.RegExpParser(pattern, flags, new TokenizerOptions
-        {
-            ExperimentalESFeatures = ExperimentalESFeatures.RegExpModifiers,
-            RegExpParseMode = RegExpParseMode.AdaptToInterpreted,
-            Tolerant = false
-        });
-        var actualAdaptedPattern = parser.ParseCore(out _, out _, out _);
-
-        Assert.Equal(expectedAdaptedPattern, actualAdaptedPattern);
-    }
-
     // Conversion tests for modifiers involving multiline/dotAll that produce patterns with
     // literal newline characters (\n, \r, \u2028, \u2029) — these can't be expressed in InlineData.
     [Fact]
@@ -226,43 +199,19 @@ public partial class RegExpTests
         }
     }
 
-    // === RegExp Modifiers: Early error tests ===
-    // Verify that invalid modifier group syntax is rejected.
-
-    [InlineData("(?z:a)")]       // invalid flag character
-    [InlineData("(?1:a)")]       // non-letter flag
-    [InlineData("(?I:a)")]       // uppercase flag (no case-folding)
-    [InlineData("(?ii:a)")]      // duplicate flag in add
-    [InlineData("(?i-i:a)")]     // same flag in add and remove
-    [InlineData("(?mm:a)")]      // duplicate flag in add
-    [InlineData("(?-ss:a)")]     // duplicate flag in remove
-    [InlineData("(?m-m:a)")]     // same flag in add and remove
-    [InlineData("(?-:a)")]       // only dash, no flags on either side
-    [Theory]
-    public void ShouldRejectInvalidRegExpModifiers(string pattern)
-    {
-        var parser = new Tokenizer.RegExpParser(pattern, "", new TokenizerOptions
-        {
-            ExperimentalESFeatures = ExperimentalESFeatures.RegExpModifiers,
-            RegExpParseMode = RegExpParseMode.Validate,
-            Tolerant = false
-        });
-
-        Assert.Throws<SyntaxErrorException>(() => parser.Parse());
-    }
-
     [Fact]
     public void ShouldNotAffectNonCapturingGroupsWhenModifiersEnabled()
     {
         var parser = new Tokenizer.RegExpParser("(?:a)", "", new TokenizerOptions
         {
             ExperimentalESFeatures = ExperimentalESFeatures.RegExpModifiers,
-            RegExpParseMode = RegExpParseMode.Validate,
+            RegExpParseMode = RegExpParseMode.AdaptToInterpreted,
             Tolerant = false
         });
 
         var result = parser.Parse();
         Assert.True(result.Success);
+        Assert.Equal("(?:a)", result.Regex!.ToString());
     }
 
     // === RegExp Modifiers: Matching behavior tests ===
@@ -331,6 +280,20 @@ public partial class RegExpTests
         var parser = new Tokenizer.RegExpParser("(?i:abc)", "", new TokenizerOptions
         {
             ExperimentalESFeatures = ExperimentalESFeatures.None,
+            RegExpParseMode = RegExpParseMode.Validate,
+            Tolerant = false
+        });
+
+        Assert.Throws<SyntaxErrorException>(() => parser.Parse());
+    }
+
+    [Fact]
+    public void ShouldRejectModifierSyntaxWhenFeatureEnabledButTargetingPreES2018()
+    {
+        var parser = new Tokenizer.RegExpParser("(?i:abc)", "", new TokenizerOptions
+        {
+            EcmaVersion = EcmaVersion.ES2017,
+            ExperimentalESFeatures = ExperimentalESFeatures.RegExpModifiers,
             RegExpParseMode = RegExpParseMode.Validate,
             Tolerant = false
         });

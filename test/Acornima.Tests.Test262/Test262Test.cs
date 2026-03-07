@@ -7,9 +7,18 @@ namespace Acornima.Tests.Test262;
 
 public abstract partial class Test262Test
 {
+    private static readonly string[] s_testableExperimentalFeatures = new[]
+    {
+        "decorators",
+        "explicit-resource-management",
+        "import-attributes",
+        "regexp-duplicate-named-groups",
+        "regexp-modifiers",
+    };
+
     public static bool TestsExperimentalFeature(Test262File file)
     {
-        return file.Features.ContainsAny(new[] { "decorators", "regexp-duplicate-named-groups", "import-attributes", "explicit-resource-management" });
+        return file.Features.ContainsAny(s_testableExperimentalFeatures);
     }
 
     private Parser BuildTestExecutor(Test262File file)
