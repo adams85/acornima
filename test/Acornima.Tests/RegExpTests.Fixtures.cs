@@ -76,6 +76,7 @@ public partial class RegExpTests
         // uses some Unicode-related APIs provided by .NET and the underlying Unicode datasets may be updated between .NET versions.
         // So, in the case of failing tests, try to re-generate the test cases first.
         // To re-generate test cases, execute `dotnet run --project Fixtures.RegExp\Generator -c Release`
+        // (Make sure that Node.js 24+ is installed.)
 
         static string DecodeStringIfEscaped(string value) => JavaScriptString.IsStringLiteral(value)
             ? JavaScriptString.Decode(value)
@@ -93,8 +94,8 @@ public partial class RegExpTests
         // so we need to parse the JSON containing the matches "manually"...
         var (expectedMatches, syntaxError) = RegExpMatch.MatchesFrom(JavaScriptString.ParseAsExpression(expectedMatchesJson));
 
-        var regexValidator = new Tokenizer.RegExpParser(pattern, flags, new TokenizerOptions { RegExpParseMode = RegExpParseMode.Validate, Tolerant = false });
-        var regexConverter = new Tokenizer.RegExpParser(pattern, flags, new TokenizerOptions { RegExpParseMode = RegExpParseMode.AdaptToInterpreted, Tolerant = expectedMatches is not null });
+        var regexValidator = new Tokenizer.RegExpParser(pattern, flags, new TokenizerOptions { ExperimentalESFeatures = ExperimentalESFeatures.RegExpModifiers, RegExpParseMode = RegExpParseMode.Validate, Tolerant = false });
+        var regexConverter = new Tokenizer.RegExpParser(pattern, flags, new TokenizerOptions { ExperimentalESFeatures = ExperimentalESFeatures.RegExpModifiers, RegExpParseMode = RegExpParseMode.AdaptToInterpreted, Tolerant = expectedMatches is not null });
 
         if (expectedMatches is not null)
         {

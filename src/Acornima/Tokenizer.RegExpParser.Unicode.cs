@@ -589,7 +589,7 @@ public partial class Tokenizer
                 }
             }
 
-            public void RewriteDot(ref ParsePatternContext context, bool dotAll)
+            public void RewriteDot(ref ParsePatternContext context)
             {
                 ref readonly var sb = ref context.StringBuilder;
                 if (sb is not null)
@@ -599,7 +599,7 @@ public partial class Tokenizer
                     sb.Append("(?:").Append(MatchSurrogatePairRegex)
                         .Append('|').Append(MatchLoneSurrogateRegex)
                         .Append('|');
-                    (dotAll
+                    ((context.EffectiveFlags & RegExpFlags.DotAll) != 0
                         ? sb.Append(MatchAnyButSurrogateRegex)
                         : sb.Append(MatchAnyButNewLineAndSurrogateRegex))
                         .Append(')');

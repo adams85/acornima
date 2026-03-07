@@ -46,7 +46,7 @@ static string DecodeStringIfEscaped(string value) => JavaScriptString.IsStringLi
     ? JavaScriptString.Decode(value)
     : value;
 
-var tokenizerOptions = new TokenizerOptions { RegExpParseMode = RegExpParseMode.AdaptToInterpreted, Tolerant = true };
+var tokenizerOptions = new TokenizerOptions { ExperimentalESFeatures = ExperimentalESFeatures.RegExpModifiers, RegExpParseMode = RegExpParseMode.AdaptToInterpreted, Tolerant = true };
 var output = new List<string>();
 var lineNumber = 0;
 var testCaseCount = 0;

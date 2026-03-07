@@ -116,4 +116,11 @@ public record class TokenizerOptions
     {
         return _ecmaVersion >= EcmaVersion.ES2017 && (_experimentalESFeatures & ExperimentalESFeatures.ExplicitResourceManagement) != 0;
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal bool AllowRegExpModifiers()
+    {
+        // NOTE: The dotAll mode (flag 's'), which is part of this feature, is only available since ES2018.
+        return _ecmaVersion >= EcmaVersion.ES2018 && (_experimentalESFeatures & ExperimentalESFeatures.RegExpModifiers) != 0;
+    }
 }
