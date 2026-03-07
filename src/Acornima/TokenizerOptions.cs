@@ -120,6 +120,7 @@ public record class TokenizerOptions
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal bool AllowRegExpModifiers()
     {
-        return (_experimentalESFeatures & ExperimentalESFeatures.RegExpModifiers) != 0;
+        // NOTE: The dotAll mode (flag 's'), which is part of this feature, is only available since ES2018.
+        return _ecmaVersion >= EcmaVersion.ES2018 && (_experimentalESFeatures & ExperimentalESFeatures.RegExpModifiers) != 0;
     }
 }

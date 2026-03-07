@@ -100,12 +100,14 @@ public partial class Tokenizer
                 return true;
             }
 
-            public void RewriteDot(ref ParsePatternContext context, bool dotAll)
+            public void RewriteDot(ref ParsePatternContext context)
             {
                 ref readonly var sb = ref context.StringBuilder;
                 if (sb is not null)
                 {
-                    _ = dotAll ? sb.Append(MatchAnyRegex) : sb.Append(MatchAnyButNewLineRegex);
+                    _ = (context.EffectiveFlags & RegExpFlags.DotAll) != 0
+                        ? sb.Append(MatchAnyRegex)
+                        : sb.Append(MatchAnyButNewLineRegex);
                 }
             }
 

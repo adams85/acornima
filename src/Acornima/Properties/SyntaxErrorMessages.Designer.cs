@@ -717,6 +717,15 @@ namespace Acornima {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid regular expression: /{0}/{1}: Invalid flag group.
+        /// </summary>
+        internal static string RegExpInvalidFlagGroup {
+            get {
+                return ResourceManager.GetString("RegExpInvalidFlagGroup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid regular expression: /{0}/{1}: Invalid group.
         /// </summary>
         internal static string RegExpInvalidGroup {
@@ -780,6 +789,15 @@ namespace Acornima {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid regular expression: /{0}/{1}: Multiple dashes in flag group.
+        /// </summary>
+        internal static string RegExpMultipleFlagDashes {
+            get {
+                return ResourceManager.GetString("RegExpMultipleFlagDashes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid regular expression: /{0}/{1}: Nothing to repeat.
         /// </summary>
         internal static string RegExpNothingToRepeat {
@@ -803,6 +821,15 @@ namespace Acornima {
         internal static string RegExpRangeOutOfOrderCharacterClass {
             get {
                 return ResourceManager.GetString("RegExpRangeOutOfOrderCharacterClass", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid regular expression: /{0}/{1}: Repeated flag in flag group.
+        /// </summary>
+        internal static string RegExpRepeatedFlag {
+            get {
+                return ResourceManager.GetString("RegExpRepeatedFlag", resourceCulture);
             }
         }
         

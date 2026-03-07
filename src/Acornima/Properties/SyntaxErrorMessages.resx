@@ -405,6 +405,10 @@
     <value>Invalid regular expression: /{0}/{1}: Invalid escape</value>
     <comment>https://github.com/v8/v8/blob/12.4.194/src/regexp/regexp-error.h</comment>
   </data>
+  <data name="RegExpInvalidFlagGroup" xml:space="preserve">
+    <value>Invalid regular expression: /{0}/{1}: Invalid flag group</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/regexp/regexp-error.h</comment>
+  </data>
   <data name="RegExpInvalidGroup" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Invalid group</value>
     <comment>https://github.com/v8/v8/blob/12.4.194/src/regexp/regexp-error.h</comment>
@@ -433,6 +437,10 @@
     <value>Invalid regular expression: /{0}/{1}: Lone quantifier brackets</value>
     <comment>https://github.com/v8/v8/blob/12.4.194/src/regexp/regexp-error.h</comment>
   </data>
+  <data name="RegExpMultipleFlagDashes" xml:space="preserve">
+    <value>Invalid regular expression: /{0}/{1}: Multiple dashes in flag group</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/regexp/regexp-error.h</comment>
+  </data>
   <data name="RegExpNothingToRepeat" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Nothing to repeat</value>
     <comment>https://github.com/v8/v8/blob/12.4.194/src/regexp/regexp-error.h</comment>
@@ -443,6 +451,10 @@
   </data>
   <data name="RegExpRangeOutOfOrderCharacterClass" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Range out of order in character class</value>
+    <comment>https://github.com/v8/v8/blob/12.4.194/src/regexp/regexp-error.h</comment>
+  </data>
+  <data name="RegExpRepeatedFlag" xml:space="preserve">
+    <value>Invalid regular expression: /{0}/{1}: Repeated flag in flag group</value>
     <comment>https://github.com/v8/v8/blob/12.4.194/src/regexp/regexp-error.h</comment>
   </data>
   <data name="RegExpUnmatchedParen" xml:space="preserve">
