@@ -93,8 +93,8 @@ public partial class RegExpTests
         // so we need to parse the JSON containing the matches "manually"...
         var (expectedMatches, syntaxError) = RegExpMatch.MatchesFrom(JavaScriptString.ParseAsExpression(expectedMatchesJson));
 
-        var regexValidator = new Tokenizer.RegExpParser(pattern, flags, new TokenizerOptions { RegExpParseMode = RegExpParseMode.Validate, Tolerant = false });
-        var regexConverter = new Tokenizer.RegExpParser(pattern, flags, new TokenizerOptions { RegExpParseMode = RegExpParseMode.AdaptToInterpreted, Tolerant = expectedMatches is not null });
+        var regexValidator = new Tokenizer.RegExpParser(pattern, flags, new TokenizerOptions { ExperimentalESFeatures = ExperimentalESFeatures.RegExpModifiers, RegExpParseMode = RegExpParseMode.Validate, Tolerant = false });
+        var regexConverter = new Tokenizer.RegExpParser(pattern, flags, new TokenizerOptions { ExperimentalESFeatures = ExperimentalESFeatures.RegExpModifiers, RegExpParseMode = RegExpParseMode.AdaptToInterpreted, Tolerant = expectedMatches is not null });
 
         if (expectedMatches is not null)
         {

@@ -2735,3 +2735,100 @@ c\b	u	abc
 
 [^]?(:[rp][el]a[\w-]+)[^]		xx:reagent-1/y
 [^]?(:[rp][el]a[\w-]+)[^]	u	xx:reagent-1/y
+
+# RegExp modifiers ((?ims-ims:pattern))
+
+# Basic ignoreCase modifier
+(?i:abc)		ABC
+(?i:abc)		abc
+(?i:abc)		AbC
+(?i:abc)	u	ABC
+(?i:abc)	u	abc
+
+# Basic multiline modifier
+(?m:^a)		"b\na"
+(?m:a$)		"a\nb"
+(?m:^a$)		"b\na\nb"
+
+# Basic dotAll modifier
+(?s:.)		"\n"
+(?s:.)		a
+(?s:.)		"\r"
+
+# Remove modifiers
+(?-i:abc)	i	abc
+(?-i:abc)	i	ABC
+(?-s:.)	s	a
+(?-s:.)	s	"\n"
+(?-m:^a)	m	"b\na"
+(?-m:^a)	m	a
+
+# Combined add modifiers
+(?im:^abc)		"b\nabc"
+(?im:^abc)		"b\nABC"
+(?is:.abc)		"\nabc"
+(?is:.abc)		"\nABC"
+(?ims:^.a)		"b\n\na"
+
+# Add + remove modifiers
+(?i-m:^abc)	m	abc
+(?i-m:^abc)	m	ABC
+(?i-m:^abc)	m	"b\nabc"
+(?m-i:^abc)	i	"b\nabc"
+(?m-i:^abc)	i	"b\nABC"
+
+# Empty remove syntax
+(?s-:.)		"\n"
+(?s-:.)		a
+(?m-:^a)		"b\na"
+
+# Scoping — modifier only applies inside group
+a(?i:b)c		aBc
+a(?i:b)c		ABc
+a(?i:b)c		aBC
+a(?i:b)c		abc
+
+# Nested modifier groups
+(?s:(?-s:.).)		"a\n"
+(?s:(?-s:.).)		"\n\n"
+(?i:(?-i:a)b)		aB
+(?i:(?-i:a)b)		AB
+(?i:(?-i:a)b)		ab
+
+# Quantifier after modifier group
+(?i:a)+		aAaA
+(?s:.){2}		"a\n"
+(?i:a)*		aA
+
+# Alternation inside modifier group
+(?i:a|B)		a
+(?i:a|B)		b
+(?i:a|B)		A
+(?i:a|B)		B
+
+# Capturing group inside modifier group
+(?i:(a)b)		AB
+
+# With u flag
+(?i:abc)	u	AbC
+(?s:.)	u	"\n"
+(?m:^a)	u	"b\na"
+
+# Error cases — these should produce syntax errors
+(?z:a)		a
+(?ii:a)		a	!ignore-error-message
+(?i-i:a)		a	!ignore-error-message
+(?-:a)		a	!ignore-error-message
+(?I:a)		a
+(?1:a)		a
+(?-ss:a)		a	!ignore-error-message
+(?mm:a)		a	!ignore-error-message
+
+# Sequential modifier groups
+(?i:a)(?s:.)		"A\n"
+(?i:a)b		Ab
+
+# Empty content modifier groups
+(?i:)		a
+(?s:)		a
+(?m:)		a

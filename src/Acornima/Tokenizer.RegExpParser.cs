@@ -523,9 +523,6 @@ public partial class Tokenizer
                         }
                         else if (groupType == RegExpGroupType.ModifierGroup)
                         {
-                            // Push current modifier state
-                            context.ModifierScopeStack.Add(new ModifierScope(context.EffectiveMultiline, context.EffectiveDotAll));
-
                             // Parse modifier flags and emit .NET equivalent
                             var j = i + 2; // skip '(?'
                             var addIgnoreCase = false;
@@ -565,6 +562,10 @@ public partial class Tokenizer
 
                             Debug.Assert(_pattern[j] == ':');
 
+                            // Save current modifier state before updating
+                            var savedMultiline = context.EffectiveMultiline;
+                            var savedDotAll = context.EffectiveDotAll;
+
                             // Update effective flags
                             if (addMultiline) context.EffectiveMultiline = true;
                             if (removeMultiline) context.EffectiveMultiline = false;
@@ -591,14 +592,17 @@ public partial class Tokenizer
 
                             i = j; // advance past the ':' in the modifier prefix
 
+                            ref var modifierGroup = ref context.GroupStack.PushRef();
                             if (currentGroupAlternate is not null)
                             {
-                                context.GroupStack.PushRef().Reset(groupType, parent: currentGroupAlternate);
+                                modifierGroup.Reset(groupType, parent: currentGroupAlternate);
                             }
                             else
                             {
-                                context.GroupStack.PushRef() = new RegExpGroup(groupType);
+                                modifierGroup = new RegExpGroup(groupType);
                             }
+                            modifierGroup.SavedMultiline = savedMultiline;
+                            modifierGroup.SavedDotAll = savedDotAll;
 
                             context.SetFollowingQuantifierError(RegExpNothingToRepeat);
                             break;
@@ -641,17 +645,17 @@ public partial class Tokenizer
                             context.GroupStack.PeekRef().HoistGroupNamesToParent();
                         }
 
-                        groupType = context.GroupStack.PopRef().Type;
+                        ref var poppedGroup = ref context.GroupStack.PeekRef();
+                        groupType = poppedGroup.Type;
 
                         if (groupType == RegExpGroupType.ModifierGroup)
                         {
-                            // Restore modifier flags from scope stack
-                            var idx = context.ModifierScopeStack.Count - 1;
-                            var saved = context.ModifierScopeStack[idx];
-                            context.ModifierScopeStack.RemoveAt(idx);
-                            context.EffectiveMultiline = saved.Multiline;
-                            context.EffectiveDotAll = saved.DotAll;
+                            // Restore modifier flags saved in the group
+                            context.EffectiveMultiline = poppedGroup.SavedMultiline;
+                            context.EffectiveDotAll = poppedGroup.SavedDotAll;
                         }
+
+                        context.GroupStack.Pop();
 
                         if (sb is not null)
                         {
@@ -1393,9 +1397,6 @@ public partial class Tokenizer
             // from the global _flags due to inline modifier groups like (?s:...) or (?-m:...).
             public bool EffectiveMultiline;
             public bool EffectiveDotAll;
-
-            // Stack to save/restore modifier flags when entering/exiting modifier groups.
-            public ArrayList<ModifierScope> ModifierScopeStack;
         }
 
         private interface IMode
@@ -1452,6 +1453,10 @@ public partial class Tokenizer
         }
 
         public RegExpGroupType Type;
+
+        // Saved modifier flags for ModifierGroup scope restoration.
+        public bool SavedMultiline;
+        public bool SavedDotAll;
 
         public RegExpGroupAlternate? FirstAlternate;
 
@@ -1540,18 +1545,6 @@ public partial class Tokenizer
                 }
                 _groupNames = default;
             }
-        }
-    }
-
-    internal readonly struct ModifierScope
-    {
-        public readonly bool Multiline;
-        public readonly bool DotAll;
-
-        public ModifierScope(bool multiline, bool dotAll)
-        {
-            Multiline = multiline;
-            DotAll = dotAll;
         }
     }
 

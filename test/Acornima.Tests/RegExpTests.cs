@@ -152,6 +152,10 @@ public partial class RegExpTests
     [InlineData("(?i:a)b", "", "(?i:a)b")]
     // ignoreCase combined with other modifiers
     [InlineData("(?is:.)", "", "(?i:[\\s\\S])")]
+    // remove modifiers
+    [InlineData("(?-s:.)", "s", "(?:[^\n\r\u2028\u2029])")]
+    // quantifier after modifier group
+    [InlineData("(?i:a)+", "", "(?i:a)+")]
     [Theory]
     public void ShouldConvertRegExpModifiers(string pattern, string flags, string expectedAdaptedPattern)
     {
@@ -200,6 +204,15 @@ public partial class RegExpTests
         // nested modifier groups: multiline scope restored on exit
         AssertConversion("(?m:(?-m:^)^)", "", $"(?:(?:^)(?<={nl}|^))");
 
+        // deeply nested modifier combination
+        AssertConversion("(?i:(?s:(?m:^.a)))", "", $"(?i:(?:(?:(?<={nl}|^)[\\s\\S]a)))");
+
+        // sequential modifier groups
+        AssertConversion("(?i:a)(?s:.)", "", $"(?i:a)(?:[\\s\\S])");
+
+        // remove multiline inside globally-enabled multiline
+        AssertConversion("(?-m:^a)", "m", "(?:^a)");
+
         static void AssertConversion(string pattern, string flags, string expected)
         {
             var parser = new Tokenizer.RegExpParser(pattern, flags, new TokenizerOptions
@@ -224,11 +237,10 @@ public partial class RegExpTests
     [InlineData("(?mm:a)")]      // duplicate flag in add
     [InlineData("(?-ss:a)")]     // duplicate flag in remove
     [InlineData("(?m-m:a)")]     // same flag in add and remove
-    [InlineData("(?:a)")]        // this is a non-capturing group, not a modifier group (valid, but NOT a modifier)
+    [InlineData("(?-:a)")]       // only dash, no flags on either side
     [Theory]
     public void ShouldRejectInvalidRegExpModifiers(string pattern)
     {
-        // These should throw a parse error when modifiers are enabled
         var parser = new Tokenizer.RegExpParser(pattern, "", new TokenizerOptions
         {
             ExperimentalESFeatures = ExperimentalESFeatures.RegExpModifiers,
@@ -236,15 +248,21 @@ public partial class RegExpTests
             Tolerant = false
         });
 
-        // (?:a) is a valid non-capturing group, not an error
-        if (pattern == "(?:a)")
-        {
-            var result = parser.Parse();
-            Assert.True(result.Success);
-            return;
-        }
-
         Assert.Throws<SyntaxErrorException>(() => parser.Parse());
+    }
+
+    [Fact]
+    public void ShouldNotAffectNonCapturingGroupsWhenModifiersEnabled()
+    {
+        var parser = new Tokenizer.RegExpParser("(?:a)", "", new TokenizerOptions
+        {
+            ExperimentalESFeatures = ExperimentalESFeatures.RegExpModifiers,
+            RegExpParseMode = RegExpParseMode.Validate,
+            Tolerant = false
+        });
+
+        var result = parser.Parse();
+        Assert.True(result.Success);
     }
 
     // === RegExp Modifiers: Matching behavior tests ===
@@ -275,6 +293,19 @@ public partial class RegExpTests
     // nested modifiers
     [InlineData("(?s:(?-s:.).).", "", "a\na", true)]   // outer . matches \n, inner . doesn't
     [InlineData("(?s:(?-s:.).).", "", "\n\na", false)]  // inner . doesn't match \n
+    // alternation inside modifier group
+    [InlineData("(?i:a|B)", "", "a", true)]
+    [InlineData("(?i:a|B)", "", "b", true)]
+    [InlineData("(?i:a|B)", "", "A", true)]
+    [InlineData("(?i:a|B)", "", "B", true)]
+    // quantified modifier group
+    [InlineData("(?i:a)+", "", "aAaA", true)]
+    [InlineData("(?i:a)*", "", "", true)]
+    // empty modifier group content
+    [InlineData("(?i:)", "", "", true)]
+    // character class inside modifier group
+    [InlineData("(?i:[a-z])", "", "A", true)]
+    [InlineData("(?i:[a-z])", "", "Z", true)]
     [Theory]
     public void ShouldMatchRegExpModifiers(string pattern, string flags, string input, bool expectedMatch)
     {
