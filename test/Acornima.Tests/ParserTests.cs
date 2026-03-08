@@ -2291,25 +2291,38 @@ public partial class ParserTests
         Assert.Equal("Illegal return statement", ex.Description);
     }
 
-    [Fact]
-    public void ShouldDisallowTestOfConditionalExpressionToBeAnUnparenthesizedArrowFunction()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ShouldDisallowTestOfConditionalExpressionToBeAnUnparenthesizedArrowFunction(bool isAsync)
     {
+        var asyncToken = isAsync ? "async " : "";
+
         var parser = new Parser(new ParserOptions { Tolerant = false });
-        var ex = Assert.Throws<SyntaxErrorException>(() => parser.ParseScript("() => {} ? 1 : 0"));
-        Assert.Equal(9, ex.Error.Index);
+        var ex = Assert.Throws<SyntaxErrorException>(() => parser.ParseScript(asyncToken + "() => {} ? 1 : 0"));
+        Assert.Equal(asyncToken.Length + 9, ex.Error.Index);
         Assert.Equal(1, ex.LineNumber);
-        Assert.Equal(9, ex.Column);
+        Assert.Equal(asyncToken.Length + 9, ex.Column);
         Assert.Equal("UnexpectedToken", ex.Error.Code);
+
+        Assert.Equal(asyncToken.TrimEnd() + "()=>({})?1:0", parser.ParseScript(asyncToken + "() => ({}) ? 1 : 0").ToJavaScript());
+        Assert.Equal(asyncToken.TrimEnd() + "()=>({})?1:0", parser.ParseScript(asyncToken + "() => ({} ? 1 : 0)").ToJavaScript());
     }
 
-    [Fact]
-    public void ShouldAllowTestOfConditionalExpressionToBeAParenthesizedArrowFunction()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ShouldAllowTestOfConditionalExpressionToBeAParenthesizedArrowFunction(bool isAsync)
     {
+        var asyncToken = isAsync ? "async " : "";
+
         var parser = new Parser(new ParserOptions { Tolerant = false });
-        var ast = parser.ParseScript("(() => {}) ? 1 : 0");
+        var ast = parser.ParseScript("(" + asyncToken + "() => {}) ? 1 : 0");
         var conditionalExpression = ast.DescendantNodesAndSelf().OfType<ConditionalExpression>().FirstOrDefault();
         Assert.NotNull(conditionalExpression);
         Assert.IsType<ArrowFunctionExpression>(conditionalExpression.Test);
+
+        Assert.Equal("(" + asyncToken.TrimEnd() + "()=>{})?1:0", ast.ToJavaScript());
     }
 
     [Theory]
