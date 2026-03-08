@@ -937,7 +937,7 @@ public partial class Tokenizer
                     case 's': flag = RegExpFlags.DotAll; break;
                     case '-': i++; goto ParseFlagsToRemove;
                     case ':':
-                        Debug.Assert(flagsToAdd != RegExpFlags.None);
+                        Debug.Assert(flagsToAdd != 0);
                         return;
                     default:
                         ReportSyntaxError(startIndex, RegExpInvalidGroup);
@@ -964,7 +964,7 @@ public partial class Tokenizer
                         ReportSyntaxError(i, RegExpMultipleFlagDashes);
                         return;
                     case ':':
-                        if ((flagsToAdd | flagsToRemove) == RegExpFlags.None) // edge case of /(?-:)/
+                        if ((flagsToAdd | flagsToRemove) == 0) // edge case of /(?-:)/
                         {
                             ReportSyntaxError(i - 1, RegExpInvalidFlagGroup);
                         }

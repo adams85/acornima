@@ -12,10 +12,10 @@ public static class EnumerableExtensions
 
     public static bool SequenceEqualUnordered<TSource>(this IEnumerable<TSource> source, IEnumerable<TSource> second, IEqualityComparer<TSource> comparer)
     {
-        if (source == null)
+        if (source is null)
             throw new ArgumentNullException(nameof(source));
 
-        if (second == null)
+        if (second is null)
             throw new ArgumentNullException(nameof(second));
 
         if (source.TryGetCount(out int firstCount) && second.TryGetCount(out int secondCount))
@@ -27,7 +27,7 @@ public static class EnumerableExtensions
                 return true;
         }
 
-        IEqualityComparer<ValueTuple<TSource>>? itemComparer = comparer != null ? new WrappedItemComparer<TSource>(comparer) : null;
+        IEqualityComparer<ValueTuple<TSource>>? itemComparer = comparer is not null ? new WrappedItemComparer<TSource>(comparer) : null;
 
         Dictionary<ValueTuple<TSource>, int> counters;
         ValueTuple<TSource> key;

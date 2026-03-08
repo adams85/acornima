@@ -46,7 +46,7 @@ public class JavaScriptString
                 || char.IsHighSurrogate(c) && !char.IsLowSurrogate((char)value.CharCodeAt(i + 1))
                 || char.IsLowSurrogate(c) && !char.IsHighSurrogate((char)value.CharCodeAt(i - 1)))
             {
-                if (b == null)
+                if (b is null)
                 {
                     b = new StringBuilder(value.Length + 5);
                 }
@@ -96,7 +96,7 @@ public class JavaScriptString
             }
         }
 
-        if (b == null)
+        if (b is null)
         {
             return addDoubleQuotes ? "\"" + value + "\"" : value;
         }

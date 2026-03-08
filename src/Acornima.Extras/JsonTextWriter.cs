@@ -86,13 +86,13 @@ internal sealed class JsonTextWriter : JsonWriter
 
     public override void Member(string name)
     {
-        if (name == null)
+        if (name is null)
             throw new ArgumentNullException(nameof(name));
 
         if (Depth == 0 || _structures.Peek() != StructureKind.Object)
             throw new InvalidOperationException(ExtrasExceptionMessages.JsonMemberOutsideObject);
 
-        if (_memberName != null)
+        if (_memberName is not null)
             throw new InvalidOperationException(string.Format(null, ExtrasExceptionMessages.MissingJsonMemberValue, _memberName));
 
         _memberName = name;
@@ -100,7 +100,7 @@ internal sealed class JsonTextWriter : JsonWriter
 
     public override void String(string? str)
     {
-        if (str == null)
+        if (str is null)
         {
             Null();
         }
@@ -172,7 +172,7 @@ internal sealed class JsonTextWriter : JsonWriter
         if (Depth == 0)
             throw new InvalidOperationException(ExtrasExceptionMessages.NoUnterminatedJsonStructure);
 
-        if (_memberName != null)
+        if (_memberName is not null)
             throw new InvalidOperationException(string.Format(null, ExtrasExceptionMessages.MissingJsonMemberValue, _memberName));
 
         if (_counters.Peek() > 0)
@@ -198,7 +198,7 @@ internal sealed class JsonTextWriter : JsonWriter
 
         if (Depth > 0)
         {
-            if (_structures.Peek() == StructureKind.Object && _memberName == null)
+            if (_structures.Peek() == StructureKind.Object && _memberName is null)
                 throw new InvalidOperationException(ExtrasExceptionMessages.UndefinedJsonMemberName);
 
             if (_counters.Peek() > 0)
@@ -210,7 +210,7 @@ internal sealed class JsonTextWriter : JsonWriter
         var name = _memberName;
         _memberName = null;
 
-        if (name != null)
+        if (name is not null)
         {
             Indent();
             Enquote(name, writer);
@@ -235,7 +235,7 @@ internal sealed class JsonTextWriter : JsonWriter
 
     private static void Enquote(string s, TextWriter writer)
     {
-        Debug.Assert(writer != null);
+        Debug.Assert(writer is not null);
 
         var length = (s ?? string.Empty).Length;
 
@@ -243,7 +243,7 @@ internal sealed class JsonTextWriter : JsonWriter
 
         for (var index = 0; index < length; index++)
         {
-            Debug.Assert(s != null);
+            Debug.Assert(s is not null);
             var ch = s![index];
 
             switch (ch)
