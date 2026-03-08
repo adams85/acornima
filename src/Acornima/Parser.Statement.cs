@@ -198,6 +198,7 @@ public partial class Parser
     // regular expression literal. This is to handle cases like
     // `if (foo) /blah/.exec(foo)`, where looking at the previous token
     // does not help.
+    [MethodImpl((MethodImplOptions)512 /* AggressiveOptimization */)]
     private Statement ParseStatement(StatementContext context, bool topLevel = false)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseStatement = function`
@@ -1357,6 +1358,10 @@ public partial class Parser
 
         string? keyName = null;
         string keyword;
+        bool isAsync = false;
+        bool isGenerator = false;
+        bool isAccessor = false;
+        var kind = PropertyKind.Unknown;
 
         var isStatic = EatContextual(keyword = "static");
         if (isStatic)
@@ -1376,29 +1381,28 @@ public partial class Parser
             {
                 isStatic = false;
                 keyName = keyword;
+                goto ParseElementName;
             }
         }
 
-        var isAsync = keyName is null && _tokenizerOptions._ecmaVersion >= EcmaVersion.ES8 && EatContextual(keyword = "async");
+        isAsync = _tokenizerOptions._ecmaVersion >= EcmaVersion.ES8 && EatContextual(keyword = "async");
         if (isAsync)
         {
             if (!((IsClassElementNameStart() || _tokenizer._type == TokenType.Star) && !CanInsertSemicolon()))
             {
                 isAsync = false;
                 keyName = keyword;
+                goto ParseElementName;
             }
         }
 
-        var isGenerator = keyName is null
+        isGenerator =
             // NOTE: We only need to check the ECMA version in the case of async generators
             // since non-async generators were introduced in ES6, together with classes.
-            && (!isAsync || _tokenizerOptions._ecmaVersion >= EcmaVersion.ES9)
+            (!isAsync || _tokenizerOptions._ecmaVersion >= EcmaVersion.ES9)
             && Eat(TokenType.Star);
 
-        var isAccessor = false;
-        var kind = PropertyKind.Unknown;
-
-        if (keyName is null && !isAsync && !isGenerator)
+        if (!isAsync && !isGenerator)
         {
             if (EatContextual(keyword = "get"))
             {
@@ -1409,6 +1413,7 @@ public partial class Parser
                 else
                 {
                     keyName = keyword;
+                    goto ParseElementName;
                 }
             }
             else if (EatContextual(keyword = "set"))
@@ -1420,6 +1425,7 @@ public partial class Parser
                 else
                 {
                     keyName = keyword;
+                    goto ParseElementName;
                 }
             }
             else if (_tokenizerOptions.AllowDecorators() && EatContextual(keyword = "accessor"))
@@ -1431,11 +1437,13 @@ public partial class Parser
                 else
                 {
                     keyName = keyword;
+                    goto ParseElementName;
                 }
             }
         }
 
         // Parse element name
+        ParseElementName:
         Expression key;
         bool computed;
         if (keyName is null)

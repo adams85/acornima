@@ -253,6 +253,7 @@ public partial class Parser
     }
 
     // Parse a ternary conditional (`?:`) operator.
+    [MethodImpl((MethodImplOptions)512  /* AggressiveOptimization */)]
     private Expression ParseMaybeConditional(ref DestructuringErrors destructuringErrors, ExpressionContext context)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/expression.js > `pp.parseMaybeConditional = function`
@@ -279,6 +280,7 @@ public partial class Parser
     }
 
     // Start the precedence parser.
+    [MethodImpl((MethodImplOptions)512  /* AggressiveOptimization */)]
     private Expression ParseMaybeBinary(ref DestructuringErrors destructuringErrors, ExpressionContext context)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/expression.js > `pp.parseExprOps = function`
@@ -595,6 +597,7 @@ public partial class Parser
         return result;
     }
 
+    [MethodImpl((MethodImplOptions)512  /* AggressiveOptimization */)]
     private Expression ParseSubscripts(in Marker startMarker, Expression baseExpr, bool noCalls, ExpressionContext context)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/expression.js > `pp.parseSubscripts = function`

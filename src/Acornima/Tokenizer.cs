@@ -134,6 +134,7 @@ public sealed partial class Tokenizer : ITokenizer
         }
     }
 
+    [MethodImpl((MethodImplOptions)512 /* AggressiveOptimization */)]
     internal bool TryReadToken(int cp)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readToken = function`, `pp.getTokenFromCode = function`
@@ -318,6 +319,7 @@ public sealed partial class Tokenizer : ITokenizer
 
     // Called at the start of the parse and after every token. Skips
     // whitespace and comments.
+    [MethodImpl((MethodImplOptions)512 /* AggressiveOptimization */)]
     private void SkipSpace(OnCommentHandler? onComment)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.skipSpace = function`
@@ -1519,6 +1521,7 @@ public sealed partial class Tokenizer : ITokenizer
     //
     // Incrementally adds only escaped chars, adding other chunks as-is
     // as a micro-optimization.
+    [MethodImpl((MethodImplOptions)512 /* AggressiveOptimization */)]
     private ReadOnlySpan<char> ReadWord1()
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readWord1 = function`
@@ -1578,6 +1581,7 @@ public sealed partial class Tokenizer : ITokenizer
 
     // Read an identifier or keyword token. Will check for reserved
     // words when necessary.
+    [MethodImpl((MethodImplOptions)512 /* AggressiveOptimization */)]
     private bool ReadWord()
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readWord = function`

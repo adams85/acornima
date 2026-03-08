@@ -17,7 +17,8 @@ public class FileParsingBenchmark
         { "jquery-1.9.1", null! },
         { "yui-3.12.0", null! },
         { "jquery.mobile-1.4.2", null! },
-        { "angular-1.2.5", null! }
+        { "angular-1.2.5", null! },
+        { "angular-1.7.9", null! }
     };
 
     private Parser _acornimaParser = null!;

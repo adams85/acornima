@@ -28,6 +28,7 @@ public partial class Parser
     }
 
     // Tests whether parsed token is a contextual keyword.
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool IsContextual(string name)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/parseutil.js > `pp.isContextual = function`
@@ -65,6 +66,7 @@ public partial class Parser
     }
 
     // Test whether a semicolon can be inserted at the current position.
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool CanInsertSemicolon()
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/parseutil.js > `pp.canInsertSemicolon = function`
