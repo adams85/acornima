@@ -1356,14 +1356,12 @@ public partial class Parser
         var hasDecorators = _tokenizer._type == TokenType.At;
         var decorators = hasDecorators ? ParseDecorators() : default;
 
+        bool isStatic, isAsync, isGenerator, isAccessor = false;
         string? keyName = null;
         string keyword;
-        bool isAsync = false;
-        bool isGenerator = false;
-        bool isAccessor = false;
         var kind = PropertyKind.Unknown;
 
-        var isStatic = EatContextual(keyword = "static");
+        isStatic = EatContextual(keyword = "static");
         if (isStatic)
         {
             // Parse static init block
@@ -1379,7 +1377,7 @@ public partial class Parser
 
             if (!(IsClassElementNameStart() || _tokenizer._type == TokenType.Star))
             {
-                isStatic = false;
+                isStatic = isAsync = isGenerator = false;
                 keyName = keyword;
                 goto ParseElementName;
             }
@@ -1390,60 +1388,59 @@ public partial class Parser
         {
             if (!((IsClassElementNameStart() || _tokenizer._type == TokenType.Star) && !CanInsertSemicolon()))
             {
-                isAsync = false;
+                isAsync = isGenerator = false;
                 keyName = keyword;
                 goto ParseElementName;
             }
-        }
 
-        isGenerator =
             // NOTE: We only need to check the ECMA version in the case of async generators
             // since non-async generators were introduced in ES6, together with classes.
-            (!isAsync || _tokenizerOptions._ecmaVersion >= EcmaVersion.ES9)
-            && Eat(TokenType.Star);
+            isGenerator = _tokenizerOptions._ecmaVersion >= EcmaVersion.ES9 && Eat(TokenType.Star);
+            goto ParseElementName;
+        }
 
-        if (!isAsync && !isGenerator)
+        isGenerator = Eat(TokenType.Star);
+        if (isGenerator)
         {
-            if (EatContextual(keyword = "get"))
+            goto ParseElementName;
+        }
+
+        if (EatContextual(keyword = "get"))
+        {
+            if (IsClassElementNameStart())
             {
-                if (IsClassElementNameStart())
-                {
-                    kind = PropertyKind.Get;
-                }
-                else
-                {
-                    keyName = keyword;
-                    goto ParseElementName;
-                }
+                kind = PropertyKind.Get;
             }
-            else if (EatContextual(keyword = "set"))
+            else
             {
-                if (IsClassElementNameStart())
-                {
-                    kind = PropertyKind.Set;
-                }
-                else
-                {
-                    keyName = keyword;
-                    goto ParseElementName;
-                }
+                keyName = keyword;
             }
-            else if (_tokenizerOptions.AllowDecorators() && EatContextual(keyword = "accessor"))
+        }
+        else if (EatContextual(keyword = "set"))
+        {
+            if (IsClassElementNameStart())
             {
-                if (!CanInsertSemicolon() && IsClassElementNameStart())
-                {
-                    isAccessor = true;
-                }
-                else
-                {
-                    keyName = keyword;
-                    goto ParseElementName;
-                }
+                kind = PropertyKind.Set;
+            }
+            else
+            {
+                keyName = keyword;
+            }
+        }
+        else if (_tokenizerOptions.AllowDecorators() && EatContextual(keyword = "accessor"))
+        {
+            if (!CanInsertSemicolon() && IsClassElementNameStart())
+            {
+                isAccessor = true;
+            }
+            else
+            {
+                keyName = keyword;
             }
         }
 
         // Parse element name
-        ParseElementName:
+    ParseElementName:
         Expression key;
         bool computed;
         if (keyName is null)
