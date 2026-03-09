@@ -732,7 +732,12 @@ public partial class Tokenizer
             // (This could be further optimized though by unescaping + escaping the problematic characters with '\'.)
 
             _ = ch.IsInRange(0x20, 0x7E)
-                ? sb.Append('\\').Append('x').Append(((byte)ch).ToString("X2", CultureInfo.InvariantCulture))
+                ? sb.Append('\\').Append('x')
+#if NET6_0_OR_GREATER
+                    .Append(CultureInfo.InvariantCulture, $"{(byte)ch:X2}")
+#else
+                    .Append(((byte)ch).ToString("X2", CultureInfo.InvariantCulture))
+#endif
                 : sb.Append(ch);
         }
 
