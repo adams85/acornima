@@ -249,15 +249,6 @@ namespace Acornima {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Import attributes has duplicate key &apos;{0}&apos;.
-        /// </summary>
-        internal static string DuplicateImportAttribute {
-            get {
-                return ResourceManager.GetString("DuplicateImportAttribute", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Duplicate __proto__ fields are not allowed in object literals.
         /// </summary>
         internal static string DuplicateProto {
@@ -353,6 +344,15 @@ namespace Acornima {
         internal static string IllegalReturn {
             get {
                 return ResourceManager.GetString("IllegalReturn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Import attributes has duplicate key &apos;{0}&apos;.
+        /// </summary>
+        internal static string ImportAttributesDuplicateKey {
+            get {
+                return ResourceManager.GetString("ImportAttributesDuplicateKey", resourceCulture);
             }
         }
         
@@ -677,15 +677,6 @@ namespace Acornima {
         internal static string RegExpInvalidCharacterClass {
             get {
                 return ResourceManager.GetString("RegExpInvalidCharacterClass", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Invalid regular expression: /{0}/{1}: Invalid class escape.
-        /// </summary>
-        internal static string RegExpInvalidClassEscape {
-            get {
-                return ResourceManager.GetString("RegExpInvalidClassEscape", resourceCulture);
             }
         }
         

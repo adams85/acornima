@@ -2344,7 +2344,7 @@ public partial class Parser
 
             if (!parameterSet.Add(key))
             {
-                Raise(importAttribute.Start, DuplicateImportAttribute, new object[] { key });
+                Raise(importAttribute.Start, ImportAttributesDuplicateKey, new object[] { key });
             }
 
             attributes.Add(importAttribute);
