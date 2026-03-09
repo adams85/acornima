@@ -7,8 +7,8 @@ using Acornima.Helpers;
 
 namespace Acornima;
 
-using static Unsafe;
 using static SyntaxErrorMessages;
+using static Unsafe;
 
 // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/lval.js
 

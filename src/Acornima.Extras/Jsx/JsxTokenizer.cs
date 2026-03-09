@@ -4,9 +4,9 @@ using Acornima.Helpers;
 
 namespace Acornima.Jsx;
 
-using static Tokenizer;
-using static SyntaxErrorMessages;
 using static JsxSyntaxErrorMessages;
+using static SyntaxErrorMessages;
+using static Tokenizer;
 
 // https://github.com/acornjs/acorn-jsx/blob/f5c107b85872230d5016dbb97d71788575cda9c3/index.js
 

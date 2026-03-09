@@ -6,10 +6,9 @@ using Acornima.Jsx.Ast;
 
 namespace Acornima.Jsx;
 
-using static Unsafe;
-using static Parser;
-using static ExceptionHelper;
 using static JsxSyntaxErrorMessages;
+using static Parser;
+using static Unsafe;
 
 // https://github.com/acornjs/acorn-jsx/blob/f5c107b85872230d5016dbb97d71788575cda9c3/index.js
 

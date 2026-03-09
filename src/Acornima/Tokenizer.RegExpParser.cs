@@ -10,8 +10,8 @@ using Acornima.Helpers;
 
 namespace Acornima;
 
-using static SyntaxErrorMessages;
 using static RegExpConversionErrorMessages;
+using static SyntaxErrorMessages;
 
 public partial class Tokenizer
 {
