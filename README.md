@@ -7,7 +7,7 @@
 
 # Acorn + Esprima = Acornima
 
-This project is an interbreeding of the [acornjs](https://github.com/acornjs/) and the [Esprima.NET](https://github.com/sebastienros/esprima-dotnet) parsers, with the intention of creating an even more complete and performant ECMAScript (a.k.a JavaScript) parser library for .NET by combining the best bits of those.
+This project is a crossbreeding of the [acornjs](https://github.com/acornjs/) and the [Esprima.NET](https://github.com/sebastienros/esprima-dotnet) parsers, with the intention of creating an even more complete and performant ECMAScript (a.k.a JavaScript) parser library for .NET by combining the best bits of those.
 
 It should also be mentioned that there is an earlier .NET port of acornjs, [AcornSharp](https://github.com/MatthewSmit/AcornSharp), which though is unmaintained for a long time, served as a good starting point. Had it not been for AcornSharp, this project would probably have never started.
 
@@ -21,7 +21,7 @@ It should also be mentioned that there is an earlier .NET port of acornjs, [Acor
 
 ### And what good comes out of this mix?
 
-* A parser which already matches the performance of Esprima.NET, while doing more: it also passes the **complete** [Test262 test suite](https://github.com/tc39/test262) for ECMAScript 2023.
+* A parser that matches the performance of Esprima.NET while doing more: it also passes the **complete** [Test262 test suite](https://github.com/tc39/test262) for ECMAScript 2023.
 * It is also more economic with regard to stack usage, so it can parse ~2x deeper structures.
 * More options for fine-tuning parsing.
 * A standalone tokenizer which can deal with most of the ambiguities of the JavaScript grammar (thanks to the clever context tracking solution implemented by acornjs).
@@ -253,49 +253,42 @@ The most notable changes to keep in mind with regard to migration are the follow
 
 ### Benchmarks
 
-| Method          | Runtime            | FileName            |      Mean |  Allocated |
-|-----------------|--------------------|---------------------|----------:|-----------:|
-| Acornima v1.0.0 | .NET 8.0           | angular-1.2.5       | 10.679 ms | 3978.22 KB |
-| Acornima v1.0.0 | .NET Framework 4.8 | angular-1.2.5       | 22.905 ms | 3999.01 KB |
-|                 |                    |                     |           |            |
-| Esprima v3.0.5  | .NET 8.0           | angular-1.2.5       | 11.443 ms | 3828.11 KB |
-| Esprima v3.0.5  | .NET Framework 4.8 | angular-1.2.5       | 20.483 ms | 3879.53 KB |
-|                 |                    |                     |           |            |
-| Acornima v1.0.0 | .NET 8.0           | backbone-1.1.0      |  1.428 ms |  629.26 KB |
-| Acornima v1.0.0 | .NET Framework 4.8 | backbone-1.1.0      |  3.218 ms |  633.09 KB |
-|                 |                    |                     |           |            |
-| Esprima v3.0.5  | .NET 8.0           | backbone-1.1.0      |  1.440 ms |  613.88 KB |
-| Esprima v3.0.5  | .NET Framework 4.8 | backbone-1.1.0      |  2.903 ms |   620.3 KB |
-|                 |                    |                     |           |            |
-| Acornima v1.0.0 | .NET 8.0           | jquery-1.9.1        |  8.066 ms | 3271.63 KB |
-| Acornima v1.0.0 | .NET Framework 4.8 | jquery-1.9.1        | 18.210 ms | 3288.41 KB |
-|                 |                    |                     |           |            |
-| Esprima v3.0.5  | .NET 8.0           | jquery-1.9.1        |  8.391 ms | 3305.23 KB |
-| Esprima v3.0.5  | .NET Framework 4.8 | jquery-1.9.1        | 16.456 ms | 3355.15 KB |
-|                 |                    |                     |           |            |
-| Acornima v1.0.0 | .NET 8.0           | jquery.mobile-1.4.2 | 14.253 ms | 5449.24 KB |
-| Acornima v1.0.0 | .NET Framework 4.8 | jquery.mobile-1.4.2 | 29.750 ms | 5480.16 KB |
-|                 |                    |                     |           |            |
-| Esprima v3.0.5  | .NET 8.0           | jquery.mobile-1.4.2 | 14.566 ms | 5428.48 KB |
-| Esprima v3.0.5  | .NET Framework 4.8 | jquery.mobile-1.4.2 | 27.084 ms | 5497.48 KB |
-|                 |                    |                     |           |            |
-| Acornima v1.0.0 | .NET 8.0           | mootools-1.4.5      |  6.735 ms |  2755.9 KB |
-| Acornima v1.0.0 | .NET Framework 4.8 | mootools-1.4.5      | 14.818 ms | 2771.45 KB |
-|                 |                    |                     |           |            |
-| Esprima v3.0.5  | .NET 8.0           | mootools-1.4.5      |  6.877 ms | 2777.83 KB |
-| Esprima v3.0.5  | .NET Framework 4.8 | mootools-1.4.5      | 13.740 ms | 2816.33 KB |
-|                 |                    |                     |           |            |
-| Acornima v1.0.0 | .NET 8.0           | underscore-1.5.2    |  1.214 ms |  529.61 KB |
-| Acornima v1.0.0 | .NET Framework 4.8 | underscore-1.5.2    |  2.775 ms |  532.29 KB |
-|                 |                    |                     |           |            |
-| Esprima v3.0.5  | .NET 8.0           | underscore-1.5.2    |  1.235 ms |  539.42 KB |
-| Esprima v3.0.5  | .NET Framework 4.8 | underscore-1.5.2    |  2.501 ms |  547.18 KB |
-|                 |                    |                     |           |            |
-| Acornima v1.0.0 | .NET 8.0           | yui-3.12.0          |  6.408 ms | 2611.82 KB |
-| Acornima v1.0.0 | .NET Framework 4.8 | yui-3.12.0          | 13.831 ms | 2628.61 KB |
-|                 |                    |                     |           |            |
-| Esprima v3.0.5  | .NET 8.0           | yui-3.12.0          |  6.667 ms | 2585.78 KB |
-| Esprima v3.0.5  | .NET Framework 4.8 | yui-3.12.0          | 12.636 ms | 2624.92 KB |
+```
+BenchmarkDotNet v0.15.6, Windows 10
+AMD Ryzen 7 7735HS with Radeon Graphics 3.20GHz, 1 CPU, 16 logical and 8 physical cores
+.NET SDK 10.0.103
+  [Host]    : .NET 10.0.3 (10.0.3, 10.0.326.7603), X64 RyuJIT x86-64-v3
+  .NET 10.0 : .NET 10.0.3 (10.0.3, 10.0.326.7603), X64 RyuJIT x86-64-v3
+
+Job=.NET 10.0  Runtime=.NET 10.0  Toolchain=net10.0  
+IterationCount=15  LaunchCount=2  WarmupCount=10  
+```
+
+| Method          | FileName            | Mean        | Allocated  |
+|-----------------|---------------------|-------------|------------|
+| Acornima v1.3.0 | angular-1.2.5       | 6,491.2 μs  | 3978.22 KB |
+| Esprima v3.0.5  | angular-1.2.5       | 6,605.7 μs  | 3828.1 KB  |
+|                 |                     |             |            |
+| Acornima v1.3.0 | angular-1.7.9       | 14,714.0 μs | 6729.49 KB |
+| Esprima v3.0.5  | angular-1.7.9       | 14,332.0 μs | 6575.45 KB |
+|                 |                     |             |            |
+| Acornima v1.3.0 | backbone-1.1.0      | 814.7 μs    | 629.26 KB  |
+| Esprima v3.0.5  | backbone-1.1.0      | 829.5 μs    | 613.88 KB  |
+|                 |                     |             |            |
+| Acornima v1.3.0 | jquery-1.9.1        | 5,095.3 μs  | 3271.59 KB |
+| Esprima v3.0.5  | jquery-1.9.1        | 5,031.5 μs  | 3305.23 KB |
+|                 |                     |             |            |
+| Acornima v1.3.0 | jquery.mobile-1.4.2 | 8,648.3 μs  | 5449.23 KB |
+| Esprima v3.0.5  | jquery.mobile-1.4.2 | 8,108.6 μs  | 5428.44 KB |
+|                 |                     |             |            |
+| Acornima v1.3.0 | mootools-1.4.5      | 3,886.5 μs  | 2755.9 KB  |
+| Esprima v3.0.5  | mootools-1.4.5      | 4,069.3 μs  | 2777.83 KB |
+|                 |                     |             |            |
+| Acornima v1.3.0 | underscore-1.5.2    | 683.7 μs    | 529.61 KB  |
+| Esprima v3.0.5  | underscore-1.5.2    | 721.0 μs    | 539.41 KB  |
+|                 |                     |             |            |
+| Acornima v1.3.0 | yui-3.12.0          | 3,570.6 μs  | 2611.82 KB |
+| Esprima v3.0.5  | yui-3.12.0          | 3,694.6 μs  | 2585.77 KB |
 
 ### Known issues and limitations
 
