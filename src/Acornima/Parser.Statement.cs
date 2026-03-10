@@ -198,7 +198,6 @@ public partial class Parser
     // regular expression literal. This is to handle cases like
     // `if (foo) /blah/.exec(foo)`, where looking at the previous token
     // does not help.
-    [MethodImpl((MethodImplOptions)512 /* AggressiveOptimization */)]
     private Statement ParseStatement(StatementContext context, bool topLevel = false)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseStatement = function`

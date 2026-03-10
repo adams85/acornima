@@ -253,7 +253,6 @@ public partial class Parser
     }
 
     // Parse a ternary conditional (`?:`) operator.
-    [MethodImpl((MethodImplOptions)512  /* AggressiveOptimization */)]
     private Expression ParseMaybeConditional(ref DestructuringErrors destructuringErrors, ExpressionContext context)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/expression.js > `pp.parseMaybeConditional = function`
