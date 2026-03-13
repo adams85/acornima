@@ -2292,37 +2292,63 @@ public partial class ParserTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void ShouldDisallowTestOfConditionalExpressionToBeAnUnparenthesizedArrowFunction(bool isAsync)
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void ShouldDisallowTestOfConditionalExpressionToBeAnUnparenthesizedArrowFunction(bool preserveParens, bool isAsync)
     {
         var asyncToken = isAsync ? "async " : "";
 
-        var parser = new Parser(new ParserOptions { Tolerant = false });
+        var parser = new Parser(new ParserOptions { PreserveParens = preserveParens });
         var ex = Assert.Throws<SyntaxErrorException>(() => parser.ParseScript(asyncToken + "() => {} ? 1 : 0"));
         Assert.Equal(asyncToken.Length + 9, ex.Error.Index);
         Assert.Equal(1, ex.LineNumber);
         Assert.Equal(asyncToken.Length + 9, ex.Column);
-        Assert.Equal("UnexpectedToken", ex.Error.Code);
+        Assert.Equal(nameof(SyntaxErrorMessages.UnexpectedToken), ex.Error.Code);
 
         Assert.Equal(asyncToken.TrimEnd() + "()=>({})?1:0", parser.ParseScript(asyncToken + "() => ({}) ? 1 : 0").ToJavaScript());
-        Assert.Equal(asyncToken.TrimEnd() + "()=>({})?1:0", parser.ParseScript(asyncToken + "() => ({} ? 1 : 0)").ToJavaScript());
+        Assert.Equal(
+            preserveParens ? asyncToken.TrimEnd() + "()=>({}?1:0)" : asyncToken.TrimEnd() + "()=>({})?1:0",
+            parser.ParseScript(asyncToken + "() => ({} ? 1 : 0)").ToJavaScript());
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void ShouldAllowTestOfConditionalExpressionToBeAParenthesizedArrowFunction(bool isAsync)
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void ShouldAllowTestOfConditionalExpressionToBeAParenthesizedArrowFunction(bool preserveParens, bool isAsync)
     {
         var asyncToken = isAsync ? "async " : "";
 
-        var parser = new Parser(new ParserOptions { Tolerant = false });
+        var parser = new Parser(new ParserOptions { PreserveParens = preserveParens });
         var ast = parser.ParseScript("(" + asyncToken + "() => {}) ? 1 : 0");
         var conditionalExpression = ast.DescendantNodesAndSelf().OfType<ConditionalExpression>().FirstOrDefault();
         Assert.NotNull(conditionalExpression);
-        Assert.IsType<ArrowFunctionExpression>(conditionalExpression.Test);
+        var test = conditionalExpression.Test;
+        if (preserveParens)
+        {
+            test = Assert.IsType<ParenthesizedExpression>(test).Expression;
+        }
+        Assert.IsType<ArrowFunctionExpression>(test);
 
         Assert.Equal("(" + asyncToken.TrimEnd() + "()=>{})?1:0", ast.ToJavaScript());
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void ShouldDisallowNewSuper(bool parenthesize, bool preserveParens)
+    {
+        var parser = new Parser(new ParserOptions { PreserveParens = preserveParens });
+        var ex = Assert.Throws<SyntaxErrorException>(() => parser.ParseScript($"class A extends B {{ constructor() {{ new {(parenthesize ? "(super)" : "super")}() }} }}"));
+        Assert.Equal(40 + (parenthesize ? 1 : 0), ex.Error.Index);
+        Assert.Equal(1, ex.LineNumber);
+        Assert.Equal(40 + (parenthesize ? 1 : 0), ex.Column);
+        Assert.Equal(nameof(SyntaxErrorMessages.UnexpectedSuper), ex.Error.Code);
     }
 
     [Theory]
