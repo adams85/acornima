@@ -1265,7 +1265,7 @@ public partial class Parser
         var calleeStartMarker = StartNode();
         var callee = ParseSubscripts(calleeStartMarker, ParseExprAtom(ref NullRef<DestructuringErrors>(), ExpressionContext.ForNew), noCalls: true, ExpressionContext.Default);
 
-        if (callee.Type == NodeType.Super && callee.Start == calleeStartMarker.Index)
+        if (callee.Type == NodeType.Super)
         {
             // RaiseRecoverable(calleeStartMarker.Index, "Invalid use of 'super'"); // original acornjs error reporting
             Raise(calleeStartMarker.Index, UnexpectedSuper);
