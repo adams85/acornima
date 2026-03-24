@@ -183,9 +183,41 @@ public partial class Parser
         }
 
         var id = _tokenizer._input.SliceBetween(idStart, next);
-        if (IsKeywordRelationalOperator(id) || isFor && id is "of")
+        if (IsKeywordRelationalOperator(id))
         {
             return false;
+        }
+
+        if (isFor && id is "of")
+        {
+            if (isAwaitUsing)
+            {
+                // `for (await using of of [])` -- 'of' is always the binding name,
+                // the for-of 'of' keyword comes after.
+            }
+            else
+            {
+                // Disambiguate between:
+                // - `for (using of = null;;)` -- regular for-loop, 'of' is variable name (return true)
+                // - `for (using of of [])` -- for-of loop, 'of' is variable name (return true)
+                // - `for (using of <expr>)` -- for-of loop, 'using' is expression, not a keyword (return false)
+                var afterId = _tokenizer.NextTokenPositionAt(next, ref nextLine, ref nextLineStart);
+                var afterIdCh = _tokenizer.FullCharCodeAt(afterId);
+                if (afterIdCh == '=')
+                {
+                    // `for (using of = ...)` -- using declaration with initializer
+                }
+                else if (afterIdCh == 'o' && afterId + 2 <= _tokenizer._endPosition
+                    && _tokenizer._input.SliceBetween(afterId, afterId + 2) is "of"
+                    && (afterId + 2 >= _tokenizer._endPosition || !Tokenizer.IsIdentifierChar(_tokenizer.FullCharCodeAt(afterId + 2), allowAstral: true)))
+                {
+                    // `for (using of of ...)` -- using declaration in for-of loop
+                }
+                else
+                {
+                    return false;
+                }
+            }
         }
 
         kind = isAwaitUsing ? VariableDeclarationKind.AwaitUsing : VariableDeclarationKind.Using;

@@ -41,6 +41,7 @@ public record class ParserOptions
         _allowNewTargetOutsideFunction = original._allowNewTargetOutsideFunction;
         _allowSuperOutsideMethod = original._allowSuperOutsideMethod;
         _checkPrivateFields = original._checkPrivateFields;
+        _allowCallExpressionAsLhs = original._allowCallExpressionAsLhs;
         _onInsertedSemicolon = original._onInsertedSemicolon;
         _onTrailingComma = original._onTrailingComma;
         _onNode = original._onNode;
@@ -146,6 +147,15 @@ public record class ParserOptions
     /// Defaults to <see langword="true"/>.
     /// </summary>
     public bool CheckPrivateFields { get => _checkPrivateFields; init => _checkPrivateFields = value; }
+
+    internal readonly bool _allowCallExpressionAsLhs;
+    /// <summary>
+    /// Gets or sets whether to allow call expressions as left-hand side in assignment-like contexts in non-strict mode.
+    /// This implements AnnexB B.3.7 (Runtime Errors for Function Call Assignment Targets).
+    /// When enabled and not in strict mode, <c>f() = g()</c> parses successfully; the runtime should throw a <c>ReferenceError</c>.
+    /// Defaults to <see langword="false"/>.
+    /// </summary>
+    public bool AllowCallExpressionAsLhs { get => _allowCallExpressionAsLhs; init => _allowCallExpressionAsLhs = value; }
 
     internal readonly bool _preserveParens;
     /// <summary>
