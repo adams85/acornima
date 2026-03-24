@@ -409,10 +409,12 @@ public partial class Parser
         // We deviate a bit from the original acornjs implementation here to match the error reporting behavior of V8.
         if (AllowUsing && IsUsingKeyword(isFor: false, out var usingKind))
         {
-            //if (!AllowUsing)
-            //{
-            //    Raise(_tokenizer._start, UsingInTopLevel);
-            //}
+            // using/await using declarations are only allowed in block statement contexts,
+            // not as the sole statement in if/while/do/for/label/with bodies.
+            if (context != StatementContext.Default)
+            {
+                Unexpected();
+            }
 
             if (usingKind == VariableDeclarationKind.AwaitUsing)
             {
@@ -716,6 +718,12 @@ public partial class Parser
             {
                 // This error is not reported by the original acornjs implementation.
                 Raise(init.Start, ForInOfLoopMultiBindings, new object[] { "for-in" });
+            }
+
+            // using/await using declarations are not allowed in for-in loops
+            if (init.Kind is VariableDeclarationKind.Using or VariableDeclarationKind.AwaitUsing)
+            {
+                Raise(init.Start, ForInOfLoopInitializer, new object[] { "for-in" });
             }
 
             if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES9 && awaitAt >= 0)
