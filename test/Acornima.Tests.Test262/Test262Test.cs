@@ -27,6 +27,7 @@ public abstract partial class Test262Test
         {
             Tolerant = false,
             ExperimentalESFeatures = TestsExperimentalFeature(file) ? ExperimentalESFeatures.All : ExperimentalESFeatures.None,
+            AllowCallExpressionAsLhs = true,
             PreserveParens = true,
         };
         return new Parser(options);

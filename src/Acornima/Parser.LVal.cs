@@ -507,7 +507,9 @@ public partial class Parser
             default:
                 // AnnexB B.3.7: In non-strict mode, allow CallExpression as assignment target.
                 // The runtime should throw a ReferenceError instead.
+                // Does NOT apply to logical assignments (&&=, ||=, ??=) which require 'simple' target.
                 if (!isBind && !_strict && _options._allowCallExpressionAsLhs
+                    && lhsKind != LeftHandSideKind.LogicalAssignment
                     && expr.Type == NodeType.CallExpression)
                 {
                     break;
@@ -657,6 +659,7 @@ public partial class Parser
             switch (lhsKind)
             {
                 case LeftHandSideKind.Assignment:
+                case LeftHandSideKind.LogicalAssignment:
                     Raise(node.Start, InvalidLhsInAssignment);
                     break;
 
@@ -681,6 +684,7 @@ public partial class Parser
     {
         Unknown,
         Assignment,
+        LogicalAssignment,
         PrefixUpdate,
         PostfixUpdate,
         ForInOf,
