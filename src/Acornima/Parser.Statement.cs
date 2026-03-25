@@ -377,10 +377,12 @@ public partial class Parser
         // We deviate a bit from the original acornjs implementation here to match the error reporting behavior of V8.
         if (AllowUsing && IsUsingKeyword(isFor: false, out var usingKind))
         {
-            //if (!AllowUsing)
-            //{
-            //    Raise(_tokenizer._start, UsingInTopLevel);
-            //}
+            // using/await using declarations are not allowed in single-statement positions
+            // (e.g., `for (;;) using x = ...;` or `if (true) using x = ...;`)
+            if (context != StatementContext.Default)
+            {
+                Unexpected();
+            }
 
             if (usingKind == VariableDeclarationKind.AwaitUsing)
             {
