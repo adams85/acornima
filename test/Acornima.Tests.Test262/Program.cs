@@ -71,7 +71,6 @@ public static class Program
                         {
                             Tolerant = false,
                             ExperimentalESFeatures = Test262Test.TestsExperimentalFeature(file) ? ExperimentalESFeatures.All : ExperimentalESFeatures.None,
-                            AllowCallExpressionAsLhs = true,
                             PreserveParens = true,
                         };
                         var parser = new Parser(parserOptions);
