@@ -138,6 +138,13 @@ public partial class Parser
                 //    break;
 
                 default:
+                    // AnnexB B.3.9: In non-strict mode, allow CallExpression as assignment target.
+                    // The runtime should throw a ReferenceError instead.
+                    if (!isBinding && !_strict && _options._allowCallExpressionAsLhs
+                        && node.Type == NodeType.CallExpression)
+                    {
+                        break;
+                    }
                     // Raise(node.Start, "Assigning to rvalue"); // original acornjs error reporting
                     HandleLeftHandSideError(node, isBinding, lhsKind);
                     break;
@@ -498,6 +505,15 @@ public partial class Parser
                 goto Reenter;
 
             default:
+                // AnnexB B.3.9: In non-strict mode, allow CallExpression as assignment target.
+                // The runtime should throw a ReferenceError instead.
+                // Does NOT apply to logical assignments (&&=, ||=, ??=) which require 'simple' target.
+                if (!isBind && !_strict && _options._allowCallExpressionAsLhs
+                    && lhsKind != LeftHandSideKind.LogicalAssignment
+                    && expr.Type == NodeType.CallExpression)
+                {
+                    break;
+                }
                 // Raise(expr.Start, $"{(isBind ? "Binding" : "Assigning to")} rvalue"); // original acornjs error reporting
                 HandleLeftHandSideError(expr, isBind, lhsKind);
                 break;
@@ -643,6 +659,7 @@ public partial class Parser
             switch (lhsKind)
             {
                 case LeftHandSideKind.Assignment:
+                case LeftHandSideKind.LogicalAssignment:
                     Raise(node.Start, InvalidLhsInAssignment);
                     break;
 
@@ -667,6 +684,7 @@ public partial class Parser
     {
         Unknown,
         Assignment,
+        LogicalAssignment,
         PrefixUpdate,
         PostfixUpdate,
         ForInOf,
