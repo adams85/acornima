@@ -1,6 +1,13 @@
 # to generate this file run:
 # dotnet run -c Release -- --update-allow-list
 
+test/annexB/language/expressions/assignmenttargettype/callexpression-as-for-in-lhs.js(default)
+test/annexB/language/expressions/assignmenttargettype/callexpression-as-for-of-lhs.js(default)
+test/annexB/language/expressions/assignmenttargettype/callexpression-in-compound-assignment.js(default)
+test/annexB/language/expressions/assignmenttargettype/callexpression-in-postfix-update.js(default)
+test/annexB/language/expressions/assignmenttargettype/callexpression-in-prefix-update.js(default)
+test/annexB/language/expressions/assignmenttargettype/callexpression.js(default)
+test/annexB/language/expressions/assignmenttargettype/cover-callexpression-and-asyncarrowhead.js(default)
 test/built-ins/RegExp/CharacterClassEscapes/character-class-digit-class-escape-negative-cases.js(default)
 test/built-ins/RegExp/CharacterClassEscapes/character-class-digit-class-escape-negative-cases.js(strict mode)
 test/built-ins/RegExp/CharacterClassEscapes/character-class-digit-class-escape-positive-cases.js(default)

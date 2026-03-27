@@ -1820,6 +1820,85 @@ public partial class ParserTests
     [InlineData("script", "switch (0) { case 0: await using x = resource }", true, false, "await is only valid in async functions and the top level bodies of modules")]
     [InlineData("module", "switch (0) { case 0: await using x = resource }", true, false, "Unexpected identifier 'x'")]
     [InlineData("script", "switch (0) { case 0: await using x = resource }", true, true, "Unexpected identifier 'x'")]
+
+    [InlineData("module", "for (using", false, false, "Unexpected end of input")]
+    [InlineData("script", "for (using", false, false, "Unexpected end of input")]
+
+    [InlineData("module", "for (using of = of of of) {}", false, false, "for-of loop variable declaration may not have an initializer")]
+    [InlineData("script", "for (using of = of of of) {}", false, false, "for-of loop variable declaration may not have an initializer")]
+    [InlineData("module", "for (using of =/**/of of of) {}", false, false, "for-of loop variable declaration may not have an initializer")]
+    [InlineData("script", "for (using of =/**/of of of) {}", false, false, "for-of loop variable declaration may not have an initializer")]
+    [InlineData("module", "for (using of == of of of) {}", false, false, "Unexpected token '=='")]
+    [InlineData("script", "for (using of == of of of) {}", false, false, "Unexpected token '=='")]
+    [InlineData("module", "for (using of => of of of) {}", false, false, "Unexpected token '=>'")]
+    [InlineData("script", "for (using of => of of of) {}", false, false, "Unexpected token '=>'")]
+
+    [InlineData("module", "for (using of = of in of) {}", false, false, "for-in loop variable declaration may not have an initializer")]
+    [InlineData("script", "for (using of = of in of) {}", false, false, "for-in loop variable declaration may not have an initializer")]
+    [InlineData("module", "for (using of =/**/of in of) {}", false, false, "for-in loop variable declaration may not have an initializer")]
+    [InlineData("script", "for (using of =/**/of in of) {}", false, false, "for-in loop variable declaration may not have an initializer")]
+    [InlineData("module", "for (using of == of in of) {}", false, false, "Unexpected token '=='")]
+    [InlineData("script", "for (using of == of in of) {}", false, false, "Unexpected token '=='")]
+    [InlineData("module", "for (using of => of in of) {}", false, false, "Unexpected token '=>'")]
+    [InlineData("script", "for (using of => of in of) {}", false, false, "Unexpected token '=>'")]
+
+    [InlineData("module", "for (using of of of) {}", false, false, null)]
+    [InlineData("script", "for (using of of of) {}", false, false, null)]
+    [InlineData("module", "for (using of ofc of) {}", false, false, "Unexpected identifier 'of'")] // V8 reports "Unexpected token 'of'"
+    [InlineData("script", "for (using of ofc of) {}", false, false, "Unexpected identifier 'of'")] // V8 reports "Unexpected token 'of'"
+    [InlineData("module", "for (using of of\\u0043 of) {}", false, false, "Unexpected identifier 'of'")] // V8 reports "Unexpected token 'of'"
+    [InlineData("script", "for (using of of\\u0043 of) {}", false, false, "Unexpected identifier 'of'")] // V8 reports "Unexpected token 'of'"
+
+    [InlineData("module", "for (using of in of) {}", false, false, "Unexpected token 'in'")]
+    [InlineData("script", "for (using of in of) {}", false, false, "Unexpected token 'in'")]
+
+    [InlineData("module", "for (using of x) {}", false, false, null)]
+    [InlineData("script", "for (using of x) {}", false, false, null)]
+    [InlineData("module", "for (using\nof x) {}", false, false, null)]
+    [InlineData("script", "for (using\nof x) {}", false, false, null)]
+
+    [InlineData("module", "for (using in x) {}", false, false, null)]
+    [InlineData("script", "for (using in x) {}", false, false, null)]
+    [InlineData("module", "for (using\nin x) {}", false, false, null)]
+    [InlineData("script", "for (using\nin x) {}", false, false, null)]
+
+    [InlineData("module", "for (using instanceof x) {}", false, false, "Unexpected token ')'")]
+    [InlineData("script", "for (using instanceof x) {}", false, false, "Unexpected token ')'")]
+    [InlineData("module", "for (using\ninstanceof x) {}", false, false, "Unexpected token ')'")]
+    [InlineData("script", "for (using\ninstanceof x) {}", false, false, "Unexpected token ')'")]
+
+    [InlineData("module", "for (await using", false, false, "Unexpected end of input")]
+    [InlineData("script", "for (await using", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
+
+    [InlineData("module", "for (await using of x) {}", false, false, "Missing initializer in await using declaration")]
+    [InlineData("script", "for (await using of x) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
+    [InlineData("script", "async () => { for (await using of x) {} }", false, false, "Missing initializer in await using declaration")]
+    [InlineData("module", "for (await\nusing of x) {}", false, false, "Invalid left-hand side in for-loop")]
+    [InlineData("script", "for (await\nusing of x) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
+    [InlineData("script", "async () => { for (await\nusing of x) {} }", false, false, "Invalid left-hand side in for-loop")]
+    [InlineData("module", "for (await using\nof x) {}", false, false, "Invalid left-hand side in for-loop")]
+    [InlineData("script", "for (await using\nof x) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
+    [InlineData("script", "async () => { for (await using\nof x) {} }", false, false, "Invalid left-hand side in for-loop")]
+    [InlineData("module", "for (await\nusing\nof x) {}", false, false, "Invalid left-hand side in for-loop")]
+    [InlineData("script", "for (await\nusing\nof x) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
+    [InlineData("script", "async () => { for (await\nusing\nof x) {} }", false, false, "Invalid left-hand side in for-loop")]
+
+    [InlineData("module", "for (await using in x) {}", false, false, "Invalid left-hand side in for-loop")]
+    [InlineData("script", "for (await using in x) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
+    [InlineData("script", "async () => { for (await using in x) {} }", false, false, "Invalid left-hand side in for-loop")]
+    [InlineData("module", "for (await\nusing in x) {}", false, false, "Invalid left-hand side in for-loop")]
+    [InlineData("script", "for (await\nusing in x) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
+    [InlineData("script", "async () => { for (await\nusing in x) {} }", false, false, "Invalid left-hand side in for-loop")]
+    [InlineData("module", "for (await using\nin x) {}", false, false, "Invalid left-hand side in for-loop")]
+    [InlineData("script", "for (await using\nin x) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
+    [InlineData("script", "async () => { for (await using\nin x) {} }", false, false, "Invalid left-hand side in for-loop")]
+    [InlineData("module", "for (await\nusing\nin x) {}", false, false, "Invalid left-hand side in for-loop")]
+    [InlineData("script", "for (await\nusing\nin x) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
+    [InlineData("script", "async () => { for (await\nusing\nin x) {} }", false, false, "Invalid left-hand side in for-loop")]
+
+    [InlineData("module", "for (await using instanceof x) {}", false, false, "Unexpected token ')'")]
+    [InlineData("script", "for (await using instanceof x) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
+    [InlineData("script", "async () => { for (await using instanceof x) {} }", false, false, "Unexpected token ')'")]
     public void ShouldHandleUsingEdgeCases(string sourceType, string input, bool allowTopLevelUsing, bool allowAwaitOutsideFunction, string? expectedError)
     {
         var parser = new Parser(new ParserOptions

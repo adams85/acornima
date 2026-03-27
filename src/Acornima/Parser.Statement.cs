@@ -142,6 +142,7 @@ public partial class Parser
         }
 
         var next = _tokenizer.NextTokenPosition(out var nextLine, out var nextLineStart);
+        int after;
 
         if (_tokenizer._currentLine != nextLine)
         {
@@ -151,7 +152,6 @@ public partial class Parser
         if (isAwaitUsing)
         {
             var usingEndPos = next + 5 /* using */;
-            int after;
             if (usingEndPos >= _tokenizer._endPosition
                 || _tokenizer._input.SliceBetween(next, usingEndPos) is not "using"
                 || Tokenizer.IsIdentifierChar(after = _tokenizer.FullCharCodeAt(usingEndPos), allowAstral: true)
@@ -188,35 +188,27 @@ public partial class Parser
             return false;
         }
 
-        if (isFor && id is "of")
+        if (isFor && !isAwaitUsing && id is "of")
         {
-            if (isAwaitUsing)
+            next = _tokenizer.NextTokenPositionAt(next, ref nextLine, ref nextLineStart);
+            switch (_tokenizer.CharCodeAt(next))
             {
-                // `for (await using of of [])` -- 'of' is always the binding name,
-                // the for-of 'of' keyword comes after.
-            }
-            else
-            {
-                // Disambiguate between:
-                // - `for (using of = null;;)` -- regular for-loop, 'of' is variable name (return true)
-                // - `for (using of of [])` -- for-of loop, 'of' is variable name (return true)
-                // - `for (using of <expr>)` -- for-of loop, 'using' is expression, not a keyword (return false)
-                var afterId = _tokenizer.NextTokenPositionAt(next, ref nextLine, ref nextLineStart);
-                var afterIdCh = _tokenizer.FullCharCodeAt(afterId);
-                if (afterIdCh == '=')
-                {
-                    // `for (using of = ...)` -- using declaration with initializer
-                }
-                else if (afterIdCh == 'o' && afterId + 2 <= _tokenizer._endPosition
-                    && _tokenizer._input.SliceBetween(afterId, afterId + 2) is "of"
-                    && (afterId + 2 >= _tokenizer._endPosition || !Tokenizer.IsIdentifierChar(_tokenizer.FullCharCodeAt(afterId + 2), allowAstral: true)))
-                {
-                    // `for (using of of ...)` -- using declaration in for-of loop
-                }
-                else
-                {
+                case '=': // `for (using of = ...)` -- using declaration with initializer
+                    if (_tokenizer.CharCodeAt(next + 1) is '=' or '>') // check for ==, === and => operators
+                    {
+                        goto default;
+                    }
+                    break;
+                case 'o': // `for (using of of ...)` -- using declaration in for-of loop
+                    if (_tokenizer.CharCodeAt(next + 1) != 'f'
+                        || Tokenizer.IsIdentifierChar(after = _tokenizer.FullCharCodeAt(next + 2), allowAstral: true)
+                        || after == '\\')
+                    {
+                        goto default;
+                    }
+                    break;
+                default: // `for (using of <expr>)` -- for-of loop, 'using' is expression, not a keyword
                     return false;
-                }
             }
         }
 
@@ -631,7 +623,7 @@ public partial class Parser
             {
                 if (!CanAwait)
                 {
-                    Raise(_tokenizer._start, AwaitNotInAsyncContext);
+                    Unexpected();
                 }
 
                 Next();
@@ -1208,7 +1200,14 @@ public partial class Parser
                 else if (kind is VariableDeclarationKind.Using or VariableDeclarationKind.AwaitUsing && _tokenizerOptions.AllowExplicitResourceManagement() && _tokenizer._type != TokenType.In && !IsContextual("of"))
                 {
                     // Raise(_tokenizer._lastTokenEnd, `Missing initializer in ${kind} declaration`); // original acornjs error reporting
-                    Raise(_tokenizer._lastTokenEnd, DeclarationMissingInitializer_Using);
+                    if (kind == VariableDeclarationKind.AwaitUsing)
+                    {
+                        Raise(_tokenizer._lastTokenEnd, DeclarationMissingInitializer_AwaitUsing);
+                    }
+                    else
+                    {
+                        Raise(_tokenizer._lastTokenEnd, DeclarationMissingInitializer_Using);
+                    }
                 }
                 else if (id.Type != NodeType.Identifier && !(isFor && (_tokenizer._type == TokenType.In || IsContextual("of"))))
                 {

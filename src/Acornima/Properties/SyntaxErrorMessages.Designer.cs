@@ -186,6 +186,15 @@ namespace Acornima {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Missing initializer in await using declaration.
+        /// </summary>
+        internal static string DeclarationMissingInitializer_AwaitUsing {
+            get {
+                return ResourceManager.GetString("DeclarationMissingInitializer_AwaitUsing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Missing initializer in const declaration.
         /// </summary>
         internal static string DeclarationMissingInitializer_Const {

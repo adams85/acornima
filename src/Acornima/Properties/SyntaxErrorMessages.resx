@@ -173,6 +173,10 @@
     <value>Only one underscore is allowed as numeric separator</value>
     <comment>https://github.com/v8/v8/blob/14.8.3/src/common/message-template.h</comment>
   </data>
+  <data name="DeclarationMissingInitializer_AwaitUsing" xml:space="preserve">
+    <value>Missing initializer in await using declaration</value>
+    <comment>https://github.com/v8/v8/blob/14.8.3/src/common/message-template.h</comment>
+  </data>
   <data name="DeclarationMissingInitializer_Const" xml:space="preserve">
     <value>Missing initializer in const declaration</value>
     <comment>https://github.com/v8/v8/blob/14.8.3/src/common/message-template.h</comment>
