@@ -125,4 +125,81 @@ internal static class UnicodeProperties
     {
         return s_binaryValueLookup.TryGetValue(propertyValue, out var version) && ecmaVersion >= version;
     }
+
+    public static CodePointRange[]? GetScriptRange(ReadOnlyMemory<char> propertyValue, CodePointRange.Cache cache)
+    {
+        return LookupPropertyRange(UnicodePropertyData.ScriptLookup, propertyValue.Span, cache.ScriptRangeCache);
+    }
+
+    public static CodePointRange[]? GetScriptExtensionsRange(ReadOnlyMemory<char> propertyValue, CodePointRange.Cache cache)
+    {
+        return LookupPropertyRange(UnicodePropertyData.ScriptExtensionsLookup, propertyValue.Span, cache.ScriptExtensionsRangeCache);
+    }
+
+    public static CodePointRange[]? GetBinaryPropertyRange(ReadOnlyMemory<char> propertyValue, CodePointRange.Cache cache)
+    {
+        var span = propertyValue.Span;
+
+        // Special-case properties that don't need static data
+        if (span.SequenceEqual("Any".AsSpan()))
+        {
+            return cache.AnyRange ??= new[] { new CodePointRange(0x0000, UnicodeHelper.LastCodePoint) };
+        }
+
+        if (span.SequenceEqual("ASCII".AsSpan()))
+        {
+            return cache.AsciiRange ??= new[] { new CodePointRange(0x0000, 0x007F) };
+        }
+
+        if (span.SequenceEqual("Assigned".AsSpan()))
+        {
+            return cache.AssignedRange ??= BuildAssignedRange(cache);
+        }
+
+        return LookupPropertyRange(UnicodePropertyData.BinaryPropertyLookup, span, cache.BinaryRangeCache);
+    }
+
+    private static CodePointRange[]? LookupPropertyRange(
+        Dictionary<string, KeyValuePair<int, int>> lookup,
+        ReadOnlySpan<char> propertyValue,
+        Dictionary<string, CodePointRange[]> rangeCache)
+    {
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+        var key = new string(propertyValue);
+#else
+        var key = propertyValue.ToString();
+#endif
+
+        if (rangeCache.TryGetValue(key, out var cached))
+        {
+            return cached;
+        }
+
+        if (!lookup.TryGetValue(key, out var entry))
+        {
+            return null;
+        }
+
+        var allRanges = UnicodePropertyData.AllRanges;
+        var count = entry.Value;
+        var ranges = new CodePointRange[count];
+        var baseOffset = entry.Key * 2; // pairs of (start, end)
+        for (var i = 0; i < count; i++)
+        {
+            ranges[i] = new CodePointRange(allRanges[baseOffset + i * 2], allRanges[baseOffset + i * 2 + 1]);
+        }
+
+        rangeCache[key] = ranges;
+        return ranges;
+    }
+
+    private static CodePointRange[] BuildAssignedRange(CodePointRange.Cache cache)
+    {
+        // Assigned = everything except General_Category=Unassigned (Cn)
+        var unassigned = cache.GetGeneralCategory(CodePointRange.Cache.CategoryFrom(UnicodeCategory.OtherNotAssigned));
+        var inverted = CodePointRange.InvertRanges(unassigned);
+        inverted.Yield(out var result, out var count);
+        Array.Resize(ref result, count);
+        return result;
+    }
 }

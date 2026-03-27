@@ -4,6 +4,8 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 
+#pragma warning disable CA1805 // Do not initialize unnecessarily
+
 namespace Acornima.Helpers;
 
 #if DEBUG
@@ -201,6 +203,16 @@ internal readonly struct CodePointRange : IComparable<CodePointRange>
         }
 
         private readonly CodePointRange[][] _generalCategories = new CodePointRange[OtherCategory.Key + 1][];
+
+        // Caches for Script, Script_Extensions, and Binary property ranges
+        internal readonly Dictionary<string, CodePointRange[]> ScriptRangeCache = new(StringComparer.Ordinal);
+        internal readonly Dictionary<string, CodePointRange[]> ScriptExtensionsRangeCache = new(StringComparer.Ordinal);
+        internal readonly Dictionary<string, CodePointRange[]> BinaryRangeCache = new(StringComparer.Ordinal);
+
+        // Special-case binary property caches
+        internal CodePointRange[]? AnyRange;
+        internal CodePointRange[]? AsciiRange;
+        internal CodePointRange[]? AssignedRange;
 
         public CodePointRange[] GetGeneralCategory(KeyValuePair<int, int> category)
         {

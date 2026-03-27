@@ -557,10 +557,29 @@ public partial class Tokenizer
                                 return UnicodeProperties.IsAllowedGeneralCategoryValue(expression);
                             }
 
-                        case "sc" or "Script" or "scx" or "Script_Extensions":
-                            // Translating unicode properties other than General Categories is not implemented currently.
-                            codePointRanges = default;
-                            return UnicodeProperties.IsAllowedScriptValue(expression, parser._tokenizer._options._ecmaVersion);
+                        case "sc" or "Script":
+                            if (translateToRanges)
+                            {
+                                codePointRanges = UnicodeProperties.GetScriptRange(expression, parser.GetCodePointRangeCache());
+                                return codePointRanges is not null;
+                            }
+                            else
+                            {
+                                codePointRanges = default;
+                                return UnicodeProperties.IsAllowedScriptValue(expression, parser._tokenizer._options._ecmaVersion);
+                            }
+
+                        case "scx" or "Script_Extensions":
+                            if (translateToRanges)
+                            {
+                                codePointRanges = UnicodeProperties.GetScriptExtensionsRange(expression, parser.GetCodePointRangeCache());
+                                return codePointRanges is not null;
+                            }
+                            else
+                            {
+                                codePointRanges = default;
+                                return UnicodeProperties.IsAllowedScriptValue(expression, parser._tokenizer._options._ecmaVersion);
+                            }
 
                         default:
                             codePointRanges = default;
@@ -583,7 +602,16 @@ public partial class Tokenizer
                         return true;
                     }
 
-                    // Translating unicode properties other than General Categories is not implemented currently.
+                    if (translateToRanges)
+                    {
+                        codePointRanges = UnicodeProperties.GetBinaryPropertyRange(expression, parser.GetCodePointRangeCache());
+                        if (codePointRanges is not null)
+                        {
+                            return true;
+                        }
+                    }
+
+                    // Check if it's a recognized binary property name (even if we couldn't translate it)
                     codePointRanges = default;
                     return UnicodeProperties.IsAllowedBinaryValue(expression, parser._tokenizer._options._ecmaVersion);
                 }
