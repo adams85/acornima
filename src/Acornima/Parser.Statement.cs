@@ -406,8 +406,8 @@ public partial class Parser
             //    Raise(_tokenizer._start, UsingInTopLevel);
             //}
 
-            // using/await using declarations are only allowed in block statement contexts,
-            // not as the sole statement in if/while/do/for/label/with bodies.
+            // using/await using declarations are not allowed in single-statement positions
+            // (e.g., `for (;;) using x = ...;` or `if (true) using x = ...;`)
             if (context != StatementContext.Default)
             {
                 Unexpected();
