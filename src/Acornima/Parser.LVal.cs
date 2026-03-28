@@ -138,7 +138,7 @@ public partial class Parser
                 //    break;
 
                 case NodeType.CallExpression when !isBinding && !_strict:
-                    // AnnexB B.3.9: In non-strict mode, allow CallExpression as assignment target.
+                    // Annex B.3.9: In non-strict mode, allow CallExpression as assignment target.
                     // The runtime should throw a ReferenceError instead.
                     break;
 
@@ -503,7 +503,7 @@ public partial class Parser
                 goto Reenter;
 
             case NodeType.CallExpression when !isBind && !_strict && lhsKind != LeftHandSideKind.LogicalAssignment:
-                // AnnexB B.3.9: In non-strict mode, allow CallExpression as assignment target.
+                // Annex B.3.9: In non-strict mode, allow CallExpression as assignment target.
                 // The runtime should throw a ReferenceError instead.
                 // Does NOT apply to logical assignments (&&=, ||=, ??=), which require 'simple' target.
                 break;
