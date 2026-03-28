@@ -7,7 +7,6 @@ using System.Xml.Linq;
 using Acornima.Ast;
 using Acornima.Helpers;
 using Xunit;
-using Xunit.Sdk;
 
 namespace Acornima.Tests;
 
