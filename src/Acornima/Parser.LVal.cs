@@ -137,14 +137,12 @@ public partial class Parser
                 //    RaiseRecoverable(node.Start, "Optional chaining cannot appear in left-hand side");
                 //    break;
 
-                default:
+                case NodeType.CallExpression when !isBinding && !_strict:
                     // AnnexB B.3.9: In non-strict mode, allow CallExpression as assignment target.
                     // The runtime should throw a ReferenceError instead.
-                    if (!isBinding && !_strict && _options._allowCallExpressionAsLhs
-                        && node.Type == NodeType.CallExpression)
-                    {
-                        break;
-                    }
+                    break;
+
+                default:
                     // Raise(node.Start, "Assigning to rvalue"); // original acornjs error reporting
                     HandleLeftHandSideError(node, isBinding, lhsKind);
                     break;
@@ -504,16 +502,13 @@ public partial class Parser
                 expr = parenthesizedExpression.Expression;
                 goto Reenter;
 
-            default:
+            case NodeType.CallExpression when !isBind && !_strict && lhsKind != LeftHandSideKind.LogicalAssignment:
                 // AnnexB B.3.9: In non-strict mode, allow CallExpression as assignment target.
                 // The runtime should throw a ReferenceError instead.
-                // Does NOT apply to logical assignments (&&=, ||=, ??=) which require 'simple' target.
-                if (!isBind && !_strict && _options._allowCallExpressionAsLhs
-                    && lhsKind != LeftHandSideKind.LogicalAssignment
-                    && expr.Type == NodeType.CallExpression)
-                {
-                    break;
-                }
+                // Does NOT apply to logical assignments (&&=, ||=, ??=), which require 'simple' target.
+                break;
+
+            default:
                 // Raise(expr.Start, $"{(isBind ? "Binding" : "Assigning to")} rvalue"); // original acornjs error reporting
                 HandleLeftHandSideError(expr, isBind, lhsKind);
                 break;
