@@ -142,7 +142,6 @@ public partial class Parser
         }
 
         var next = _tokenizer.NextTokenPosition(out var nextLine, out var nextLineStart);
-        int after;
 
         if (_tokenizer._currentLine != nextLine)
         {
@@ -151,7 +150,7 @@ public partial class Parser
 
         if (isAwaitUsing)
         {
-            var usingEndPos = next + 5 /* using */;
+            int usingEndPos = next + 5 /* using */, after;
             if (usingEndPos >= _tokenizer._endPosition
                 || _tokenizer._input.SliceBetween(next, usingEndPos) is not "using"
                 || Tokenizer.IsIdentifierChar(after = _tokenizer.FullCharCodeAt(usingEndPos), allowAstral: true)
@@ -190,25 +189,12 @@ public partial class Parser
 
         if (isFor && !isAwaitUsing && id is "of")
         {
+            // Look ahead for using declaration with initializer, e.g., `for (using of = ...)`
             next = _tokenizer.NextTokenPositionAt(next, ref nextLine, ref nextLineStart);
-            switch (_tokenizer.CharCodeAt(next))
+            if (_tokenizer.CharCodeAt(next) != '='
+                || _tokenizer.CharCodeAt(next + 1) is '=' or '>') // check for ==, === and => operators
             {
-                case '=': // `for (using of = ...)` -- using declaration with initializer
-                    if (_tokenizer.CharCodeAt(next + 1) is '=' or '>') // check for ==, === and => operators
-                    {
-                        goto default;
-                    }
-                    break;
-                case 'o': // `for (using of of ...)` -- using declaration in for-of loop
-                    if (_tokenizer.CharCodeAt(next + 1) != 'f'
-                        || Tokenizer.IsIdentifierChar(after = _tokenizer.FullCharCodeAt(next + 2), allowAstral: true)
-                        || after == '\\')
-                    {
-                        goto default;
-                    }
-                    break;
-                default: // `for (using of <expr>)` -- for-of loop, 'using' is expression, not a keyword
-                    return false;
+                return false;
             }
         }
 
@@ -406,12 +392,10 @@ public partial class Parser
             //    Raise(_tokenizer._start, UsingInTopLevel);
             //}
 
-            // using/await using declarations are not allowed in single-statement positions
-            // (e.g., `for (;;) using x = ...;` or `if (true) using x = ...;`)
-            if (context != StatementContext.Default)
-            {
-                Unexpected();
-            }
+            //if (context != StatementContext.Default)
+            //{
+            //    Raise(_tokenizer._start, "Using declaration is not allowed in single-statement positions"); // original acornjs error reporting
+            //}
 
             if (usingKind == VariableDeclarationKind.AwaitUsing)
             {
@@ -424,6 +408,14 @@ public partial class Parser
             }
 
             Next();
+
+            if (context != StatementContext.Default)
+            {
+                // using/await using declarations are not allowed in single-statement positions,
+                // e.g., `for (;;) using x = ...;` or `if (true) await using x = ...;`
+                Unexpected();
+            }
+
             var variableDeclaration = ParseVar(usingKind, isFor: false);
             Semicolon();
             return ExitRecursion(FinishNode(startMarker, variableDeclaration));
@@ -718,9 +710,10 @@ public partial class Parser
             }
 
             // using/await using declarations are not allowed in for-in loops
-            if (init.Kind is VariableDeclarationKind.Using or VariableDeclarationKind.AwaitUsing)
+            if (init.Kind is VariableDeclarationKind.Using or VariableDeclarationKind.AwaitUsing && init.Declarations[0].Init is null)
             {
-                Raise(init.Declarations[0].Start, ForInOfLoopInitializer, new object[] { "for-in" });
+                // Raise(init.Start, "Using declaration is not allowed in for-in loops"); // original acornjs error reporting
+                Raise(init.Start, InvalidUsingInForInLoop);
             }
 
             if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES9 && awaitAt >= 0)

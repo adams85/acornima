@@ -1823,6 +1823,17 @@ public partial class ParserTests
 
     [InlineData("module", "for (using", false, false, "Unexpected end of input")]
     [InlineData("script", "for (using", false, false, "Unexpected end of input")]
+    [InlineData("module", "for (using of =) {}", false, false, "Unexpected token ')'")]
+    [InlineData("script", "for (using of =) {}", false, false, "Unexpected token ')'")]
+    [InlineData("module", "for (using of = x;;) {}", false, false, null)]
+    [InlineData("script", "for (using of = x;;) {}", false, false, null)]
+
+    [InlineData("module", "for (await using", false, false, "Unexpected end of input")]
+    [InlineData("script", "for (await using", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
+    [InlineData("module", "for (await using of =) {}", false, false, "Unexpected token ')'")]
+    [InlineData("script", "for (await using of =) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
+    [InlineData("module", "for (await using of = x;;) {}", false, false, null)]
+    [InlineData("script", "for (await using of = x;;) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
 
     [InlineData("module", "for (using of = of of of) {}", false, false, "for-of loop variable declaration may not have an initializer")]
     [InlineData("script", "for (using of = of of of) {}", false, false, "for-of loop variable declaration may not have an initializer")]
@@ -1833,6 +1844,16 @@ public partial class ParserTests
     [InlineData("module", "for (using of => of of of) {}", false, false, "Unexpected token '=>'")]
     [InlineData("script", "for (using of => of of of) {}", false, false, "Unexpected token '=>'")]
 
+    [InlineData("module", "for (using in =) {}", false, false, "Unexpected token '='")]
+    [InlineData("script", "for (using in =) {}", false, false, "Unexpected token '='")]
+    [InlineData("module", "for (using in = x;;) {}", false, false, "Unexpected token '='")]
+    [InlineData("script", "for (using in = x;;) {}", false, false, "Unexpected token '='")]
+
+    [InlineData("module", "for (await using in =) {}", false, false, "Invalid left-hand side in for-loop")]
+    [InlineData("script", "for (await using in =) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
+    [InlineData("module", "for (await using in = x;;) {}", false, false, "Invalid left-hand side in for-loop")]
+    [InlineData("script", "for (await using in = x;;) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
+
     [InlineData("module", "for (using of = of in of) {}", false, false, "for-in loop variable declaration may not have an initializer")]
     [InlineData("script", "for (using of = of in of) {}", false, false, "for-in loop variable declaration may not have an initializer")]
     [InlineData("module", "for (using of =/**/of in of) {}", false, false, "for-in loop variable declaration may not have an initializer")]
@@ -1841,16 +1862,14 @@ public partial class ParserTests
     [InlineData("script", "for (using of == of in of) {}", false, false, "Unexpected token '=='")]
     [InlineData("module", "for (using of => of in of) {}", false, false, "Unexpected token '=>'")]
     [InlineData("script", "for (using of => of in of) {}", false, false, "Unexpected token '=>'")]
+    [InlineData("module", "for (await using of = of in of) {}", false, false, "for-in loop variable declaration may not have an initializer")]
+    [InlineData("script", "for (await using of = of in of) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
 
-    [InlineData("module", "for (using of of of) {}", false, false, null)]
-    [InlineData("script", "for (using of of of) {}", false, false, null)]
-    [InlineData("module", "for (using of ofc of) {}", false, false, "Unexpected identifier 'of'")] // V8 reports "Unexpected token 'of'"
-    [InlineData("script", "for (using of ofc of) {}", false, false, "Unexpected identifier 'of'")] // V8 reports "Unexpected token 'of'"
-    [InlineData("module", "for (using of of\\u0043 of) {}", false, false, "Unexpected identifier 'of'")] // V8 reports "Unexpected token 'of'"
-    [InlineData("script", "for (using of of\\u0043 of) {}", false, false, "Unexpected identifier 'of'")] // V8 reports "Unexpected token 'of'"
-
-    [InlineData("module", "for (using of in of) {}", false, false, "Unexpected token 'in'")]
-    [InlineData("script", "for (using of in of) {}", false, false, "Unexpected token 'in'")]
+    [InlineData("module", "for (using of of []) {}", false, false, "Unexpected token ']'")]
+    [InlineData("script", "for (using of of []) {}", false, false, "Unexpected token ']'")]
+    [InlineData("module", "for (await using of of []) {}", false, false, null)]
+    [InlineData("script", "for (await using of of []) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
+    [InlineData("script", "async () => { for (await using of of []) {} }", false, false, null)]
 
     [InlineData("module", "for (using of x) {}", false, false, null)]
     [InlineData("script", "for (using of x) {}", false, false, null)]
@@ -1866,9 +1885,6 @@ public partial class ParserTests
     [InlineData("script", "for (using instanceof x) {}", false, false, "Unexpected token ')'")]
     [InlineData("module", "for (using\ninstanceof x) {}", false, false, "Unexpected token ')'")]
     [InlineData("script", "for (using\ninstanceof x) {}", false, false, "Unexpected token ')'")]
-
-    [InlineData("module", "for (await using", false, false, "Unexpected end of input")]
-    [InlineData("script", "for (await using", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
 
     [InlineData("module", "for (await using of x) {}", false, false, "Missing initializer in await using declaration")]
     [InlineData("script", "for (await using of x) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"

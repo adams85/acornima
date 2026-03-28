@@ -327,6 +327,10 @@
     <value>Invalid Unicode escape sequence</value>
     <comment>https://github.com/v8/v8/blob/14.8.3/src/common/message-template.h</comment>
   </data>
+  <data name="InvalidUsingInForInLoop" xml:space="preserve">
+    <value>Invalid 'using' in for-in loop</value>
+    <comment>https://github.com/v8/v8/blob/14.8.3/src/common/message-template.h</comment>
+  </data>
   <data name="LabelRedeclaration" xml:space="preserve">
     <value>Label '{0}' has already been declared</value>
     <comment>https://github.com/v8/v8/blob/14.8.3/src/common/message-template.h</comment>
