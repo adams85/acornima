@@ -137,6 +137,11 @@ public partial class Parser
                 //    RaiseRecoverable(node.Start, "Optional chaining cannot appear in left-hand side");
                 //    break;
 
+                case NodeType.CallExpression when !isBinding && !_strict:
+                    // Annex B.3.9: In non-strict mode, allow CallExpression as assignment target.
+                    // The runtime should throw a ReferenceError instead.
+                    break;
+
                 default:
                     // Raise(node.Start, "Assigning to rvalue"); // original acornjs error reporting
                     HandleLeftHandSideError(node, isBinding, lhsKind);
@@ -497,6 +502,12 @@ public partial class Parser
                 expr = parenthesizedExpression.Expression;
                 goto Reenter;
 
+            case NodeType.CallExpression when !isBind && !_strict && lhsKind != LeftHandSideKind.LogicalAssignment:
+                // Annex B.3.9: In non-strict mode, allow CallExpression as assignment target.
+                // The runtime should throw a ReferenceError instead.
+                // Does NOT apply to logical assignments (&&=, ||=, ??=), which require 'simple' target.
+                break;
+
             default:
                 // Raise(expr.Start, $"{(isBind ? "Binding" : "Assigning to")} rvalue"); // original acornjs error reporting
                 HandleLeftHandSideError(expr, isBind, lhsKind);
@@ -643,6 +654,7 @@ public partial class Parser
             switch (lhsKind)
             {
                 case LeftHandSideKind.Assignment:
+                case LeftHandSideKind.LogicalAssignment:
                     Raise(node.Start, InvalidLhsInAssignment);
                     break;
 
@@ -667,6 +679,7 @@ public partial class Parser
     {
         Unknown,
         Assignment,
+        LogicalAssignment,
         PrefixUpdate,
         PostfixUpdate,
         ForInOf,

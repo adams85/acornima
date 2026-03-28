@@ -89,7 +89,7 @@ public partial class ParserTests
 
         var parser = new Parser();
 #if DEBUG
-        const int depth = 395;
+        const int depth = 385;
 #else
         const int depth = 845;
 #endif
@@ -2428,6 +2428,70 @@ public partial class ParserTests
         Assert.Equal(1, ex.LineNumber);
         Assert.Equal(40 + (parenthesize ? 1 : 0), ex.Column);
         Assert.Equal(nameof(SyntaxErrorMessages.UnexpectedSuper), ex.Error.Code);
+    }
+
+    [Theory]
+    [InlineData("script", "fn() = 0", null)]
+    [InlineData("script", "'use strict'; fn() = 0", "Invalid left-hand side in assignment")]
+    [InlineData("module", "fn() = 0", "Invalid left-hand side in assignment")]
+
+    [InlineData("script", "fn() += 0", null)]
+    [InlineData("script", "'use strict'; fn() += 0", "Invalid left-hand side in assignment")]
+    [InlineData("module", "fn() += 0", "Invalid left-hand side in assignment")]
+
+    [InlineData("script", "fn() ??= 0", "Invalid left-hand side in assignment")]
+    [InlineData("script", "'use strict'; fn() ??= 0", "Invalid left-hand side in assignment")]
+    [InlineData("module", "fn() ??= 0", "Invalid left-hand side in assignment")]
+
+    [InlineData("script", "fn() ||= 0", "Invalid left-hand side in assignment")]
+    [InlineData("script", "'use strict'; fn() ||= 0", "Invalid left-hand side in assignment")]
+    [InlineData("module", "fn() ||= 0", "Invalid left-hand side in assignment")]
+
+    [InlineData("script", "fn() &&= 0", "Invalid left-hand side in assignment")]
+    [InlineData("script", "'use strict'; fn() &&= 0", "Invalid left-hand side in assignment")]
+    [InlineData("module", "fn() &&= 0", "Invalid left-hand side in assignment")]
+
+    [InlineData("script", "++fn()", null)]
+    [InlineData("script", "'use strict'; ++fn()", "Invalid left-hand side expression in prefix operation")]
+    [InlineData("module", "++fn()", "Invalid left-hand side expression in prefix operation")]
+
+    [InlineData("script", "fn()++", null)]
+    [InlineData("script", "'use strict'; fn()++", "Invalid left-hand side expression in postfix operation")]
+    [InlineData("module", "fn()++", "Invalid left-hand side expression in postfix operation")]
+
+    [InlineData("script", "for (fn() = 0;;) {}", null)]
+    [InlineData("script", "'use strict'; for (fn() = 0;;) {}", "Invalid left-hand side in assignment")]
+    [InlineData("module", "for (fn() = 0;;) {}", "Invalid left-hand side in assignment")]
+
+    [InlineData("script", "for (fn() in {}) {}", null)]
+    [InlineData("script", "'use strict'; for (fn() in {}) {}", "Invalid left-hand side in for-loop")]
+    [InlineData("module", "for (fn() in {}) {}", "Invalid left-hand side in for-loop")]
+
+    [InlineData("script", "for (fn() = 0 in {}) {}", "Invalid left-hand side in for-loop")]
+    [InlineData("script", "'use strict'; for (fn() = 0 in {}) {}", "Invalid left-hand side in assignment")]
+    [InlineData("module", "for (fn() = 0 in {}) {}", "Invalid left-hand side in assignment")]
+
+    [InlineData("script", "for (fn() of []) {}", null)]
+    [InlineData("script", "'use strict'; for (fn() of []) {}", "Invalid left-hand side in for-loop")]
+    [InlineData("module", "for (fn() of []) {}", "Invalid left-hand side in for-loop")]
+
+    [InlineData("script", "for (fn() = 0 of []) {}", "Invalid left-hand side in for-loop")]
+    [InlineData("script", "'use strict'; for (fn() = 0 of []) {}", "Invalid left-hand side in assignment")]
+    [InlineData("module", "for (fn() = 0 of []) {}", "Invalid left-hand side in assignment")]
+    public void ShouldAllowFunctionCallAssignmentTargets(string sourceType, string input, string? expectedError)
+    {
+        var parser = new Parser();
+        var parseAction = GetParseActionFor(sourceType);
+
+        if (expectedError is null)
+        {
+            Assert.NotNull(parseAction(parser, input));
+        }
+        else
+        {
+            var ex = Assert.Throws<SyntaxErrorException>(() => parseAction(parser, input));
+            Assert.Equal(expectedError, ex.Description);
+        }
     }
 
     [Theory]

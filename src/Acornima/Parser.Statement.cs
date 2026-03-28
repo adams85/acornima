@@ -720,7 +720,7 @@ public partial class Parser
             // using/await using declarations are not allowed in for-in loops
             if (init.Kind is VariableDeclarationKind.Using or VariableDeclarationKind.AwaitUsing)
             {
-                Raise(init.Start, ForInOfLoopInitializer, new object[] { "for-in" });
+                Raise(init.Declarations[0].Start, ForInOfLoopInitializer, new object[] { "for-in" });
             }
 
             if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES9 && awaitAt >= 0)

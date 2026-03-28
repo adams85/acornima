@@ -219,7 +219,11 @@ public partial class Parser
             }
             else
             {
-                CheckLValSimple(leftNode, lhsKind: LeftHandSideKind.Assignment);
+                // Logical assignments (&&=, ||=, ??=) require 'simple' assignment target,
+                // not 'web-compat' (Annex B.3.9 does not apply to logical assignments).
+                CheckLValSimple(leftNode, lhsKind: op is Operator.LogicalAndAssignment or Operator.LogicalOrAssignment or Operator.NullishCoalescingAssignment
+                    ? LeftHandSideKind.LogicalAssignment
+                    : LeftHandSideKind.Assignment);
             }
 
             Next();
