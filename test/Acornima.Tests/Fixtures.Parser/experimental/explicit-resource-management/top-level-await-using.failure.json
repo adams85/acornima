@@ -1,1 +1,1 @@
-{"index":0,"lineNumber":1,"column":0,"message":"Using declaration cannot appear in the top level when source type is `script` or in the bare case statement (1:1)","description":"Using declaration cannot appear in the top level when source type is `script` or in the bare case statement"}
+{"index":0,"lineNumber":1,"column":0,"message":"await is only valid in async functions and the top level bodies of modules (1:1)","description":"await is only valid in async functions and the top level bodies of modules"}
