@@ -4,6 +4,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <GenerateProgramFile>false</GenerateProgramFile>
     <GeneratedTestSuiteDir>Generated</GeneratedTestSuiteDir>
+    <_GeneratedDirPath>$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), $(GeneratedTestSuiteDir)))</_GeneratedDirPath>
     <SettingsFile>Test262Harness.settings.json</SettingsFile>
     <SettingsHashFile>$(GeneratedTestSuiteDir)\.settings.hash</SettingsHashFile>
   </PropertyGroup>
@@ -40,9 +41,8 @@
   <!-- Check if settings file has changed by comparing hash and regenerate if needed -->
   <Target Name="GenerateTestSuite" BeforeTargets="BeforeBuild">
     <PropertyGroup>
-      <_SettingsHashFilePath>$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), $(SettingsHashFile)))</_SettingsHashFilePath>
       <_SettingsFilePath>$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), $(SettingsFile)))</_SettingsFilePath>
-      <_GeneratedDirPath>$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), $(GeneratedTestSuiteDir)))</_GeneratedDirPath>
+      <_SettingsHashFilePath>$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), $(SettingsHashFile)))</_SettingsHashFilePath>
     </PropertyGroup>
 
     <!-- Compute current settings file hash -->
@@ -58,8 +58,7 @@
     <!-- Determine if regeneration is needed -->
     <PropertyGroup>
       <_NeedsRegeneration>false</_NeedsRegeneration>
-      <_NeedsRegeneration Condition="!Exists('$(_GeneratedDirPath)')">true</_NeedsRegeneration>
-      <_NeedsRegeneration Condition="'$(_CurrentSettingsHash)' != '$(_StoredSettingsHash)'">true</_NeedsRegeneration>
+      <_NeedsRegeneration Condition="'$(_CurrentSettingsHash)' != '$(_StoredSettingsHash)' OR !Exists('$(_GeneratedDirPath)')">true</_NeedsRegeneration>
     </PropertyGroup>
 
     <Message Text="Settings hash: current=$(_CurrentSettingsHash), stored=$(_StoredSettingsHash)" Importance="low" />
@@ -83,7 +82,7 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="DeleteTestSuite" AfterTargets="AfterClean" Condition="Exists($([System.IO.Path]::Combine($(MSBuildThisFileDirectory), $(GeneratedTestSuiteDir))))">
+  <Target Name="DeleteTestSuite" AfterTargets="AfterClean" Condition="Exists('$(_GeneratedDirPath)')">
     <ItemGroup>
       <Compile Remove="$(GeneratedTestSuiteDir)\**\*.cs" />
     </ItemGroup>
