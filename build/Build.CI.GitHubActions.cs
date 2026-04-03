@@ -44,8 +44,39 @@ class CustomGitHubActionsAttribute : GitHubActionsAttribute
         var newSteps = new List<GitHubActionsStep>(job.Steps);
         // only need to list the ones that are missing from default image
         newSteps.Insert(0, new GitHubActionsSetupDotNetStep(["10.0"]));
+        // cache generated Test262 suite (keyed on settings file hash)
+        newSteps.Insert(2, new GitHubActionsCacheStep(
+            "test/Acornima.Tests.Test262/Generated",
+            "test262-generated-${{ hashFiles('test/Acornima.Tests.Test262/Test262Harness.settings.json') }}"));
         job.Steps = newSteps.ToArray();
         return job;
+    }
+}
+
+class GitHubActionsCacheStep : GitHubActionsStep
+{
+    public GitHubActionsCacheStep(string path, string key)
+    {
+        Path = path;
+        Key = key;
+    }
+
+    string Path { get; }
+    string Key { get; }
+
+    public override void Write(CustomFileWriter writer)
+    {
+        writer.WriteLine("- name: Cache Test262 generated suite");
+        using (writer.Indent())
+        {
+            writer.WriteLine("uses: actions/cache@v5");
+            writer.WriteLine("with:");
+            using (writer.Indent())
+            {
+                writer.WriteLine($"path: {Path}");
+                writer.WriteLine($"key: {Key}");
+            }
+        }
     }
 }
 
