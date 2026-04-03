@@ -916,7 +916,7 @@ public partial class Tokenizer
                 ':' => RegExpGroupType.NonCapturing,
                 '=' => RegExpGroupType.LookaheadAssertion,
                 '!' => RegExpGroupType.NegativeLookaheadAssertion,
-                '<' when _tokenizer._options._ecmaVersion >= EcmaVersion.ES9 => (++i < _pattern.Length ? _pattern[i] : char.MinValue) switch
+                '<' when _tokenizer._options._ecmaVersion >= EcmaVersion.ES9 => _pattern.CharCodeAt(++i) switch
                 {
                     '=' => RegExpGroupType.LookbehindAssertion,
                     '!' => RegExpGroupType.NegativeLookbehindAssertion,

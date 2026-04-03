@@ -55,14 +55,9 @@ internal static class StringExtensions
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int CharCodeAt(this string s, int index)
     {
-        if ((uint)index < (uint)s.Length)
-        {
-            return s[index];
-        }
-
         // NOTE: For indicating an unavailable character, we use a negative value which
         // results in '\0' when converted to char. In some cases we may rely on this behavior.
-        return int.MinValue;
+        return (uint)index < (uint)s.Length ? s[index] : int.MinValue;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -70,14 +65,9 @@ internal static class StringExtensions
     {
         Debug.Assert((uint)endIndex <= (uint)s.Length);
 
-        if ((uint)index < (uint)endIndex)
-        {
-            return s[index];
-        }
-
         // NOTE: For indicating an unavailable character, we use a negative value which
         // results in '\0' when converted to char. In some cases we may rely on this behavior.
-        return int.MinValue;
+        return (uint)index < (uint)endIndex ? s[index] : int.MinValue;
     }
 
     public static int CodePointAt(this string s, int index, int endIndex)
