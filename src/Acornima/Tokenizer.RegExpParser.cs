@@ -161,21 +161,75 @@ public partial class Tokenizer
             _tokenizer.Raise(_patternStartIndex + index, string.Format(null, messageFormat, _pattern, _flagsOriginal), code: code);
         }
 
+        private static bool ValidateUnicodeProperty(ReadOnlyMemory<char> expression, bool translateToRanges, RegExpParser parser, out CodePointRange[]? codePointRanges)
+        {
+            var index = expression.Span.IndexOf('=');
+            if (index >= 0)
+            {
+                // https://tc39.es/ecma262/#table-nonbinary-unicode-properties
+
+                var propertyName = expression.Span.Slice(0, index);
+                expression = expression.Slice(index + 1);
+                switch (propertyName)
+                {
+                    case "gc" or "General_Category":
+                        if (translateToRanges)
+                        {
+                            codePointRanges = UnicodeProperties.GetGeneralCategoryRange(expression, parser.GetCodePointRangeCache());
+                            return codePointRanges is not null;
+                        }
+                        else
+                        {
+                            codePointRanges = default;
+                            return UnicodeProperties.IsAllowedGeneralCategoryValue(expression);
+                        }
+
+                    case "sc" or "Script" or "scx" or "Script_Extensions":
+                        // Translating unicode properties other than General Categories is not implemented currently.
+                        codePointRanges = default;
+                        return UnicodeProperties.IsAllowedScriptValue(expression, parser._tokenizer._options._ecmaVersion);
+
+                    default:
+                        codePointRanges = default;
+                        return false;
+                }
+            }
+            else
+            {
+                if (translateToRanges)
+                {
+                    codePointRanges = UnicodeProperties.GetGeneralCategoryRange(expression, parser.GetCodePointRangeCache());
+                    if (codePointRanges is not null)
+                    {
+                        return true;
+                    }
+                }
+                else if (UnicodeProperties.IsAllowedGeneralCategoryValue(expression))
+                {
+                    codePointRanges = default;
+                    return true;
+                }
+
+                // Translating unicode properties other than General Categories is not implemented currently.
+                codePointRanges = default;
+                return UnicodeProperties.IsAllowedBinaryValue(expression, parser._tokenizer._options._ecmaVersion);
+            }
+        }
+
         public RegExpParseResult Parse()
         {
             RegExpConversionError? conversionError;
 
-            if ((_flags & RegExpFlags.UnicodeSets) != 0)
+            if ((_flags & RegExpFlags.UnicodeSets) != 0
+                && _tokenizer._options._regExpParseMode != RegExpParseMode.Validate)
             {
-                if (_tokenizer._options._regExpParseMode == RegExpParseMode.Validate)
-                {
-                    _tokenizer.Raise(_patternStartIndex, RegExpUnicodeSetsModeNotSupported, RegExpConversionError.s_factory);
-                }
-                else
-                {
-                    conversionError = ReportConversionFailure(0, RegExpUnicodeSetsModeNotSupported);
-                    return new RegExpParseResult(conversionError);
-                }
+                // Validate syntax first so callers get proper syntax errors (e.g. unterminated class)
+                // before the conversion-not-supported error. Uses validateOnly to force a null
+                // StringBuilder without mutating the shared TokenizerOptions.
+                ParseCore(out _, out _, out _, validateOnly: true);
+
+                conversionError = ReportConversionFailure(0, RegExpUnicodeSetsModeNotSupported);
+                return new RegExpParseResult(conversionError);
             }
 
             var adaptedPattern = ParseCore(out var capturingGroups, out conversionError, out var canCompile);
@@ -205,13 +259,13 @@ public partial class Tokenizer
             }
         }
 
-        internal string? ParseCore(out ArrayList<RegExpCapturingGroup> capturingGroups, out RegExpConversionError? conversionError, out bool canCompile)
+        internal string? ParseCore(out ArrayList<RegExpCapturingGroup> capturingGroups, out RegExpConversionError? conversionError, out bool canCompile, bool validateOnly = false)
         {
             _tokenizer.AcquireStringBuilder(out var sb);
             try
             {
                 StringBuilder? adaptedPatternBuilder;
-                if (_tokenizer._options._regExpParseMode == RegExpParseMode.Validate)
+                if (validateOnly || _tokenizer._options._regExpParseMode == RegExpParseMode.Validate)
                 {
                     _auxiliaryStringBuilder = sb;
                     adaptedPatternBuilder = null;
@@ -229,9 +283,11 @@ public partial class Tokenizer
 
                 ResetParseContext(adaptedPatternBuilder);
 
-                var adaptedPattern = (_flags & RegExpFlags.Unicode) != 0
-                    ? ParsePattern(UnicodeMode.Instance, out conversionError)
-                    : ParsePattern(LegacyMode.Instance, out conversionError);
+                var adaptedPattern = (_flags & RegExpFlags.UnicodeSets) != 0
+                    ? ParsePattern(UnicodeSetsMode.Instance, out conversionError)
+                    : (_flags & RegExpFlags.Unicode) != 0
+                        ? ParsePattern(UnicodeMode.Instance, out conversionError)
+                        : ParsePattern(LegacyMode.Instance, out conversionError);
                 capturingGroups = _capturingGroups;
                 canCompile = _canCompile;
                 return adaptedPattern;
@@ -251,10 +307,11 @@ public partial class Tokenizer
             _capturingGroups = default;
             _capturingGroupNames?.Clear();
 
-            var isUnicode = (_flags & RegExpFlags.Unicode) != 0;
+            var isUnicodeSets = (_flags & RegExpFlags.UnicodeSets) != 0;
+            var isUnicode = isUnicodeSets || (_flags & RegExpFlags.Unicode) != 0;
             var inGroup = 0;
             var inQuantifier = false;
-            var inSet = false;
+            var setDepth = 0;
 
             // Potential problematic constructs:
             // * Escaped opening/closing brackets (\(, \), \[, \], \{, \}, \<, \>) --> These are handled (see below).
@@ -277,7 +334,7 @@ public partial class Tokenizer
                 switch (ch)
                 {
                     case '(':
-                        if (inSet)
+                        if (setDepth > 0)
                         {
                             break;
                         }
@@ -314,7 +371,7 @@ public partial class Tokenizer
                         break;
 
                     case ')':
-                        if (inSet)
+                        if (setDepth > 0)
                         {
                             break;
                         }
@@ -328,7 +385,7 @@ public partial class Tokenizer
                         break;
 
                     case '{':
-                        if (inSet)
+                        if (setDepth > 0)
                         {
                             break;
                         }
@@ -345,7 +402,7 @@ public partial class Tokenizer
                         break;
 
                     case '}':
-                        if (inSet)
+                        if (setDepth > 0)
                         {
                             break;
                         }
@@ -362,18 +419,18 @@ public partial class Tokenizer
                         break;
 
                     case '[':
-                        if (inSet)
+                        if (setDepth > 0 && !isUnicodeSets)
                         {
                             break;
                         }
 
-                        inSet = true;
+                        setDepth++;
                         break;
 
                     case ']':
-                        if (inSet)
+                        if (setDepth > 0)
                         {
-                            inSet = false;
+                            setDepth--;
                         }
                         else if (isUnicode)
                         {
@@ -392,7 +449,7 @@ public partial class Tokenizer
                 ReportSyntaxError(_pattern.Length, RegExpUnterminatedGroup);
             }
 
-            if (inSet)
+            if (setDepth > 0)
             {
                 ReportSyntaxError(_pattern.Length, RegExpUnterminatedCharacterClass);
             }
@@ -426,6 +483,12 @@ public partial class Tokenizer
                 switch (ch)
                 {
                     case '[' when !WithinSet:
+                        if (mode.TryParseCharacterClass(this))
+                        {
+                            ClearFollowingQuantifierError();
+                            break;
+                        }
+
                         _setStartIndex = i;
                         _setRangeStart = SetRangeNotStarted;
 
@@ -1301,6 +1364,9 @@ public partial class Tokenizer
         // The start index of a character set (e.g. /[a-z]/). Negative values indicate that the parser is not within a character set currently.
         private int _setStartIndex;
 
+        // Tracks nesting depth for recursive class set parsing (v-flag mode).
+        internal int _classSetNestingDepth;
+
         private bool WithinSet { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _setStartIndex >= 0; }
 
         // A variable which keeps track of ranges in character sets and encodes multiple pieces of information related to this:
@@ -1371,6 +1437,7 @@ public partial class Tokenizer
 
             _setStartIndex = -1;
             _setRangeStart = 0;
+            _classSetNestingDepth = 0;
 
             SetFollowingQuantifierError(RegExpNothingToRepeat);
 
@@ -1423,6 +1490,8 @@ public partial class Tokenizer
             void HandleInvalidRangeQuantifier(RegExpParser parser, int startIndex);
 
             bool AdjustEscapeSequence(RegExpParser parser, out RegExpConversionError? conversionError);
+
+            bool TryParseCharacterClass(RegExpParser parser);
         }
     }
 

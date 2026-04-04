@@ -115,7 +115,7 @@ namespace Acornima {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unicode sets mode (flag v) is not supported currently.
+        ///   Looks up a localized string similar to Conversion of Unicode sets mode (flag v) regular expressions to .NET Regex is not supported.
         /// </summary>
         internal static string RegExpUnicodeSetsModeNotSupported {
             get {

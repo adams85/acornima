@@ -534,59 +534,11 @@ public partial class Tokenizer
                 set.AddRange(ranges);
             }
 
-            private static bool ValidateUnicodeProperty(ReadOnlyMemory<char> expression, bool translateToRanges, RegExpParser parser, out CodePointRange[]? codePointRanges)
+            // Delegates to the shared ValidateUnicodeProperty on RegExpParser.
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private static bool ValidateUnicodePropertyForConversion(ReadOnlyMemory<char> expression, bool translateToRanges, RegExpParser parser, out CodePointRange[]? codePointRanges)
             {
-                var index = expression.Span.IndexOf('=');
-                if (index >= 0)
-                {
-                    // https://tc39.es/ecma262/#table-nonbinary-unicode-properties
-
-                    var propertyName = expression.Span.Slice(0, index);
-                    expression = expression.Slice(index + 1);
-                    switch (propertyName)
-                    {
-                        case "gc" or "General_Category":
-                            if (translateToRanges)
-                            {
-                                codePointRanges = UnicodeProperties.GetGeneralCategoryRange(expression, parser.GetCodePointRangeCache());
-                                return codePointRanges is not null;
-                            }
-                            else
-                            {
-                                codePointRanges = default;
-                                return UnicodeProperties.IsAllowedGeneralCategoryValue(expression);
-                            }
-
-                        case "sc" or "Script" or "scx" or "Script_Extensions":
-                            // Translating unicode properties other than General Categories is not implemented currently.
-                            codePointRanges = default;
-                            return UnicodeProperties.IsAllowedScriptValue(expression, parser._tokenizer._options._ecmaVersion);
-
-                        default:
-                            codePointRanges = default;
-                            return false;
-                    }
-                }
-                else
-                {
-                    if (translateToRanges)
-                    {
-                        codePointRanges = UnicodeProperties.GetGeneralCategoryRange(expression, parser.GetCodePointRangeCache());
-                        if (codePointRanges is not null)
-                        {
-                            return true;
-                        }
-                    }
-                    else if (UnicodeProperties.IsAllowedGeneralCategoryValue(expression))
-                    {
-                        codePointRanges = default;
-                        return true;
-                    }
-
-                    // Translating unicode properties other than General Categories is not implemented currently.
-                    codePointRanges = default;
-                    return UnicodeProperties.IsAllowedBinaryValue(expression, parser._tokenizer._options._ecmaVersion);
-                }
+                return ValidateUnicodeProperty(expression, translateToRanges, parser, out codePointRanges);
             }
 
             public void RewriteDot(RegExpParser parser)
@@ -874,7 +826,7 @@ public partial class Tokenizer
 
                                 endIndex = pattern.IndexOf('}', i + 2);
                                 if (endIndex < 0
-                                    || !ValidateUnicodeProperty(pattern.AsMemory(i + 2, endIndex - (i + 2)), translateToRanges: sb is not null, parser, out codePointRanges))
+                                    || !ValidateUnicodePropertyForConversion(pattern.AsMemory(i + 2, endIndex - (i + 2)), translateToRanges: sb is not null, parser, out codePointRanges))
                                 {
                                     if (!parser.WithinSet)
                                     {
@@ -986,6 +938,11 @@ public partial class Tokenizer
 
                 conversionError = null;
                 return true;
+            }
+
+            public bool TryParseCharacterClass(RegExpParser parser)
+            {
+                return false;
             }
         }
     }

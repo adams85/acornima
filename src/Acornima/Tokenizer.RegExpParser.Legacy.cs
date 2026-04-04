@@ -457,6 +457,11 @@ public partial class Tokenizer
                 conversionError = null;
                 return true;
             }
+
+            public bool TryParseCharacterClass(RegExpParser parser)
+            {
+                return false;
+            }
         }
     }
 }

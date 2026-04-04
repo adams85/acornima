@@ -8,7 +8,6 @@
     "import-assertions",
     "import-defer",
     "json-modules",
-    "regexp-v-flag",
     "source-phase-imports"
   ],
   "ExcludedFlags": [],
