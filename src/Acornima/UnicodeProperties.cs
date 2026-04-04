@@ -76,6 +76,13 @@ internal static class UnicodeProperties
             }
         }
 
+        // Unicode 17.0 scripts
+        PopulateVersionLookup(s_scriptValueLookup, EcmaVersion.ES15,
+            "Beria_Erfe", "Berf", "Garay", "Gara", "Gurung_Khema", "Gukh",
+            "Kirat_Rai", "Krai", "Ol_Onal", "Onao", "Sidetic", "Sidt",
+            "Sunuwar", "Sunu", "Tai_Yo", "Tayo", "Todhri", "Todr",
+            "Tolong_Siki", "Tols", "Tulu_Tigalari", "Tutg");
+
         PopulateVersionLookup(s_scriptValueLookup, EcmaVersion.ES14,
             "Hrkt", "Katakana_Or_Hiragana", "Kawi", "Nag_Mundari", "Nagm", "Unknown", "Zzzz");
 
