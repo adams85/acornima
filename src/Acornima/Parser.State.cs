@@ -114,7 +114,7 @@ public partial class Parser
         _recursionDepth = _bindingPatternDepth = 0;
     }
 
-    private void ReleaseLargeBuffers()
+    private void ReleaseReferencesAndLargeBuffers()
     {
         _decorators.Clear();
         if (_decorators.Capacity > 64)
@@ -143,7 +143,7 @@ public partial class Parser
             _privateNameStack.Capacity = 64;
         }
 
-        _tokenizer.ReleaseLargeBuffers();
+        _tokenizer.ReleaseReferencesAndLargeBuffers();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

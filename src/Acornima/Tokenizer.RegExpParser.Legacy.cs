@@ -9,7 +9,7 @@ using static SyntaxErrorMessages;
 
 public partial class Tokenizer
 {
-    internal partial struct RegExpParser
+    internal partial class RegExpParser
     {
         private sealed class LegacyMode : IMode
         {
@@ -17,40 +17,40 @@ public partial class Tokenizer
 
             private LegacyMode() { }
 
-            public void ProcessChar(ref ParsePatternContext context, char ch, Action<StringBuilder, char>? appender, ref RegExpParser parser)
+            public void ProcessChar(char ch, Action<StringBuilder, char>? appender, RegExpParser parser)
             {
-                ref readonly var sb = ref context.StringBuilder;
+                ref readonly var sb = ref parser._stringBuilder;
                 appender?.Invoke(sb!, ch);
             }
 
-            public void ProcessSetSpecialChar(ref ParsePatternContext context, char ch)
+            public void ProcessSetSpecialChar(char ch, RegExpParser parser)
             {
-                ref readonly var sb = ref context.StringBuilder;
+                ref readonly var sb = ref parser._stringBuilder;
                 sb?.Append(ch);
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public void ProcessSetChar(ref ParsePatternContext context, char ch, Action<StringBuilder, char>? appender, ref RegExpParser parser, int startIndex)
+            public void ProcessSetChar(char ch, Action<StringBuilder, char>? appender, RegExpParser parser, int startIndex)
             {
-                ProcessSetChar(ref context, ch, ch, appender, ref parser, startIndex);
+                ProcessSetChar(ch, ch, appender, parser, startIndex);
             }
 
-            private static void ProcessSetChar(ref ParsePatternContext context, char ch, int charCode, Action<StringBuilder, char>? appender, ref RegExpParser parser, int startIndex)
+            private static void ProcessSetChar(char ch, int charCode, Action<StringBuilder, char>? appender, RegExpParser parser, int startIndex)
             {
-                ref readonly var sb = ref context.StringBuilder;
+                ref readonly var sb = ref parser._stringBuilder;
 
-                if (context.SetRangeStart >= 0)
+                if (parser._setRangeStart >= 0)
                 {
                     appender?.Invoke(sb!, ch);
-                    context.SetRangeStart = charCode;
+                    parser._setRangeStart = charCode;
                 }
                 else
                 {
-                    context.SetRangeStart = ~context.SetRangeStart;
+                    parser._setRangeStart = ~parser._setRangeStart;
 
-                    if (context.SetRangeStart > charCode)
+                    if (parser._setRangeStart > charCode)
                     {
-                        if (context.SetRangeStart <= UnicodeHelper.LastCodePoint)
+                        if (parser._setRangeStart <= UnicodeHelper.LastCodePoint)
                         {
                             // Cases like /[z-a]/ are syntax error.
                             parser.ReportSyntaxError(startIndex, RegExpRangeOutOfOrderCharacterClass);
@@ -67,28 +67,28 @@ public partial class Tokenizer
                     }
 
                     appender?.Invoke(sb!, ch);
-                    context.SetRangeStart = SetRangeNotStarted;
+                    parser._setRangeStart = SetRangeNotStarted;
                 }
             }
 
-            public bool RewriteSet(ref ParsePatternContext context, ref RegExpParser parser)
+            public bool RewriteSet(RegExpParser parser)
             {
-                ref readonly var sb = ref context.StringBuilder;
+                ref readonly var sb = ref parser._stringBuilder;
 
                 if (sb is not null)
                 {
                     ref readonly var pattern = ref parser._pattern;
-                    ref readonly var i = ref context.Index;
+                    ref readonly var i = ref parser._index;
 
                     // [] should not match any characters.
-                    if (context.SetStartIndex == i - 1)
+                    if (parser._setStartIndex == i - 1)
                     {
                         sb.Remove(sb.Length - 1, 1).Append(MatchNoneRegex);
                         return true;
                     }
 
                     // [^] should match any character including newline.
-                    if (context.SetStartIndex == i - 2 && pattern[i - 1] == '^')
+                    if (parser._setStartIndex == i - 2 && pattern[i - 1] == '^')
                     {
                         sb.Remove(sb.Length - 2, 2).Append(MatchAnyRegex);
                         return true;
@@ -100,12 +100,12 @@ public partial class Tokenizer
                 return true;
             }
 
-            public void RewriteDot(ref ParsePatternContext context)
+            public void RewriteDot(RegExpParser parser)
             {
-                ref readonly var sb = ref context.StringBuilder;
+                ref readonly var sb = ref parser._stringBuilder;
                 if (sb is not null)
                 {
-                    _ = (context.EffectiveFlags & RegExpFlags.DotAll) != 0
+                    _ = (parser._effectiveFlags & RegExpFlags.DotAll) != 0
                         ? sb.Append(MatchAnyRegex)
                         : sb.Append(MatchAnyButNewLineRegex);
                 }
@@ -140,26 +140,26 @@ public partial class Tokenizer
                 );
             }
 
-            public void HandleInvalidRangeQuantifier(ref ParsePatternContext context, ref RegExpParser parser, int startIndex)
+            public void HandleInvalidRangeQuantifier(RegExpParser parser, int startIndex)
             {
                 // Invalid {} quantifiers like /.{/, /.{}/, /.{-1}/, etc. are ignored. RegexOptions.ECMAScript behaves in the same way,
                 // so we don't need to do anything about such cases.
 
-                ref readonly var sb = ref context.StringBuilder;
+                ref readonly var sb = ref parser._stringBuilder;
                 ref readonly var pattern = ref parser._pattern;
 
                 sb?.Append(pattern[startIndex]);
 
-                context.ClearFollowingQuantifierError();
+                parser.ClearFollowingQuantifierError();
             }
 
-            public bool AdjustEscapeSequence(ref ParsePatternContext context, ref RegExpParser parser, out RegExpConversionError? conversionError)
+            public bool AdjustEscapeSequence(RegExpParser parser, out RegExpConversionError? conversionError)
             {
                 // https://tc39.es/ecma262/#prod-AtomEscape
 
-                ref readonly var sb = ref context.StringBuilder;
+                ref readonly var sb = ref parser._stringBuilder;
                 ref readonly var pattern = ref parser._pattern;
-                ref var i = ref context.Index;
+                ref var i = ref parser._index;
 
                 ushort charCode;
                 var startIndex = i++;
@@ -172,14 +172,14 @@ public partial class Tokenizer
                     case 'x':
                         if (TryReadHexEscape(pattern, ref i, endIndex: pattern.Length, charCodeLength: ch == 'u' ? 4 : 2, out charCode))
                         {
-                            if (!context.WithinSet)
+                            if (!parser.WithinSet)
                             {
-                                context.AppendCharSafe?.Invoke(sb!, (char)charCode);
-                                context.ClearFollowingQuantifierError();
+                                parser._appendCharSafe?.Invoke(sb!, (char)charCode);
+                                parser.ClearFollowingQuantifierError();
                             }
                             else
                             {
-                                ProcessSetChar(ref context, (char)charCode, context.AppendCharSafe, ref parser, startIndex);
+                                ProcessSetChar((char)charCode, parser._appendCharSafe, parser, startIndex);
                             }
                         }
                         else
@@ -190,14 +190,14 @@ public partial class Tokenizer
                             // * invalid \x escape sequences (e.g. /\x0y/ --> @"x0y"),
                             // * invalid \u escape sequences (e.g. /\u012y/ --> @"u012y"), including
                             // * UTF32-like invalid escape sequences (e.g. /\u{0010FFFF}/ --> @"u{0010FFFF}").
-                            if (!context.WithinSet)
+                            if (!parser.WithinSet)
                             {
                                 sb?.Append(ch);
-                                context.ClearFollowingQuantifierError();
+                                parser.ClearFollowingQuantifierError();
                             }
                             else
                             {
-                                ProcessSetChar(ref context, ch, context.AppendChar, ref parser, startIndex);
+                                ProcessSetChar(ch, parser._appendChar, parser, startIndex);
                             }
                         }
                         break;
@@ -210,27 +210,27 @@ public partial class Tokenizer
                             {
                                 charCode = (ushort)(charCode & 0x1Fu); // value is equal to the character code modulo 32
 
-                                if (!context.WithinSet)
+                                if (!parser.WithinSet)
                                 {
-                                    context.AppendCharSafe?.Invoke(sb!, (char)charCode);
-                                    context.ClearFollowingQuantifierError();
+                                    parser._appendCharSafe?.Invoke(sb!, (char)charCode);
+                                    parser.ClearFollowingQuantifierError();
                                 }
                                 else
                                 {
-                                    ProcessSetChar(ref context, (char)charCode, context.AppendCharSafe, ref parser, startIndex);
+                                    ProcessSetChar((char)charCode, parser._appendCharSafe, parser, startIndex);
                                 }
                                 i++;
                                 break;
                             }
 
-                            if (context.WithinSet)
+                            if (parser.WithinSet)
                             {
                                 // Within character sets, '_' and decimal digits are also allowed.
                                 if ((charCode = pattern[i + 1]) == '_' || ((char)charCode).IsDecimalDigit())
                                 {
                                     charCode = (ushort)(charCode & 0x1Fu); // value is equal to the character code modulo 32
 
-                                    ProcessSetChar(ref context, (char)charCode, context.AppendCharSafe, ref parser, startIndex);
+                                    ProcessSetChar((char)charCode, parser._appendCharSafe, parser, startIndex);
                                     i++;
                                     break;
                                 }
@@ -241,48 +241,48 @@ public partial class Tokenizer
                         // * unterminated caret notation escapes (e.g. /\c/ --> @"\\c",
                         // * invalid caret notation escapes (e.g. /\ch/ --> @"\\ch").
                         // (See also https://stackoverflow.com/a/48718489/8656352)
-                        if (!context.WithinSet)
+                        if (!parser.WithinSet)
                         {
                             sb?.Append('\\').Append('\\').Append(ch);
-                            context.ClearFollowingQuantifierError();
+                            parser.ClearFollowingQuantifierError();
                         }
                         else
                         {
                             // Unterminated/invalid cases like \c is interpreted as \\c even in character sets:
                             // /[\c]/ is equivalent to @"[\\c]" (not a typo, this does match both '\' and 'c')
                             sb?.Append('\\');
-                            ProcessSetChar(ref context, '\\', context.AppendChar, ref parser, startIndex);
-                            ProcessSetChar(ref context, ch, context.AppendChar, ref parser, startIndex);
+                            ProcessSetChar('\\', parser._appendChar, parser, startIndex);
+                            ProcessSetChar(ch, parser._appendChar, parser, startIndex);
                         }
                         break;
 
                     // CharacterEscape (octal)
                     case '0':
                         ParseOctalEscape(pattern, ref i, out charCode);
-                        if (!context.WithinSet)
+                        if (!parser.WithinSet)
                         {
-                            context.AppendCharSafe?.Invoke(sb!, (char)charCode);
-                            context.ClearFollowingQuantifierError();
+                            parser._appendCharSafe?.Invoke(sb!, (char)charCode);
+                            parser.ClearFollowingQuantifierError();
                         }
                         else
                         {
-                            ProcessSetChar(ref context, (char)charCode, context.AppendCharSafe, ref parser, startIndex);
+                            ProcessSetChar((char)charCode, parser._appendCharSafe, parser, startIndex);
                         }
                         break;
 
                     // DecimalEscape / CharacterEscape (octal)
                     case >= '1' and <= '9':
-                        if (!context.WithinSet)
+                        if (!parser.WithinSet)
                         {
                             // Outside character sets, numbers may be backreferences (in this case the number is interpreted as decimal).
-                            if (parser.TryAdjustBackreference(ref context, startIndex, out conversionError))
+                            if (parser.TryAdjustBackreference(startIndex, out conversionError))
                             {
                                 if (conversionError is not null)
                                 {
                                     return false;
                                 }
 
-                                context.ClearFollowingQuantifierError();
+                                parser.ClearFollowingQuantifierError();
                                 break;
                             }
                         }
@@ -296,39 +296,39 @@ public partial class Tokenizer
                         {
                             // \8 and \9 are interpreted as plain digit characters. However, we can't simply unescape them because
                             // that might cause problems in patterns like /()\1\8/
-                            if (!context.WithinSet)
+                            if (!parser.WithinSet)
                             {
-                                context.AppendCharSafe?.Invoke(sb!, ch);
-                                context.ClearFollowingQuantifierError();
+                                parser._appendCharSafe?.Invoke(sb!, ch);
+                                parser.ClearFollowingQuantifierError();
                             }
                             else
                             {
-                                ProcessSetChar(ref context, ch, context.AppendCharSafe, ref parser, startIndex);
+                                ProcessSetChar(ch, parser._appendCharSafe, parser, startIndex);
                             }
                         }
                         break;
 
                     // 'k' GroupName
                     case 'k':
-                        if (context.CapturingGroupNames is null)
+                        if (parser._capturingGroupNames is not { Count: > 0 })
                         {
                             // When the pattern contains no named capturing group,
                             // \k escapes are ignored - but not by the .NET regex engine,
                             // so they need to be rewritten (e.g. /\k<a>/ --> @"k<a>", /[\k<a>]/ --> @"[k<a>]").
                             sb?.Append(ch);
-                            context.ClearFollowingQuantifierError();
+                            parser.ClearFollowingQuantifierError();
                             break;
                         }
 
-                        if (!context.WithinSet)
+                        if (!parser.WithinSet)
                         {
-                            parser.AdjustNamedBackreference(ref context, startIndex, out conversionError);
+                            parser.AdjustNamedBackreference(startIndex, out conversionError);
                             if (conversionError is not null)
                             {
                                 return false;
                             }
 
-                            context.ClearFollowingQuantifierError();
+                            parser.ClearFollowingQuantifierError();
                         }
                         else
                         {
@@ -345,7 +345,7 @@ public partial class Tokenizer
 
                         const string invertedWhiteSpacePattern = "\0-\u0008\u000E-\u001F\\x21-\u009F\u00A1-\u167F\u1681-\u1FFF\u200B-\u2027\u202A-\u202E\u2030-\u205E\u2060-\u2FFF\u3001-\uFEFE\uFF00-\uFFFF";
 
-                        if (!context.WithinSet)
+                        if (!parser.WithinSet)
                         {
                             if (sb is not null)
                             {
@@ -363,13 +363,13 @@ public partial class Tokenizer
                                 }
                             }
 
-                            context.ClearFollowingQuantifierError();
+                            parser.ClearFollowingQuantifierError();
                         }
                         else
                         {
                             if (sb is not null)
                             {
-                                if (context.SetRangeStart < 0)
+                                if (parser._setRangeStart < 0)
                                 {
                                     // Cases like /[a-\d]/ are valid in JS but they're problematic in .NET, so they need to be escaped like @"[a\x2D\d]".
                                     sb.Remove(sb.Length - 1, 1);
@@ -390,7 +390,7 @@ public partial class Tokenizer
                                 }
                             }
 
-                            context.SetRangeStart = context.SetRangeStart >= 0 ? SetRangeStartedWithCharClass : SetRangeNotStarted;
+                            parser._setRangeStart = parser._setRangeStart >= 0 ? SetRangeStartedWithCharClass : SetRangeNotStarted;
                         }
                         break;
 
@@ -399,36 +399,36 @@ public partial class Tokenizer
                     case 'p' or 'P':
                     // Several .NET-only escape sequences must be unescaped as RegexOptions.ECMAScript doesn't handle them correctly.
                     case 'a' or 'e':
-                        if (!context.WithinSet)
+                        if (!parser.WithinSet)
                         {
                             sb?.Append(ch);
-                            context.ClearFollowingQuantifierError();
+                            parser.ClearFollowingQuantifierError();
                         }
                         else
                         {
-                            ProcessSetChar(ref context, ch, context.AppendChar, ref parser, startIndex);
+                            ProcessSetChar(ch, parser._appendChar, parser, startIndex);
                         }
                         break;
 
                     default:
-                        if (!context.WithinSet)
+                        if (!parser.WithinSet)
                         {
                             if (ch is '<' or 'A' or 'Z' or 'z' or 'G')
                             {
                                 // These .NET-only escape sequences must be unescaped outside character sets as RegexOptions.ECMAScript doesn't handle them correctly.
                                 sb?.Append(ch);
-                                context.ClearFollowingQuantifierError();
+                                parser.ClearFollowingQuantifierError();
                             }
                             else
                             {
                                 sb?.Append(pattern, startIndex, 2);
                                 if (ch is 'b' or 'B')
                                 {
-                                    context.SetFollowingQuantifierError(RegExpNothingToRepeat);
+                                    parser.SetFollowingQuantifierError(RegExpNothingToRepeat);
                                 }
                                 else
                                 {
-                                    context.ClearFollowingQuantifierError();
+                                    parser.ClearFollowingQuantifierError();
                                 }
                             }
                         }
@@ -436,19 +436,19 @@ public partial class Tokenizer
                         {
                             if (ch != '-')
                             {
-                                if (!TryGetSimpleEscapeCharCode(ch, context.WithinSet, out charCode))
+                                if (!TryGetSimpleEscapeCharCode(ch, parser.WithinSet, out charCode))
                                 {
                                     charCode = ch;
                                 }
 
                                 sb?.Append('\\');
-                                ProcessSetChar(ref context, ch, charCode, context.AppendChar, ref parser, startIndex);
+                                ProcessSetChar(ch, charCode, parser._appendChar, parser, startIndex);
                             }
                             else
                             {
                                 // Within character sets, when range starts with a \- escape sequence, RegexOptions.ECMAScript behaves weird,
                                 // so we need to rewrite such cases (e.g. /[\--0]/ --> /[\x2D-0]/).
-                                ProcessSetChar(ref context, ch, context.AppendCharSafe, ref parser, startIndex);
+                                ProcessSetChar(ch, parser._appendCharSafe, parser, startIndex);
                             }
                         }
                         break;

@@ -123,7 +123,7 @@ public partial class Tokenizer
         _options._errorHandler.Reset();
     }
 
-    internal void ReleaseLargeBuffers()
+    private void ReleaseLargeBuffers()
     {
         (_sb ?? throw new InvalidOperationException()).Clear();
         if (_sb.Capacity > 1024)
@@ -140,10 +140,15 @@ public partial class Tokenizer
             _contextStack.Capacity = 64;
         }
 
-        _codePointRangeCache = null;
+        _regExpParser?.ReleaseReferencesAndLargeBuffers();
     }
 
-    private CodePointRange.Cache? _codePointRangeCache;
+    internal void ReleaseReferencesAndLargeBuffers()
+    {
+        _input = null!;
+        _sourceFile = null!;
+        ReleaseLargeBuffers();
+    }
 
     private Position CurrentPosition { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => new Position(_currentLine, _position - _lineStart); }
 

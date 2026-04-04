@@ -11,7 +11,7 @@ using static SyntaxErrorMessages;
 
 public partial class Tokenizer
 {
-    internal partial struct RegExpParser
+    internal partial class RegExpParser
     {
         private const string MatchSurrogatePairRegex = "[\uD800-\uDBFF][\uDC00-\uDFFF]";
         private const string MatchLoneSurrogateRegex = "[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]";
@@ -24,11 +24,11 @@ public partial class Tokenizer
 
             private UnicodeMode() { }
 
-            public void ProcessChar(ref ParsePatternContext context, char ch, Action<StringBuilder, char>? appender, ref RegExpParser parser)
+            public void ProcessChar(char ch, Action<StringBuilder, char>? appender, RegExpParser parser)
             {
-                ref readonly var sb = ref context.StringBuilder;
+                ref readonly var sb = ref parser._stringBuilder;
                 ref readonly var pattern = ref parser._pattern;
-                ref var i = ref context.Index;
+                ref var i = ref parser._index;
 
                 if (!ch.IsSurrogate())
                 {
@@ -91,48 +91,48 @@ public partial class Tokenizer
                 }
             }
 
-            public void ProcessSetSpecialChar(ref ParsePatternContext context, char ch) { }
+            public void ProcessSetSpecialChar(char ch, RegExpParser parser) { }
 
-            public void ProcessSetChar(ref ParsePatternContext context, char ch, Action<StringBuilder, char>? appender, ref RegExpParser parser, int startIndex)
+            public void ProcessSetChar(char ch, Action<StringBuilder, char>? appender, RegExpParser parser, int startIndex)
             {
                 ref readonly var pattern = ref parser._pattern;
-                ref var i = ref context.Index;
+                ref var i = ref parser._index;
 
                 if (ch.IsHighSurrogate() && ((char)pattern.CharCodeAt(i + 1)).IsLowSurrogate())
                 {
                     // Surrogate pairs should be surrounded by a non-capturing group to act as one character.
-                    AddSetCodePoint(ref context, (int)UnicodeHelper.GetCodePoint(ch, pattern[i + 1]), ref parser, startIndex);
+                    AddSetCodePoint((int)UnicodeHelper.GetCodePoint(ch, pattern[i + 1]), parser, startIndex);
                     i++;
                 }
                 else
                 {
-                    AddSetCodePoint(ref context, ch, ref parser, startIndex);
+                    AddSetCodePoint(ch, parser, startIndex);
                 }
             }
 
-            private static void AddSetCodePoint(ref ParsePatternContext context, int cp, ref RegExpParser parser, int startIndex)
+            private static void AddSetCodePoint(int cp, RegExpParser parser, int startIndex)
             {
                 Debug.Assert(cp is >= 0 and <= UnicodeHelper.LastCodePoint, "Invalid end code point.");
 
-                var sb = context.StringBuilder;
+                var sb = parser._stringBuilder;
 
-                if (context.SetRangeStart >= 0)
+                if (parser._setRangeStart >= 0)
                 {
                     if (sb is not null)
                     {
-                        context.UnicodeSet.Add(new CodePointRange(cp));
+                        parser._unicodeSet.Add(new CodePointRange(cp));
                     }
 
-                    context.SetRangeStart = cp;
+                    parser._setRangeStart = cp;
                 }
                 else
                 {
-                    context.SetRangeStart = ~context.SetRangeStart;
+                    parser._setRangeStart = ~parser._setRangeStart;
 
                     // Cases like /[z-a]/u or /[\d-a]/u are syntax error.
-                    if (context.SetRangeStart > cp)
+                    if (parser._setRangeStart > cp)
                     {
-                        if (context.SetRangeStart <= UnicodeHelper.LastCodePoint)
+                        if (parser._setRangeStart <= UnicodeHelper.LastCodePoint)
                         {
                             parser.ReportSyntaxError(startIndex, RegExpRangeOutOfOrderCharacterClass);
                         }
@@ -144,30 +144,30 @@ public partial class Tokenizer
 
                     if (sb is not null)
                     {
-                        context.UnicodeSet.LastItemRef() = new CodePointRange(context.SetRangeStart, cp);
+                        parser._unicodeSet.LastItemRef() = new CodePointRange(parser._setRangeStart, cp);
                     }
 
-                    context.SetRangeStart = SetRangeNotStarted;
+                    parser._setRangeStart = SetRangeNotStarted;
                 }
             }
 
-            public bool RewriteSet(ref ParsePatternContext context, ref RegExpParser parser)
+            public bool RewriteSet(RegExpParser parser)
             {
-                ref readonly var sb = ref context.StringBuilder;
+                ref readonly var sb = ref parser._stringBuilder;
                 ref readonly var pattern = ref parser._pattern;
 
                 if (sb is not null)
                 {
-                    if (context.SetRangeStart < 0)
+                    if (parser._setRangeStart < 0)
                     {
-                        context.UnicodeSet.Add(new CodePointRange('-'));
+                        parser._unicodeSet.Add(new CodePointRange('-'));
                     }
 
-                    CodePointRange.NormalizeRanges(ref context.UnicodeSet);
+                    CodePointRange.NormalizeRanges(ref parser._unicodeSet);
 
-                    AppendSet(sb, context.UnicodeSet.AsReadOnlySpan(), isInverted: pattern.CharCodeAt(context.SetStartIndex + 1) == '^');
+                    AppendSet(sb, parser._unicodeSet.AsReadOnlySpan(), isInverted: pattern.CharCodeAt(parser._setStartIndex + 1) == '^');
 
-                    context.UnicodeSet = default;
+                    parser._unicodeSet.Clear();
                 }
 
                 return true;
@@ -534,7 +534,7 @@ public partial class Tokenizer
                 set.AddRange(ranges);
             }
 
-            private static bool ValidateUnicodeProperty(ReadOnlyMemory<char> expression, bool translateToRanges, ref RegExpParser parser, out CodePointRange[]? codePointRanges)
+            private static bool ValidateUnicodeProperty(ReadOnlyMemory<char> expression, bool translateToRanges, RegExpParser parser, out CodePointRange[]? codePointRanges)
             {
                 var index = expression.Span.IndexOf('=');
                 if (index >= 0)
@@ -589,9 +589,9 @@ public partial class Tokenizer
                 }
             }
 
-            public void RewriteDot(ref ParsePatternContext context)
+            public void RewriteDot(RegExpParser parser)
             {
-                ref readonly var sb = ref context.StringBuilder;
+                ref readonly var sb = ref parser._stringBuilder;
                 if (sb is not null)
                 {
                     // '.' has to be adjusted to also match all surrogate pairs.
@@ -599,7 +599,7 @@ public partial class Tokenizer
                     sb.Append("(?:").Append(MatchSurrogatePairRegex)
                         .Append('|').Append(MatchLoneSurrogateRegex)
                         .Append('|');
-                    ((context.EffectiveFlags & RegExpFlags.DotAll) != 0
+                    ((parser._effectiveFlags & RegExpFlags.DotAll) != 0
                         ? sb.Append(MatchAnyButSurrogateRegex)
                         : sb.Append(MatchAnyButNewLineAndSurrogateRegex))
                         .Append(')');
@@ -618,18 +618,18 @@ public partial class Tokenizer
                 );
             }
 
-            public void HandleInvalidRangeQuantifier(ref ParsePatternContext context, ref RegExpParser parser, int startIndex)
+            public void HandleInvalidRangeQuantifier(RegExpParser parser, int startIndex)
             {
                 parser.ReportSyntaxError(startIndex, RegExpIncompleteQuantifier);
             }
 
-            public bool AdjustEscapeSequence(ref ParsePatternContext context, ref RegExpParser parser, out RegExpConversionError? conversionError)
+            public bool AdjustEscapeSequence(RegExpParser parser, out RegExpConversionError? conversionError)
             {
                 // https://tc39.es/ecma262/#prod-AtomEscape
 
-                ref readonly var sb = ref context.StringBuilder;
+                ref readonly var sb = ref parser._stringBuilder;
                 ref readonly var pattern = ref parser._pattern;
-                ref var i = ref context.Index;
+                ref var i = ref parser._index;
 
                 ushort charCode, charCode2;
                 int cp;
@@ -652,18 +652,18 @@ public partial class Tokenizer
                             cp = default; // keeps the compiler happy
                         }
 
-                        if (!context.WithinSet)
+                        if (!parser.WithinSet)
                         {
                             if (sb is not null)
                             {
                                 AppendCodePointSafe(sb, cp);
                             }
 
-                            context.ClearFollowingQuantifierError();
+                            parser.ClearFollowingQuantifierError();
                         }
                         else
                         {
-                            AddSetCodePoint(ref context, cp, ref parser, startIndex);
+                            AddSetCodePoint(cp, parser, startIndex);
                         }
                         break;
 
@@ -679,18 +679,18 @@ public partial class Tokenizer
                                 if (TryReadHexEscape(pattern, ref endIndex, endIndex: pattern.Length, charCodeLength: 4, out charCode2) && ((char)charCode2).IsLowSurrogate())
                                 {
                                     cp = (int)UnicodeHelper.GetCodePoint((char)charCode, (char)charCode2);
-                                    if (!context.WithinSet)
+                                    if (!parser.WithinSet)
                                     {
                                         if (sb is not null)
                                         {
                                             AppendCodePointSafe(sb, cp);
                                         }
 
-                                        context.ClearFollowingQuantifierError();
+                                        parser.ClearFollowingQuantifierError();
                                     }
                                     else
                                     {
-                                        AddSetCodePoint(ref context, cp, ref parser, startIndex);
+                                        AddSetCodePoint(cp, parser, startIndex);
                                     }
 
                                     i = endIndex;
@@ -698,18 +698,18 @@ public partial class Tokenizer
                                 }
                             }
 
-                            if (!context.WithinSet)
+                            if (!parser.WithinSet)
                             {
                                 if (sb is not null)
                                 {
                                     AppendUnicodeCharSafe(sb, (char)charCode);
                                 }
 
-                                context.ClearFollowingQuantifierError();
+                                parser.ClearFollowingQuantifierError();
                             }
                             else
                             {
-                                AddSetCodePoint(ref context, (char)charCode, ref parser, startIndex);
+                                AddSetCodePoint((char)charCode, parser, startIndex);
                             }
                         }
                         else
@@ -733,14 +733,14 @@ public partial class Tokenizer
                             {
                                 charCode = (ushort)(char.ToUpperInvariant(pattern[++i]) - '@');
 
-                                if (!context.WithinSet)
+                                if (!parser.WithinSet)
                                 {
-                                    context.AppendCharSafe?.Invoke(sb!, (char)charCode);
-                                    context.ClearFollowingQuantifierError();
+                                    parser._appendCharSafe?.Invoke(sb!, (char)charCode);
+                                    parser.ClearFollowingQuantifierError();
                                 }
                                 else
                                 {
-                                    AddSetCodePoint(ref context, charCode, ref parser, startIndex);
+                                    AddSetCodePoint(charCode, parser, startIndex);
                                 }
                                 break;
                             }
@@ -753,14 +753,14 @@ public partial class Tokenizer
                     case '0':
                         if (!((char)pattern.CharCodeAt(i + 1)).IsDecimalDigit())
                         {
-                            if (!context.WithinSet)
+                            if (!parser.WithinSet)
                             {
-                                context.AppendCharSafe?.Invoke(sb!, '\0');
-                                context.ClearFollowingQuantifierError();
+                                parser._appendCharSafe?.Invoke(sb!, '\0');
+                                parser.ClearFollowingQuantifierError();
                             }
                             else
                             {
-                                AddSetCodePoint(ref context, 0, ref parser, startIndex);
+                                AddSetCodePoint(0, parser, startIndex);
                             }
                         }
                         else
@@ -771,23 +771,23 @@ public partial class Tokenizer
 
                     // DecimalEscape
                     case >= '1' and <= '9':
-                        if (!context.WithinSet)
+                        if (!parser.WithinSet)
                         {
                             // Outside character sets, numbers may be backreferences (in this case the number is interpreted as decimal).
-                            if (parser.TryAdjustBackreference(ref context, startIndex, out conversionError))
+                            if (parser.TryAdjustBackreference(startIndex, out conversionError))
                             {
                                 if (conversionError is not null)
                                 {
                                     return false;
                                 }
 
-                                context.ClearFollowingQuantifierError();
+                                parser.ClearFollowingQuantifierError();
                                 break;
                             }
                         }
 
                         // When the number is not a backreference, it's a syntax error.
-                        if (!context.WithinSet || ch >= '8')
+                        if (!parser.WithinSet || ch >= '8')
                         {
                             parser.ReportSyntaxError(startIndex, RegExpInvalidEscape);
                         }
@@ -799,15 +799,15 @@ public partial class Tokenizer
 
                     // 'k' GroupName
                     case 'k':
-                        if (!context.WithinSet && parser._tokenizer._options._ecmaVersion >= EcmaVersion.ES9)
+                        if (!parser.WithinSet && parser._tokenizer._options._ecmaVersion >= EcmaVersion.ES9)
                         {
-                            parser.AdjustNamedBackreference(ref context, startIndex, out conversionError);
+                            parser.AdjustNamedBackreference(startIndex, out conversionError);
                             if (conversionError is not null)
                             {
                                 return false;
                             }
 
-                            context.ClearFollowingQuantifierError();
+                            parser.ClearFollowingQuantifierError();
                         }
                         else
                         {
@@ -818,7 +818,7 @@ public partial class Tokenizer
 
                     // CharacterClassEscape
                     case 'd' or 'D' or 's' or 'S' or 'w' or 'W':
-                        if (!context.WithinSet)
+                        if (!parser.WithinSet)
                         {
                             // RegexOptions.ECMAScript incorrectly interprets \s as [\f\n\r\t\v\u0020]. This doesn't align with the JS specification,
                             // which defines \s as [\f\n\r\t\v\u0020\u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]. We need to adjust both \s and \S.
@@ -845,21 +845,21 @@ public partial class Tokenizer
                                 }
                             }
 
-                            context.ClearFollowingQuantifierError();
+                            parser.ClearFollowingQuantifierError();
                         }
                         else
                         {
-                            if (context.SetRangeStart < 0)
+                            if (parser._setRangeStart < 0)
                             {
                                 parser.ReportSyntaxError(startIndex, RegExpInvalidCharacterClass);
                             }
 
                             if (sb is not null)
                             {
-                                AddStandardCharClass(ref context.UnicodeSet, ch);
+                                AddStandardCharClass(ref parser._unicodeSet, ch);
                             }
 
-                            context.SetRangeStart = SetRangeStartedWithCharClass;
+                            parser._setRangeStart = SetRangeStartedWithCharClass;
                         }
                         break;
 
@@ -874,9 +874,9 @@ public partial class Tokenizer
 
                                 endIndex = pattern.IndexOf('}', i + 2);
                                 if (endIndex < 0
-                                    || !ValidateUnicodeProperty(pattern.AsMemory(i + 2, endIndex - (i + 2)), translateToRanges: sb is not null, ref parser, out codePointRanges))
+                                    || !ValidateUnicodeProperty(pattern.AsMemory(i + 2, endIndex - (i + 2)), translateToRanges: sb is not null, parser, out codePointRanges))
                                 {
-                                    if (!context.WithinSet)
+                                    if (!parser.WithinSet)
                                     {
                                         parser.ReportSyntaxError(startIndex, RegExpInvalidPropertyName);
                                     }
@@ -914,35 +914,35 @@ public partial class Tokenizer
                                     codePointRangeSpan = default;
                                 }
 
-                                if (!context.WithinSet)
+                                if (!parser.WithinSet)
                                 {
                                     if (sb is not null)
                                     {
                                         AppendSet(sb, codePointRangeSpan, isInverted: false);
                                     }
 
-                                    context.ClearFollowingQuantifierError();
+                                    parser.ClearFollowingQuantifierError();
                                 }
                                 else
                                 {
-                                    if (context.SetRangeStart < 0)
+                                    if (parser._setRangeStart < 0)
                                     {
                                         parser.ReportSyntaxError(startIndex, RegExpInvalidCharacterClass);
                                     }
 
                                     if (sb is not null)
                                     {
-                                        context.UnicodeSet.AddRange(codePointRangeSpan);
+                                        parser._unicodeSet.AddRange(codePointRangeSpan);
                                     }
 
-                                    context.SetRangeStart = SetRangeStartedWithCharClass;
+                                    parser._setRangeStart = SetRangeStartedWithCharClass;
                                 }
 
                                 i = endIndex;
                             }
                             else
                             {
-                                if (!context.WithinSet)
+                                if (!parser.WithinSet)
                                 {
                                     parser.ReportSyntaxError(startIndex, RegExpInvalidPropertyName);
                                 }
@@ -960,26 +960,26 @@ public partial class Tokenizer
                         break;
 
                     default:
-                        if (!TryGetSimpleEscapeCharCode(ch, context.WithinSet, out charCode))
+                        if (!TryGetSimpleEscapeCharCode(ch, parser.WithinSet, out charCode))
                         {
                             parser.ReportSyntaxError(startIndex, RegExpInvalidEscape);
                         }
 
-                        if (!context.WithinSet)
+                        if (!parser.WithinSet)
                         {
                             sb?.Append(pattern, startIndex, 2);
                             if (ch is 'b' or 'B')
                             {
-                                context.SetFollowingQuantifierError(RegExpNothingToRepeat);
+                                parser.SetFollowingQuantifierError(RegExpNothingToRepeat);
                             }
                             else
                             {
-                                context.ClearFollowingQuantifierError();
+                                parser.ClearFollowingQuantifierError();
                             }
                         }
                         else
                         {
-                            AddSetCodePoint(ref context, charCode, ref parser, startIndex);
+                            AddSetCodePoint(charCode, parser, startIndex);
                         }
                         break;
                 }

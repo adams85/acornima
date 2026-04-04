@@ -132,7 +132,7 @@ public partial class RegExpTests
     {
         // TODO: Generate these tests when Duplicate named capturing groups (https://github.com/tc39/proposal-duplicate-named-capturing-groups) gets implemented in V8.
 
-        var parser = new Tokenizer.RegExpParser(pattern, flags, new TokenizerOptions
+        var parser = CreateRegExpParser(pattern, flags, new TokenizerOptions
         {
             ExperimentalESFeatures = ExperimentalESFeatures.RegExpDuplicateNamedCapturingGroups,
             RegExpParseMode = RegExpParseMode.AdaptToInterpreted,
@@ -188,7 +188,7 @@ public partial class RegExpTests
 
         static void AssertConversion(string pattern, string flags, string expected)
         {
-            var parser = new Tokenizer.RegExpParser(pattern, flags, new TokenizerOptions
+            var parser = CreateRegExpParser(pattern, flags, new TokenizerOptions
             {
                 ExperimentalESFeatures = ExperimentalESFeatures.RegExpModifiers,
                 RegExpParseMode = RegExpParseMode.AdaptToInterpreted,
@@ -202,7 +202,7 @@ public partial class RegExpTests
     [Fact]
     public void ShouldNotAffectNonCapturingGroupsWhenModifiersEnabled()
     {
-        var parser = new Tokenizer.RegExpParser("(?:a)", "", new TokenizerOptions
+        var parser = CreateRegExpParser("(?:a)", "", new TokenizerOptions
         {
             ExperimentalESFeatures = ExperimentalESFeatures.RegExpModifiers,
             RegExpParseMode = RegExpParseMode.AdaptToInterpreted,
@@ -258,7 +258,7 @@ public partial class RegExpTests
     [Theory]
     public void ShouldMatchRegExpModifiers(string pattern, string flags, string input, bool expectedMatch)
     {
-        var parser = new Tokenizer.RegExpParser(pattern, flags, new TokenizerOptions
+        var parser = CreateRegExpParser(pattern, flags, new TokenizerOptions
         {
             ExperimentalESFeatures = ExperimentalESFeatures.RegExpModifiers,
             RegExpParseMode = RegExpParseMode.AdaptToInterpreted,
@@ -277,7 +277,7 @@ public partial class RegExpTests
     [Fact]
     public void ShouldRejectModifierSyntaxWhenFeatureDisabled()
     {
-        var parser = new Tokenizer.RegExpParser("(?i:abc)", "", new TokenizerOptions
+        var parser = CreateRegExpParser("(?i:abc)", "", new TokenizerOptions
         {
             ExperimentalESFeatures = ExperimentalESFeatures.None,
             RegExpParseMode = RegExpParseMode.Validate,
@@ -290,7 +290,7 @@ public partial class RegExpTests
     [Fact]
     public void ShouldRejectModifierSyntaxWhenFeatureEnabledButTargetingPreES2018()
     {
-        var parser = new Tokenizer.RegExpParser("(?i:abc)", "", new TokenizerOptions
+        var parser = CreateRegExpParser("(?i:abc)", "", new TokenizerOptions
         {
             EcmaVersion = EcmaVersion.ES2017,
             ExperimentalESFeatures = ExperimentalESFeatures.RegExpModifiers,
@@ -318,7 +318,7 @@ public partial class RegExpTests
 #endif
     public void ShouldNotCompileNegativeLookaroundOnNET7OrLater(string pattern, bool compileRegex, bool expectedIsCompiled)
     {
-        var parser = new Tokenizer.RegExpParser(pattern, string.Empty, new TokenizerOptions
+        var parser = CreateRegExpParser(pattern, string.Empty, new TokenizerOptions
         {
             RegExpParseMode = compileRegex ? RegExpParseMode.AdaptToCompiled : RegExpParseMode.AdaptToInterpreted,
             Tolerant = false
@@ -327,5 +327,13 @@ public partial class RegExpTests
         Assert.True(parseResult.Success);
         Assert.NotNull(parseResult.Regex);
         Assert.Equal(expectedIsCompiled, (parseResult.Regex.Options & RegexOptions.Compiled) != 0);
+    }
+
+    private static Tokenizer.RegExpParser CreateRegExpParser(string pattern, string flags, TokenizerOptions tokenizerOptions)
+    {
+        var tokenizer = new Tokenizer(string.Empty, tokenizerOptions);
+        var regExpParser = tokenizer._regExpParser ??= new Tokenizer.RegExpParser(tokenizer);
+        regExpParser.Reset(pattern, patternStartIndex: 0, flags, flagsStartIndex: 0);
+        return regExpParser;
     }
 }

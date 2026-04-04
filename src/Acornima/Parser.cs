@@ -57,7 +57,7 @@ public sealed partial class Parser : IParser
         }
         finally
         {
-            ReleaseLargeBuffers();
+            ReleaseReferencesAndLargeBuffers();
         }
     }
 
@@ -84,7 +84,7 @@ public sealed partial class Parser : IParser
         }
         finally
         {
-            ReleaseLargeBuffers();
+            ReleaseReferencesAndLargeBuffers();
         }
     }
 
@@ -112,7 +112,7 @@ public sealed partial class Parser : IParser
         }
         finally
         {
-            ReleaseLargeBuffers();
+            ReleaseReferencesAndLargeBuffers();
         }
     }
 

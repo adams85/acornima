@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using Acornima.Helpers;
 
 namespace Acornima;
@@ -15,10 +16,13 @@ using static SyntaxErrorMessages;
 
 public sealed partial class Tokenizer : ITokenizer
 {
+    private static Tokenizer? s_cachedInstanceForRegExpParsing;
+
     internal const string UnknownError = nameof(UnknownError);
 
     private readonly TokenizerOptions _options;
     private readonly IExtension? _extension;
+    internal RegExpParser? _regExpParser;
 
     internal Tokenizer(TokenizerOptions options, IExtension? extension)
     {
@@ -769,9 +773,16 @@ public sealed partial class Tokenizer : ITokenizer
                         var patternCached = DeduplicateString(pattern, ref _stringPool, NonIdentifierDeduplicationThreshold);
                         var flagsCached = DeduplicateString(flags, ref _stringPool);
 
-                        var parseResult = _options._regExpParseMode != RegExpParseMode.Skip
-                            ? new RegExpParser(patternCached, start, flagsCached, flagsStart, this).Parse()
-                            : default;
+                        RegExpParseResult parseResult;
+                        if (_options._regExpParseMode != RegExpParseMode.Skip)
+                        {
+                            (_regExpParser ??= new RegExpParser(this)).Reset(patternCached, start, flagsCached, flagsStart);
+                            parseResult = _regExpParser.Parse();
+                        }
+                        else
+                        {
+                            parseResult = default;
+                        }
 
                         var regExpValue = new RegExpValue(patternCached, flagsCached);
 
@@ -1931,21 +1942,29 @@ public sealed partial class Tokenizer : ITokenizer
             throw new ArgumentNullException(nameof(flags));
         }
 
-        Debug.Assert(TokenizerOptions.Default is { RegExpParseMode: RegExpParseMode.Validate, Tolerant: false, EcmaVersion: EcmaVersion.Latest, ExperimentalESFeatures: ExperimentalESFeatures.None });
-
-        var tokenizerOptions = ecmaVersion == EcmaVersion.Latest
-            ? TokenizerOptions.Default
-            : new TokenizerOptions { EcmaVersion = ecmaVersion, ExperimentalESFeatures = experimentalESFeatures };
-
+        var tokenizer = Interlocked.Exchange(ref s_cachedInstanceForRegExpParsing, value: null) ?? new Tokenizer(string.Empty, new TokenizerOptions());
         try
         {
-            var parseResult = new RegExpParser(pattern, flags, tokenizerOptions).Parse();
+            var tokenizerOptions = tokenizer._options;
+            tokenizerOptions._ecmaVersion = ecmaVersion;
+            tokenizerOptions._experimentalESFeatures = experimentalESFeatures;
+            tokenizerOptions._regExpParseMode = RegExpParseMode.Validate;
+            tokenizerOptions._tolerant = false;
+
+            var regExpParser = tokenizer._regExpParser ??= new RegExpParser(tokenizer);
+            regExpParser.Reset(pattern, patternStartIndex: 0, flags, flagsStartIndex: 0);
+            var parseResult = regExpParser.Parse();
             Debug.Assert(parseResult.Success);
         }
         catch (ParseErrorException ex)
         {
             error = ex.Error;
             return false;
+        }
+        finally
+        {
+            tokenizer._regExpParser?.ReleaseReferencesAndLargeBuffers();
+            Volatile.Write(ref s_cachedInstanceForRegExpParsing, tokenizer);
         }
 
         error = default;
@@ -1983,16 +2002,25 @@ public sealed partial class Tokenizer : ITokenizer
             throw new ArgumentNullException(nameof(flags));
         }
 
-        var tokenizerOptions = new TokenizerOptions
+        var tokenizer = Interlocked.Exchange(ref s_cachedInstanceForRegExpParsing, value: null) ?? new Tokenizer(string.Empty, new TokenizerOptions());
+        try
         {
-            EcmaVersion = ecmaVersion,
-            ExperimentalESFeatures = experimentalESFeatures,
-            RegExpParseMode = !compiled ? RegExpParseMode.AdaptToInterpreted : RegExpParseMode.AdaptToCompiled,
-            RegexTimeout = matchTimeout ?? TokenizerOptions.Default.RegexTimeout,
-            Tolerant = !throwIfNotAdaptable,
-        };
+            var tokenizerOptions = tokenizer._options;
+            tokenizerOptions._ecmaVersion = ecmaVersion;
+            tokenizerOptions._experimentalESFeatures = experimentalESFeatures;
+            tokenizerOptions._regExpParseMode = !compiled ? RegExpParseMode.AdaptToInterpreted : RegExpParseMode.AdaptToCompiled;
+            tokenizerOptions._regexTimeout = matchTimeout ?? TokenizerOptions.Default.RegexTimeout;
+            tokenizerOptions._tolerant = !throwIfNotAdaptable;
 
-        return new RegExpParser(pattern, flags, tokenizerOptions).Parse();
+            var regExpParser = tokenizer._regExpParser ??= new RegExpParser(tokenizer);
+            regExpParser.Reset(pattern, patternStartIndex: 0, flags, flagsStartIndex: 0);
+            return regExpParser.Parse();
+        }
+        finally
+        {
+            tokenizer._regExpParser?.ReleaseReferencesAndLargeBuffers();
+            Volatile.Write(ref s_cachedInstanceForRegExpParsing, tokenizer);
+        }
     }
 
     internal interface IExtension
