@@ -718,6 +718,15 @@ namespace Acornima {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid regular expression: /{0}/{1}: Invalid set operation in character class.
+        /// </summary>
+        internal static string RegExpInvalidClassSetOperation {
+            get {
+                return ResourceManager.GetString("RegExpInvalidClassSetOperation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid regular expression: /{0}/{1}: Invalid decimal escape.
         /// </summary>
         internal static string RegExpInvalidDecimalEscape {

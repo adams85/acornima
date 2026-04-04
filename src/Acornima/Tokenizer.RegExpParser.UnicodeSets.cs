@@ -11,151 +11,99 @@ public partial class Tokenizer
 {
     internal sealed partial class RegExpParser
     {
-        // Return values for class set parsing methods.
-        // Indicates whether the parsed construct can match multi-code-point strings.
-        private const int CharSetNone = 0;   // Nothing parsed
-        private const int CharSetOk = 1;     // Parsed, cannot contain strings
-        private const int CharSetString = 2; // Parsed, can contain strings
-
-        private const int MaxClassSetNestingDepth = 64;
-
-        /// <summary>
-        /// IMode implementation for RegExp unicode sets mode (v flag).
-        /// Validation-only: no .NET Regex conversion is performed.
-        /// The v flag implies unicode semantics (switchU=true in acorn) plus new class set expressions.
-        /// </summary>
         private sealed class UnicodeSetsMode : IMode
         {
+            // Return values for class set parsing methods.
+            // Indicates whether the parsed construct can match multi-code-point strings.
+            private const int CharSetNone = 0; // Nothing parsed
+            private const int CharSetOk = 1; // Parsed, cannot contain strings
+            private const int CharSetString = 2; // Parsed, can contain strings
+
             public static readonly UnicodeSetsMode Instance = new();
 
             private UnicodeSetsMode() { }
 
-            // Outside character classes, v-flag behaves like u-flag.
-            // Since we're validation-only (sb is always null), we just need to validate syntax.
+            // Outside character classes, flag 'v' behaves like flag 'u'.
+            // Since only validation is currently supported for flag 'v', parser._stringBuilder is always null.
 
             public void ProcessChar(char ch, Action<StringBuilder, char>? appender, RegExpParser parser)
             {
-                // Even in validation-only mode, we need unicode-aware consumption
-                // (surrogate pairs) so the main pattern parser advances correctly.
-                UnicodeMode.Instance.ProcessChar(ch, appender, parser);
+                var pattern = parser._pattern;
+                ref var i = ref parser._index;
+
+                if (ch.IsHighSurrogate() && ((char)pattern.CharCodeAt(i + 1)).IsLowSurrogate())
+                {
+                    i++;
+                }
             }
 
             public void ProcessSetSpecialChar(char ch, RegExpParser parser)
             {
-                // Not called for UnicodeSetsMode — TryParseCharacterClass handles all set logic.
+                // Not called for this mode, ProcessSetStart handles all set logic.
+                throw new InvalidOperationException();
             }
 
             public void ProcessSetChar(char ch, Action<StringBuilder, char>? appender, RegExpParser parser, int startIndex)
             {
-                // Not called for UnicodeSetsMode — TryParseCharacterClass handles all set logic.
+                // Not called for this mode, ProcessSetStart handles all set logic.
+                throw new InvalidOperationException();
             }
 
             public bool RewriteSet(RegExpParser parser)
             {
-                // Not called for UnicodeSetsMode.
-                return false;
+                // Not called for this mode as it's validation only.
+                throw new InvalidOperationException();
             }
 
             public void RewriteDot(RegExpParser parser)
             {
-                // Validation-only: no rewriting needed.
+                // No-op for this mode as it's validation only.
             }
 
             public bool AllowsQuantifierAfterGroup(RegExpGroupType groupType)
             {
-                // Same as UnicodeMode.
+                // Same as flag 'u'.
                 return groupType is RegExpGroupType.Capturing or RegExpGroupType.NamedCapturing or RegExpGroupType.NonCapturing;
             }
 
             public void HandleInvalidRangeQuantifier(RegExpParser parser, int startIndex)
             {
-                // In unicode modes, invalid quantifiers are syntax errors (same as UnicodeMode).
+                // Same as flag 'u'.
                 parser.ReportSyntaxError(startIndex, RegExpIncompleteQuantifier);
             }
 
             public bool AdjustEscapeSequence(RegExpParser parser, out RegExpConversionError? conversionError)
             {
-                // Handle \p{...} and \P{...} specially — v-flag allows binary properties of strings (e.g. RGI_Emoji).
-                ref var i = ref parser._index;
-                var pattern = parser._pattern;
-                var ch = pattern.CharCodeAt(i + 1);
-
-                if ((ch == 'p' || ch == 'P') && parser._tokenizer._options._ecmaVersion >= EcmaVersion.ES9)
-                {
-                    if (pattern.CharCodeAt(i + 2) == '{')
-                    {
-                        var endIndex = pattern.IndexOf('}', i + 3);
-                        if (endIndex >= 0)
-                        {
-                            var expression = pattern.AsMemory(i + 3, endIndex - (i + 3));
-                            var isStringProperty = UnicodeProperties.IsAllowedBinaryOfStringsValue(expression, parser._tokenizer._options._ecmaVersion);
-                            if (ValidateUnicodeProperty(expression, translateToRanges: false, parser, out _)
-                                || isStringProperty)
-                            {
-                                // \P (negated) is not allowed with string properties.
-                                if (ch == 'P' && isStringProperty)
-                                {
-                                    parser.ReportSyntaxError(i, RegExpInvalidPropertyName);
-                                }
-
-                                i = endIndex;
-                                parser.ClearFollowingQuantifierError();
-                                conversionError = null;
-                                return true;
-                            }
-                        }
-                        parser.ReportSyntaxError(i, RegExpInvalidPropertyName);
-                    }
-                }
-
-                // For all other escapes, delegate to UnicodeMode.
-                return UnicodeMode.Instance.AdjustEscapeSequence(parser, out conversionError);
+                return UnicodeMode.AdjustEscapeSequence(allowStringProperties: true, parser, out conversionError);
             }
 
-            public bool TryParseCharacterClass(RegExpParser parser)
+            #region Character class parsing
+
+            // Based on: https://github.com/acornjs/acorn/blob/8.16.0/acorn/src/regexp.js
+
+            public void ProcessSetStart(char ch, RegExpParser parser)
             {
                 // Parse the entire [...] block recursively.
-                ref var i = ref parser._index;
-                var pattern = parser._pattern;
-                var classStart = i;
 
-                if (++parser._classSetNestingDepth > MaxClassSetNestingDepth)
-                {
-                    parser.ReportSyntaxError(i, RegExpInvalidCharacterInClass);
-                }
+                var pattern = parser._pattern;
+                ref var i = ref parser._index;
+                var start = i;
 
                 // We're positioned at '['. Advance past it.
-                var negate = pattern.CharCodeAt(i + 1) == '^';
-                i += negate ? 2 : 1;
+                i++;
 
-                var result = ClassContents(parser);
+                var negate = Eat('^', pattern, ref i);
 
-                if (pattern.CharCodeAt(i) != ']')
-                {
-                    parser.ReportSyntaxError(i, RegExpUnterminatedCharacterClass);
-                }
+                var result = ClassSetExpression(parser);
+
+                // i is now at ']', the main loop will advance past it.
 
                 if (negate && result == CharSetString)
                 {
-                    parser.ReportSyntaxError(classStart, RegExpNegatedCharacterClassWithStrings);
+                    parser.ReportSyntaxError(start, RegExpNegatedCharacterClassWithStrings);
                 }
 
-                parser._classSetNestingDepth--;
-
-                // i is now at ']'; the main loop will advance past it.
-                return true;
-            }
-
-            // https://tc39.es/ecma262/#prod-ClassContents
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private static int ClassContents(RegExpParser parser)
-            {
-                if (parser._pattern.CharCodeAt(parser._index) == ']')
-                {
-                    return CharSetOk; // empty class
-                }
-
-                return ClassSetExpression(parser);
+                parser.ClearFollowingQuantifierError();
             }
 
             // https://tc39.es/ecma262/#prod-ClassSetExpression
@@ -164,199 +112,282 @@ public partial class Tokenizer
             // https://tc39.es/ecma262/#prod-ClassSubtraction
             private static int ClassSetExpression(RegExpParser parser)
             {
-                ref var i = ref parser._index;
+                // NOTE: `regexp_classContents` and `regexp_classSetExpression` was merged into this method
+                // to keep the call stack shallow. Common error checking was moved here from call sites.
+                // `regexp_eatClassSetRange` and a call to `regexp_eatClassSetOperand` were also merged into this method
+                // to match the error reporting behavior of V8 and to avoid reparsing of escape sequences.
+
                 var pattern = parser._pattern;
+                ref var i = ref parser._index;
+                int start;
+                int left, right;
+
                 int result = CharSetOk, subResult;
 
-                if (EatClassSetRange(parser))
+                if (pattern.CharCodeAt(i) == ']')
                 {
-                    // Continue with ClassUnion processing below.
+                    return result; // empty class
                 }
-                else if ((subResult = EatClassSetOperand(parser)) != CharSetNone)
+                else if (EatClassSetCharacter(parser, out left))
                 {
+                    // https://tc39.es/ecma262/#prod-ClassSetRange
+                    if (pattern.CharCodeAt(i) == '-')
+                    {
+                        start = ++i;
+                        if (pattern.CharCodeAt(i) == '-')
+                        {
+                            i++;
+                            goto ClassSubtraction;
+                        }
+                        else if (EatClassSetCharacter(parser, out right))
+                        {
+                            if (left > right)
+                            {
+                                parser.ReportSyntaxError(start, RegExpRangeOutOfOrderCharacterClass);
+                            }
+
+                            goto ClassUnion;
+                        }
+                        else if (EatNestedClassOrClassStringDisjunction(parser) != CharSetNone)
+                        {
+                            parser.ReportSyntaxError(start, RegExpInvalidCharacterClass);
+                        }
+                        else
+                        {
+                            goto UnexpectedCharacter;
+                        }
+                    }
+                }
+                else if ((subResult = EatNestedClassOrClassStringDisjunction(parser)) != CharSetNone)
+                {
+                    if (pattern.CharCodeAt(i) == '-' && pattern.CharCodeAt(i + 1) != '-')
+                    {
+                        parser.ReportSyntaxError(i + 1, RegExpInvalidCharacterClass);
+                    }
+
                     if (subResult == CharSetString)
                     {
                         result = CharSetString;
                     }
+                }
+                else
+                {
+                    goto UnexpectedCharacter;
+                }
 
-                    // https://tc39.es/ecma262/#prod-ClassIntersection
-                    var start = i;
-                    while (EatChars(pattern, ref i, '&', '&'))
+                // https://tc39.es/ecma262/#prod-ClassIntersection
+                if (!EatChars('&', '&', pattern, ref i))
+                {
+                    goto MaybeClassSubtraction;
+                }
+
+                do
+                {
+                    if (pattern.CharCodeAt(i) != '&')
                     {
-                        if (pattern.CharCodeAt(i) != '&'
-                            && (subResult = EatClassSetOperand(parser)) != CharSetNone)
+                        // https://tc39.es/ecma262/#prod-ClassSetOperand
+                        if (EatClassSetCharacter(parser, out right))
+                        {
+                            continue;
+                        }
+                        else if ((subResult = EatNestedClassOrClassStringDisjunction(parser)) != CharSetNone)
                         {
                             if (subResult != CharSetString)
                             {
                                 result = CharSetOk;
                             }
+
                             continue;
                         }
-                        parser.ReportSyntaxError(i, RegExpInvalidCharacterInClass);
-                    }
-                    if (start != i)
-                    {
-                        return result;
                     }
 
-                    // https://tc39.es/ecma262/#prod-ClassSubtraction
-                    while (EatChars(pattern, ref i, '-', '-'))
-                    {
-                        if (EatClassSetOperand(parser) != CharSetNone)
-                        {
-                            continue;
-                        }
-                        parser.ReportSyntaxError(i, RegExpInvalidCharacterInClass);
-                    }
-                    if (start != i)
-                    {
-                        return result;
-                    }
-                }
-                else
-                {
                     parser.ReportSyntaxError(i, RegExpInvalidCharacterInClass);
                 }
+                while (EatChars('&', '&', pattern, ref i));
 
-                // https://tc39.es/ecma262/#prod-ClassUnion
-                for (; ; )
-                {
-                    if (EatClassSetRange(parser))
-                    {
-                        continue;
-                    }
-
-                    subResult = EatClassSetOperand(parser);
-                    if (subResult == CharSetNone)
-                    {
-                        return result;
-                    }
-                    if (subResult == CharSetString)
-                    {
-                        result = CharSetString;
-                    }
-                }
-            }
-
-            // https://tc39.es/ecma262/#prod-ClassSetRange
-            private static bool EatClassSetRange(RegExpParser parser)
-            {
-                var saved = parser._index;
-                if (EatClassSetCharacter(parser, out var left))
-                {
-                    if (parser._pattern.CharCodeAt(parser._index) == '-')
-                    {
-                        parser._index++;
-                        if (EatClassSetCharacter(parser, out var right))
-                        {
-                            if (left != -1 && right != -1 && left > right)
-                            {
-                                parser.ReportSyntaxError(saved, RegExpRangeOutOfOrderCharacterClass);
-                            }
-                            return true;
-                        }
-                    }
-                    parser._index = saved;
-                }
-                return false;
-            }
-
-            // https://tc39.es/ecma262/#prod-ClassSetOperand
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private static int EatClassSetOperand(RegExpParser parser)
-            {
-                if (EatClassSetCharacter(parser, out _))
-                {
-                    return CharSetOk;
-                }
-
-                int result;
-                if ((result = EatClassStringDisjunction(parser)) != CharSetNone)
+                if (pattern.CharCodeAt(i) == ']')
                 {
                     return result;
                 }
-
-                return EatNestedClass(parser);
-            }
-
-            // https://tc39.es/ecma262/#prod-NestedClass
-            private static int EatNestedClass(RegExpParser parser)
-            {
-                ref var i = ref parser._index;
-                var pattern = parser._pattern;
-                var saved = i;
-
-                if (pattern.CharCodeAt(i) == '[')
+                else
                 {
-                    if (++parser._classSetNestingDepth > MaxClassSetNestingDepth)
+                    goto UnexpectedCharacter;
+                }
+
+            MaybeClassSubtraction:
+                // https://tc39.es/ecma262/#prod-ClassSubtraction
+                if (!EatChars('-', '-', pattern, ref i))
+                {
+                    goto ClassUnion;
+                }
+
+            ClassSubtraction:
+                do
+                {
+                    // https://tc39.es/ecma262/#prod-ClassSetOperand
+                    if (EatClassSetCharacter(parser, out right))
                     {
-                        parser.ReportSyntaxError(i, RegExpInvalidCharacterInClass);
+                        continue;
+                    }
+                    else if ((subResult = EatNestedClassOrClassStringDisjunction(parser)) != CharSetNone)
+                    {
+                        if (subResult != CharSetString)
+                        {
+                            result = CharSetOk;
+                        }
+
+                        continue;
                     }
 
-                    i++;
-                    var negate = pattern.CharCodeAt(i) == '^';
-                    if (negate)
-                    {
-                        i++;
-                    }
+                    parser.ReportSyntaxError(i, RegExpInvalidCharacterInClass);
+                }
+                while (EatChars('-', '-', pattern, ref i));
 
-                    var result = ClassContents(parser);
+                if (pattern.CharCodeAt(i) == ']')
+                {
+                    return result;
+                }
+                else
+                {
+                    goto UnexpectedCharacter;
+                }
 
+            ClassUnion:
+                // https://tc39.es/ecma262/#prod-ClassUnion
+                for (; ; )
+                {
                     if (pattern.CharCodeAt(i) == ']')
                     {
-                        i++;
-                        parser._classSetNestingDepth--;
-                        if (negate && result == CharSetString)
+                        return result;
+                    }
+                    else if (EatClassSetCharacter(parser, out left))
+                    {
+                        // https://tc39.es/ecma262/#prod-ClassSetRange
+                        if (pattern.CharCodeAt(i) == '-')
                         {
-                            parser.ReportSyntaxError(saved, RegExpNegatedCharacterClassWithStrings);
+                            start = ++i;
+                            if (pattern.CharCodeAt(i) == '-')
+                            {
+                                parser.ReportSyntaxError(start - 1, RegExpInvalidClassSetOperation);
+                            }
+                            else if (EatClassSetCharacter(parser, out right))
+                            {
+                                if (left > right)
+                                {
+                                    parser.ReportSyntaxError(start, RegExpRangeOutOfOrderCharacterClass);
+                                }
+                            }
+                            else if (EatNestedClassOrClassStringDisjunction(parser) != CharSetNone)
+                            {
+                                parser.ReportSyntaxError(start, RegExpInvalidCharacterClass);
+                            }
+                            else
+                            {
+                                goto UnexpectedCharacter;
+                            }
                         }
-                        return result;
                     }
-
-                    parser._classSetNestingDepth--;
-                    i = saved;
-                }
-
-                if (pattern.CharCodeAt(i) == '\\')
-                {
-                    i++; // advance past '\'
-                    var result = EatCharacterClassEscape(parser);
-                    if (result != CharSetNone)
+                    else if ((subResult = EatNestedClassOrClassStringDisjunction(parser)) != CharSetNone
+                        || pattern.CharCodeAt(i) == '-')
                     {
-                        return result;
-                    }
-                    i = saved;
-                }
-
-                return CharSetNone;
-            }
-
-            // https://tc39.es/ecma262/#prod-ClassStringDisjunction
-            private static int EatClassStringDisjunction(RegExpParser parser)
-            {
-                ref var i = ref parser._index;
-                var pattern = parser._pattern;
-                var saved = i;
-
-                // \q{...}
-                if (EatChars(pattern, ref i, '\\', 'q'))
-                {
-                    if (pattern.CharCodeAt(i) == '{')
-                    {
-                        i++;
-                        var result = ClassStringDisjunctionContents(parser);
-                        if (pattern.CharCodeAt(i) == '}')
+                        if (pattern.CharCodeAt(i) == '-')
                         {
-                            i++;
-                            return result;
+                            if (pattern.CharCodeAt(i + 1) != '-')
+                            {
+                                parser.ReportSyntaxError(i + 1, RegExpInvalidCharacterClass);
+                            }
+                            else
+                            {
+                                parser.ReportSyntaxError(i, RegExpInvalidClassSetOperation);
+                            }
+                        }
+
+                        if (subResult == CharSetString)
+                        {
+                            result = CharSetString;
                         }
                     }
                     else
                     {
-                        // Make the same message as V8.
-                        parser.ReportSyntaxError(saved, RegExpInvalidEscape);
+                        goto UnexpectedCharacter;
                     }
-                    i = saved;
+                }
+
+            UnexpectedCharacter:
+                if (pattern.CharCodeAt(i) == '\\')
+                {
+                    parser.ReportSyntaxError(i, RegExpInvalidEscape);
+                }
+                else if (pattern.CharCodeAt(i) >= 0)
+                {
+                    parser.ReportSyntaxError(i, RegExpInvalidCharacterInClass);
+                }
+                else
+                {
+                    parser.ReportSyntaxError(i, RegExpUnterminatedCharacterClass);
+                }
+
+                return CharSetNone; // unreachable, just to keep the compiler happy
+            }
+
+            // https://tc39.es/ecma262/#prod-NestedClass
+            // https://tc39.es/ecma262/#prod-ClassStringDisjunction
+            private static int EatNestedClassOrClassStringDisjunction(RegExpParser parser)
+            {
+                // NOTE: `regexp_eatNestedClass` and `regexp_eatClassStringDisjunction ` was merged into this single method.
+
+                var pattern = parser._pattern;
+                ref var i = ref parser._index;
+                var start = i;
+
+                if (pattern.CharCodeAt(i) == '\\')
+                {
+                    var result = EatCharacterClassEscape(parser);
+                    if (result != CharSetNone)
+                    {
+                        i++;
+                        return result;
+                    }
+
+                    // \q{...}
+                    if (pattern.CharCodeAt(i + 1) == 'q')
+                    {
+                        i += 2;
+
+                        if (!Eat('{', pattern, ref i))
+                        {
+                            parser.ReportSyntaxError(start, RegExpInvalidEscape);
+                        }
+
+                        result = ClassStringDisjunctionContents(parser);
+
+                        if (!Eat('}', pattern, ref i))
+                        {
+                            parser.ReportSyntaxError(i, RegExpInvalidCharacterInClass);
+                        }
+
+                        return result;
+                    }
+                }
+
+                if (Eat('[', pattern, ref i))
+                {
+                    var negate = Eat('^', pattern, ref i);
+
+                    ref var recursionDepth = ref parser._recursionDepthProvider.CurrentDepth;
+                    StackGuard.EnsureSufficientExecutionStack(++recursionDepth);
+
+                    var result = ClassSetExpression(parser);
+
+                    recursionDepth--;
+
+                    if (negate && result == CharSetString)
+                    {
+                        parser.ReportSyntaxError(start, RegExpNegatedCharacterClassWithStrings);
+                    }
+
+                    i++;
+                    return result;
                 }
 
                 return CharSetNone;
@@ -365,15 +396,18 @@ public partial class Tokenizer
             // https://tc39.es/ecma262/#prod-ClassStringDisjunctionContents
             private static int ClassStringDisjunctionContents(RegExpParser parser)
             {
+                var pattern = parser._pattern;
+                ref var i = ref parser._index;
+
                 var result = ClassString(parser);
-                while (parser._pattern.CharCodeAt(parser._index) == '|')
+                while (Eat('|', pattern, ref i))
                 {
-                    parser._index++;
                     if (ClassString(parser) == CharSetString)
                     {
                         result = CharSetString;
                     }
                 }
+
                 return result;
             }
 
@@ -386,342 +420,230 @@ public partial class Tokenizer
                 {
                     count++;
                 }
-                // Exactly 1 character → CharSetOk (single code point, not a "string").
-                // 0 or 2+ characters → CharSetString (empty string or multi-code-point string).
+
                 return count == 1 ? CharSetOk : CharSetString;
             }
 
             // https://tc39.es/ecma262/#prod-ClassSetCharacter
-            private static bool EatClassSetCharacter(RegExpParser parser, out int lastIntValue)
+            private static bool EatClassSetCharacter(RegExpParser parser, out int cp)
             {
-                ref var i = ref parser._index;
                 var pattern = parser._pattern;
-                var saved = i;
+                ref var i = ref parser._index;
 
                 if (pattern.CharCodeAt(i) == '\\')
                 {
-                    i++;
-                    // CharacterEscape
-                    if (EatCharacterEscape(parser, out lastIntValue))
-                    {
-                        return true;
-                    }
-                    // ClassSetReservedPunctuator
-                    if (EatClassSetReservedPunctuator(pattern, ref i, out lastIntValue))
-                    {
-                        return true;
-                    }
-                    // \b (backspace in character class)
-                    if (pattern.CharCodeAt(i) == 'b')
+                    if (EatCharacterEscape(parser, out cp))
                     {
                         i++;
-                        lastIntValue = 0x08; // BS
                         return true;
                     }
-                    i = saved;
-                    lastIntValue = -1;
+
                     return false;
                 }
 
-                var ch = pattern.CharCodeAt(i);
-                if (ch < 0)
+                cp = pattern.CodePointAt(i, pattern.Length);
+                if (cp <= char.MaxValue)
                 {
-                    lastIntValue = -1;
-                    return false;
+                    if (cp < 0 || IsClassSetSyntaxCharacter((char)cp))
+                    {
+                        return false;
+                    }
+
+                    if (cp == pattern.CharCodeAt(i + 1) && IsClassSetReservedDoublePunctuatorCharacter((char)cp))
+                    {
+                        parser.ReportSyntaxError(i, RegExpInvalidClassSetOperation);
+                    }
                 }
 
-                // Check for ClassSetReservedDoublePunctuator: if current char equals next char and is a reserved double punctuator character
-                var next = pattern.CharCodeAt(i + 1);
-                if (ch == next && IsClassSetReservedDoublePunctuatorCharacter(ch))
-                {
-                    lastIntValue = -1;
-                    return false;
-                }
-
-                if (IsClassSetSyntaxCharacter(ch))
-                {
-                    lastIntValue = -1;
-                    return false;
-                }
-
-                // Read as code point (handles surrogate pairs)
-                lastIntValue = pattern.CodePointAt(i, pattern.Length);
-                i += lastIntValue > 0xFFFF ? 2 : 1;
+                i += UnicodeHelper.GetCodePointLength((uint)cp);
                 return true;
             }
 
-            // Parse character escape sequences valid in unicode mode.
-            // Returns true if a valid escape was consumed, with the code point in lastIntValue.
-            private static bool EatCharacterEscape(RegExpParser parser, out int lastIntValue)
+            private static bool EatCharacterEscape(RegExpParser parser, out int cp)
             {
-                ref var i = ref parser._index;
                 var pattern = parser._pattern;
-                var ch = pattern.CharCodeAt(i);
+                ref var i = ref parser._index;
 
+                ushort charCode, charCode2;
+                var startIndex = i++;
+                int endIndex;
+                var ch = pattern[i];
                 switch (ch)
                 {
-                    // IdentityEscape for syntax characters: ^ $ \ . * + ? ( ) [ ] { } |
-                    case '^' or '$' or '\\' or '.' or '*' or '+' or '?' or '(' or ')' or '[' or ']' or '{' or '}' or '|' or '/':
-                        lastIntValue = ch;
-                        i++;
-                        return true;
-
-                    // \f \n \r \t \v
-                    case 'f':
-                        lastIntValue = '\f';
-                        i++;
-                        return true;
-                    case 'n':
-                        lastIntValue = '\n';
-                        i++;
-                        return true;
-                    case 'r':
-                        lastIntValue = '\r';
-                        i++;
-                        return true;
-                    case 't':
-                        lastIntValue = '\t';
-                        i++;
-                        return true;
-                    case 'v':
-                        lastIntValue = '\v';
-                        i++;
-                        return true;
-
-                    // \cA-\cZ, \ca-\cz
-                    case 'c':
-                        if (i + 1 < pattern.Length && ((char)pattern.CharCodeAt(i + 1)).IsBasicLatinLetter())
+                    // CharacterEscape -> RegExpUnicodeEscapeSequence -> u{ CodePoint }
+                    case 'u' when pattern.CharCodeAt(i + 1) == '{':
+                        if (TryReadCodePoint(pattern, ref i, endIndex: pattern.Length, out cp))
                         {
-                            i++;
-                            lastIntValue = char.ToUpperInvariant(pattern[i]) - '@';
-                            i++;
                             return true;
                         }
-                        lastIntValue = -1;
-                        return false;
 
-                    // \0 (NUL, only when not followed by a digit)
+                        parser.ReportSyntaxError(startIndex, RegExpInvalidUnicodeEscape);
+                        break;
+
+                    // CharacterEscape -> RegExpUnicodeEscapeSequence
+                    case 'u':
+                        if (TryReadHexEscape(pattern, ref i, endIndex: pattern.Length, charCodeLength: 4, out charCode))
+                        {
+                            if (((char)charCode).IsHighSurrogate() && i + 2 < pattern.Length && pattern[i + 1] == '\\' && pattern[i + 2] == 'u')
+                            {
+                                endIndex = i + 2;
+                                if (TryReadHexEscape(pattern, ref endIndex, endIndex: pattern.Length, charCodeLength: 4, out charCode2) && ((char)charCode2).IsLowSurrogate())
+                                {
+                                    i = endIndex;
+                                    cp = (int)UnicodeHelper.GetCodePoint((char)charCode, (char)charCode2);
+                                    return true;
+                                }
+                            }
+
+                            cp = charCode;
+                            return true;
+                        }
+
+                        parser.ReportSyntaxError(startIndex, RegExpInvalidUnicodeEscape);
+                        break;
+
+                    // CharacterEscape -> HexEscapeSequence
+                    case 'x':
+                        if (TryReadHexEscape(pattern, ref i, endIndex: pattern.Length, charCodeLength: 2, out charCode))
+                        {
+                            cp = charCode;
+                            return true;
+                        }
+
+                        parser.ReportSyntaxError(startIndex, RegExpInvalidEscape);
+                        break;
+
+                    // CharacterEscape -> c ControlLetter
+                    case 'c':
+                        cp = pattern.CharCodeAt(i + 1);
+                        if (((char)cp).IsBasicLatinLetter())
+                        {
+                            i++;
+                            cp = (ushort)(cp & 0x1F); // value is equal to the character code modulo 32
+                            return true;
+                        }
+
+                        parser.ReportSyntaxError(startIndex, RegExpInvalidUnicodeEscape);
+                        break;
+
+                    // CharacterEscape -> 0 [lookahead ∉ DecimalDigit]
                     case '0':
                         if (!((char)pattern.CharCodeAt(i + 1)).IsDecimalDigit())
                         {
-                            lastIntValue = 0;
-                            i++;
+                            cp = 0;
                             return true;
                         }
-                        lastIntValue = -1;
-                        return false;
 
-                    // \xHH
-                    case 'x':
-                    {
-                        var escapeStart = i;
-                        if (TryReadHexEscape(pattern, ref i, pattern.Length, 2, out var hexValue))
-                        {
-                            // TryReadHexEscape leaves i at the last hex digit; advance past it.
-                            i++;
-                            lastIntValue = hexValue;
-                            return true;
-                        }
-                        parser.ReportSyntaxError(escapeStart - 1, RegExpInvalidEscape);
-                        lastIntValue = -1;
-                        return false;
-                    }
+                        parser.ReportSyntaxError(startIndex, RegExpInvalidDecimalEscape);
+                        break;
 
-                    // \uHHHH or \u{HHHH}
-                    case 'u':
-                    {
-                        var escapeStart = i;
-                        if (TryReadUnicodeEscape(pattern, ref i, out var cp))
+                    // DecimalEscape
+                    case >= '1' and <= '9':
+                        if (ch >= '8')
                         {
-                            lastIntValue = cp;
-                            return true;
+                            parser.ReportSyntaxError(startIndex, RegExpInvalidEscape);
                         }
-                        parser.ReportSyntaxError(escapeStart - 1, RegExpInvalidUnicodeEscape);
-                        lastIntValue = -1;
-                        return false;
-                    }
+                        else
+                        {
+                            parser.ReportSyntaxError(startIndex, RegExpInvalidDecimalEscape);
+                        }
+
+                        break;
 
                     default:
-                        lastIntValue = -1;
-                        return false;
+                        if (TryGetSimpleEscapeCharCode(ch, withinSet: true, out charCode)
+                            || IsClassSetReservedPunctuator(ch))
+                        {
+                            cp = charCode;
+                            return true;
+                        }
+
+                        break;
                 }
+
+                i = startIndex;
+                cp = default;
+                return false;
             }
 
-            // Try to read \uHHHH or \u{HHHH...} escape. On entry, i points to 'u'. On success, i is past the escape.
-            private static bool TryReadUnicodeEscape(string pattern, ref int i, out int codePoint)
-            {
-                var saved = i;
-                // i points to 'u'
-
-                if (pattern.CharCodeAt(i + 1) == '{')
-                {
-                    // \u{HHHH...}
-                    i += 2; // past 'u{'
-                    var start = i;
-                    uint value = 0;
-                    while (true)
-                    {
-                        var ch = pattern.CharCodeAt(i);
-                        if (ch == '}')
-                        {
-                            if (i > start && value <= 0x10FFFF)
-                            {
-                                i++;
-                                codePoint = (int)value;
-                                return true;
-                            }
-                            break;
-                        }
-
-                        var digit = HexValue(ch);
-                        if (digit < 0)
-                        {
-                            break;
-                        }
-                        value = (value << 4) | (uint)digit;
-                        if (value > 0x10FFFF)
-                        {
-                            break; // early exit on overflow
-                        }
-                        i++;
-                    }
-                    i = saved;
-                    codePoint = -1;
-                    return false;
-                }
-                else
-                {
-                    // \uHHHH — TryReadHexEscape expects i at 'u', reads from i+1.
-                    // TryReadHexEscape leaves i at the last hex digit; we advance past it.
-                    if (TryReadHexEscape(pattern, ref i, pattern.Length, 4, out var high))
-                    {
-                        i++; // advance past last hex digit
-                        if (((char)high).IsHighSurrogate()
-                            && pattern.CharCodeAt(i) == '\\'
-                            && pattern.CharCodeAt(i + 1) == 'u')
-                        {
-                            var pairPos = i + 1; // at 'u' of second escape
-                            if (TryReadHexEscape(pattern, ref pairPos, pattern.Length, 4, out var low)
-                                && ((char)low).IsLowSurrogate())
-                            {
-                                i = pairPos + 1; // advance past last hex digit of second escape
-                                codePoint = (int)UnicodeHelper.GetCodePoint((char)high, (char)low);
-                                return true;
-                            }
-                        }
-                        codePoint = high;
-                        return true;
-                    }
-                    i = saved;
-                    codePoint = -1;
-                    return false;
-                }
-            }
-
-            // Shared hex escape reader: reads exactly `charCodeLength` hex digits.
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private static bool TryReadHexEscape(string pattern, ref int i, int endIndex, int charCodeLength, out ushort value)
-            {
-                return RegExpParser.TryReadHexEscape(pattern, ref i, endIndex, charCodeLength, out value);
-            }
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private static int HexValue(int ch)
-            {
-                if ((uint)(ch - '0') <= 9) return ch - '0';
-                if ((uint)(ch - 'a') <= 5) return ch - 'a' + 10;
-                if ((uint)(ch - 'A') <= 5) return ch - 'A' + 10;
-                return -1;
-            }
-
-            // \p{...} and \P{...} character class escapes, plus \d \D \s \S \w \W.
-            // On entry, i points past '\' (at the escape letter: d, D, s, S, w, W, p, P).
-            // Returns CharSetOk, CharSetString, or CharSetNone if nothing was consumed.
             private static int EatCharacterClassEscape(RegExpParser parser)
             {
-                ref var i = ref parser._index;
                 var pattern = parser._pattern;
+                ref var i = ref parser._index;
+                var startIndex = i++;
+                int endIndex;
+
                 var ch = pattern.CharCodeAt(i);
-
-                // \d \D \s \S \w \W
-                if (ch is 'd' or 'D' or 's' or 'S' or 'w' or 'W')
+                switch (ch)
                 {
-                    i++;
-                    return CharSetOk;
+                    case 'd' or 'D' or 's' or 'S' or 'w' or 'W':
+                        return CharSetOk;
+
+                    case 'p' or 'P':
+                        if (pattern.CharCodeAt(i + 1) == '{')
+                        {
+                            endIndex = pattern.IndexOf('}', i + 2);
+                            if (endIndex >= 0)
+                            {
+                                var expression = pattern.AsMemory(i + 2, endIndex - (i + 2));
+
+                                // First check if it's a valid unicode property (non-string).
+                                if (UnicodeMode.ValidateUnicodeProperty(expression, translateToRanges: false, parser, out _))
+                                {
+                                    i = endIndex;
+                                    return CharSetOk;
+                                }
+
+                                // In flag 'v' mode, check binary properties of strings (e.g. Basic_Emoji).
+                                if (UnicodeProperties.IsAllowedBinaryOfStringsValue(expression, parser._tokenizer._options._ecmaVersion))
+                                {
+                                    if (ch == 'P')
+                                    {
+                                        parser.ReportSyntaxError(startIndex, RegExpInvalidClassPropertyName);
+                                    }
+
+                                    i = endIndex;
+                                    return CharSetString;
+                                }
+                            }
+                        }
+
+                        parser.ReportSyntaxError(startIndex, RegExpInvalidClassPropertyName);
+                        break;
                 }
 
-                // \p{...} or \P{...}
-                bool negate;
-                if ((negate = ch == 'P') || ch == 'p')
-                {
-                    var escapeStart = i - 1; // points at '\'
-                    i++;
-                    if (pattern.CharCodeAt(i) == '{')
-                    {
-                        i++;
-                        var propStart = i;
-                        while (true)
-                        {
-                            var c = pattern.CharCodeAt(i);
-                            if (c == '}')
-                            {
-                                break;
-                            }
-                            if (c < 0)
-                            {
-                                parser.ReportSyntaxError(escapeStart, RegExpInvalidClassPropertyName);
-                                break; // unreachable
-                            }
-                            i++;
-                        }
-
-                        var expression = pattern.AsMemory(propStart, i - propStart);
-                        i++; // past '}'
-
-                        // First check if it's a valid unicode property (non-string).
-                        if (ValidateUnicodeProperty(expression, translateToRanges: false, parser, out _))
-                        {
-                            return CharSetOk;
-                        }
-
-                        // In v-flag mode, check binary properties of strings (e.g. Basic_Emoji).
-                        if (UnicodeProperties.IsAllowedBinaryOfStringsValue(expression, parser._tokenizer._options._ecmaVersion))
-                        {
-                            if (negate)
-                            {
-                                parser.ReportSyntaxError(escapeStart, RegExpInvalidClassPropertyName);
-                            }
-                            return CharSetString;
-                        }
-
-                        parser.ReportSyntaxError(escapeStart, RegExpInvalidClassPropertyName);
-                    }
-                    // Backtrack if no '{' follows
-                    i = escapeStart + 1; // restore to where we were (at 'p'/'P')
-                }
-
+                i = startIndex;
                 return CharSetNone;
             }
 
-            // https://tc39.es/ecma262/#prod-ClassSetReservedPunctuator
+            // https://tc39.es/ecma262/#prod-ClassSetReservedDoublePunctuator
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private static bool EatClassSetReservedPunctuator(string pattern, ref int i, out int lastIntValue)
+            private static bool IsClassSetReservedDoublePunctuatorCharacter(char ch)
             {
-                var ch = pattern.CharCodeAt(i);
-                if (IsClassSetReservedPunctuator(ch))
-                {
-                    lastIntValue = ch;
-                    i++;
-                    return true;
-                }
-                lastIntValue = -1;
-                return false;
+                return ch == '!'
+                    || ch.IsInRange('#', '&') // # $ % &
+                    || ch.IsInRange('*', ',') // * + ,
+                    || ch == '.'
+                    || ch.IsInRange(':', '@') // : ; < = > ? @
+                    || ch == '^'
+                    || ch == '`'
+                    || ch == '~';
+            }
+
+            // https://tc39.es/ecma262/#prod-ClassSetSyntaxCharacter
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private static bool IsClassSetSyntaxCharacter(char ch)
+            {
+                return ch == '(' || ch == ')'
+                    || ch == '-' || ch == '/'
+                    || ch.IsInRange('[', ']') // [ \ ]
+                    || ch.IsInRange('{', '}'); // { | }
             }
 
             // https://tc39.es/ecma262/#prod-ClassSetReservedPunctuator
             // ! # % & , - : ; < = > @ ` ~
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private static bool IsClassSetReservedPunctuator(int ch)
+            private static bool IsClassSetReservedPunctuator(char ch)
             {
                 return ch == '!'
                     || ch == '#'
@@ -729,49 +651,38 @@ public partial class Tokenizer
                     || ch == '&'
                     || ch == ','
                     || ch == '-'
-                    || (uint)(ch - ':') <= (uint)('>'-':') // : ; < = >
+                    || ch.IsInRange(':', '>') // : ; < = >
                     || ch == '@'
                     || ch == '`'
                     || ch == '~';
             }
 
-            // https://tc39.es/ecma262/#prod-ClassSetReservedDoublePunctuator
-            // Characters that are forbidden when they appear consecutively (doubled).
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private static bool IsClassSetReservedDoublePunctuatorCharacter(int ch)
+            private static bool Eat(char ch, string pattern, ref int i)
             {
-                return ch == '!'
-                    || (uint)(ch - '#') <= (uint)('&'-'#') // # $ % &
-                    || (uint)(ch - '*') <= (uint)(','-'*') // * + ,
-                    || ch == '.'
-                    || (uint)(ch - ':') <= (uint)('@'-':') // : ; < = > ? @
-                    || ch == '^'
-                    || ch == '`'
-                    || ch == '~';
-            }
+                if (pattern.CharCodeAt(i) == ch)
+                {
+                    i++;
+                    return true;
+                }
 
-            // https://tc39.es/ecma262/#prod-ClassSetSyntaxCharacter
-            // ( ) - / [ \ ] { | }
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private static bool IsClassSetSyntaxCharacter(int ch)
-            {
-                return ch == '(' || ch == ')'
-                    || ch == '-' || ch == '/'
-                    || (uint)(ch - '[') <= (uint)(']'-'[') // [ \ ]
-                    || (uint)(ch - '{') <= (uint)('}'-'{'); // { | }
+                return false;
             }
 
             // Try to eat a two-character sequence (e.g. '&&' or '--').
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private static bool EatChars(string pattern, ref int i, char c1, char c2)
+            private static bool EatChars(char ch1, char ch2, string pattern, ref int i)
             {
-                if (pattern.CharCodeAt(i) == c1 && pattern.CharCodeAt(i + 1) == c2)
+                if (pattern.CharCodeAt(i) == ch1 && pattern.CharCodeAt(i + 1) == ch2)
                 {
                     i += 2;
                     return true;
                 }
+
                 return false;
             }
+
+            #endregion
         }
     }
 }

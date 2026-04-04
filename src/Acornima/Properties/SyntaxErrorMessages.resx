@@ -406,6 +406,10 @@
     <value>Invalid regular expression: /{0}/{1}: Invalid property name in character class</value>
     <comment>https://github.com/v8/v8/blob/14.8.3/src/regexp/regexp-error.h</comment>
   </data>
+  <data name="RegExpInvalidClassSetOperation" xml:space="preserve">
+    <value>Invalid regular expression: /{0}/{1}: Invalid set operation in character class</value>
+    <comment>https://github.com/v8/v8/blob/14.8.3/src/regexp/regexp-error.h</comment>
+  </data>
   <data name="RegExpInvalidDecimalEscape" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Invalid decimal escape</value>
     <comment>https://github.com/v8/v8/blob/14.8.3/src/regexp/regexp-error.h</comment>

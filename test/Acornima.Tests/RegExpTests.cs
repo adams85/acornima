@@ -138,7 +138,7 @@ public partial class RegExpTests
             RegExpParseMode = RegExpParseMode.AdaptToInterpreted,
             Tolerant = false
         });
-        var actualAdaptedPattern = parser.ParseCore(out _, out _, out _);
+        var actualAdaptedPattern = parser.ParseCore(validateOnly: false, out _, out _, out _);
 
         Assert.Equal(expectedAdaptedPattern, actualAdaptedPattern);
     }
@@ -194,7 +194,7 @@ public partial class RegExpTests
                 RegExpParseMode = RegExpParseMode.AdaptToInterpreted,
                 Tolerant = false
             });
-            var actual = parser.ParseCore(out _, out _, out _);
+            var actual = parser.ParseCore(validateOnly: false, out _, out _, out _);
             Assert.Equal(expected, actual);
         }
     }
