@@ -121,7 +121,7 @@ public partial class Tokenizer
 
                 if (++parser._classSetNestingDepth > MaxClassSetNestingDepth)
                 {
-                    parser.ReportSyntaxError(i, RegExpInvalidCharacterInCharacterClass);
+                    parser.ReportSyntaxError(i, RegExpInvalidCharacterInClass);
                 }
 
                 // We're positioned at '['. Advance past it.
@@ -137,7 +137,7 @@ public partial class Tokenizer
 
                 if (negate && result == CharSetString)
                 {
-                    parser.ReportSyntaxError(classStart, RegExpNegatedCharacterClassMayContainStrings);
+                    parser.ReportSyntaxError(classStart, RegExpNegatedCharacterClassWithStrings);
                 }
 
                 parser._classSetNestingDepth--;
@@ -192,7 +192,7 @@ public partial class Tokenizer
                             }
                             continue;
                         }
-                        parser.ReportSyntaxError(i, RegExpInvalidCharacterInCharacterClass);
+                        parser.ReportSyntaxError(i, RegExpInvalidCharacterInClass);
                     }
                     if (start != i)
                     {
@@ -206,7 +206,7 @@ public partial class Tokenizer
                         {
                             continue;
                         }
-                        parser.ReportSyntaxError(i, RegExpInvalidCharacterInCharacterClass);
+                        parser.ReportSyntaxError(i, RegExpInvalidCharacterInClass);
                     }
                     if (start != i)
                     {
@@ -215,7 +215,7 @@ public partial class Tokenizer
                 }
                 else
                 {
-                    parser.ReportSyntaxError(i, RegExpInvalidCharacterInCharacterClass);
+                    parser.ReportSyntaxError(i, RegExpInvalidCharacterInClass);
                 }
 
                 // https://tc39.es/ecma262/#prod-ClassUnion
@@ -290,7 +290,7 @@ public partial class Tokenizer
                 {
                     if (++parser._classSetNestingDepth > MaxClassSetNestingDepth)
                     {
-                        parser.ReportSyntaxError(i, RegExpInvalidCharacterInCharacterClass);
+                        parser.ReportSyntaxError(i, RegExpInvalidCharacterInClass);
                     }
 
                     i++;
@@ -308,7 +308,7 @@ public partial class Tokenizer
                         parser._classSetNestingDepth--;
                         if (negate && result == CharSetString)
                         {
-                            parser.ReportSyntaxError(saved, RegExpNegatedCharacterClassMayContainStrings);
+                            parser.ReportSyntaxError(saved, RegExpNegatedCharacterClassWithStrings);
                         }
                         return result;
                     }

@@ -702,12 +702,12 @@ namespace Acornima {
         /// <summary>
         ///   Looks up a localized string similar to Invalid regular expression: /{0}/{1}: Invalid character in character class.
         /// </summary>
-        internal static string RegExpInvalidCharacterInCharacterClass {
+        internal static string RegExpInvalidCharacterInClass {
             get {
-                return ResourceManager.GetString("RegExpInvalidCharacterInCharacterClass", resourceCulture);
+                return ResourceManager.GetString("RegExpInvalidCharacterInClass", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Invalid regular expression: /{0}/{1}: Invalid property name in character class.
         /// </summary>
@@ -819,12 +819,12 @@ namespace Acornima {
         /// <summary>
         ///   Looks up a localized string similar to Invalid regular expression: /{0}/{1}: Negated character class may contain strings.
         /// </summary>
-        internal static string RegExpNegatedCharacterClassMayContainStrings {
+        internal static string RegExpNegatedCharacterClassWithStrings {
             get {
-                return ResourceManager.GetString("RegExpNegatedCharacterClassMayContainStrings", resourceCulture);
+                return ResourceManager.GetString("RegExpNegatedCharacterClassWithStrings", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Invalid regular expression: /{0}/{1}: Nothing to repeat.
         /// </summary>
