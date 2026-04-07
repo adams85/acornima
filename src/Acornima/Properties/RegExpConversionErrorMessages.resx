@@ -136,7 +136,7 @@
     <value>Inconvertible Unicode property escape</value>
   </data>
   <data name="RegExpUnicodeSetsModeNotSupported" xml:space="preserve">
-    <value>Unicode sets mode (flag v) is not supported currently</value>
+    <value>Conversion of Unicode sets mode (flag v) regular expressions to .NET Regex is not supported</value>
   </data>
   <data name="RegExpUnmappableGroupName" xml:space="preserve">
     <value>Cannot map group name '{0}' to a unique group name in the adapted regex</value>

@@ -398,8 +398,16 @@
     <value>Invalid regular expression: /{0}/{1}: Invalid character class</value>
     <comment>https://github.com/v8/v8/blob/14.8.3/src/regexp/regexp-error.h</comment>
   </data>
+  <data name="RegExpInvalidCharacterInClass" xml:space="preserve">
+    <value>Invalid regular expression: /{0}/{1}: Invalid character in character class</value>
+    <comment>https://github.com/v8/v8/blob/14.8.3/src/regexp/regexp-error.h</comment>
+  </data>
   <data name="RegExpInvalidClassPropertyName" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Invalid property name in character class</value>
+    <comment>https://github.com/v8/v8/blob/14.8.3/src/regexp/regexp-error.h</comment>
+  </data>
+  <data name="RegExpInvalidClassSetOperation" xml:space="preserve">
+    <value>Invalid regular expression: /{0}/{1}: Invalid set operation in character class</value>
     <comment>https://github.com/v8/v8/blob/14.8.3/src/regexp/regexp-error.h</comment>
   </data>
   <data name="RegExpInvalidDecimalEscape" xml:space="preserve">
@@ -444,6 +452,10 @@
   </data>
   <data name="RegExpMultipleFlagDashes" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Multiple dashes in flag group</value>
+    <comment>https://github.com/v8/v8/blob/14.8.3/src/regexp/regexp-error.h</comment>
+  </data>
+  <data name="RegExpNegatedCharacterClassWithStrings" xml:space="preserve">
+    <value>Invalid regular expression: /{0}/{1}: Negated character class may contain strings</value>
     <comment>https://github.com/v8/v8/blob/14.8.3/src/regexp/regexp-error.h</comment>
   </data>
   <data name="RegExpNothingToRepeat" xml:space="preserve">

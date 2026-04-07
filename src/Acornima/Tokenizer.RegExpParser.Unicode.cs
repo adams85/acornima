@@ -13,21 +13,21 @@ public partial class Tokenizer
 {
     internal partial class RegExpParser
     {
-        private const string MatchSurrogatePairRegex = "[\uD800-\uDBFF][\uDC00-\uDFFF]";
-        private const string MatchLoneSurrogateRegex = "[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]";
-        private const string MatchAnyButSurrogateRegex = "[^\uD800-\uDFFF]";
-        private const string MatchAnyButNewLineAndSurrogateRegex = "[^\n\r\u2028\u2029\uD800-\uDFFF]";
-
         private sealed class UnicodeMode : IMode
         {
+            private const string MatchSurrogatePairRegex = "[\uD800-\uDBFF][\uDC00-\uDFFF]";
+            private const string MatchLoneSurrogateRegex = "[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]";
+            private const string MatchAnyButSurrogateRegex = "[^\uD800-\uDFFF]";
+            private const string MatchAnyButNewLineAndSurrogateRegex = "[^\n\r\u2028\u2029\uD800-\uDFFF]";
+
             public static readonly UnicodeMode Instance = new();
 
             private UnicodeMode() { }
 
             public void ProcessChar(char ch, Action<StringBuilder, char>? appender, RegExpParser parser)
             {
-                ref readonly var sb = ref parser._stringBuilder;
-                ref readonly var pattern = ref parser._pattern;
+                var sb = parser._stringBuilder;
+                var pattern = parser._pattern;
                 ref var i = ref parser._index;
 
                 if (!ch.IsSurrogate())
@@ -95,7 +95,7 @@ public partial class Tokenizer
 
             public void ProcessSetChar(char ch, Action<StringBuilder, char>? appender, RegExpParser parser, int startIndex)
             {
-                ref readonly var pattern = ref parser._pattern;
+                var pattern = parser._pattern;
                 ref var i = ref parser._index;
 
                 if (ch.IsHighSurrogate() && ((char)pattern.CharCodeAt(i + 1)).IsLowSurrogate())
@@ -107,6 +107,23 @@ public partial class Tokenizer
                 else
                 {
                     AddSetCodePoint(ch, parser, startIndex);
+                }
+            }
+
+            public void ProcessSetStart(char ch, RegExpParser parser)
+            {
+                var pattern = parser._pattern;
+                ref var i = ref parser._index;
+
+                parser._setStartIndex = i;
+                parser._setRangeStart = SetRangeNotStarted;
+
+                ProcessSetSpecialChar(ch, parser);
+
+                if ((ch = (char)pattern.CharCodeAt(i + 1)) == '^')
+                {
+                    ProcessSetSpecialChar(ch, parser);
+                    i++;
                 }
             }
 
@@ -153,8 +170,8 @@ public partial class Tokenizer
 
             public bool RewriteSet(RegExpParser parser)
             {
-                ref readonly var sb = ref parser._stringBuilder;
-                ref readonly var pattern = ref parser._pattern;
+                var sb = parser._stringBuilder;
+                var pattern = parser._pattern;
 
                 if (sb is not null)
                 {
@@ -534,7 +551,7 @@ public partial class Tokenizer
                 set.AddRange(ranges);
             }
 
-            private static bool ValidateUnicodeProperty(ReadOnlyMemory<char> expression, bool translateToRanges, RegExpParser parser, out CodePointRange[]? codePointRanges)
+            internal static bool ValidateUnicodeProperty(ReadOnlyMemory<char> expression, bool translateToRanges, RegExpParser parser, out CodePointRange[]? codePointRanges)
             {
                 var index = expression.Span.IndexOf('=');
                 if (index >= 0)
@@ -591,7 +608,7 @@ public partial class Tokenizer
 
             public void RewriteDot(RegExpParser parser)
             {
-                ref readonly var sb = ref parser._stringBuilder;
+                var sb = parser._stringBuilder;
                 if (sb is not null)
                 {
                     // '.' has to be adjusted to also match all surrogate pairs.
@@ -625,10 +642,15 @@ public partial class Tokenizer
 
             public bool AdjustEscapeSequence(RegExpParser parser, out RegExpConversionError? conversionError)
             {
+                return AdjustEscapeSequence(allowStringProperties: false, parser, out conversionError);
+            }
+
+            internal static bool AdjustEscapeSequence(bool allowStringProperties, RegExpParser parser, out RegExpConversionError? conversionError)
+            {
                 // https://tc39.es/ecma262/#prod-AtomEscape
 
-                ref readonly var sb = ref parser._stringBuilder;
-                ref readonly var pattern = ref parser._pattern;
+                var sb = parser._stringBuilder;
+                var pattern = parser._pattern;
                 ref var i = ref parser._index;
 
                 ushort charCode, charCode2;
@@ -645,11 +667,10 @@ public partial class Tokenizer
                         // * /\u{FFFF}/u --> "\uFFFF" (+ negative lookahead/lookbehind in the case of lone surrogates)
                         // * /\u{1F4A9}/u --> "\uD83D\uDCA9"
 
-                        if (parser._tokenizer._options._ecmaVersion < EcmaVersion.ES6
-                            || !TryReadCodePoint(pattern, ref i, endIndex: pattern.Length, out cp))
+                        if (!TryReadCodePoint(pattern, ref i, endIndex: pattern.Length, out cp))
                         {
                             parser.ReportSyntaxError(startIndex, RegExpInvalidUnicodeEscape);
-                            cp = default; // keeps the compiler happy
+                            cp = default; // unreachable, just to keep the compiler happy
                         }
 
                         if (!parser.WithinSet)
@@ -727,23 +748,22 @@ public partial class Tokenizer
 
                     // CharacterEscape -> c ControlLetter
                     case 'c':
-                        if (i + 1 < pattern.Length)
+                        cp = pattern.CharCodeAt(i + 1);
+                        if (((char)cp).IsBasicLatinLetter())
                         {
-                            if (pattern[i + 1].IsBasicLatinLetter())
-                            {
-                                charCode = (ushort)(char.ToUpperInvariant(pattern[++i]) - '@');
+                            i++;
+                            charCode = (ushort)(cp & 0x1F); // value is equal to the character code modulo 32
 
-                                if (!parser.WithinSet)
-                                {
-                                    parser._appendCharSafe?.Invoke(sb!, (char)charCode);
-                                    parser.ClearFollowingQuantifierError();
-                                }
-                                else
-                                {
-                                    AddSetCodePoint(charCode, parser, startIndex);
-                                }
-                                break;
+                            if (!parser.WithinSet)
+                            {
+                                parser._appendCharSafe?.Invoke(sb!, (char)charCode);
+                                parser.ClearFollowingQuantifierError();
                             }
+                            else
+                            {
+                                AddSetCodePoint(charCode, parser, startIndex);
+                            }
+                            break;
                         }
 
                         parser.ReportSyntaxError(startIndex, RegExpInvalidUnicodeEscape);
@@ -871,10 +891,13 @@ public partial class Tokenizer
                             if (pattern.CharCodeAt(i + 1) == '{')
                             {
                                 CodePointRange[]? codePointRanges = null;
+                                ReadOnlyMemory<char> expression;
 
                                 endIndex = pattern.IndexOf('}', i + 2);
+
                                 if (endIndex < 0
-                                    || !ValidateUnicodeProperty(pattern.AsMemory(i + 2, endIndex - (i + 2)), translateToRanges: sb is not null, parser, out codePointRanges))
+                                    || !ValidateUnicodeProperty(expression = pattern.AsMemory(i + 2, endIndex - (i + 2)), translateToRanges: sb is not null, parser, out codePointRanges)
+                                        && (!allowStringProperties || ch == 'P' || !UnicodeProperties.IsAllowedBinaryOfStringsValue(expression, parser._tokenizer._options._ecmaVersion)))
                                 {
                                     if (!parser.WithinSet)
                                     {

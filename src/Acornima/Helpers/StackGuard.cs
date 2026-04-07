@@ -25,4 +25,9 @@ internal static class StackGuard
             RuntimeHelpers.EnsureSufficientExecutionStack();
         }
     }
+
+    public interface IRecursionDepthProvider
+    {
+        ref int CurrentDepth { get; }
+    }
 }

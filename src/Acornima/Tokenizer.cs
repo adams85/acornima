@@ -22,6 +22,7 @@ public sealed partial class Tokenizer : ITokenizer
 
     private readonly TokenizerOptions _options;
     private readonly IExtension? _extension;
+    internal StackGuard.IRecursionDepthProvider? _recursionDepthProvider;
     internal RegExpParser? _regExpParser;
 
     internal Tokenizer(TokenizerOptions options, IExtension? extension)
@@ -142,7 +143,7 @@ public sealed partial class Tokenizer : ITokenizer
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readToken = function`, `pp.getTokenFromCode = function`
 
-        // NOTE: `getTokenFromCode` and `readToken` was merged into a single method (`TryReadToken`).
+        // NOTE: `getTokenFromCode` and `readToken` were merged into a single method (`TryReadToken`).
         // The merged method was also changed to return success instead of throwing on invalid token.
 
         // Identifier or keyword. '\uXXXX' sequences are allowed in
