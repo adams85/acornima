@@ -1,4 +1,4 @@
-﻿# Generated from testcases.template.txt at 2026-04-06T19:52:32
+﻿# Generated from testcases.template.txt at 2026-04-07T22:01:31
 
 # This file defines test cases for regular expression conversion testing (see RegExpTests.ExecuteTestCase).
 # Each uncommented, non-whitespace line specifies a test case in a tab-delimited format, with the following fields:
@@ -2297,6 +2297,8 @@ PIJAMALı HASTA YAĞıZ ŞOFÖRE ÇABUCAK GÜVENDI	vi	)inconvertible(	pijamalı 
 \p{Script=Latn}	v	)inconvertible(	p{Script=Latn}	[{"captures":["p"],"index":0},{"captures":["S"],"index":2},{"captures":["c"],"index":3},{"captures":["r"],"index":4},{"captures":["i"],"index":5},{"captures":["p"],"index":6},{"captures":["t"],"index":7},{"captures":["L"],"index":9},{"captures":["a"],"index":10},{"captures":["t"],"index":11},{"captures":["n"],"index":12}]
 \p{General_Category=Currency_Symbol}	u	"(?:\ud807[\udfdd-\udfe0]|𞋿|𞲰|[\\x24¢-¥֏؋߾߿৲৳৻૱௹฿៛₠-⃀꠸﷼﹩＄￠￡￥￦])"	$€£𑿝¥ a0?	[{"captures":["$"],"index":0},{"captures":["€"],"index":1},{"captures":["£"],"index":2},{"captures":["𑿝"],"index":3},{"captures":["¥"],"index":5}]	!skip-before-net10.0	# (the adapted pattern depends on the Unicode version included in the .NET runtime)
 \p{General_Category=Currency_Symbol}	v	)inconvertible(	$€£𑿝¥ a0?	[{"captures":["$"],"index":0},{"captures":["€"],"index":1},{"captures":["£"],"index":2},{"captures":["𑿝"],"index":3},{"captures":["¥"],"index":5}]	!skip-before-net10.0	# (the adapted pattern depends on the Unicode version included in the .NET runtime)
+\p{Basic_Emoji}	u	)syntax-error(	💩x💫x💩	"Invalid property name"
+\p{Basic_Emoji}	v	)inconvertible(	💩x💫x💩	[{"captures":["💩"],"index":0},{"captures":["💫"],"index":3},{"captures":["💩"],"index":6}]
 
 \P		P	P	[{"captures":["P"],"index":0}]
 \P	u	)syntax-error(	P	"Invalid property name"
@@ -2324,6 +2326,8 @@ PIJAMALı HASTA YAĞıZ ŞOFÖRE ÇABUCAK GÜVENDI	vi	)inconvertible(	pijamalı 
 \P{Script=Latn}	v	)inconvertible(	P{Script=Latn}	[{"captures":["{"],"index":1},{"captures":["="],"index":8},{"captures":["}"],"index":13}]
 \P{General_Category=Currency_Symbol}	u	"(?:[\ud800-\ud806][\udc00-\udfff]|\ud807[\udc00-\udfdc]|\ud807[\udfe1-\udfff]|[\ud808-\ud837][\udc00-\udfff]|\ud838[\udc00-\udefe]|\ud838[\udf00-\udfff]|[\ud839\ud83a][\udc00-\udfff]|\ud83b[\udc00-\udcaf]|\ud83b[\udcb1-\udfff]|[\ud83c-\udbff][\udc00-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]|[\x00-\\x23\\x25-¡¦-֎֐-؊،-߽ࠀ-ৱ৴-৺ৼ-૰૲-௸௺-฾เ-៚ៜ-₟⃁-꠷꠹-퟿-ﷻ﷽-﹨﹪-＃％-￟￢-￤￧-￿])"	$€£𑿝¥ a0?	[{"captures":[" "],"index":6},{"captures":["a"],"index":7},{"captures":["0"],"index":8},{"captures":["?"],"index":9}]	!skip-before-net10.0	# (the adapted pattern depends on the Unicode version included in the .NET runtime)
 \P{General_Category=Currency_Symbol}	v	)inconvertible(	$€£𑿝¥ a0?	[{"captures":[" "],"index":6},{"captures":["a"],"index":7},{"captures":["0"],"index":8},{"captures":["?"],"index":9}]	!skip-before-net10.0	# (the adapted pattern depends on the Unicode version included in the .NET runtime)
+\P{Basic_Emoji}	u	)syntax-error(	💩x💫x💩	"Invalid property name"
+\P{Basic_Emoji}	v	)syntax-error(	💩x💫x💩	"Invalid property name"
 
 [\p]		[p]	\p	[{"captures":["p"],"index":1}]
 [\p]	u	)syntax-error(	\p	"Invalid property name in character class"
@@ -2351,6 +2355,10 @@ PIJAMALı HASTA YAĞıZ ŞOFÖRE ÇABUCAK GÜVENDI	vi	)inconvertible(	pijamalı 
 [\p{Script=Latn}]	v	)inconvertible(	\p{Script=Latn}	[{"captures":["p"],"index":1},{"captures":["S"],"index":3},{"captures":["c"],"index":4},{"captures":["r"],"index":5},{"captures":["i"],"index":6},{"captures":["p"],"index":7},{"captures":["t"],"index":8},{"captures":["L"],"index":10},{"captures":["a"],"index":11},{"captures":["t"],"index":12},{"captures":["n"],"index":13}]
 [\p{General_Category=Currency_Symbol}]	u	"(?:\ud807[\udfdd-\udfe0]|𞋿|𞲰|[\\x24¢-¥֏؋߾߿৲৳৻૱௹฿៛₠-⃀꠸﷼﹩＄￠￡￥￦])"	$€£𑿝¥ a0?	[{"captures":["$"],"index":0},{"captures":["€"],"index":1},{"captures":["£"],"index":2},{"captures":["𑿝"],"index":3},{"captures":["¥"],"index":5}]	!skip-before-net10.0	# (the adapted pattern depends on the Unicode version included in the .NET runtime)
 [\p{General_Category=Currency_Symbol}]	v	)inconvertible(	$€£𑿝¥ a0?	[{"captures":["$"],"index":0},{"captures":["€"],"index":1},{"captures":["£"],"index":2},{"captures":["𑿝"],"index":3},{"captures":["¥"],"index":5}]	!skip-before-net10.0	# (the adapted pattern depends on the Unicode version included in the .NET runtime)
+[\p{Basic_Emoji}]	u	)syntax-error(	💩x💫x💩	"Invalid property name in character class"
+[\p{Basic_Emoji}]	v	)inconvertible(	💩x💫x💩	[{"captures":["💩"],"index":0},{"captures":["💫"],"index":3},{"captures":["💩"],"index":6}]
+[^\p{Basic_Emoji}]	u	)syntax-error(	💩x💫x💩	"Invalid property name in character class"
+[^\p{Basic_Emoji}]	v	)syntax-error(	💩x💫x💩	"Negated character class may contain strings"
 
 [\P]		[P]	\P	[{"captures":["P"],"index":1}]
 [\P]	u	)syntax-error(	\P	"Invalid property name in character class"
@@ -2378,6 +2386,10 @@ PIJAMALı HASTA YAĞıZ ŞOFÖRE ÇABUCAK GÜVENDI	vi	)inconvertible(	pijamalı 
 [\P{Script=Latn}]	v	)inconvertible(	\P{Script=Latn}	[{"captures":["\\"],"index":0},{"captures":["{"],"index":2},{"captures":["="],"index":9},{"captures":["}"],"index":14}]
 [\P{General_Category=Currency_Symbol}]	u	"(?:[\ud800-\ud806][\udc00-\udfff]|\ud807[\udc00-\udfdc]|\ud807[\udfe1-\udfff]|[\ud808-\ud837][\udc00-\udfff]|\ud838[\udc00-\udefe]|\ud838[\udf00-\udfff]|[\ud839\ud83a][\udc00-\udfff]|\ud83b[\udc00-\udcaf]|\ud83b[\udcb1-\udfff]|[\ud83c-\udbff][\udc00-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]|[\x00-\\x23\\x25-¡¦-֎֐-؊،-߽ࠀ-ৱ৴-৺ৼ-૰૲-௸௺-฾เ-៚ៜ-₟⃁-꠷꠹-퟿-ﷻ﷽-﹨﹪-＃％-￟￢-￤￧-￿])"	$€£𑿝¥ a0?	[{"captures":[" "],"index":6},{"captures":["a"],"index":7},{"captures":["0"],"index":8},{"captures":["?"],"index":9}]	!skip-before-net10.0	# (the adapted pattern depends on the Unicode version included in the .NET runtime)
 [\P{General_Category=Currency_Symbol}]	v	)inconvertible(	$€£𑿝¥ a0?	[{"captures":[" "],"index":6},{"captures":["a"],"index":7},{"captures":["0"],"index":8},{"captures":["?"],"index":9}]	!skip-before-net10.0	# (the adapted pattern depends on the Unicode version included in the .NET runtime)
+[\P{Basic_Emoji}]	u	)syntax-error(	💩x💫x💩]	"Invalid property name in character class"
+[\P{Basic_Emoji}]	v	)syntax-error(	💩x💫x💩]	"Invalid property name in character class"
+[^\P{Basic_Emoji}]	u	)syntax-error(	💩x💫x💩]	"Invalid property name in character class"
+[^\P{Basic_Emoji}]	v	)syntax-error(	💩x💫x💩]	"Invalid property name in character class"
 
 \p{General_Category=Sc}	u	"(?:\ud807[\udfdd-\udfe0]|𞋿|𞲰|[\\x24¢-¥֏؋߾߿৲৳৻૱௹฿៛₠-⃀꠸﷼﹩＄￠￡￥￦])"	$€£𑿝¥ a0?	[{"captures":["$"],"index":0},{"captures":["€"],"index":1},{"captures":["£"],"index":2},{"captures":["𑿝"],"index":3},{"captures":["¥"],"index":5}]	!skip-before-net10.0	# (the adapted pattern depends on the Unicode version included in the .NET runtime)
 \p{General_Category=Sc}	v	)inconvertible(	$€£𑿝¥ a0?	[{"captures":["$"],"index":0},{"captures":["€"],"index":1},{"captures":["£"],"index":2},{"captures":["𑿝"],"index":3},{"captures":["¥"],"index":5}]	!skip-before-net10.0	# (the adapted pattern depends on the Unicode version included in the .NET runtime)
@@ -3310,6 +3322,10 @@ styles(?:\.[\da-f]+)?	v	)inconvertible(	styles.1234.min.css	[{"captures":["style
 \k<b>(?<a>)	u	)syntax-error(	x	"Invalid named capture referenced"
 \k<b>(?<a>)	v	)syntax-error(	x	"Invalid named capture referenced"
 
+[\k<b>)](?<b>)		)syntax-error(	x	"Invalid escape"
+[\k<b>)](?<b>)	u	)syntax-error(	x	"Invalid escape"
+[\k<b>)](?<b>)	v	)syntax-error(	x	"Invalid escape"
+
 # Backreferences
 
 title=(["'])(.*?)\1		"title=([\"'])([^\n\r\u2028\u2029]*?)\\1"	title="Named capturing groups' advantages"	[{"captures":["title=\"Named capturing groups' advantages\"","\"","Named capturing groups' advantages"],"index":0}]
@@ -4003,6 +4019,285 @@ a(?i:b)c		a(?i:b)c	abc	[{"captures":["abc"],"index":0}]
 (?i:)		(?i:)	a	[{"captures":[""],"index":0},{"captures":[""],"index":1}]
 (?s:)		(?:)	a	[{"captures":[""],"index":0},{"captures":[""],"index":1}]
 (?m:)		(?:)	a	[{"captures":[""],"index":0},{"captures":[""],"index":1}]
+
+# Flag v
+
+## Class set syntax characters (most of these are already tested above)
+
+[|]	v	)syntax-error(		"Invalid character in character class"
+
+[\q{|}]	v	)inconvertible(		[{"captures":[""],"index":0}]
+[\q{/}]	v	)syntax-error(		"Invalid character in character class"
+[\q{\}]	v	)syntax-error(		"Invalid character in character class"
+
+## Class set reserved double punctuators
+
+[&&]	v	)syntax-error(		"Invalid set operation in character class"
+[!!]	v	)syntax-error(		"Invalid set operation in character class"
+[##]	v	)syntax-error(		"Invalid set operation in character class"
+[$$]	v	)syntax-error(		"Invalid set operation in character class"
+[%%]	v	)syntax-error(		"Invalid set operation in character class"
+[**]	v	)syntax-error(		"Invalid set operation in character class"
+[++]	v	)syntax-error(		"Invalid set operation in character class"
+[,,]	v	)syntax-error(		"Invalid set operation in character class"
+[..]	v	)syntax-error(		"Invalid set operation in character class"
+[::]	v	)syntax-error(		"Invalid set operation in character class"
+[;;]	v	)syntax-error(		"Invalid set operation in character class"
+[<<]	v	)syntax-error(		"Invalid set operation in character class"
+[==]	v	)syntax-error(		"Invalid set operation in character class"
+[>>]	v	)syntax-error(		"Invalid set operation in character class"
+[??]	v	)syntax-error(		"Invalid set operation in character class"
+[@@]	v	)syntax-error(		"Invalid set operation in character class"
+[^^^]	v	)syntax-error(		"Invalid set operation in character class"
+[x^^]	v	)syntax-error(		"Invalid set operation in character class"
+[``]	v	)syntax-error(		"Invalid set operation in character class"
+[~~]	v	)syntax-error(		"Invalid set operation in character class"
+
+[\q{&&}]	v	)syntax-error(		"Invalid set operation in character class"
+[\q{!!}]	v	)syntax-error(		"Invalid set operation in character class"
+[\q{##}]	v	)syntax-error(		"Invalid set operation in character class"
+
+## Class set reserved punctuators
+
+[\&\-\!\#\%\,\:\;\<\=\>\@\`\~]	v	)inconvertible(	&-!#%,:;<=>@`~	[{"captures":["&"],"index":0},{"captures":["-"],"index":1},{"captures":["!"],"index":2},{"captures":["#"],"index":3},{"captures":["%"],"index":4},{"captures":[","],"index":5},{"captures":[":"],"index":6},{"captures":[";"],"index":7},{"captures":["<"],"index":8},{"captures":["="],"index":9},{"captures":[">"],"index":10},{"captures":["@"],"index":11},{"captures":["`"],"index":12},{"captures":["~"],"index":13}]
+
+## Class set expression edge cases
+
+[a-]	v	)syntax-error(		"Invalid character in character class"
+[a-0]	v	)syntax-error(		"Range out of order in character class"
+[a-\0]	v	)syntax-error(		"Range out of order in character class"
+[a-\d]	v	)syntax-error(		"Invalid character class"
+[a-\k]	v	)syntax-error(		"Invalid escape"
+[a-\q{]	v	)syntax-error(		"Invalid character in character class"
+[a-\q{}]	v	)syntax-error(		"Invalid character class"
+[a-[]	v	)syntax-error(		"Invalid character class"	!ignore-error-message
+[a-[]]	v	)syntax-error(		"Invalid character class"
+[a-&&]	v	)syntax-error(		"Invalid set operation in character class"
+[a-/]	v	)syntax-error(		"Invalid character in character class"
+[a-b-c]	v	)syntax-error(		"Invalid character class"
+[a-&&]	v	)syntax-error(		"Invalid set operation in character class"
+[a-##]	v	)syntax-error(		"Invalid set operation in character class"
+[a--]	v	)syntax-error(		"Invalid character in character class"
+[a---]	v	)syntax-error(		"Invalid character in character class"
+[a--b-]	v	)syntax-error(		"Invalid set operation in character class"
+[a--b-c]	v	)syntax-error(		"Invalid set operation in character class"
+[a--b--]	v	)syntax-error(		"Invalid character in character class"
+[a--b---]	v	)syntax-error(		"Invalid character in character class"
+[a--b&&c]	v	)syntax-error(		"Invalid set operation in character class"
+[a--b##c]	v	)syntax-error(		"Invalid set operation in character class"
+[a--##]	v	)syntax-error(		"Invalid set operation in character class"
+[a--\k]	v	)syntax-error(		"Invalid escape"
+[a&&b&]	v	)syntax-error(		"Invalid set operation in character class"
+[a&&b&c]	v	)syntax-error(		"Invalid set operation in character class"
+[a&&b&&]	v	)syntax-error(		"Invalid character in character class"
+[a&&b&&&]	v	)syntax-error(		"Invalid character in character class"
+[a&&b--c]	v	)syntax-error(		"Invalid set operation in character class"
+[a&&b##c]	v	)syntax-error(		"Invalid set operation in character class"
+[a&&##]	v	)syntax-error(		"Invalid set operation in character class"
+[a&&\k]	v	)syntax-error(		"Invalid escape"
+[a##]	v	)syntax-error(		"Invalid set operation in character class"
+
+[za-]	v	)syntax-error(		"Invalid character in character class"
+[za-0]	v	)syntax-error(		"Range out of order in character class"
+[za-\0]	v	)syntax-error(		"Range out of order in character class"
+[za-\d]	v	)syntax-error(		"Invalid character class"
+[za-\k]	v	)syntax-error(		"Invalid escape"
+[za-\q{]	v	)syntax-error(		"Invalid character in character class"
+[za-\q{}]	v	)syntax-error(		"Invalid character class"
+[za-[]	v	)syntax-error(		"Invalid character class"	!ignore-error-message
+[za-[]]	v	)syntax-error(		"Invalid character class"
+[za-&&]	v	)syntax-error(		"Invalid set operation in character class"
+[za-/]	v	)syntax-error(		"Invalid character in character class"
+[za-b-c]	v	)syntax-error(		"Invalid character class"
+[za-&&]	v	)syntax-error(		"Invalid set operation in character class"
+[za-##]	v	)syntax-error(		"Invalid set operation in character class"
+[za--]	v	)syntax-error(		"Invalid set operation in character class"
+[za---]	v	)syntax-error(		"Invalid set operation in character class"
+[za--b-]	v	)syntax-error(		"Invalid set operation in character class"
+[za--b-c]	v	)syntax-error(		"Invalid set operation in character class"
+[za--b--]	v	)syntax-error(		"Invalid set operation in character class"
+[za--b---]	v	)syntax-error(		"Invalid set operation in character class"
+[za--b&&c]	v	)syntax-error(		"Invalid set operation in character class"
+[za--b##c]	v	)syntax-error(		"Invalid set operation in character class"
+[za--##]	v	)syntax-error(		"Invalid set operation in character class"
+[za--\k]	v	)syntax-error(		"Invalid set operation in character class"
+[za&&b&]	v	)syntax-error(		"Invalid set operation in character class"
+[za&&b&c]	v	)syntax-error(		"Invalid set operation in character class"
+[za&&b&&]	v	)syntax-error(		"Invalid set operation in character class"
+[za&&b&&&]	v	)syntax-error(		"Invalid set operation in character class"
+[za&&b--c]	v	)syntax-error(		"Invalid set operation in character class"
+[za&&b##c]	v	)syntax-error(		"Invalid set operation in character class"
+[za&&##]	v	)syntax-error(		"Invalid set operation in character class"
+[za&&\k]	v	)syntax-error(		"Invalid set operation in character class"
+[za##]	v	)syntax-error(		"Invalid set operation in character class"
+
+[[]-]	v	)syntax-error(		"Invalid character class"
+[[]-0]	v	)syntax-error(		"Invalid character class"
+[[]-\0]	v	)syntax-error(		"Invalid character class"
+[[]-\d]	v	)syntax-error(		"Invalid character class"
+[[]-\k]	v	)syntax-error(		"Invalid character class"
+[[]-\q{]	v	)syntax-error(		"Invalid character class"
+[[]-\q{}]	v	)syntax-error(		"Invalid character class"
+[[]-[]	v	)syntax-error(		"Invalid character class"	!ignore-error-message
+[[]-[]]	v	)syntax-error(		"Invalid character class"
+[[]-&&]	v	)syntax-error(		"Invalid character class"
+[[]-/]	v	)syntax-error(		"Invalid character class"
+[[]-b-c]	v	)syntax-error(		"Invalid character class"
+[[]-&&]	v	)syntax-error(		"Invalid character class"
+[[]-##]	v	)syntax-error(		"Invalid character class"
+[[]--]	v	)syntax-error(		"Invalid character in character class"
+[[]---]	v	)syntax-error(		"Invalid character in character class"
+[[]--b-]	v	)syntax-error(		"Invalid set operation in character class"
+[[]--b-c]	v	)syntax-error(		"Invalid set operation in character class"
+[[]--b--]	v	)syntax-error(		"Invalid character in character class"
+[[]--b---]	v	)syntax-error(		"Invalid character in character class"
+[[]--b&&c]	v	)syntax-error(		"Invalid set operation in character class"
+[[]--b##c]	v	)syntax-error(		"Invalid set operation in character class"
+[[]--##]	v	)syntax-error(		"Invalid set operation in character class"
+[[]--\k]	v	)syntax-error(		"Invalid escape"
+[[]&&b&]	v	)syntax-error(		"Invalid set operation in character class"
+[[]&&b&c]	v	)syntax-error(		"Invalid set operation in character class"
+[[]&&b&&]	v	)syntax-error(		"Invalid character in character class"
+[[]&&b&&&]	v	)syntax-error(		"Invalid character in character class"
+[[]&&b--c]	v	)syntax-error(		"Invalid set operation in character class"
+[[]&&b##c]	v	)syntax-error(		"Invalid set operation in character class"
+[[]&&##]	v	)syntax-error(		"Invalid set operation in character class"
+[[]&&\k]	v	)syntax-error(		"Invalid escape"
+[[]##]	v	)syntax-error(		"Invalid set operation in character class"
+
+[z[]-]	v	)syntax-error(		"Invalid character class"
+[z[]-0]	v	)syntax-error(		"Invalid character class"
+[z[]-\0]	v	)syntax-error(		"Invalid character class"
+[z[]-\d]	v	)syntax-error(		"Invalid character class"
+[z[]-\k]	v	)syntax-error(		"Invalid character class"
+[z[]-\q{]	v	)syntax-error(		"Invalid character class"
+[z[]-\q{}]	v	)syntax-error(		"Invalid character class"
+[z[]-[]	v	)syntax-error(		"Invalid character class"	!ignore-error-message
+[z[]-[]]	v	)syntax-error(		"Invalid character class"
+[z[]-&&]	v	)syntax-error(		"Invalid character class"
+[z[]-/]	v	)syntax-error(		"Invalid character class"
+[z[]-b-c]	v	)syntax-error(		"Invalid character class"
+[z[]-&&]	v	)syntax-error(		"Invalid character class"
+[z[]-##]	v	)syntax-error(		"Invalid character class"
+[z[]--]	v	)syntax-error(		"Invalid set operation in character class"
+[z[]---]	v	)syntax-error(		"Invalid set operation in character class"
+[z[]--b-]	v	)syntax-error(		"Invalid set operation in character class"
+[z[]--b-c]	v	)syntax-error(		"Invalid set operation in character class"
+[z[]--b--]	v	)syntax-error(		"Invalid set operation in character class"
+[z[]--b---]	v	)syntax-error(		"Invalid set operation in character class"
+[z[]--b&&c]	v	)syntax-error(		"Invalid set operation in character class"
+[z[]--b##c]	v	)syntax-error(		"Invalid set operation in character class"
+[z[]--##]	v	)syntax-error(		"Invalid set operation in character class"
+[z[]--\k]	v	)syntax-error(		"Invalid set operation in character class"
+[z[]&&b&]	v	)syntax-error(		"Invalid set operation in character class"
+[z[]&&b&c]	v	)syntax-error(		"Invalid set operation in character class"
+[z[]&&b&&]	v	)syntax-error(		"Invalid set operation in character class"
+[z[]&&b&&&]	v	)syntax-error(		"Invalid set operation in character class"
+[z[]&&b--c]	v	)syntax-error(		"Invalid set operation in character class"
+[z[]&&b##c]	v	)syntax-error(		"Invalid set operation in character class"
+[z[]&&##]	v	)syntax-error(		"Invalid set operation in character class"
+[z[]&&\k]	v	)syntax-error(		"Invalid set operation in character class"
+[z[]##]	v	)syntax-error(		"Invalid set operation in character class"
+
+## Class set disjunction edge cases
+
+\q	v	)syntax-error(	q	"Invalid escape"
+\q{	v	)syntax-error(	q{	"Invalid escape"	!ignore-error-message
+\q{}	v	)syntax-error(	\q{}	"Invalid escape"
+
+[\q]	v	)syntax-error(	[q]	"Invalid escape"
+[\q{]	v	)syntax-error(	[q{]	"Invalid character in character class"
+[\q{}]	v	)inconvertible(	 	[{"captures":[""],"index":0},{"captures":[""],"index":1}]
+[\q{ }]	v	)inconvertible(	 	[{"captures":[" "],"index":0}]
+[\q{|}]	v	)inconvertible(	  	[{"captures":[""],"index":0},{"captures":[""],"index":1},{"captures":[""],"index":2}]
+[\q{ | }]	v	)inconvertible(	  	[{"captures":[" "],"index":0},{"captures":[" "],"index":1}]
+[\q{-}]	v	)syntax-error(	-	"Invalid character in character class"
+[\q{--}]	v	)syntax-error(	--	"Invalid character in character class"
+[\q{&}]	v	)inconvertible(	&	[{"captures":["&"],"index":0}]
+[\q{&&}]	v	)syntax-error(	&&	"Invalid set operation in character class"
+[\q{#}]	v	)inconvertible(	##	[{"captures":["#"],"index":0},{"captures":["#"],"index":1}]
+[\q{##}]	v	)syntax-error(	##	"Invalid set operation in character class"
+[\q{/}]	v	)syntax-error(	//	"Invalid character in character class"
+[\q{/}]	v	)syntax-error(	//	"Invalid character in character class"
+[\q{\}]	v	)syntax-error(	\\	"Invalid character in character class"
+[\q{\}]	v	)syntax-error(	\\	"Invalid character in character class"
+[\q{\0}]	v	)inconvertible(	0	[]
+[\q{\d}]	v	)syntax-error(	0	"Invalid escape"
+[\q{\p{Sc}}]	v	)syntax-error(	0	"Invalid escape"
+[\q{\q{0}}]	v	)syntax-error(	0	"Invalid escape"
+
+[^\q{}]	v	)syntax-error(	abc	"Negated character class may contain strings"
+[^\q{a}]	v	)inconvertible(	abc	[{"captures":["b"],"index":1},{"captures":["c"],"index":2}]
+[^\q{ab|c}]	v	)syntax-error(	abc	"Negated character class may contain strings"
+[^\q{a|b|c}]	v	)inconvertible(	abc	[]
+
+[[^\q{}]]	v	)syntax-error(	abc	"Negated character class may contain strings"
+[[^\q{a}]]	v	)inconvertible(	abc	[{"captures":["b"],"index":1},{"captures":["c"],"index":2}]
+[[^\q{ab|c}]]	v	)syntax-error(	abc	"Negated character class may contain strings"
+[[^\q{a|b|c}]]	v	)inconvertible(	abc	[]
+
+/[^\q{a}--\q{a}]/v	v	)inconvertible(	abc	[]
+/[^\q{a}--\q{ab}]/v	v	)inconvertible(	abc	[]
+/[^\q{ab}--\q{ab}]/v	v	)syntax-error(	abc	"Negated character class may contain strings"
+/[^\q{ab}--\q{a}]/v	v	)syntax-error(	abc	"Negated character class may contain strings"
+/[^\q{ab|c}--\q{ab}]/v	v	)syntax-error(	abc	"Negated character class may contain strings"
+/[^\q{a|b|c}--\q{ab}]/v	v	)inconvertible(	abc	[]
+
+/[^[\q{a}]--[\q{a}]]/v	v	)inconvertible(	abc	[]
+/[^[\q{a}]--[\q{ab}]]/v	v	)inconvertible(	abc	[]
+/[^[\q{ab}]--[\q{ab}]]/v	v	)syntax-error(	abc	"Negated character class may contain strings"
+/[^[\q{ab}]--[\q{a}]]/v	v	)syntax-error(	abc	"Negated character class may contain strings"
+/[^[\q{ab|c}]--[\q{ab}]]/v	v	)syntax-error(	abc	"Negated character class may contain strings"
+/[^[\q{a|b|c}]--[\q{ab}]]/v	v	)inconvertible(	abc	[]
+
+/[^\q{a}&&\q{a}]/v	v	)inconvertible(	abc	[]
+/[^\q{a}&&\q{ab}]/v	v	)inconvertible(	abc	[]
+/[^\q{ab}&&\q{ab}]/v	v	)syntax-error(	abc	"Negated character class may contain strings"
+/[^\q{ab}&&\q{a}]/v	v	)inconvertible(	abc	[]
+/[^\q{ab|c}&&\q{ab}]/v	v	)syntax-error(	abc	"Negated character class may contain strings"
+/[^\q{a|b|c}&&\q{ab}]/v	v	)inconvertible(	abc	[]
+
+/[^[\q{a}]&&[\q{a}]]/v	v	)inconvertible(	abc	[]
+/[^[\q{a}]&&[\q{ab}]]/v	v	)inconvertible(	abc	[]
+/[^[\q{ab}]&&[\q{ab}]]/v	v	)syntax-error(	abc	"Negated character class may contain strings"
+/[^[\q{ab}]&&[\q{a}]]/v	v	)inconvertible(	abc	[]
+/[^[\q{ab|c}]&&[\q{ab}]]/v	v	)syntax-error(	abc	"Negated character class may contain strings"
+/[^[\q{a|b|c}]&&[\q{ab}]]/v	v	)inconvertible(	abc	[]
+
+/[^\q{a}--[\q{b}--[\q{c}]]]/v	v	)inconvertible(	abc	[]
+/[^\q{ab|c}--[\q{ab}--[\q{c}]]]/v	v	)syntax-error(	abc	"Negated character class may contain strings"
+/[^\q{a|b|c}--[\q{ab}--[\q{c}]]]/v	v	)inconvertible(	abc	[]
+
+/[^\q{a}--[\q{b}&&[\q{c}]]]/v	v	)inconvertible(	abc	[]
+/[^\q{ab|c}--[\q{ab}&&[\q{c}]]]/v	v	)syntax-error(	abc	"Negated character class may contain strings"
+/[^\q{a|b|c}--[\q{ab}&&[\q{c}]]]/v	v	)inconvertible(	abc	[]
+
+/[^\q{a}&&[\q{b}--[\q{c}]]]/v	v	)inconvertible(	abc	[]
+/[^\q{ab|c}&&[\q{ab}--[\q{c}]]]/v	v	)syntax-error(	abc	"Negated character class may contain strings"
+/[^\q{a|b|c}&&[\q{ab}--[\q{c}]]]/v	v	)inconvertible(	abc	[]
+
+/[^\q{a}&&[\q{b}&&[\q{c}]]]/v	v	)inconvertible(	abc	[]
+/[^\q{ab|c}&&[\q{ab}&&[\q{c}]]]/v	v	)inconvertible(	abc	[]
+/[^\q{a|b|c}&&[\q{ab}&&[\q{c}]]]/v	v	)inconvertible(	abc	[]
+
+# Class set success cases
+
+[a\\-b]	v	)inconvertible(	abc123	[{"captures":["a"],"index":0},{"captures":["b"],"index":1}]
+
+[a&&b]	v	)inconvertible(	abc123	[]
+[a--b]	v	)inconvertible(	abc123	[{"captures":["a"],"index":0}]
+[[a-z]&&[aeiou]]	v	)inconvertible(	abc123	[{"captures":["a"],"index":0}]
+[[a-z]--[aeiou]]	v	)inconvertible(	abc123	[{"captures":["b"],"index":1},{"captures":["c"],"index":2}]
+[[a-f][0-9]]	v	)inconvertible(	abc123	[{"captures":["a"],"index":0},{"captures":["b"],"index":1},{"captures":["c"],"index":2},{"captures":["1"],"index":3},{"captures":["2"],"index":4},{"captures":["3"],"index":5}]
+[[[a-f]--[b]][0-9]]	v	)inconvertible(	abc123	[{"captures":["a"],"index":0},{"captures":["c"],"index":2},{"captures":["1"],"index":3},{"captures":["2"],"index":4},{"captures":["3"],"index":5}]
+[\\p{Decimal_Number}&&[0-9]]	v	)syntax-error(	abc123	"Invalid character in character class"
+
+
+[\\q{a}]	v	)syntax-error(	abc123	"Invalid character in character class"
+[\\q{a|}]	v	)syntax-error(		"Invalid character in character class"
+[\\q{|a}]	v	)syntax-error(		"Invalid character in character class"
+[\\q{abc|def}]	v	)syntax-error(	abc123	"Invalid character in character class"
+[\\q{abc|d|ef}]	v	)syntax-error(	abc123	"Invalid character in character class"
 
 # Issues
 

@@ -2295,6 +2295,8 @@ PIJAMALı HASTA YAĞıZ ŞOFÖRE ÇABUCAK GÜVENDI	vi	pijamalı hasta yağız ş
 \p{Script=Latn}	v	p{Script=Latn}
 \p{General_Category=Currency_Symbol}	u	$€£𑿝¥ a0?	!skip-before-net10.0	# (the adapted pattern depends on the Unicode version included in the .NET runtime)
 \p{General_Category=Currency_Symbol}	v	$€£𑿝¥ a0?	!skip-before-net10.0	# (the adapted pattern depends on the Unicode version included in the .NET runtime)
+\p{Basic_Emoji}	u	💩x💫x💩
+\p{Basic_Emoji}	v	💩x💫x💩
 
 \P		P
 \P	u	P
@@ -2322,6 +2324,8 @@ PIJAMALı HASTA YAĞıZ ŞOFÖRE ÇABUCAK GÜVENDI	vi	pijamalı hasta yağız ş
 \P{Script=Latn}	v	P{Script=Latn}
 \P{General_Category=Currency_Symbol}	u	$€£𑿝¥ a0?	!skip-before-net10.0	# (the adapted pattern depends on the Unicode version included in the .NET runtime)
 \P{General_Category=Currency_Symbol}	v	$€£𑿝¥ a0?	!skip-before-net10.0	# (the adapted pattern depends on the Unicode version included in the .NET runtime)
+\P{Basic_Emoji}	u	💩x💫x💩
+\P{Basic_Emoji}	v	💩x💫x💩
 
 [\p]		\p
 [\p]	u	\p
@@ -2349,6 +2353,10 @@ PIJAMALı HASTA YAĞıZ ŞOFÖRE ÇABUCAK GÜVENDI	vi	pijamalı hasta yağız ş
 [\p{Script=Latn}]	v	\p{Script=Latn}
 [\p{General_Category=Currency_Symbol}]	u	$€£𑿝¥ a0?	!skip-before-net10.0	# (the adapted pattern depends on the Unicode version included in the .NET runtime)
 [\p{General_Category=Currency_Symbol}]	v	$€£𑿝¥ a0?	!skip-before-net10.0	# (the adapted pattern depends on the Unicode version included in the .NET runtime)
+[\p{Basic_Emoji}]	u	💩x💫x💩
+[\p{Basic_Emoji}]	v	💩x💫x💩
+[^\p{Basic_Emoji}]	u	💩x💫x💩
+[^\p{Basic_Emoji}]	v	💩x💫x💩
 
 [\P]		\P
 [\P]	u	\P
@@ -2376,6 +2384,10 @@ PIJAMALı HASTA YAĞıZ ŞOFÖRE ÇABUCAK GÜVENDI	vi	pijamalı hasta yağız ş
 [\P{Script=Latn}]	v	\P{Script=Latn}
 [\P{General_Category=Currency_Symbol}]	u	$€£𑿝¥ a0?	!skip-before-net10.0	# (the adapted pattern depends on the Unicode version included in the .NET runtime)
 [\P{General_Category=Currency_Symbol}]	v	$€£𑿝¥ a0?	!skip-before-net10.0	# (the adapted pattern depends on the Unicode version included in the .NET runtime)
+[\P{Basic_Emoji}]	u	💩x💫x💩]
+[\P{Basic_Emoji}]	v	💩x💫x💩]
+[^\P{Basic_Emoji}]	u	💩x💫x💩]
+[^\P{Basic_Emoji}]	v	💩x💫x💩]
 
 \p{General_Category=Sc}	u	$€£𑿝¥ a0?	!skip-before-net10.0	# (the adapted pattern depends on the Unicode version included in the .NET runtime)
 \p{General_Category=Sc}	v	$€£𑿝¥ a0?	!skip-before-net10.0	# (the adapted pattern depends on the Unicode version included in the .NET runtime)
@@ -3308,6 +3320,10 @@ styles(?:\.[\da-f]+)?	v	styles.1234.min.css
 \k<b>(?<a>)	u	x
 \k<b>(?<a>)	v	x
 
+[\k<b>)](?<b>)		x
+[\k<b>)](?<b>)	u	x
+[\k<b>)](?<b>)	v	x
+
 # Backreferences
 
 title=(["'])(.*?)\1		title="Named capturing groups' advantages"
@@ -4001,6 +4017,285 @@ a(?i:b)c		abc
 (?i:)		a
 (?s:)		a
 (?m:)		a
+
+# Flag v
+
+## Class set syntax characters (most of these are already tested above)
+
+[|]	v	
+
+[\q{|}]	v	
+[\q{/}]	v	
+[\q{\}]	v	
+
+## Class set reserved double punctuators
+
+[&&]	v	
+[!!]	v	
+[##]	v	
+[$$]	v	
+[%%]	v	
+[**]	v	
+[++]	v	
+[,,]	v	
+[..]	v	
+[::]	v	
+[;;]	v	
+[<<]	v	
+[==]	v	
+[>>]	v	
+[??]	v	
+[@@]	v	
+[^^^]	v	
+[x^^]	v	
+[``]	v	
+[~~]	v	
+
+[\q{&&}]	v	
+[\q{!!}]	v	
+[\q{##}]	v	
+
+## Class set reserved punctuators
+
+[\&\-\!\#\%\,\:\;\<\=\>\@\`\~]	v	&-!#%,:;<=>@`~
+
+## Class set expression edge cases
+
+[a-]	v	
+[a-0]	v	
+[a-\0]	v	
+[a-\d]	v	
+[a-\k]	v	
+[a-\q{]	v	
+[a-\q{}]	v	
+[a-[]	v		!ignore-error-message
+[a-[]]	v	
+[a-&&]	v	
+[a-/]	v	
+[a-b-c]	v	
+[a-&&]	v	
+[a-##]	v	
+[a--]	v	
+[a---]	v	
+[a--b-]	v	
+[a--b-c]	v	
+[a--b--]	v	
+[a--b---]	v	
+[a--b&&c]	v	
+[a--b##c]	v	
+[a--##]	v	
+[a--\k]	v	
+[a&&b&]	v	
+[a&&b&c]	v	
+[a&&b&&]	v	
+[a&&b&&&]	v	
+[a&&b--c]	v	
+[a&&b##c]	v	
+[a&&##]	v	
+[a&&\k]	v	
+[a##]	v	
+
+[za-]	v	
+[za-0]	v	
+[za-\0]	v	
+[za-\d]	v	
+[za-\k]	v	
+[za-\q{]	v	
+[za-\q{}]	v	
+[za-[]	v		!ignore-error-message
+[za-[]]	v	
+[za-&&]	v	
+[za-/]	v	
+[za-b-c]	v	
+[za-&&]	v	
+[za-##]	v	
+[za--]	v	
+[za---]	v	
+[za--b-]	v	
+[za--b-c]	v	
+[za--b--]	v	
+[za--b---]	v	
+[za--b&&c]	v	
+[za--b##c]	v	
+[za--##]	v	
+[za--\k]	v	
+[za&&b&]	v	
+[za&&b&c]	v	
+[za&&b&&]	v	
+[za&&b&&&]	v	
+[za&&b--c]	v	
+[za&&b##c]	v	
+[za&&##]	v	
+[za&&\k]	v	
+[za##]	v	
+
+[[]-]	v	
+[[]-0]	v	
+[[]-\0]	v	
+[[]-\d]	v	
+[[]-\k]	v	
+[[]-\q{]	v	
+[[]-\q{}]	v	
+[[]-[]	v		!ignore-error-message
+[[]-[]]	v	
+[[]-&&]	v	
+[[]-/]	v	
+[[]-b-c]	v	
+[[]-&&]	v	
+[[]-##]	v	
+[[]--]	v	
+[[]---]	v	
+[[]--b-]	v	
+[[]--b-c]	v	
+[[]--b--]	v	
+[[]--b---]	v	
+[[]--b&&c]	v	
+[[]--b##c]	v	
+[[]--##]	v	
+[[]--\k]	v	
+[[]&&b&]	v	
+[[]&&b&c]	v	
+[[]&&b&&]	v	
+[[]&&b&&&]	v	
+[[]&&b--c]	v	
+[[]&&b##c]	v	
+[[]&&##]	v	
+[[]&&\k]	v	
+[[]##]	v	
+
+[z[]-]	v	
+[z[]-0]	v	
+[z[]-\0]	v	
+[z[]-\d]	v	
+[z[]-\k]	v	
+[z[]-\q{]	v	
+[z[]-\q{}]	v	
+[z[]-[]	v		!ignore-error-message
+[z[]-[]]	v	
+[z[]-&&]	v	
+[z[]-/]	v	
+[z[]-b-c]	v	
+[z[]-&&]	v	
+[z[]-##]	v	
+[z[]--]	v	
+[z[]---]	v	
+[z[]--b-]	v	
+[z[]--b-c]	v	
+[z[]--b--]	v	
+[z[]--b---]	v	
+[z[]--b&&c]	v	
+[z[]--b##c]	v	
+[z[]--##]	v	
+[z[]--\k]	v	
+[z[]&&b&]	v	
+[z[]&&b&c]	v	
+[z[]&&b&&]	v	
+[z[]&&b&&&]	v	
+[z[]&&b--c]	v	
+[z[]&&b##c]	v	
+[z[]&&##]	v	
+[z[]&&\k]	v	
+[z[]##]	v	
+
+## Class set disjunction edge cases
+
+\q	v	q
+\q{	v	q{	!ignore-error-message
+\q{}	v	\q{}
+
+[\q]	v	[q]
+[\q{]	v	[q{]
+[\q{}]	v	 
+[\q{ }]	v	 
+[\q{|}]	v	  
+[\q{ | }]	v	  
+[\q{-}]	v	-
+[\q{--}]	v	--
+[\q{&}]	v	&
+[\q{&&}]	v	&&
+[\q{#}]	v	##
+[\q{##}]	v	##
+[\q{/}]	v	//
+[\q{/}]	v	//
+[\q{\}]	v	\\
+[\q{\}]	v	\\
+[\q{\0}]	v	0
+[\q{\d}]	v	0
+[\q{\p{Sc}}]	v	0
+[\q{\q{0}}]	v	0
+
+[^\q{}]	v	abc
+[^\q{a}]	v	abc
+[^\q{ab|c}]	v	abc
+[^\q{a|b|c}]	v	abc
+
+[[^\q{}]]	v	abc
+[[^\q{a}]]	v	abc
+[[^\q{ab|c}]]	v	abc
+[[^\q{a|b|c}]]	v	abc
+
+/[^\q{a}--\q{a}]/v	v	abc
+/[^\q{a}--\q{ab}]/v	v	abc
+/[^\q{ab}--\q{ab}]/v	v	abc
+/[^\q{ab}--\q{a}]/v	v	abc
+/[^\q{ab|c}--\q{ab}]/v	v	abc
+/[^\q{a|b|c}--\q{ab}]/v	v	abc
+
+/[^[\q{a}]--[\q{a}]]/v	v	abc
+/[^[\q{a}]--[\q{ab}]]/v	v	abc
+/[^[\q{ab}]--[\q{ab}]]/v	v	abc
+/[^[\q{ab}]--[\q{a}]]/v	v	abc
+/[^[\q{ab|c}]--[\q{ab}]]/v	v	abc
+/[^[\q{a|b|c}]--[\q{ab}]]/v	v	abc
+
+/[^\q{a}&&\q{a}]/v	v	abc
+/[^\q{a}&&\q{ab}]/v	v	abc
+/[^\q{ab}&&\q{ab}]/v	v	abc
+/[^\q{ab}&&\q{a}]/v	v	abc
+/[^\q{ab|c}&&\q{ab}]/v	v	abc
+/[^\q{a|b|c}&&\q{ab}]/v	v	abc
+
+/[^[\q{a}]&&[\q{a}]]/v	v	abc
+/[^[\q{a}]&&[\q{ab}]]/v	v	abc
+/[^[\q{ab}]&&[\q{ab}]]/v	v	abc
+/[^[\q{ab}]&&[\q{a}]]/v	v	abc
+/[^[\q{ab|c}]&&[\q{ab}]]/v	v	abc
+/[^[\q{a|b|c}]&&[\q{ab}]]/v	v	abc
+
+/[^\q{a}--[\q{b}--[\q{c}]]]/v	v	abc
+/[^\q{ab|c}--[\q{ab}--[\q{c}]]]/v	v	abc
+/[^\q{a|b|c}--[\q{ab}--[\q{c}]]]/v	v	abc
+
+/[^\q{a}--[\q{b}&&[\q{c}]]]/v	v	abc
+/[^\q{ab|c}--[\q{ab}&&[\q{c}]]]/v	v	abc
+/[^\q{a|b|c}--[\q{ab}&&[\q{c}]]]/v	v	abc
+
+/[^\q{a}&&[\q{b}--[\q{c}]]]/v	v	abc
+/[^\q{ab|c}&&[\q{ab}--[\q{c}]]]/v	v	abc
+/[^\q{a|b|c}&&[\q{ab}--[\q{c}]]]/v	v	abc
+
+/[^\q{a}&&[\q{b}&&[\q{c}]]]/v	v	abc
+/[^\q{ab|c}&&[\q{ab}&&[\q{c}]]]/v	v	abc
+/[^\q{a|b|c}&&[\q{ab}&&[\q{c}]]]/v	v	abc
+
+# Class set success cases
+
+[a\\-b]	v	abc123
+
+[a&&b]	v	abc123
+[a--b]	v	abc123
+[[a-z]&&[aeiou]]	v	abc123
+[[a-z]--[aeiou]]	v	abc123
+[[a-f][0-9]]	v	abc123
+[[[a-f]--[b]][0-9]]	v	abc123
+[\\p{Decimal_Number}&&[0-9]]	v	abc123
+
+
+[\\q{a}]	v	abc123
+[\\q{a|}]	v	
+[\\q{|a}]	v	
+[\\q{abc|def}]	v	abc123
+[\\q{abc|d|ef}]	v	abc123
 
 # Issues
 

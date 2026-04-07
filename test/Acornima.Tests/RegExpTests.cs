@@ -337,95 +337,8 @@ public partial class RegExpTests
         return regExpParser;
     }
 
-    // v-flag (unicode sets) validation tests
-
-    [InlineData("[abc]", "v", true)]
-    [InlineData("[a-z]", "v", true)]
-    [InlineData("abc", "v", true)]
-    [InlineData("[\\d]", "v", true)]
-    [InlineData("[\\w\\d]", "v", true)]
-    [InlineData("[[a-z]&&[aeiou]]", "v", true)]
-    [InlineData("[[a-z]--[aeiou]]", "v", true)]
-    [InlineData("[\\q{abc|def}]", "v", true)]
-    [InlineData("[\\q{a}]", "v", true)]
-    [InlineData("[\\q{abc|d|ef}]", "v", true)]
-    [InlineData("[a&&b]", "v", true)]
-    [InlineData("[a--b]", "v", true)]
-    [InlineData("[\\p{ASCII}]", "v", true)]
-    [InlineData("[\\p{Letter}]", "v", true)]
-    [InlineData("[\\p{Basic_Emoji}]", "v", true)]
-    [InlineData("[\\p{RGI_Emoji}]", "v", true)]
-    [InlineData("[]", "v", true)]
-    [InlineData("[^abc]", "v", true)]
-    [InlineData("[a\\-b]", "v", true)]
-    [InlineData("[\\!]", "v", true)]
-    [InlineData("[\\#]", "v", true)]
-    [InlineData(".", "v", true)]
-    [InlineData("a{3}", "v", true)]
-    [InlineData("(a)", "v", true)]
-    [InlineData("(?:a)", "v", true)]
-    [InlineData("\\u0041", "v", true)]
-    [InlineData("\\u{1F600}", "v", true)]
-    [InlineData("[\\u0041]", "v", true)]
-    [InlineData("[\\u{1F600}]", "v", true)]
-    [InlineData("[[a-f][0-9]]", "v", true)]
-    [InlineData("[[[a-f]--[b]][0-9]]", "v", true)]
-    [InlineData("[\\p{Decimal_Number}&&[0-9]]", "v", true)]
-    [InlineData("[\\x41]", "v", true)]
-    [InlineData("[\\x41-\\x5A]", "v", true)]
-    [InlineData("[\\u0041-\\u005A]", "v", true)]
-    [InlineData("[\\u{41}-\\u{5A}]", "v", true)]
-    [InlineData("[\\0]", "v", true)]
-    [InlineData("[\\t\\n\\r]", "v", true)]
-    [InlineData("[[[a-z]]]", "v", true)]
-    [InlineData("[\\q{}]", "v", true)]
-    [InlineData("[\\q{|}]", "v", true)]
-    [InlineData("[\\q{a|}]", "v", true)]
-    [InlineData("[^^]", "v", true)]
-    [Theory]
-    public void VFlagValidPatternsShouldParse(string pattern, string flags, bool expectedResult)
-    {
-        Assert.Equal(expectedResult, Tokenizer.ValidateRegExp(pattern, flags, out var error));
-        Assert.Null(error);
-    }
-
-    [InlineData("[{]", "v")]
-    [InlineData("[(]", "v")]
-    [InlineData("[)]", "v")]
-    [InlineData("[/]", "v")]
-    [InlineData("[!!]", "v")]
-    [InlineData("[##]", "v")]
-    [InlineData("[&&]", "v")]
-    [InlineData("[**]", "v")]
-    [InlineData("[++]", "v")]
-    [InlineData("[,,]", "v")]
-    [InlineData("[..]", "v")]
-    [InlineData("[::]", "v")]
-    [InlineData("[<<]", "v")]
-    [InlineData("[==]", "v")]
-    [InlineData("[>>]", "v")]
-    [InlineData("[??]", "v")]
-    [InlineData("[@@]", "v")]
-    [InlineData("[$$]", "v")]
-    [InlineData("[``]", "v")]
-    [InlineData("[~~]", "v")]
-    [InlineData("[a-]", "v")]
-    [InlineData("[z-a]", "v")]
-    [InlineData("[\\P{Basic_Emoji}]", "v")]
-    [InlineData("[^\\p{Basic_Emoji}]", "v")]
-    [InlineData("[^\\p{RGI_Emoji}]", "v")]
-    [InlineData("[^\\q{abc|def}]", "v")]
-    [InlineData("[\\q]", "v")]
-    [InlineData("[\\p{Invalid_Property}]", "v")]
-    [Theory]
-    public void VFlagInvalidPatternsShouldFail(string pattern, string flags)
-    {
-        Assert.False(Tokenizer.ValidateRegExp(pattern, flags, out var error));
-        Assert.NotNull(error);
-    }
-
     [Fact]
-    public void VFlagConversionShouldReportFailure()
+    public void FlagV_ConversionShouldReportFailure()
     {
         var parser = new Parser(new ParserOptions
         {
@@ -438,7 +351,7 @@ public partial class RegExpTests
     }
 
     [Fact]
-    public void VFlagConversionReportsSyntaxErrorsFirst()
+    public void FlagV_ConversionReportsSyntaxErrorsFirst()
     {
         // Syntax error should take precedence over conversion-not-supported error.
         var ex = Assert.ThrowsAny<SyntaxErrorException>(() =>
@@ -447,13 +360,25 @@ public partial class RegExpTests
     }
 
     [Fact]
-    public void VFlagMutuallyExclusiveWithUFlag()
+    public void FlagV_IsMutuallyExclusiveWithUFlag()
     {
         var parser = new Parser(new ParserOptions
         {
             RegExpParseMode = RegExpParseMode.Validate,
             Tolerant = false
         });
-        Assert.ThrowsAny<ParseErrorException>(() => parser.ParseExpression("/abc/uv"));
+        Assert.ThrowsAny<SyntaxErrorException>(() => parser.ParseExpression("/abc/uv"));
+    }
+
+    [Fact]
+    public void FlagV_IsSyntaxErrorBeforeES2024()
+    {
+        var parser = new Parser(new ParserOptions
+        {
+            RegExpParseMode = RegExpParseMode.Validate,
+            Tolerant = false,
+            EcmaVersion = EcmaVersion.ES2023
+        });
+        Assert.ThrowsAny<SyntaxErrorException>(() => parser.ParseExpression("/abc/v"));
     }
 }

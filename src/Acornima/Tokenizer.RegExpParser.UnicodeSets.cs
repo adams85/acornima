@@ -124,138 +124,9 @@ public partial class Tokenizer
 
                 int result = CharSetOk, subResult;
 
-                if (pattern.CharCodeAt(i) == ']')
+                for (var isSetOperationAllowed = true; ; isSetOperationAllowed = false)
                 {
-                    return result; // empty class
-                }
-                else if (EatClassSetCharacter(parser, out left))
-                {
-                    // https://tc39.es/ecma262/#prod-ClassSetRange
-                    if (pattern.CharCodeAt(i) == '-')
-                    {
-                        start = ++i;
-                        if (pattern.CharCodeAt(i) == '-')
-                        {
-                            i++;
-                            goto ClassSubtraction;
-                        }
-                        else if (EatClassSetCharacter(parser, out right))
-                        {
-                            if (left > right)
-                            {
-                                parser.ReportSyntaxError(start, RegExpRangeOutOfOrderCharacterClass);
-                            }
-
-                            goto ClassUnion;
-                        }
-                        else if (EatNestedClassOrClassStringDisjunction(parser) != CharSetNone)
-                        {
-                            parser.ReportSyntaxError(start, RegExpInvalidCharacterClass);
-                        }
-                        else
-                        {
-                            goto UnexpectedCharacter;
-                        }
-                    }
-                }
-                else if ((subResult = EatNestedClassOrClassStringDisjunction(parser)) != CharSetNone)
-                {
-                    if (pattern.CharCodeAt(i) == '-' && pattern.CharCodeAt(i + 1) != '-')
-                    {
-                        parser.ReportSyntaxError(i + 1, RegExpInvalidCharacterClass);
-                    }
-
-                    if (subResult == CharSetString)
-                    {
-                        result = CharSetString;
-                    }
-                }
-                else
-                {
-                    goto UnexpectedCharacter;
-                }
-
-                // https://tc39.es/ecma262/#prod-ClassIntersection
-                if (!EatChars('&', '&', pattern, ref i))
-                {
-                    goto MaybeClassSubtraction;
-                }
-
-                do
-                {
-                    if (pattern.CharCodeAt(i) != '&')
-                    {
-                        // https://tc39.es/ecma262/#prod-ClassSetOperand
-                        if (EatClassSetCharacter(parser, out right))
-                        {
-                            continue;
-                        }
-                        else if ((subResult = EatNestedClassOrClassStringDisjunction(parser)) != CharSetNone)
-                        {
-                            if (subResult != CharSetString)
-                            {
-                                result = CharSetOk;
-                            }
-
-                            continue;
-                        }
-                    }
-
-                    parser.ReportSyntaxError(i, RegExpInvalidCharacterInClass);
-                }
-                while (EatChars('&', '&', pattern, ref i));
-
-                if (pattern.CharCodeAt(i) == ']')
-                {
-                    return result;
-                }
-                else
-                {
-                    goto UnexpectedCharacter;
-                }
-
-            MaybeClassSubtraction:
-                // https://tc39.es/ecma262/#prod-ClassSubtraction
-                if (!EatChars('-', '-', pattern, ref i))
-                {
-                    goto ClassUnion;
-                }
-
-            ClassSubtraction:
-                do
-                {
-                    // https://tc39.es/ecma262/#prod-ClassSetOperand
-                    if (EatClassSetCharacter(parser, out right))
-                    {
-                        continue;
-                    }
-                    else if ((subResult = EatNestedClassOrClassStringDisjunction(parser)) != CharSetNone)
-                    {
-                        if (subResult != CharSetString)
-                        {
-                            result = CharSetOk;
-                        }
-
-                        continue;
-                    }
-
-                    parser.ReportSyntaxError(i, RegExpInvalidCharacterInClass);
-                }
-                while (EatChars('-', '-', pattern, ref i));
-
-                if (pattern.CharCodeAt(i) == ']')
-                {
-                    return result;
-                }
-                else
-                {
-                    goto UnexpectedCharacter;
-                }
-
-            ClassUnion:
-                // https://tc39.es/ecma262/#prod-ClassUnion
-                for (; ; )
-                {
+                    // https://tc39.es/ecma262/#prod-ClassUnion
                     if (pattern.CharCodeAt(i) == ']')
                     {
                         return result;
@@ -263,18 +134,32 @@ public partial class Tokenizer
                     else if (EatClassSetCharacter(parser, out left))
                     {
                         // https://tc39.es/ecma262/#prod-ClassSetRange
-                        if (pattern.CharCodeAt(i) == '-')
+                        if (Eat('-', pattern, ref i))
                         {
-                            start = ++i;
-                            if (pattern.CharCodeAt(i) == '-')
+                            start = i;
+                            if (Eat('-', pattern, ref i))
                             {
-                                parser.ReportSyntaxError(start - 1, RegExpInvalidClassSetOperation);
+                                goto ClassSubtraction;
                             }
                             else if (EatClassSetCharacter(parser, out right))
                             {
                                 if (left > right)
                                 {
                                     parser.ReportSyntaxError(start, RegExpRangeOutOfOrderCharacterClass);
+                                }
+
+                                isSetOperationAllowed = false;
+
+                                if (Eat('-', pattern, ref i))
+                                {
+                                    if (Eat('-', pattern, ref i))
+                                    {
+                                        goto ClassSubtraction;
+                                    }
+                                    else
+                                    {
+                                        parser.ReportSyntaxError(i, RegExpInvalidCharacterClass);
+                                    }
                                 }
                             }
                             else if (EatNestedClassOrClassStringDisjunction(parser) != CharSetNone)
@@ -287,29 +172,117 @@ public partial class Tokenizer
                             }
                         }
                     }
-                    else if ((subResult = EatNestedClassOrClassStringDisjunction(parser)) != CharSetNone
-                        || pattern.CharCodeAt(i) == '-')
+                    else if ((subResult = EatNestedClassOrClassStringDisjunction(parser)) != CharSetNone)
                     {
-                        if (pattern.CharCodeAt(i) == '-')
-                        {
-                            if (pattern.CharCodeAt(i + 1) != '-')
-                            {
-                                parser.ReportSyntaxError(i + 1, RegExpInvalidCharacterClass);
-                            }
-                            else
-                            {
-                                parser.ReportSyntaxError(i, RegExpInvalidClassSetOperation);
-                            }
-                        }
-
                         if (subResult == CharSetString)
                         {
                             result = CharSetString;
+                        }
+
+                        if (Eat('-', pattern, ref i))
+                        {
+                            if (Eat('-', pattern, ref i))
+                            {
+                                goto ClassSubtraction;
+                            }
+                            else
+                            {
+                                parser.ReportSyntaxError(i, RegExpInvalidCharacterClass);
+                            }
                         }
                     }
                     else
                     {
                         goto UnexpectedCharacter;
+                    }
+
+                    // https://tc39.es/ecma262/#prod-ClassIntersection
+                    if (!EatChars('&', '&', pattern, ref i))
+                    {
+                        goto MaybeClassSubtraction;
+                    }
+
+                    if (!isSetOperationAllowed)
+                    {
+                        parser.ReportSyntaxError(i - 2, RegExpInvalidClassSetOperation);
+                    }
+
+                    do
+                    {
+                        if (pattern.CharCodeAt(i) != '&')
+                        {
+                            // https://tc39.es/ecma262/#prod-ClassSetOperand
+                            if (EatClassSetCharacter(parser, out right))
+                            {
+                                continue;
+                            }
+                            else if ((subResult = EatNestedClassOrClassStringDisjunction(parser)) != CharSetNone)
+                            {
+                                if (subResult != CharSetString)
+                                {
+                                    result = CharSetOk;
+                                }
+
+                                continue;
+                            }
+                        }
+
+                        goto UnexpectedCharacter;
+                    }
+                    while (EatChars('&', '&', pattern, ref i));
+
+                    right = pattern.CharCodeAt(i);
+                    if (right == ']')
+                    {
+                        return result;
+                    }
+                    else if (right >= 0)
+                    {
+                        parser.ReportSyntaxError(i, RegExpInvalidClassSetOperation);
+                    }
+                    else
+                    {
+                        goto Unterminated;
+                    }
+
+                MaybeClassSubtraction:
+                    // https://tc39.es/ecma262/#prod-ClassSubtraction
+                    if (!EatChars('-', '-', pattern, ref i))
+                    {
+                        continue;
+                    }
+
+                ClassSubtraction:
+                    if (!isSetOperationAllowed)
+                    {
+                        parser.ReportSyntaxError(i - 2, RegExpInvalidClassSetOperation);
+                    }
+
+                    do
+                    {
+                        // https://tc39.es/ecma262/#prod-ClassSetOperand
+                        if (EatClassSetCharacter(parser, out right)
+                            || EatNestedClassOrClassStringDisjunction(parser) != CharSetNone)
+                        {
+                            continue;
+                        }
+
+                        goto UnexpectedCharacter;
+                    }
+                    while (EatChars('-', '-', pattern, ref i));
+
+                    right = pattern.CharCodeAt(i);
+                    if (right == ']')
+                    {
+                        return result;
+                    }
+                    else if (right >= 0)
+                    {
+                        parser.ReportSyntaxError(i, RegExpInvalidClassSetOperation);
+                    }
+                    else
+                    {
+                        goto Unterminated;
                     }
                 }
 
@@ -322,11 +295,9 @@ public partial class Tokenizer
                 {
                     parser.ReportSyntaxError(i, RegExpInvalidCharacterInClass);
                 }
-                else
-                {
-                    parser.ReportSyntaxError(i, RegExpUnterminatedCharacterClass);
-                }
 
+            Unterminated:
+                parser.ReportSyntaxError(i, RegExpUnterminatedCharacterClass);
                 return CharSetNone; // unreachable, just to keep the compiler happy
             }
 
@@ -363,7 +334,14 @@ public partial class Tokenizer
 
                         if (!Eat('}', pattern, ref i))
                         {
-                            parser.ReportSyntaxError(i, RegExpInvalidCharacterInClass);
+                            if (pattern.CharCodeAt(i) == '\\')
+                            {
+                                parser.ReportSyntaxError(i, RegExpInvalidEscape);
+                            }
+                            else
+                            {
+                                parser.ReportSyntaxError(i, RegExpInvalidCharacterInClass);
+                            }
                         }
 
                         return result;
