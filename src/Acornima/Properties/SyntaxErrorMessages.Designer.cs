@@ -700,11 +700,29 @@ namespace Acornima {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid regular expression: /{0}/{1}: Invalid character in character class.
+        /// </summary>
+        internal static string RegExpInvalidCharacterInClass {
+            get {
+                return ResourceManager.GetString("RegExpInvalidCharacterInClass", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid regular expression: /{0}/{1}: Invalid property name in character class.
         /// </summary>
         internal static string RegExpInvalidClassPropertyName {
             get {
                 return ResourceManager.GetString("RegExpInvalidClassPropertyName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid regular expression: /{0}/{1}: Invalid set operation in character class.
+        /// </summary>
+        internal static string RegExpInvalidClassSetOperation {
+            get {
+                return ResourceManager.GetString("RegExpInvalidClassSetOperation", resourceCulture);
             }
         }
         
@@ -804,6 +822,15 @@ namespace Acornima {
         internal static string RegExpMultipleFlagDashes {
             get {
                 return ResourceManager.GetString("RegExpMultipleFlagDashes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid regular expression: /{0}/{1}: Negated character class may contain strings.
+        /// </summary>
+        internal static string RegExpNegatedCharacterClassWithStrings {
+            get {
+                return ResourceManager.GetString("RegExpNegatedCharacterClassWithStrings", resourceCulture);
             }
         }
         

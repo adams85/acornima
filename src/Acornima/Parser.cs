@@ -10,7 +10,7 @@ using static ExceptionHelper;
 
 // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/index.js
 
-public sealed partial class Parser : IParser
+public sealed partial class Parser : IParser, StackGuard.IRecursionDepthProvider
 {
     private readonly ParserOptions _options;
     private readonly TokenizerOptions _tokenizerOptions;
@@ -28,11 +28,14 @@ public sealed partial class Parser : IParser
         _tokenizer = extension is null
             ? new Tokenizer(options.GetTokenizerOptions(), extension: null)
             : extension.CreateTokenizer(options.GetTokenizerOptions());
+        _tokenizer._recursionDepthProvider = this;
         _tokenizerOptions = _tokenizer.Options;
         _isReservedWord = _isReservedWordBind = null!;
     }
 
     public ParserOptions Options => _options;
+
+    ref int StackGuard.IRecursionDepthProvider.CurrentDepth => ref _recursionDepth;
 
     public Script ParseScript(string input, string? sourceFile = null, bool strict = false)
         => ParseScript(input ?? ThrowArgumentNullException<string>(nameof(input)), 0, input.Length, sourceFile, strict);

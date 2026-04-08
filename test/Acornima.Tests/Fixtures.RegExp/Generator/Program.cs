@@ -47,6 +47,9 @@ static string DecodeStringIfEscaped(string value) => JavaScriptString.IsStringLi
     : value;
 
 var tokenizerOptions = new TokenizerOptions { ExperimentalESFeatures = ExperimentalESFeatures.RegExpModifiers, RegExpParseMode = RegExpParseMode.AdaptToInterpreted, Tolerant = true };
+var tokenizer = new Tokenizer(string.Empty, tokenizerOptions);
+var regexParser = new Tokenizer.RegExpParser(tokenizer);
+
 var output = new List<string>();
 var lineNumber = 0;
 var testCaseCount = 0;
@@ -72,9 +75,11 @@ while ((line = reader.ReadLine()) is not null)
 
         var pattern = DecodeStringIfEscaped(parts[0]);
         var flags = DecodeStringIfEscaped(parts[1]);
+        var validateOnly = flags.Contains('v');
 
-        var regexParser = new Tokenizer.RegExpParser(pattern, flags, tokenizerOptions);
-        try { adaptedPattern = regexParser.ParseCore(out _, out _, out _) ?? ")inconvertible("; }
+        regexParser.Reset(pattern, patternStartIndex: 0, flags, flagsStartIndex: 0);
+
+        try { adaptedPattern = regexParser.ParseCore(validateOnly, out _, out _, out _) ?? ")inconvertible("; }
         catch (SyntaxErrorException) { adaptedPattern = ")syntax-error("; }
         var encodedDotnetPattern = JavaScriptString.Encode(adaptedPattern, addDoubleQuotes: false);
         if (adaptedPattern != encodedDotnetPattern)

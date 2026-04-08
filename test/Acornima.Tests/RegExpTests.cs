@@ -138,7 +138,7 @@ public partial class RegExpTests
             RegExpParseMode = RegExpParseMode.AdaptToInterpreted,
             Tolerant = false
         });
-        var actualAdaptedPattern = parser.ParseCore(out _, out _, out _);
+        var actualAdaptedPattern = parser.ParseCore(validateOnly: false, out _, out _, out _);
 
         Assert.Equal(expectedAdaptedPattern, actualAdaptedPattern);
     }
@@ -194,7 +194,7 @@ public partial class RegExpTests
                 RegExpParseMode = RegExpParseMode.AdaptToInterpreted,
                 Tolerant = false
             });
-            var actual = parser.ParseCore(out _, out _, out _);
+            var actual = parser.ParseCore(validateOnly: false, out _, out _, out _);
             Assert.Equal(expected, actual);
         }
     }
@@ -336,4 +336,68 @@ public partial class RegExpTests
         regExpParser.Reset(pattern, patternStartIndex: 0, flags, flagsStartIndex: 0);
         return regExpParser;
     }
+
+    [Fact]
+    public void FlagV_ConversionShouldReportFailure()
+    {
+        var parser = new Parser(new ParserOptions
+        {
+            RegExpParseMode = RegExpParseMode.AdaptToInterpreted,
+            Tolerant = true
+        });
+        var expr = parser.ParseExpression("/abc/v");
+        Assert.IsType<RegExpLiteral>(expr);
+        Assert.Null(expr.As<RegExpLiteral>().Value);
+    }
+
+    [Fact]
+    public void FlagV_ConversionReportsSyntaxErrorsFirst()
+    {
+        // Syntax error should take precedence over conversion-not-supported error.
+        var ex = Assert.ThrowsAny<SyntaxErrorException>(() =>
+            Tokenizer.AdaptRegExp("[", "v", compiled: false, TimeSpan.FromSeconds(5), throwIfNotAdaptable: true));
+        Assert.Contains("Unterminated character class", ex.Message);
+    }
+
+    [Fact]
+    public void FlagV_IsMutuallyExclusiveWithUFlag()
+    {
+        var parser = new Parser(new ParserOptions
+        {
+            RegExpParseMode = RegExpParseMode.Validate,
+            Tolerant = false
+        });
+        Assert.ThrowsAny<SyntaxErrorException>(() => parser.ParseExpression("/abc/uv"));
+    }
+
+    [Fact]
+    public void FlagV_IsSyntaxErrorBeforeES2024()
+    {
+        var parser = new Parser(new ParserOptions
+        {
+            RegExpParseMode = RegExpParseMode.Validate,
+            Tolerant = false,
+            EcmaVersion = EcmaVersion.ES2023
+        });
+        Assert.ThrowsAny<SyntaxErrorException>(() => parser.ParseExpression("/abc/v"));
+    }
+
+    [Fact]
+    public void FlagV_ThrowsCatchableExceptionOnTooDeepRecursion_WhenParsing()
+    {
+        var parser = new Parser();
+        const int depth = 100_000;
+        var input = $"/{new string('[', depth)}{new string(']', depth)}/v";
+        Assert.Throws<InsufficientExecutionStackException>(() => parser.ParseScript(input));
+    }
+
+    [Fact]
+    public void FlagV_ThrowsCatchableExceptionOnTooDeepRecursion_WhenTokenizing()
+    {
+        const int depth = 100_000;
+        var input = $"/{new string('[', depth)}{new string(']', depth)}/v";
+        var tokenizer = new Tokenizer(input);
+        Assert.Throws<InsufficientExecutionStackException>(() => tokenizer.Next());
+    }
+
 }

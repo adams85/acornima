@@ -19,13 +19,13 @@ public partial class Tokenizer
 
             public void ProcessChar(char ch, Action<StringBuilder, char>? appender, RegExpParser parser)
             {
-                ref readonly var sb = ref parser._stringBuilder;
+                var sb = parser._stringBuilder;
                 appender?.Invoke(sb!, ch);
             }
 
             public void ProcessSetSpecialChar(char ch, RegExpParser parser)
             {
-                ref readonly var sb = ref parser._stringBuilder;
+                var sb = parser._stringBuilder;
                 sb?.Append(ch);
             }
 
@@ -37,7 +37,7 @@ public partial class Tokenizer
 
             private static void ProcessSetChar(char ch, int charCode, Action<StringBuilder, char>? appender, RegExpParser parser, int startIndex)
             {
-                ref readonly var sb = ref parser._stringBuilder;
+                var sb = parser._stringBuilder;
 
                 if (parser._setRangeStart >= 0)
                 {
@@ -73,12 +73,12 @@ public partial class Tokenizer
 
             public bool RewriteSet(RegExpParser parser)
             {
-                ref readonly var sb = ref parser._stringBuilder;
+                var sb = parser._stringBuilder;
 
                 if (sb is not null)
                 {
-                    ref readonly var pattern = ref parser._pattern;
-                    ref readonly var i = ref parser._index;
+                    var pattern = parser._pattern;
+                    var i = parser._index;
 
                     // [] should not match any characters.
                     if (parser._setStartIndex == i - 1)
@@ -102,7 +102,7 @@ public partial class Tokenizer
 
             public void RewriteDot(RegExpParser parser)
             {
-                ref readonly var sb = ref parser._stringBuilder;
+                var sb = parser._stringBuilder;
                 if (sb is not null)
                 {
                     _ = (parser._effectiveFlags & RegExpFlags.DotAll) != 0
@@ -145,8 +145,8 @@ public partial class Tokenizer
                 // Invalid {} quantifiers like /.{/, /.{}/, /.{-1}/, etc. are ignored. RegexOptions.ECMAScript behaves in the same way,
                 // so we don't need to do anything about such cases.
 
-                ref readonly var sb = ref parser._stringBuilder;
-                ref readonly var pattern = ref parser._pattern;
+                var sb = parser._stringBuilder;
+                var pattern = parser._pattern;
 
                 sb?.Append(pattern[startIndex]);
 
@@ -157,8 +157,8 @@ public partial class Tokenizer
             {
                 // https://tc39.es/ecma262/#prod-AtomEscape
 
-                ref readonly var sb = ref parser._stringBuilder;
-                ref readonly var pattern = ref parser._pattern;
+                var sb = parser._stringBuilder;
+                var pattern = parser._pattern;
                 ref var i = ref parser._index;
 
                 ushort charCode;
@@ -316,7 +316,11 @@ public partial class Tokenizer
                             // \k escapes are ignored - but not by the .NET regex engine,
                             // so they need to be rewritten (e.g. /\k<a>/ --> @"k<a>", /[\k<a>]/ --> @"[k<a>]").
                             sb?.Append(ch);
-                            parser.ClearFollowingQuantifierError();
+
+                            if (!parser.WithinSet)
+                            {
+                                parser.ClearFollowingQuantifierError();
+                            }
                             break;
                         }
 
@@ -456,6 +460,11 @@ public partial class Tokenizer
 
                 conversionError = null;
                 return true;
+            }
+
+            public bool ParseSet(RegExpParser parser, out RegExpConversionError? conversionError)
+            {
+                return parser.ParseSetDefault(this, out conversionError);
             }
         }
     }
