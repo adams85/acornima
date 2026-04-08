@@ -169,7 +169,7 @@ public class CharMaskGenerator
         return range.Start << 8 | checked((byte)lengthLookupIndex);
     }
 
-    [Fact(Skip = "Requires UnicodeInformation v2.8.0 (Unicode 17.0) - tables were regenerated ahead of NuGet package")]
+    [Fact]
     public void LookupWorks()
     {
         foreach (var (actual, expectedBmp, expectedAstral) in new[]
