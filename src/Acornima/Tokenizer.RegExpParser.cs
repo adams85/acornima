@@ -425,48 +425,25 @@ public partial class Tokenizer
         private string? ParsePattern<TMode>(TMode mode, out RegExpConversionError? conversionError)
             where TMode : IMode
         {
-            ref readonly var sb = ref _stringBuilder;
+            var sb = _stringBuilder;
             ref var i = ref _index;
             for (i = 0; i < _pattern.Length; i++)
             {
                 var ch = _pattern[i];
                 switch (ch)
                 {
-                    case '[' when !WithinSet:
-                        mode.ProcessSetStart(ch, this);
-                        break;
-
-                    case '-' when WithinSet:
-                        if (_setRangeStart is >= 0 and not SetRangeNotStarted)
+                    case '[':
+                        if (!mode.ParseSet(this, out conversionError))
                         {
-                            // We use bitwise complement to indicate that '-' was encountered after a character (or character class like \d or \p{...}).
-                            _setRangeStart = ~_setRangeStart;
-                            mode.ProcessSetSpecialChar(ch, this);
-                        }
-                        else
-                        {
-                            // We encountered a case like /[-]/, /[0-9-]/, /[0-/d-]/, /[/d-0-]/ or /[\0--]/
-                            mode.ProcessSetChar(ch, _appendCharSafe, this, startIndex: i);
+                            return null;
                         }
                         break;
 
                     case ']':
-                        if (!WithinSet)
-                        {
-                            Debug.Assert(mode is LegacyMode, RegExpLoneQuantifierBrackets); // CheckBracesBalance should ensure this.
-                            goto default;
-                        }
+                        Debug.Assert(mode is LegacyMode, RegExpLoneQuantifierBrackets); // CheckBracesBalance should ensure this.
+                        goto default;
 
-                        if (!mode.RewriteSet(this))
-                        {
-                            mode.ProcessSetSpecialChar(ch, this);
-                        }
-
-                        _setStartIndex = -1;
-                        ClearFollowingQuantifierError();
-                        break;
-
-                    case '(' when !WithinSet:
+                    case '(':
                         var originalFlags = _effectiveFlags;
                         var currentGroupAlternate = _capturingGroupNames is { Count: > 0 }
                             ? _groupStack.PeekRef().LastAlternate
@@ -564,7 +541,7 @@ public partial class Tokenizer
                         SetFollowingQuantifierError(RegExpNothingToRepeat);
                         break;
 
-                    case '|' when !WithinSet:
+                    case '|':
                         sb?.Append(ch);
 
                         if (_capturingGroupNames is { Count: > 0 })
@@ -574,7 +551,7 @@ public partial class Tokenizer
                         SetFollowingQuantifierError(RegExpNothingToRepeat);
                         break;
 
-                    case ')' when !WithinSet:
+                    case ')':
                         Debug.Assert(_groupStack.Count > (_capturingGroupNames is { Count: > 0 } ? 1 : 0), RegExpUnmatchedParen); // CheckBracesBalance should ensure this.
 
                         if (_capturingGroupNames is { Count: > 0 })
@@ -610,7 +587,7 @@ public partial class Tokenizer
                     // while Regex.Matches("a\r\n\b", @"^$", RegexOptions.ECMAScript | RegexOptions.Multiline) doesn't!)
                     // We can simulate this using RegexOptions.ECMAScript (without RegexOptions.Multiline) + positive lookbehind/lookahead.
 
-                    case '^' when !WithinSet:
+                    case '^':
                         if (sb is not null)
                         {
                             _ = (_effectiveFlags & RegExpFlags.Multiline) != 0
@@ -621,7 +598,7 @@ public partial class Tokenizer
                         SetFollowingQuantifierError(RegExpNothingToRepeat);
                         break;
 
-                    case '$' when !WithinSet:
+                    case '$':
                         if (sb is not null)
                         {
                             _ = (_effectiveFlags & RegExpFlags.Multiline) != 0
@@ -632,7 +609,7 @@ public partial class Tokenizer
                         SetFollowingQuantifierError(RegExpNothingToRepeat);
                         break;
 
-                    case '.' when !WithinSet:
+                    case '.':
                         // The behavior of /./ depends on multiple flags:
                         // * Flag 's' determines whether to match new line characters or not (see https://github.com/tc39/proposal-regexp-dotall-flag).
                         //   We need to rewrite dots even in the latter case because RegexOptions.ECMAScript doesn't handle them correctly as
@@ -643,7 +620,7 @@ public partial class Tokenizer
                         ClearFollowingQuantifierError();
                         break;
 
-                    case '*' or '+' or '?' when !WithinSet:
+                    case '*' or '+' or '?':
                         if (_followingQuantifierErrorCode is not null)
                         {
                             Debug.Assert(_followingQuantifierErrorMessage is not null);
@@ -661,7 +638,7 @@ public partial class Tokenizer
                         SetFollowingQuantifierError(RegExpNothingToRepeat);
                         break;
 
-                    case '{' when !WithinSet:
+                    case '{':
                         if (!TryAdjustRangeQuantifier(out conversionError))
                         {
                             mode.HandleInvalidRangeQuantifier(this, i);
@@ -690,23 +667,86 @@ public partial class Tokenizer
                         break;
 
                     default:
-                        if (!WithinSet)
-                        {
-                            mode.ProcessChar(ch, _appendChar, this);
-                            ClearFollowingQuantifierError();
-                        }
-                        else
-                        {
-                            mode.ProcessSetChar(ch,
-                                !(ch == '[' && _setRangeStart < 0) ? _appendChar : _appendCharSafe,
-                                this, startIndex: i);
-                        }
+                        mode.ProcessChar(ch, _appendChar, this);
+                        ClearFollowingQuantifierError();
                         break;
                 }
             }
 
             conversionError = null;
             return sb?.ToString();
+        }
+
+        private bool ParseSetDefault<TMode>(TMode mode, out RegExpConversionError? conversionError)
+            where TMode : IMode
+        {
+            var sb = _stringBuilder;
+            ref var i = ref _index;
+
+            _setStartIndex = i;
+            _setRangeStart = SetRangeNotStarted;
+
+            var ch = '[';
+            mode.ProcessSetSpecialChar(ch, this);
+            i++;
+
+            if ((ch = (char)_pattern.CharCodeAt(i)) == '^')
+            {
+                mode.ProcessSetSpecialChar(ch, this);
+                i++;
+            }
+
+            for (; i < _pattern.Length; i++)
+            {
+                ch = _pattern[i];
+
+                switch (ch)
+                {
+                    case ']':
+                        if (!mode.RewriteSet(this))
+                        {
+                            mode.ProcessSetSpecialChar(ch, this);
+                        }
+
+                        _setStartIndex = -1;
+                        ClearFollowingQuantifierError();
+
+                        conversionError = null;
+                        return true;
+
+                    case '-':
+                        if (_setRangeStart is >= 0 and not SetRangeNotStarted)
+                        {
+                            // We use bitwise complement to indicate that '-' was encountered after a character (or character class like \d or \p{...}).
+                            _setRangeStart = ~_setRangeStart;
+                            mode.ProcessSetSpecialChar(ch, this);
+                        }
+                        else
+                        {
+                            // We encountered a case like /[-]/, /[0-9-]/, /[0-/d-]/, /[/d-0-]/ or /[\0--]/
+                            mode.ProcessSetChar(ch, _appendCharSafe, this, startIndex: i);
+                        }
+                        break;
+
+                    case '\\':
+                        Debug.Assert(i + 1 < _pattern.Length, "Unexpected end of escape sequence in regular expression.");
+                        if (!mode.AdjustEscapeSequence(this, out conversionError))
+                        {
+                            return false;
+                        }
+                        break;
+
+                    default:
+                        mode.ProcessSetChar(ch,
+                            !(ch == '[' && _setRangeStart < 0) ? _appendChar : _appendCharSafe,
+                            this, startIndex: i);
+                        break;
+                }
+            }
+
+            ReportSyntaxError(i, RegExpUnterminatedCharacterClass); // unreachable if CheckBracesBalance works correctly
+            conversionError = null;
+            return false;
         }
 
         private static readonly Action<StringBuilder, char> s_appendChar = static (sb, ch) => sb.Append(ch);
@@ -809,7 +849,7 @@ public partial class Tokenizer
         {
             conversionError = null;
 
-            ref readonly var sb = ref _stringBuilder;
+            var sb = _stringBuilder;
             ref var i = ref _index;
 
             var endIndex = _pattern.IndexOf('}', i + 1);
@@ -1185,7 +1225,7 @@ public partial class Tokenizer
         {
             conversionError = null;
 
-            ref readonly var sb = ref _stringBuilder;
+            var sb = _stringBuilder;
             ref var i = ref _index;
 
             var endIndex = _pattern.AsSpan().FindIndex(ch => !ch.IsDecimalDigit(), startIndex: i + 1);
@@ -1221,7 +1261,7 @@ public partial class Tokenizer
         {
             conversionError = null;
 
-            ref readonly var sb = ref _stringBuilder;
+            var sb = _stringBuilder;
             ref var i = ref _index;
 
             // 'k' GroupName
@@ -1417,8 +1457,6 @@ public partial class Tokenizer
 
             void ProcessSetChar(char ch, Action<StringBuilder, char>? appender, RegExpParser parser, int startIndex);
 
-            void ProcessSetStart(char ch, RegExpParser parser);
-
             bool RewriteSet(RegExpParser parser);
 
             void RewriteDot(RegExpParser parser);
@@ -1428,6 +1466,8 @@ public partial class Tokenizer
             void HandleInvalidRangeQuantifier(RegExpParser parser, int startIndex);
 
             bool AdjustEscapeSequence(RegExpParser parser, out RegExpConversionError? conversionError);
+
+            bool ParseSet(RegExpParser parser, out RegExpConversionError? conversionError);
         }
     }
 

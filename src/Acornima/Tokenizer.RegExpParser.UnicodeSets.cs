@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Acornima.Helpers;
@@ -24,7 +25,6 @@ public partial class Tokenizer
             private UnicodeSetsMode() { }
 
             // Outside character classes, flag 'v' behaves like flag 'u'.
-            // Since only validation is currently supported for flag 'v', parser._stringBuilder is always null.
 
             public void ProcessChar(char ch, Action<StringBuilder, char>? appender, RegExpParser parser)
             {
@@ -39,41 +39,40 @@ public partial class Tokenizer
 
             public void ProcessSetSpecialChar(char ch, RegExpParser parser)
             {
-                // Not called for this mode, ProcessSetStart handles all set logic.
-                throw new InvalidOperationException();
+                Debug.Fail($"{nameof(ProcessSetSpecialChar)} should not be called for {nameof(UnicodeSetsMode)} as ProcessSetStart handles all set logic.");
             }
 
             public void ProcessSetChar(char ch, Action<StringBuilder, char>? appender, RegExpParser parser, int startIndex)
             {
-                // Not called for this mode, ProcessSetStart handles all set logic.
-                throw new InvalidOperationException();
+                Debug.Fail($"{nameof(ProcessSetChar)} should not be called for {nameof(UnicodeSetsMode)} as ProcessSetStart handles all set logic.");
             }
 
             public bool RewriteSet(RegExpParser parser)
             {
-                // Not called for this mode as it's validation only.
-                throw new InvalidOperationException();
+                Debug.Fail($"{nameof(RewriteSet)} should not be called for {nameof(UnicodeSetsMode)} as it is validation only.");
+                return false;
             }
 
             public void RewriteDot(RegExpParser parser)
             {
-                // No-op for this mode as it's validation only.
+                // No-op for this mode as it is validation only.
             }
 
             public bool AllowsQuantifierAfterGroup(RegExpGroupType groupType)
             {
-                // Same as flag 'u'.
                 return groupType is RegExpGroupType.Capturing or RegExpGroupType.NamedCapturing or RegExpGroupType.NonCapturing;
             }
 
             public void HandleInvalidRangeQuantifier(RegExpParser parser, int startIndex)
             {
-                // Same as flag 'u'.
                 parser.ReportSyntaxError(startIndex, RegExpIncompleteQuantifier);
             }
 
             public bool AdjustEscapeSequence(RegExpParser parser, out RegExpConversionError? conversionError)
             {
+                Debug.Assert(!parser.WithinSet, $"{nameof(AdjustEscapeSequence)} should not be called for sets in {nameof(UnicodeSetsMode)} as those escape sequences are handled by {nameof(EatCharacterEscape)} and {nameof(EatCharacterClassEscape)}.");
+
+                // Since only validation is currently supported for flag 'v', parser._stringBuilder is always null.
                 return UnicodeMode.AdjustEscapeSequence(allowStringProperties: true, parser, out conversionError);
             }
 
@@ -81,7 +80,7 @@ public partial class Tokenizer
 
             // Based on: https://github.com/acornjs/acorn/blob/8.16.0/acorn/src/regexp.js
 
-            public void ProcessSetStart(char ch, RegExpParser parser)
+            public bool ParseSet(RegExpParser parser, out RegExpConversionError? conversionError)
             {
                 // Parse the entire [...] block recursively.
 
@@ -104,6 +103,9 @@ public partial class Tokenizer
                 }
 
                 parser.ClearFollowingQuantifierError();
+
+                conversionError = null;
+                return true;
             }
 
             // https://tc39.es/ecma262/#prod-ClassSetExpression
@@ -441,7 +443,6 @@ public partial class Tokenizer
             {
                 var pattern = parser._pattern;
                 ref var i = ref parser._index;
-
                 ushort charCode, charCode2;
                 var startIndex = i++;
                 int endIndex;
@@ -550,7 +551,6 @@ public partial class Tokenizer
                 ref var i = ref parser._index;
                 var startIndex = i++;
                 int endIndex;
-
                 var ch = pattern.CharCodeAt(i);
                 switch (ch)
                 {

@@ -110,23 +110,6 @@ public partial class Tokenizer
                 }
             }
 
-            public void ProcessSetStart(char ch, RegExpParser parser)
-            {
-                var pattern = parser._pattern;
-                ref var i = ref parser._index;
-
-                parser._setStartIndex = i;
-                parser._setRangeStart = SetRangeNotStarted;
-
-                ProcessSetSpecialChar(ch, parser);
-
-                if ((ch = (char)pattern.CharCodeAt(i + 1)) == '^')
-                {
-                    ProcessSetSpecialChar(ch, parser);
-                    i++;
-                }
-            }
-
             private static void AddSetCodePoint(int cp, RegExpParser parser, int startIndex)
             {
                 Debug.Assert(cp is >= 0 and <= UnicodeHelper.LastCodePoint, "Invalid end code point.");
@@ -1009,6 +992,11 @@ public partial class Tokenizer
 
                 conversionError = null;
                 return true;
+            }
+
+            public bool ParseSet(RegExpParser parser, out RegExpConversionError? conversionError)
+            {
+                return parser.ParseSetDefault(this, out conversionError);
             }
         }
     }

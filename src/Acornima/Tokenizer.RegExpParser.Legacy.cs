@@ -71,23 +71,6 @@ public partial class Tokenizer
                 }
             }
 
-            public void ProcessSetStart(char ch, RegExpParser parser)
-            {
-                var pattern = parser._pattern;
-                ref var i = ref parser._index;
-
-                parser._setStartIndex = i;
-                parser._setRangeStart = SetRangeNotStarted;
-
-                ProcessSetSpecialChar(ch, parser);
-
-                if ((ch = (char)pattern.CharCodeAt(i + 1)) == '^')
-                {
-                    ProcessSetSpecialChar(ch, parser);
-                    i++;
-                }
-            }
-
             public bool RewriteSet(RegExpParser parser)
             {
                 var sb = parser._stringBuilder;
@@ -477,6 +460,11 @@ public partial class Tokenizer
 
                 conversionError = null;
                 return true;
+            }
+
+            public bool ParseSet(RegExpParser parser, out RegExpConversionError? conversionError)
+            {
+                return parser.ParseSetDefault(this, out conversionError);
             }
         }
     }

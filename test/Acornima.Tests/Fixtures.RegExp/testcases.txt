@@ -1,4 +1,4 @@
-﻿# Generated from testcases.template.txt at 2026-04-07T22:01:31
+﻿# Generated from testcases.template.txt at 2026-04-08T09:55:56
 
 # This file defines test cases for regular expression conversion testing (see RegExpTests.ExecuteTestCase).
 # Each uncommented, non-whitespace line specifies a test case in a tab-delimited format, with the following fields:
@@ -4294,8 +4294,8 @@ a(?i:b)c		a(?i:b)c	abc	[{"captures":["abc"],"index":0}]
 
 
 [\\q{a}]	v	)syntax-error(	abc123	"Invalid character in character class"
-[\\q{a|}]	v	)syntax-error(		"Invalid character in character class"
-[\\q{|a}]	v	)syntax-error(		"Invalid character in character class"
+[\\q{a|}]	v	)syntax-error(	abc123	"Invalid character in character class"
+[\\q{|a}]	v	)syntax-error(	abc123	"Invalid character in character class"
 [\\q{abc|def}]	v	)syntax-error(	abc123	"Invalid character in character class"
 [\\q{abc|d|ef}]	v	)syntax-error(	abc123	"Invalid character in character class"
 

@@ -4292,8 +4292,8 @@ a(?i:b)c		abc
 
 
 [\\q{a}]	v	abc123
-[\\q{a|}]	v	
-[\\q{|a}]	v	
+[\\q{a|}]	v	abc123
+[\\q{|a}]	v	abc123
 [\\q{abc|def}]	v	abc123
 [\\q{abc|d|ef}]	v	abc123
 
