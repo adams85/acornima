@@ -381,4 +381,23 @@ public partial class RegExpTests
         });
         Assert.ThrowsAny<SyntaxErrorException>(() => parser.ParseExpression("/abc/v"));
     }
+
+    [Fact]
+    public void FlagV_ThrowsCatchableExceptionOnTooDeepRecursion_WhenParsing()
+    {
+        var parser = new Parser();
+        const int depth = 100_000;
+        var input = $"/{new string('[', depth)}{new string(']', depth)}/v";
+        Assert.Throws<InsufficientExecutionStackException>(() => parser.ParseScript(input));
+    }
+
+    [Fact]
+    public void FlagV_ThrowsCatchableExceptionOnTooDeepRecursion_WhenTokenizing()
+    {
+        const int depth = 100_000;
+        var input = $"/{new string('[', depth)}{new string(']', depth)}/v";
+        var tokenizer = new Tokenizer(input);
+        Assert.Throws<InsufficientExecutionStackException>(() => tokenizer.Next());
+    }
+
 }
