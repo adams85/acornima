@@ -10,11 +10,11 @@ public static class ParserOptionsExtensions
         var helper = options._onNode?.Target as OnNodeHelper;
         if (enable)
         {
-            (helper ?? new OnNodeHelper()).EnableParentNodeRecoding(options);
+            (helper ?? new OnNodeHelper()).EnableParentNodeRecording(options);
         }
         else
         {
-            helper?.DisableParentNodeRecoding(options);
+            helper?.DisableParentNodeRecording(options);
         }
 
         return options;
@@ -25,7 +25,7 @@ public static class ParserOptionsExtensions
         private OnNodeHandler? _onNode;
         public OnNodeHandler? OnNode { get => _onNode; set => _onNode = value; }
 
-        public void EnableParentNodeRecoding(ParserOptions options)
+        public void EnableParentNodeRecording(ParserOptions options)
         {
             if (!ReferenceEquals(options._onNode?.Target, this))
             {
@@ -34,7 +34,7 @@ public static class ParserOptionsExtensions
             }
         }
 
-        public void DisableParentNodeRecoding(ParserOptions options)
+        public void DisableParentNodeRecording(ParserOptions options)
         {
             if (options._onNode == SetParentNode)
             {
