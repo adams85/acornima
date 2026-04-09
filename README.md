@@ -21,7 +21,7 @@ It should also be mentioned that there is an earlier .NET port of acornjs, [Acor
 
 ### And what good comes out of this mix?
 
-* A parser that matches the performance of Esprima.NET while doing more: it also passes the **complete** [Test262 test suite](https://github.com/tc39/test262) for ECMAScript 2023.
+* A parser that matches the performance of Esprima.NET while doing more: it also passes the **complete** [Test262 test suite](https://github.com/tc39/test262) for ECMAScript 2026.
 * It is also more economic with regard to stack usage, so it can parse ~2x deeper structures.
 * More options for fine-tuning parsing.
 * A standalone tokenizer which can deal with most of the ambiguities of the JavaScript grammar (thanks to the clever context tracking solution implemented by acornjs).

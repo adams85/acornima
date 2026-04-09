@@ -53,9 +53,10 @@ public record class ParserOptions
 
     /// <summary>
     /// Gets or sets the ECMAScript version to parse.
-    /// Must be either ES3, ES5, ES6 (or ES2015), ES7 (ES2016), ES8 (ES2017), ES9 (ES2018), ES10
-    /// (ES2019), ES11 (ES2020), ES12 (ES2021), ES13 (ES2022), ES14 (ES2023), or Latest
-    /// (the latest version the library supports). Defaults to <see cref="EcmaVersion.Latest"/>.
+    /// Must be either ES3, ES5, ES6 (or ES2015), ES7 (ES2016), ES8 (ES2017), ES9 (ES2018),
+    /// ES10 (ES2019), ES11 (ES2020), ES12 (ES2021), ES13 (ES2022), ES14 (ES2023), ES15 (ES2024),
+    /// ES16 (ES2025), ES17 (ES2026) or Latest (the latest version the library supports).
+    /// Defaults to <see cref="EcmaVersion.Latest"/>.
     /// </summary>
     /// <remarks>
     /// This influences support for strict mode, the set of reserved words, and support

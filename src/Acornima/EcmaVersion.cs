@@ -16,6 +16,8 @@ public enum EcmaVersion
     ES13 = 13,
     ES14 = 14,
     ES15 = 15,
+    ES16 = 16,
+    ES17 = 17,
 
     ES2015 = ES6,
     ES2016 = ES7,
@@ -27,9 +29,11 @@ public enum EcmaVersion
     ES2022 = ES13,
     ES2023 = ES14,
     ES2024 = ES15,
+    ES2025 = ES16,
+    ES2026 = ES17,
 
     /// <summary>
-    /// The latest version which is fully supported (<see cref="ES2024"/>).
+    /// The latest version which is fully supported (<see cref="ES2026"/>).
     /// </summary>
-    Latest = ES2024,
+    Latest = ES2026,
 }
