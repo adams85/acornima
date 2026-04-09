@@ -26,12 +26,12 @@
     "ecmaVersion": 16,
     "flags": [ "IncludesLocation", "IncludesRange" ],
     "files": [
-      "experimental/explicit-resource-management/await-using-as-identifier-es16.js",
-      "experimental/explicit-resource-management/top-level-using-es16.module.js",
-      "experimental/explicit-resource-management/using-as-identifier-for-of-es16.js",
-      "experimental/explicit-resource-management/using-as-identifier-logical-expr-es16.js",
-      "experimental/explicit-resource-management/using-as-identifier-method-call-es16.js",
-      "experimental/explicit-resource-management/using-as-identifier-method-call-es16.js"
+      "es2026/explicit-resource-management/await-using-as-identifier-es16.js",
+      "es2026/explicit-resource-management/top-level-using-es16.module.js",
+      "es2026/explicit-resource-management/using-as-identifier-for-of-es16.js",
+      "es2026/explicit-resource-management/using-as-identifier-logical-expr-es16.js",
+      "es2026/explicit-resource-management/using-as-identifier-method-call-es16.js",
+      "es2026/explicit-resource-management/using-as-identifier-method-call-es16.js"
     ]
   }
 ]

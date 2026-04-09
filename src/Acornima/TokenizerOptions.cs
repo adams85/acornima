@@ -96,31 +96,46 @@ public record class TokenizerOptions
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal bool AllowDecorators()
     {
-        return _ecmaVersion >= EcmaVersion.ES2022 && (_experimentalESFeatures & ExperimentalESFeatures.Decorators) != 0;
+        // NOTE: Static class initialization block, which is part of this feature, is only available since ES2022.
+        return _ecmaVersion >= EcmaVersion.ES13 && (_experimentalESFeatures & ExperimentalESFeatures.Decorators) != 0;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal bool AllowImportAttributes()
     {
-        return _ecmaVersion >= EcmaVersion.ES2020 && (_experimentalESFeatures & ExperimentalESFeatures.ImportAttributes) != 0;
+        return _ecmaVersion >= EcmaVersion.ES16
+#pragma warning disable CS0618 // Type or member is obsolete
+            // NOTE: Dynamic import, which is part of this feature, is only available since ES2020.
+            || _ecmaVersion >= EcmaVersion.ES11 && (_experimentalESFeatures & ExperimentalESFeatures.ImportAttributes) != 0;
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal bool AllowRegExpDuplicateNamedCapturingGroups()
     {
-        return (_experimentalESFeatures & ExperimentalESFeatures.RegExpDuplicateNamedCapturingGroups) != 0;
+        return _ecmaVersion >= EcmaVersion.ES16
+#pragma warning disable CS0618 // Type or member is obsolete
+            || (_experimentalESFeatures & ExperimentalESFeatures.RegExpDuplicateNamedCapturingGroups) != 0;
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal bool AllowExplicitResourceManagement()
     {
-        return _ecmaVersion >= EcmaVersion.ES2017 && (_experimentalESFeatures & ExperimentalESFeatures.ExplicitResourceManagement) != 0;
+        return _ecmaVersion >= EcmaVersion.ES17
+#pragma warning disable CS0618 // Type or member is obsolete
+            // NOTE: Async/await, which is part of this feature, is only available since ES2017.
+            || _ecmaVersion >= EcmaVersion.ES8 && (_experimentalESFeatures & ExperimentalESFeatures.ExplicitResourceManagement) != 0;
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal bool AllowRegExpModifiers()
     {
-        // NOTE: The dotAll mode (flag 's'), which is part of this feature, is only available since ES2018.
-        return _ecmaVersion >= EcmaVersion.ES2018 && (_experimentalESFeatures & ExperimentalESFeatures.RegExpModifiers) != 0;
+        return _ecmaVersion >= EcmaVersion.ES16
+#pragma warning disable CS0618 // Type or member is obsolete
+            // NOTE: The dotAll mode (flag 's'), which is part of this feature, is only available since ES2018.
+            || _ecmaVersion >= EcmaVersion.ES9 && (_experimentalESFeatures & ExperimentalESFeatures.RegExpModifiers) != 0;
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 }

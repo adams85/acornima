@@ -10,10 +10,6 @@ public abstract partial class Test262Test
     private static readonly string[] s_testableExperimentalFeatures = new[]
     {
         "decorators",
-        "explicit-resource-management",
-        "import-attributes",
-        "regexp-duplicate-named-groups",
-        "regexp-modifiers",
     };
 
     public static bool TestsExperimentalFeature(Test262File file)

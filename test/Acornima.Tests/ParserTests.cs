@@ -1921,7 +1921,6 @@ public partial class ParserTests
         {
             AllowAwaitOutsideFunction = allowAwaitOutsideFunction,
             AllowTopLevelUsing = allowTopLevelUsing,
-            ExperimentalESFeatures = ExperimentalESFeatures.ExplicitResourceManagement
         });
         var parseAction = GetParseActionFor(sourceType);
 

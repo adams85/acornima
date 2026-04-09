@@ -134,7 +134,6 @@ public partial class RegExpTests
 
         var parser = CreateRegExpParser(pattern, flags, new TokenizerOptions
         {
-            ExperimentalESFeatures = ExperimentalESFeatures.RegExpDuplicateNamedCapturingGroups,
             RegExpParseMode = RegExpParseMode.AdaptToInterpreted,
             Tolerant = false
         });
@@ -190,7 +189,6 @@ public partial class RegExpTests
         {
             var parser = CreateRegExpParser(pattern, flags, new TokenizerOptions
             {
-                ExperimentalESFeatures = ExperimentalESFeatures.RegExpModifiers,
                 RegExpParseMode = RegExpParseMode.AdaptToInterpreted,
                 Tolerant = false
             });
@@ -204,7 +202,6 @@ public partial class RegExpTests
     {
         var parser = CreateRegExpParser("(?:a)", "", new TokenizerOptions
         {
-            ExperimentalESFeatures = ExperimentalESFeatures.RegExpModifiers,
             RegExpParseMode = RegExpParseMode.AdaptToInterpreted,
             Tolerant = false
         });
@@ -260,7 +257,6 @@ public partial class RegExpTests
     {
         var parser = CreateRegExpParser(pattern, flags, new TokenizerOptions
         {
-            ExperimentalESFeatures = ExperimentalESFeatures.RegExpModifiers,
             RegExpParseMode = RegExpParseMode.AdaptToInterpreted,
             Tolerant = false
         });
@@ -279,6 +275,7 @@ public partial class RegExpTests
     {
         var parser = CreateRegExpParser("(?i:abc)", "", new TokenizerOptions
         {
+            EcmaVersion = EcmaVersion.ES2024,
             ExperimentalESFeatures = ExperimentalESFeatures.None,
             RegExpParseMode = RegExpParseMode.Validate,
             Tolerant = false
@@ -293,7 +290,9 @@ public partial class RegExpTests
         var parser = CreateRegExpParser("(?i:abc)", "", new TokenizerOptions
         {
             EcmaVersion = EcmaVersion.ES2017,
+#pragma warning disable CS0618 // Type or member is obsolete
             ExperimentalESFeatures = ExperimentalESFeatures.RegExpModifiers,
+#pragma warning restore CS0618 // Type or member is obsolete
             RegExpParseMode = RegExpParseMode.Validate,
             Tolerant = false
         });
