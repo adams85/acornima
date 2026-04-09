@@ -6,7 +6,7 @@ namespace Acornima.Tests.Helpers;
 
 public class JavaScriptString
 {
-    private static readonly ParserOptions s_parserOptions = new() { RegExpParseMode = RegExpParseMode.Skip, Tolerant = false };
+    private static readonly ParserOptions s_parserOptions = new() { OnRegExp = (in _) => default, Tolerant = false };
 
 #pragma warning disable CA1865 // Use char overload
     public static bool IsStringLiteral(string value) => value.Length > 2

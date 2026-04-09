@@ -22,8 +22,8 @@ public class TokenizerTests
 
         var tokenizer = new Tokenizer(code, new TokenizerOptions
         {
-            OnComment = (in Comment comment) => comments.Add(comment),
-            OnToken = (in Token token) => tokens.Add(token)
+            OnComment = (in comment) => comments.Add(comment),
+            OnToken = (in token) => tokens.Add(token)
         });
 
         for (var n = 0; n < 3; n++, tokenizer.Reset(code))
@@ -58,8 +58,8 @@ public class TokenizerTests
 
         var tokenizer = new Tokenizer(code, new TokenizerOptions
         {
-            OnComment = (in Comment comment) => comments.Add(comment),
-            OnToken = (in Token token) => tokens.Add(token)
+            OnComment = (in comment) => comments.Add(comment),
+            OnToken = (in token) => tokens.Add(token)
         });
 
         tokenizer.Reset(code, 4, code.Length - 4);
@@ -720,7 +720,7 @@ public class TokenizerTests
 
         if (!(expectedCookedValue.StartsWith("<", StringComparison.OrdinalIgnoreCase) && expectedCookedValue.EndsWith(">", StringComparison.OrdinalIgnoreCase)))
         {
-            var parser = new Parser(new ParserOptions { OnToken = (in Token t) => tokens!.Add(t) });
+            var parser = new Parser(new ParserOptions { OnToken = (in t) => tokens!.Add(t) });
             parser.ParseExpression(input, strict: strict);
             Assert.True(tokens.Count >= 2);
 
@@ -737,7 +737,7 @@ public class TokenizerTests
         {
             var ex = Assert.Throws<SyntaxErrorException>(() =>
             {
-                var parser = new Parser(new ParserOptions { OnToken = (in Token t) => tokens!.Add(t) });
+                var parser = new Parser(new ParserOptions { OnToken = (in t) => tokens!.Add(t) });
                 parser.ParseExpression(input, strict: strict);
             });
 

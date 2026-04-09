@@ -53,7 +53,7 @@ internal sealed class ParseCommand
 
     private T CreateParserOptions<T>() where T : ParserOptions, new() => new T
     {
-        RegExpParseMode = SkipRegExp ? RegExpParseMode.Skip : RegExpParseMode.Validate,
+        OnRegExp = SkipRegExp ? (in _) => default : null,
         Tolerant = Tolerant,
     };
 

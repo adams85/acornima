@@ -1,39 +1,88 @@
+using System;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Acornima.Helpers;
 
 namespace Acornima;
 
+using static ExceptionHelper;
+using static Unsafe;
+
+#pragma warning disable CS0618 // Type or member is obsolete
+
 public readonly struct RegExpParseResult
 {
-    private readonly object? _regexOrConversionError;
-    private readonly ArrayList<Tokenizer.RegExpCapturingGroup> _capturingGroups;
+    private static readonly object s_boxedDefaultResult = new ValueHolder();
 
-    internal RegExpParseResult(Regex regex, ArrayList<Tokenizer.RegExpCapturingGroup> capturingGroups)
+    public static RegExpParseResult ForSuccess(object? conversionResult = null, object? additionalData = null)
+        => new RegExpParseResult(new ValueHolder(conversionResult), additionalData);
+
+    public static RegExpParseResult ForFailure(ParseError? conversionError = null, object? additionalData = null)
+        => new RegExpParseResult(conversionError, additionalData);
+
+    private readonly object? _wrappedResultOrError;
+    private readonly object? _additionalData;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private RegExpParseResult(object? wrappedResultOrError, object? additionalData)
     {
-        _regexOrConversionError = regex;
-        _capturingGroups = capturingGroups;
+        _wrappedResultOrError = wrappedResultOrError;
+        _additionalData = additionalData;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal RegExpParseResult(Regex regex, Tokenizer.RegExpCapturingGroup[] capturingGroups)
+        : this(new ValueHolder(regex), capturingGroups) { }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal RegExpParseResult(RegExpConversionError? conversionError)
+        : this(conversionError ?? s_boxedDefaultResult, additionalData: null) { }
+
+    public bool Success
     {
-        // NOTE: We can't use null to represent success for validation-only parsing (RegExpParseMode.Validate)
-        // because in that case default(RegExpParseResult) would indicate success.
-        // However, we can do that by using an instance of whatever type except for Regex and RegExpConversionError.
-        _regexOrConversionError = conversionError ?? (object)nameof(Success);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _wrappedResultOrError is ValueHolder;
     }
 
-    public bool Success => _regexOrConversionError is not (null or RegExpConversionError);
+    public object? ConversionResult
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _wrappedResultOrError is ValueHolder
+            ? Unbox<ValueHolder>(_wrappedResultOrError).Data
+            : null;
+    }
 
-    public RegExpConversionError? ConversionError => _regexOrConversionError as RegExpConversionError;
+    public ParseError? ConversionError
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _wrappedResultOrError as ParseError;
+    }
 
-    public Regex? Regex => _regexOrConversionError as Regex;
+    public object? AdditionalData { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _additionalData; }
 
-    public int ActualRegexGroupCount => _capturingGroups.Count + 1;
+    public Regex? Regex
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _wrappedResultOrError is ValueHolder
+            ? Unbox<ValueHolder>(_wrappedResultOrError).Data as Regex
+            : null;
+    }
 
+    [Obsolete("This property is deprecated as JS RegExp to .NET Regex conversion will be removed from the library in the next major version.")]
+    public int ActualRegexGroupCount => _additionalData is Tokenizer.RegExpCapturingGroup[] capturingGroups
+        ? capturingGroups.Length + 1
+        : ThrowInvalidOperationException<int>();
+
+    [Obsolete("This method is deprecated as JS RegExp to .NET Regex conversion will be removed from the library in the next major version.")]
     public string? GetRegexGroupName(int number)
     {
-        return (uint)--number < (uint)_capturingGroups.Count
-            ? _capturingGroups[number].Name
-            : null;
+        if (_additionalData is Tokenizer.RegExpCapturingGroup[] capturingGroups)
+        {
+            return (uint)--number < (uint)capturingGroups.Length
+                ? capturingGroups[number].Name
+                : null;
+        }
+
+        return ThrowInvalidOperationException<string>();
     }
 }

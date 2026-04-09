@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using Acornima.Ast;
 using Acornima.Jsx;
 using DiffEngine;
@@ -49,15 +50,17 @@ public partial class ParserTests
             .ToList();
     }
 
+    private static readonly Regex s_dummyRegex = new Regex("");
+
     [Theory]
     [MemberData(nameof(Fixtures), FixturesDirName)]
     public void ExecuteTestCase(string fixture)
     {
-        static T CreateParserOptions<T>(bool tolerant, RegExpParseMode regExpParseMode, EcmaVersion ecmaVersion, ExperimentalESFeatures experimentalESFeatures) where T : ParserOptions, new() => new T
+        static T CreateParserOptions<T>(bool tolerant, bool skipRegExp, EcmaVersion ecmaVersion, ExperimentalESFeatures experimentalESFeatures) where T : ParserOptions, new() => new T
         {
             EcmaVersion = ecmaVersion,
             Tolerant = tolerant,
-            RegExpParseMode = regExpParseMode,
+            OnRegExp = !skipRegExp ? (in context) => { context.Validate(); return RegExpParseResult.ForSuccess(s_dummyRegex); } : (in _) => default,
             AllowReturnOutsideFunction = tolerant,
             ExperimentalESFeatures = experimentalESFeatures,
         };
@@ -66,7 +69,7 @@ public partial class ParserTests
             ? (CreateParserOptions<JsxParserOptions>,
                 opts => new JsxParser((JsxParserOptions)opts),
                 JsxAstToJsonOptions.Default)
-            : (new Func<bool, RegExpParseMode, EcmaVersion, ExperimentalESFeatures, ParserOptions>(CreateParserOptions<ParserOptions>),
+            : (new Func<bool, bool, EcmaVersion, ExperimentalESFeatures, ParserOptions>(CreateParserOptions<ParserOptions>),
                 new Func<ParserOptions, IParser>(opts => new Parser(opts)),
                 AstToJsonOptions.Default);
 
@@ -125,13 +128,12 @@ public partial class ParserTests
             ? SourceType.Module
             : SourceType.Script;
 
-        var regExpParseMode = !metadata.IgnoresRegex ? RegExpParseMode.AdaptToInterpreted : RegExpParseMode.Skip;
         var ecmaVersion = metadata.EcmaVersion ?? ParserOptions.Default.EcmaVersion;
         var experimentalESFeatures = metadata.EcmaVersion is null && jsFilePath.Contains("experimental")
             ? ExperimentalESFeatures.All
             : ExperimentalESFeatures.None;
 
-        var parserOptions = parserOptionsFactory(false, regExpParseMode, ecmaVersion, experimentalESFeatures);
+        var parserOptions = parserOptionsFactory(false, metadata.IgnoresRegex, ecmaVersion, experimentalESFeatures);
 
         var conversionOptions = metadata.CreateConversionOptions(conversionDefaultOptions);
         if (File.Exists(moduleFilePath))
@@ -196,7 +198,7 @@ public partial class ParserTests
 
         if (!invalid)
         {
-            parserOptions = parserOptionsFactory(true, parserOptions.RegExpParseMode, parserOptions.EcmaVersion, parserOptions.ExperimentalESFeatures);
+            parserOptions = parserOptionsFactory(true, metadata.IgnoresRegex, parserOptions.EcmaVersion, parserOptions.ExperimentalESFeatures);
 
             var actual = ParseAndFormat(sourceType, script, parserOptions, parserFactory, conversionOptions);
             CompareTreesAndAssert(actual, expected);
@@ -206,7 +208,7 @@ public partial class ParserTests
         }
         else
         {
-            parserOptions = parserOptionsFactory(false, parserOptions.RegExpParseMode, parserOptions.EcmaVersion, parserOptions.ExperimentalESFeatures);
+            parserOptions = parserOptionsFactory(false, metadata.IgnoresRegex, parserOptions.EcmaVersion, parserOptions.ExperimentalESFeatures);
 
             // TODO: check the accuracy of the message and of the location
             Assert.Throws<SyntaxErrorException>(() => ParseAndFormat(sourceType, script, parserOptions, parserFactory, conversionOptions));

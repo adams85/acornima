@@ -1,3 +1,4 @@
+using System;
 using System.Text.RegularExpressions;
 
 namespace Acornima;
@@ -5,6 +6,7 @@ namespace Acornima;
 /// <summary>
 /// Specifies how the tokenizer should parse regular expressions.
 /// </summary>
+[Obsolete("This type is deprecated as JS RegExp to .NET Regex conversion will be removed from the library in the next major version.")]
 public enum RegExpParseMode
 {
     /// <summary>

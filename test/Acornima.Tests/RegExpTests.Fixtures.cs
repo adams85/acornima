@@ -11,6 +11,8 @@ using Xunit;
 
 namespace Acornima.Tests;
 
+#pragma warning disable CS0618 // Type or member is obsolete
+
 public partial class RegExpTests
 {
     public static IEnumerable<object[]> TestCases(string relativePath)

@@ -13,6 +13,8 @@ namespace Acornima;
 using static RegExpConversionErrorMessages;
 using static SyntaxErrorMessages;
 
+#pragma warning disable CS0618 // Type or member is obsolete
+
 public partial class Tokenizer
 {
     [Flags]
@@ -49,7 +51,7 @@ public partial class Tokenizer
         // (see also https://github.com/dotnet/runtime/issues/97455).
         private static readonly bool s_canCompileNegativeLookaroundAssertions = typeof(Regex).Assembly.GetName().Version?.Major is not (null or 7 or 8);
 
-        internal static RegExpFlags ParseFlags(string value, int startIndex, Tokenizer tokenizer)
+        private static RegExpFlags ParseFlags(string value, int startIndex, Tokenizer tokenizer)
         {
             var flags = RegExpFlags.None;
 
@@ -66,7 +68,7 @@ public partial class Tokenizer
                     'y' when ecmaVersion >= EcmaVersion.ES6 => RegExpFlags.Sticky,
                     's' when ecmaVersion >= EcmaVersion.ES9 => RegExpFlags.DotAll,
                     'd' when ecmaVersion >= EcmaVersion.ES13 => RegExpFlags.Indices,
-                    'v' when ecmaVersion >= (EcmaVersion)15 => RegExpFlags.UnicodeSets,
+                    'v' when ecmaVersion >= EcmaVersion.ES15 => RegExpFlags.UnicodeSets,
                     _ => RegExpFlags.None
                 };
 
@@ -121,10 +123,11 @@ public partial class Tokenizer
         private readonly Tokenizer _tokenizer;
         private readonly StackGuard.IRecursionDepthProvider _recursionDepthProvider;
 
-        private string _pattern;
-        private int _patternStartIndex;
+        internal string _pattern;
+        internal int _patternStartIndex;
+        internal string _flagsOriginal;
+        internal int _flagsStartIndex;
         private RegExpFlags _flags;
-        private string _flagsOriginal;
 
         internal RegExpParser(Tokenizer tokenizer)
         {
@@ -137,16 +140,24 @@ public partial class Tokenizer
 
         internal void Reset(string pattern, int patternStartIndex, string flags, int flagsStartIndex)
         {
+            // _flags is reset by Parse() or Validate()
+
             _pattern = pattern;
             _patternStartIndex = patternStartIndex;
-            _flags = ParseFlags(flags, flagsStartIndex, _tokenizer);
             _flagsOriginal = flags;
+            _flagsStartIndex = flagsStartIndex;
+        }
+
+        internal ParseError ReportRecoverableError(int index, string message, ParseError.Factory errorFactory,
+            [CallerArgumentExpression(nameof(message))] string code = UnknownError)
+        {
+            return _tokenizer.RaiseRecoverable(_patternStartIndex + index, message, errorFactory, code);
         }
 
         private RegExpConversionError ReportConversionFailure(int index, string reason,
             [CallerArgumentExpression(nameof(reason))] string code = UnknownError)
         {
-            return (RegExpConversionError)_tokenizer.RaiseRecoverable(_patternStartIndex + index,
+            return (RegExpConversionError)ReportRecoverableError(index,
                 string.Format(null, RegExpConversionFailed, typeof(Regex), _pattern, _flagsOriginal, reason),
                 RegExpConversionError.s_factory, code);
         }
@@ -158,7 +169,7 @@ public partial class Tokenizer
         }
 
         [DoesNotReturn]
-        private void ReportSyntaxError(int index, string messageFormat,
+        internal void ReportSyntaxError(int index, string messageFormat,
             [CallerArgumentExpression(nameof(messageFormat))] string code = UnknownError)
         {
             _tokenizer.Raise(_patternStartIndex + index, string.Format(null, messageFormat, _pattern, _flagsOriginal), code: code);
@@ -166,6 +177,8 @@ public partial class Tokenizer
 
         public RegExpParseResult Parse()
         {
+            _flags = ParseFlags(_flagsOriginal, _flagsStartIndex, _tokenizer);
+
             RegExpConversionError? conversionError;
 
             if ((_flags & RegExpFlags.UnicodeSets) != 0
@@ -193,14 +206,13 @@ public partial class Tokenizer
             }
 
             Debug.Assert(conversionError is null);
-            capturingGroups.TrimExcess();
 
             var options = FlagsToOptions(_flags, compiled: _tokenizer._options._regExpParseMode == RegExpParseMode.AdaptToCompiled && canCompile);
             var matchTimeout = _tokenizer._options._regexTimeout;
 
             try
             {
-                return new RegExpParseResult(new Regex(adaptedPattern, options, matchTimeout), capturingGroups);
+                return new RegExpParseResult(new Regex(adaptedPattern, options, matchTimeout), capturingGroups.ToArray());
             }
             catch
             {
@@ -209,7 +221,13 @@ public partial class Tokenizer
             }
         }
 
-        internal string? ParseCore(bool validateOnly, out ArrayList<RegExpCapturingGroup> capturingGroups, out RegExpConversionError? conversionError, out bool canCompile)
+        public void Validate()
+        {
+            _flags = ParseFlags(_flagsOriginal, _flagsStartIndex, _tokenizer);
+            ParseCore(validateOnly: true, out _, out _, out _);
+        }
+
+        private string? ParseCore(bool validateOnly, out ArrayList<RegExpCapturingGroup> capturingGroups, out RegExpConversionError? conversionError, out bool canCompile)
         {
             _tokenizer.AcquireStringBuilder(out var sb);
             try

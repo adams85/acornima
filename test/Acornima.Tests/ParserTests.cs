@@ -187,8 +187,8 @@ public partial class ParserTests
 
         var parser = new Parser(new ParserOptions
         {
-            OnComment = (in Comment comment) => comments.Add(comment),
-            OnToken = (in Token token) => tokens.Add(token)
+            OnComment = (in comment) => comments.Add(comment),
+            OnToken = (in token) => tokens.Add(token)
         });
 
         var code = "var /* c1 */ foo=/a|b/; // c2";
@@ -267,7 +267,7 @@ public partial class ParserTests
     public void ShouldParseWhitespace(string code, int expectedEofIndex, int expectedEofLineNumber, int expectedEofColumn)
     {
         var tokens = new List<Token>();
-        var parser = new Parser(new ParserOptions { OnToken = (in Token token) => tokens.Add(token) });
+        var parser = new Parser(new ParserOptions { OnToken = (in token) => tokens.Add(token) });
 
         var script = parser.ParseScript(code);
 
@@ -287,9 +287,11 @@ public partial class ParserTests
         var tokens = new List<Token>();
         var parser = new Parser(new ParserOptions
         {
-            OnToken = (in Token token) => tokens.Add(token),
+            OnToken = (in token) => tokens.Add(token),
+#pragma warning disable CS0618 // Type or member is obsolete
             RegExpParseMode = RegExpParseMode.AdaptToInterpreted,
             RegexTimeout = TimeSpan.FromSeconds(1)
+#pragma warning restore CS0618 // Type or member is obsolete
         });
 
         var code =
@@ -401,7 +403,7 @@ public partial class ParserTests
     public void ShouldParseLoneComments(string code, CommentKind expectedCommentKind, string expectedContent)
     {
         var comments = new List<Comment>();
-        var parser = new Parser(new ParserOptions { OnComment = (in Comment comment) => comments.Add(comment) });
+        var parser = new Parser(new ParserOptions { OnComment = (in comment) => comments.Add(comment) });
         var program = parser.ParseScript(code);
 
         Assert.NotNull(program);
@@ -415,7 +417,7 @@ public partial class ParserTests
     public void ShouldParseLineComment()
     {
         var comments = new List<Comment>();
-        var parser = new Parser(new ParserOptions { OnComment = (in Comment comment) => comments.Add(comment) });
+        var parser = new Parser(new ParserOptions { OnComment = (in comment) => comments.Add(comment) });
 
         var code =
             """
@@ -440,7 +442,7 @@ public partial class ParserTests
     public void ShouldParseBlockComment()
     {
         var comments = new List<Comment>();
-        var parser = new Parser(new ParserOptions { OnComment = (in Comment comment) => comments.Add(comment) });
+        var parser = new Parser(new ParserOptions { OnComment = (in comment) => comments.Add(comment) });
 
         var code =
             """
@@ -476,7 +478,7 @@ public partial class ParserTests
     public void ShouldParseHtmlLikeLineComment(string sourceType, bool expectSyntaxError)
     {
         var comments = new List<Comment>();
-        var parser = new Parser(new ParserOptions { OnComment = (in Comment comment) => comments.Add(comment) });
+        var parser = new Parser(new ParserOptions { OnComment = (in comment) => comments.Add(comment) });
 
         var code =
             """
@@ -534,12 +536,12 @@ public partial class ParserTests
             {
                 AllowHashBang = allowHashBang.Value,
                 EcmaVersion = ecmaVersion,
-                OnComment = (in Comment comment) => comments.Add(comment)
+                OnComment = (in comment) => comments.Add(comment)
             }
             : new ParserOptions
             {
                 EcmaVersion = ecmaVersion,
-                OnComment = (in Comment comment) => comments.Add(comment)
+                OnComment = (in comment) => comments.Add(comment)
             };
 
         var parser = new Parser(parserOptions);
@@ -576,7 +578,7 @@ public partial class ParserTests
     public void ThrowsErrorForInvalidHashBangComment(int startIndex)
     {
         var comments = new List<Comment>();
-        var parser = new Parser(new ParserOptions { OnComment = (in Comment comment) => comments.Add(comment) });
+        var parser = new Parser(new ParserOptions { OnComment = (in comment) => comments.Add(comment) });
 
         var code =
             """
@@ -592,7 +594,7 @@ public partial class ParserTests
     public void ShouldParseCommentsWithinSliceOnly()
     {
         var comments = new List<Comment>();
-        var parser = new Parser(new ParserOptions { OnComment = (in Comment comment) => comments.Add(comment) });
+        var parser = new Parser(new ParserOptions { OnComment = (in comment) => comments.Add(comment) });
 
         var code =
             """

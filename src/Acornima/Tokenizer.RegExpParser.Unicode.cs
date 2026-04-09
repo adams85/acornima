@@ -9,6 +9,8 @@ namespace Acornima;
 using static RegExpConversionErrorMessages;
 using static SyntaxErrorMessages;
 
+#pragma warning disable CS0618 // Type or member is obsolete
+
 public partial class Tokenizer
 {
     internal partial class RegExpParser

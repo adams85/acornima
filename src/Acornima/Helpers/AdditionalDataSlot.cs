@@ -101,10 +101,4 @@ internal struct AdditionalDataSlot
 
         return value;
     }
-
-    // NOTE: We need an internal type to make our logic foolproof. (See the type check in the AdditionalDataSlot.PrimaryData property below.)
-    private struct ValueHolder
-    {
-        public object? Data;
-    }
 }

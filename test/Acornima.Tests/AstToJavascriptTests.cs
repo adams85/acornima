@@ -887,10 +887,9 @@ public class AstToJavaScriptTests
     [MemberData(nameof(SourceFiles), ParserTests.FixturesDirName)]
     public void OriginalAndReparsedASTsShouldMatch(string fixture, bool preserveParens)
     {
-        static T CreateParserOptions<T>(bool tolerant, RegExpParseMode regExpParseMode, ExperimentalESFeatures experimentalESFeatures, bool preserveParens) where T : ParserOptions, new() => new T
+        static T CreateParserOptions<T>(bool tolerant, ExperimentalESFeatures experimentalESFeatures, bool preserveParens) where T : ParserOptions, new() => new T
         {
             Tolerant = tolerant,
-            RegExpParseMode = regExpParseMode,
             AllowReturnOutsideFunction = tolerant,
             ExperimentalESFeatures = experimentalESFeatures,
         };
@@ -899,7 +898,7 @@ public class AstToJavaScriptTests
             ? (CreateParserOptions<JsxParserOptions>,
                 opts => new JsxParser((JsxParserOptions)opts),
                 (node, format) => node.ToJsx(format))
-            : (new Func<bool, RegExpParseMode, ExperimentalESFeatures, bool, ParserOptions>(CreateParserOptions<ParserOptions>),
+            : (new Func<bool, ExperimentalESFeatures, bool, ParserOptions>(CreateParserOptions<ParserOptions>),
                 new Func<ParserOptions, IParser>(opts => new Parser(opts)),
                 new Func<Node, bool, string>((node, format) => node.ToJavaScript(format)));
 
@@ -972,7 +971,7 @@ public class AstToJavaScriptTests
         }
 
         var experimentalESFeatures = jsFilePath.Contains("experimental") ? ExperimentalESFeatures.All : ExperimentalESFeatures.None;
-        var parserOptions = parserOptionsFactory(false, RegExpParseMode.Validate, experimentalESFeatures, preserveParens);
+        var parserOptions = parserOptionsFactory(false, experimentalESFeatures, preserveParens);
 
         try { expectedAst = Parse(sourceType, script, parserOptions, parserFactory); }
         catch (SyntaxErrorException) { return; }

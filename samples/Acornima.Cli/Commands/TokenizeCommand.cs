@@ -63,7 +63,7 @@ internal sealed class TokenizeCommand
 
         var comments = new List<CommentData>();
         OnCommentHandler? commentHandler = Comments
-            ? (in Comment comment) => comments.Add(CommentData.From(comment, code))
+            ? (in comment) => comments.Add(CommentData.From(comment, code))
             : null;
 
         ITokenizer tokenizer = AllowJsx

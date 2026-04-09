@@ -4,7 +4,7 @@ namespace Acornima;
 
 public abstract class ParseError
 {
-    internal delegate ParseError Factory(string code, string description, int index, Position position, string? sourceFile);
+    public delegate ParseError Factory(string code, string description, int index, Position position, string? sourceFile);
 
     public string Code { get; }
 

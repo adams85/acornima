@@ -1,5 +1,8 @@
+using System;
+
 namespace Acornima;
 
+[Obsolete("This type is deprecated as JS RegExp to .NET Regex conversion will be removed from the library in the next major version.")]
 public sealed class RegExpConversionError : ParseError
 {
     internal static readonly Factory s_factory = (code, description, index, position, sourceFile) => new RegExpConversionError(code, description, index, position, sourceFile);

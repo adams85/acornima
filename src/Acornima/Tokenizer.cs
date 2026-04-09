@@ -741,6 +741,8 @@ public sealed partial class Tokenizer : ITokenizer
         var escaped = false;
         var inClass = false;
         var start = _position;
+        var startPosition = CurrentPosition;
+
         for (int ch; (ch = CharCodeAtPosition()) >= 0; _position++)
         {
             if (IsNewLine((char)ch))
@@ -775,7 +777,16 @@ public sealed partial class Tokenizer : ITokenizer
                         var flagsCached = DeduplicateString(flags, ref _stringPool);
 
                         RegExpParseResult parseResult;
-                        if (_options._regExpParseMode != RegExpParseMode.Skip)
+                        if (_options._onRegExp is { } onRegExp)
+                        {
+                            (_regExpParser ??= new RegExpParser(this)).Reset(patternCached, start, flagsCached, flagsStart);
+                            parseResult = onRegExp(new RegExpParsingContext(_regExpParser,
+                                new Range(start - 1, _position),
+                                new SourceLocation(new Position(startPosition.Line, startPosition.Column - 1), CurrentPosition, _sourceFile)));
+                        }
+#pragma warning disable CS0618 // Type or member is obsolete
+                        else if (_options._regExpParseMode != RegExpParseMode.Skip)
+#pragma warning restore CS0618 // Type or member is obsolete
                         {
                             (_regExpParser ??= new RegExpParser(this)).Reset(patternCached, start, flagsCached, flagsStart);
                             parseResult = _regExpParser.Parse();
@@ -1926,9 +1937,6 @@ public sealed partial class Tokenizer : ITokenizer
     /// <summary>
     /// Checks whether an ECMAScript regular expression is syntactically correct.
     /// </summary>
-    /// <remarks>
-    /// Unicode sets mode (flag v) is not supported currently, for such patterns the method returns <see langword="false"/>.
-    /// </remarks>
     /// <returns><see langword="true"/> if the regular expression is syntactically correct, otherwise <see langword="false"/>.</returns>
     public static bool ValidateRegExp(string pattern, string flags, out ParseError? error,
         EcmaVersion ecmaVersion = EcmaVersion.Latest, ExperimentalESFeatures experimentalESFeatures = ExperimentalESFeatures.None)
@@ -1949,13 +1957,14 @@ public sealed partial class Tokenizer : ITokenizer
             var tokenizerOptions = tokenizer._options;
             tokenizerOptions._ecmaVersion = ecmaVersion;
             tokenizerOptions._experimentalESFeatures = experimentalESFeatures;
+#pragma warning disable CS0618 // Type or member is obsolete
             tokenizerOptions._regExpParseMode = RegExpParseMode.Validate;
+#pragma warning restore CS0618 // Type or member is obsolete
             tokenizerOptions._tolerant = false;
 
             var regExpParser = tokenizer._regExpParser ??= new RegExpParser(tokenizer);
             regExpParser.Reset(pattern, patternStartIndex: 0, flags, flagsStartIndex: 0);
-            var parseResult = regExpParser.Parse();
-            Debug.Assert(parseResult.Success);
+            regExpParser.Validate();
         }
         catch (ParseErrorException ex)
         {
@@ -1990,6 +1999,7 @@ public sealed partial class Tokenizer : ITokenizer
     /// <exception cref="RegExpConversionErrorException">
     /// <paramref name="pattern"/> cannot be converted to an equivalent <see cref="Regex"/> (if <paramref name="throwIfNotAdaptable"/> is <see langword="true"/>).
     /// </exception>
+    [Obsolete("This method is deprecated as JS RegExp to .NET Regex conversion will be removed from the library in the next major version.")]
     public static RegExpParseResult AdaptRegExp(string pattern, string flags, bool compiled = false, TimeSpan? matchTimeout = null, bool throwIfNotAdaptable = false,
         EcmaVersion ecmaVersion = EcmaVersion.Latest, ExperimentalESFeatures experimentalESFeatures = ExperimentalESFeatures.None)
     {

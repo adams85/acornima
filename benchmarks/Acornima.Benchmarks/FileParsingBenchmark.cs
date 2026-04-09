@@ -34,7 +34,7 @@ public class FileParsingBenchmark
             s_files[fileName] = File.ReadAllText($"3rdparty/{fileName}.js");
         }
 
-        _acornimaParser = new(new ParserOptions { RegExpParseMode = RegExpParseMode.Validate, Tolerant = true });
+        _acornimaParser = new(new ParserOptions { Tolerant = true });
         _esprimaParser = new(new Esprima.ParserOptions { RegExpParseMode = Esprima.RegExpParseMode.Validate, Tolerant = true });
     }
 
