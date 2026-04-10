@@ -256,9 +256,9 @@ The most notable changes to keep in mind with regard to migration are the follow
 ```
 BenchmarkDotNet v0.15.6, Windows 10
 AMD Ryzen 7 7735HS with Radeon Graphics 3.20GHz, 1 CPU, 16 logical and 8 physical cores
-.NET SDK 10.0.103
-  [Host]    : .NET 10.0.3 (10.0.3, 10.0.326.7603), X64 RyuJIT x86-64-v3
-  .NET 10.0 : .NET 10.0.3 (10.0.3, 10.0.326.7603), X64 RyuJIT x86-64-v3
+.NET SDK 10.0.201
+  [Host]    : .NET 10.0.5 (10.0.5, 10.0.526.15411), X64 RyuJIT x86-64-v3
+  .NET 10.0 : .NET 10.0.5 (10.0.5, 10.0.526.15411), X64 RyuJIT x86-64-v3
 
 Job=.NET 10.0  Runtime=.NET 10.0  Toolchain=net10.0  
 IterationCount=15  LaunchCount=2  WarmupCount=10  
@@ -266,29 +266,29 @@ IterationCount=15  LaunchCount=2  WarmupCount=10
 
 | Method          | FileName            | Mean        | Allocated  |
 |-----------------|---------------------|-------------|------------|
-| Acornima v1.3.0 | angular-1.2.5       | 6,491.2 μs  | 3978.22 KB |
-| Esprima v3.0.5  | angular-1.2.5       | 6,605.7 μs  | 3828.1 KB  |
+| Acornima v1.4.0 | angular-1.2.5       | 6,536.1 μs  | 3970.92 KB |
+| Esprima v3.0.5  | angular-1.2.5       | 6,535.1 μs  | 3828.1 KB  |
 |                 |                     |             |            |
-| Acornima v1.3.0 | angular-1.7.9       | 14,714.0 μs | 6729.49 KB |
-| Esprima v3.0.5  | angular-1.7.9       | 14,332.0 μs | 6575.45 KB |
+| Acornima v1.4.0 | angular-1.7.9       | 14,729.4 μs | 6719.11 KB |
+| Esprima v3.0.5  | angular-1.7.9       | 14,329.3 μs | 6575.47 KB |
 |                 |                     |             |            |
-| Acornima v1.3.0 | backbone-1.1.0      | 814.7 μs    | 629.26 KB  |
-| Esprima v3.0.5  | backbone-1.1.0      | 829.5 μs    | 613.88 KB  |
+| Acornima v1.4.0 | backbone-1.1.0      | 806.1 μs    | 628.3 KB   |
+| Esprima v3.0.5  | backbone-1.1.0      | 824.9 μs    | 613.88 KB  |
 |                 |                     |             |            |
-| Acornima v1.3.0 | jquery-1.9.1        | 5,095.3 μs  | 3271.59 KB |
-| Esprima v3.0.5  | jquery-1.9.1        | 5,031.5 μs  | 3305.23 KB |
+| Acornima v1.4.0 | jquery-1.9.1        | 4,784.7 μs  | 3263.86 KB |
+| Esprima v3.0.5  | jquery-1.9.1        | 5,167.4 μs  | 3305.23 KB |
 |                 |                     |             |            |
-| Acornima v1.3.0 | jquery.mobile-1.4.2 | 8,648.3 μs  | 5449.23 KB |
-| Esprima v3.0.5  | jquery.mobile-1.4.2 | 8,108.6 μs  | 5428.44 KB |
+| Acornima v1.4.0 | jquery.mobile-1.4.2 | 8,588.6 μs  | 5443.43 KB |
+| Esprima v3.0.5  | jquery.mobile-1.4.2 | 8,190.9 μs  | 5428.44 KB |
 |                 |                     |             |            |
-| Acornima v1.3.0 | mootools-1.4.5      | 3,886.5 μs  | 2755.9 KB  |
-| Esprima v3.0.5  | mootools-1.4.5      | 4,069.3 μs  | 2777.83 KB |
+| Acornima v1.4.0 | mootools-1.4.5      | 3,923.1 μs  | 2750.82 KB |
+| Esprima v3.0.5  | mootools-1.4.5      | 4,089.0 μs  | 2777.83 KB |
 |                 |                     |             |            |
-| Acornima v1.3.0 | underscore-1.5.2    | 683.7 μs    | 529.61 KB  |
-| Esprima v3.0.5  | underscore-1.5.2    | 721.0 μs    | 539.41 KB  |
+| Acornima v1.4.0 | underscore-1.5.2    | 683.6 μs    | 528.92 KB  |
+| Esprima v3.0.5  | underscore-1.5.2    | 702.5 μs    | 539.41 KB  |
 |                 |                     |             |            |
-| Acornima v1.3.0 | yui-3.12.0          | 3,570.6 μs  | 2611.82 KB |
-| Esprima v3.0.5  | yui-3.12.0          | 3,694.6 μs  | 2585.77 KB |
+| Acornima v1.4.0 | yui-3.12.0          | 3,618.3 μs  | 2607.91 KB |
+| Esprima v3.0.5  | yui-3.12.0          | 3,674.8 μs  | 2585.77 KB |
 
 ### Known issues and limitations
 
