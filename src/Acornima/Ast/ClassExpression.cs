@@ -25,7 +25,7 @@ public sealed partial class ClassExpression : Expression, IClass
     public ClassBody Body { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public ref readonly NodeList<Decorator> Decorators { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref _decorators; }
 
-    private ClassExpression Rewrite(in NodeList<Decorator> decorators, Identifier? id, Expression? superClass, ClassBody body)
+    private static ClassExpression Rewrite(in NodeList<Decorator> decorators, Identifier? id, Expression? superClass, ClassBody body)
     {
         return new ClassExpression(id, superClass, body, decorators);
     }

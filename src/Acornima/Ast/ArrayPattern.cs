@@ -18,7 +18,7 @@ public sealed partial class ArrayPattern : DestructuringPattern
     /// </remarks>
     public ref readonly NodeList<Node?> Elements { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref _elements; }
 
-    private ArrayPattern Rewrite(in NodeList<Node?> elements)
+    private static ArrayPattern Rewrite(in NodeList<Node?> elements)
     {
         return new ArrayPattern(elements);
     }

@@ -27,7 +27,9 @@ public partial class AstToJavaScriptConverter
     }
 
     [Flags]
+#pragma warning disable CA2217 // Do not mark enums with FlagsAttribute
     protected internal enum ExpressionFlags
+#pragma warning restore CA2217 // Do not mark enums with FlagsAttribute
     {
         None = 0,
 

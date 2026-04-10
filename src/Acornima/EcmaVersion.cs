@@ -35,5 +35,5 @@ public enum EcmaVersion
     /// <summary>
     /// The latest version which is fully supported (<see cref="ES2026"/>).
     /// </summary>
-    Latest = ES2026,
+    Latest = ES17,
 }

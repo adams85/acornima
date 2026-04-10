@@ -18,7 +18,7 @@ public sealed partial class ImportAttribute : Node
     public Expression Key { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public StringLiteral Value { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-    private ImportAttribute Rewrite(Expression key, StringLiteral value)
+    private static ImportAttribute Rewrite(Expression key, StringLiteral value)
     {
         return new ImportAttribute(key, value);
     }

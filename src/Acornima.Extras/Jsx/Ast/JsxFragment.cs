@@ -44,7 +44,7 @@ public sealed partial class JsxFragment : JsxElementOrFragment
         }
     }
 
-    private JsxFragment Rewrite(JsxOpeningFragment openingFragment, in NodeList<JsxNode> children, JsxClosingFragment closingFragment)
+    private static JsxFragment Rewrite(JsxOpeningFragment openingFragment, in NodeList<JsxNode> children, JsxClosingFragment closingFragment)
     {
         return new JsxFragment(openingFragment, children, closingFragment);
     }

@@ -15,7 +15,7 @@ public sealed partial class TaggedTemplateExpression : Expression
     public Expression Tag { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public TemplateLiteral Quasi { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-    private TaggedTemplateExpression Rewrite(Expression tag, TemplateLiteral quasi)
+    private static TaggedTemplateExpression Rewrite(Expression tag, TemplateLiteral quasi)
     {
         return new TaggedTemplateExpression(tag, quasi);
     }

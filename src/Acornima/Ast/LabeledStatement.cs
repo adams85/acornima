@@ -16,7 +16,7 @@ public sealed partial class LabeledStatement : Statement
     public Identifier Label { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public Statement Body { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-    private LabeledStatement Rewrite(Identifier label, Statement body)
+    private static LabeledStatement Rewrite(Identifier label, Statement body)
     {
         return new LabeledStatement(label, body);
     }

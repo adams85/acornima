@@ -6,7 +6,7 @@ public sealed partial class ImportNamespaceSpecifier : ImportDeclarationSpecifie
     public ImportNamespaceSpecifier(Identifier local)
         : base(local, NodeType.ImportNamespaceSpecifier) { }
 
-    private ImportNamespaceSpecifier Rewrite(Identifier local)
+    private static ImportNamespaceSpecifier Rewrite(Identifier local)
     {
         return new ImportNamespaceSpecifier(local);
     }

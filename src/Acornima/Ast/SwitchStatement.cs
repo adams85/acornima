@@ -17,7 +17,7 @@ public sealed partial class SwitchStatement : Statement
     public Expression Discriminant { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public ref readonly NodeList<SwitchCase> Cases { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref _cases; }
 
-    private SwitchStatement Rewrite(Expression discriminant, in NodeList<SwitchCase> cases)
+    private static SwitchStatement Rewrite(Expression discriminant, in NodeList<SwitchCase> cases)
     {
         return new SwitchStatement(discriminant, cases);
     }

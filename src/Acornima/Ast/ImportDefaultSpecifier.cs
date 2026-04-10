@@ -6,7 +6,7 @@ public sealed partial class ImportDefaultSpecifier : ImportDeclarationSpecifier
     public ImportDefaultSpecifier(Identifier local)
         : base(local, NodeType.ImportDefaultSpecifier) { }
 
-    private ImportDefaultSpecifier Rewrite(Identifier local)
+    private static ImportDefaultSpecifier Rewrite(Identifier local)
     {
         return new ImportDefaultSpecifier(local);
     }

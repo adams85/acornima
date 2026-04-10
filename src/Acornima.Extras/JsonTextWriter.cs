@@ -45,10 +45,8 @@ internal sealed class JsonTextWriter : JsonWriter
     private ArrayList<int> _counters;
     private string? _memberName;
 
-    public JsonTextWriter(TextWriter writer) :
-        this(writer, null)
-    {
-    }
+    public JsonTextWriter(TextWriter writer)
+        : this(writer, null) { }
 
     public JsonTextWriter(TextWriter writer, string? indent)
     {
@@ -138,7 +136,7 @@ internal sealed class JsonTextWriter : JsonWriter
         Write(n.ToString(CultureInfo.InvariantCulture), TokenKind.Scalar);
     }
 
-    private bool Pretty => _indent != "";
+    private bool Pretty => _indent.Length > 0;
 
     private void Eol()
     {

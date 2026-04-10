@@ -6,7 +6,7 @@ using McMaster.Extensions.CommandLineUtils;
 
 namespace Acornima.Cli.Commands;
 
-internal enum JavaScriptCodeType
+public enum JavaScriptCodeType
 {
     Script,
     Module,
@@ -14,7 +14,7 @@ internal enum JavaScriptCodeType
 }
 
 [Command(CommandName, Description = "Parse JS code and print resulting AST in JSON format.")]
-internal sealed class ParseCommand
+public sealed class ParseCommand
 {
     public const string CommandName = "parse";
 

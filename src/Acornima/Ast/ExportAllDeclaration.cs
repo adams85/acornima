@@ -25,7 +25,7 @@ public sealed partial class ExportAllDeclaration : ExportDeclaration
     public StringLiteral Source { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public ref readonly NodeList<ImportAttribute> Attributes { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref _attributes; }
 
-    private ExportAllDeclaration Rewrite(Expression? exported, StringLiteral source, in NodeList<ImportAttribute> attributes)
+    private static ExportAllDeclaration Rewrite(Expression? exported, StringLiteral source, in NodeList<ImportAttribute> attributes)
     {
         return new ExportAllDeclaration(exported, source, attributes);
     }

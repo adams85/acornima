@@ -20,7 +20,7 @@ public sealed partial class TryStatement : Statement
     public CatchClause? Handler { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public NestedBlockStatement? Finalizer { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-    private TryStatement Rewrite(NestedBlockStatement block, CatchClause? handler, NestedBlockStatement? finalizer)
+    private static TryStatement Rewrite(NestedBlockStatement block, CatchClause? handler, NestedBlockStatement? finalizer)
     {
         return new TryStatement(block, handler, finalizer);
     }

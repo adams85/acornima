@@ -638,7 +638,7 @@ public partial class ParserTests
         {
             var parent = _parentGetter(node);
             Assert.NotNull(parent);
-            Assert.Contains(node, parent!.ChildNodes);
+            Assert.Contains(node, parent.ChildNodes);
 
             return base.Visit(node);
         }

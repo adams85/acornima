@@ -214,7 +214,7 @@ public partial class Parser
     internal T Unexpected<T>()
     {
         Unexpected();
-        return default!;
+        return default;
     }
 
     [DoesNotReturn]

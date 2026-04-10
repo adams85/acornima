@@ -16,7 +16,7 @@ public sealed partial class RestElement : Node, IDestructuringPatternElement
     /// </remarks>
     public Node Argument { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-    private RestElement Rewrite(Node argument)
+    private static RestElement Rewrite(Node argument)
     {
         return new RestElement(argument);
     }

@@ -16,7 +16,7 @@ public sealed partial class JsxNamespacedName : JsxName
     public JsxIdentifier Namespace { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public JsxIdentifier Name { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-    private JsxNamespacedName Rewrite(JsxIdentifier name, JsxIdentifier @namespace)
+    private static JsxNamespacedName Rewrite(JsxIdentifier name, JsxIdentifier @namespace)
     {
         return new JsxNamespacedName(@namespace, name);
     }

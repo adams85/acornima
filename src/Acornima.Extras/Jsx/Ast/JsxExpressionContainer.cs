@@ -14,7 +14,7 @@ public sealed partial class JsxExpressionContainer : JsxNode
 
     public Expression Expression { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-    private JsxExpressionContainer Rewrite(Expression expression)
+    private static JsxExpressionContainer Rewrite(Expression expression)
     {
         return new JsxExpressionContainer(expression);
     }

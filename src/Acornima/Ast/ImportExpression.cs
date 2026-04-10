@@ -18,7 +18,7 @@ public sealed partial class ImportExpression : Expression
     public Expression Source { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public Expression? Options { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-    private ImportExpression Rewrite(Expression source, Expression? options)
+    private static ImportExpression Rewrite(Expression source, Expression? options)
     {
         return new ImportExpression(source, options);
     }

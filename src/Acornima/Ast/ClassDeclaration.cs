@@ -28,7 +28,7 @@ public sealed partial class ClassDeclaration : Declaration, IClass
     public ClassBody Body { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public ref readonly NodeList<Decorator> Decorators { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref _decorators; }
 
-    private ClassDeclaration Rewrite(in NodeList<Decorator> decorators, Identifier? id, Expression? superClass, ClassBody body)
+    private static ClassDeclaration Rewrite(in NodeList<Decorator> decorators, Identifier? id, Expression? superClass, ClassBody body)
     {
         return new ClassDeclaration(id, superClass, body, decorators);
     }

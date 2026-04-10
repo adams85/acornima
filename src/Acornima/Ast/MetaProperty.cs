@@ -15,7 +15,7 @@ public sealed partial class MetaProperty : Expression
     public Identifier Meta { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public Identifier Property { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-    private MetaProperty Rewrite(Identifier meta, Identifier property)
+    private static MetaProperty Rewrite(Identifier meta, Identifier property)
     {
         return new MetaProperty(meta, property);
     }

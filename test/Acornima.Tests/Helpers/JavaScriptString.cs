@@ -4,7 +4,7 @@ using Acornima.Ast;
 
 namespace Acornima.Tests.Helpers;
 
-public class JavaScriptString
+public static class JavaScriptString
 {
     private static readonly ParserOptions s_parserOptions = new() { OnRegExp = (in _) => default, Tolerant = false };
 

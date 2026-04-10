@@ -15,7 +15,7 @@ public sealed partial class DoWhileStatement : Statement
     public Statement Body { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public Expression Test { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-    private DoWhileStatement Rewrite(Statement body, Expression test)
+    private static DoWhileStatement Rewrite(Statement body, Expression test)
     {
         return new DoWhileStatement(body, test);
     }

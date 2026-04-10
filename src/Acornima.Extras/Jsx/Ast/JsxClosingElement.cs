@@ -17,7 +17,7 @@ public sealed partial class JsxClosingElement : JsxClosingTag
     /// </remarks>
     public JsxName Name { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-    private JsxClosingElement Rewrite(JsxName name)
+    private static JsxClosingElement Rewrite(JsxName name)
     {
         return new JsxClosingElement(name);
     }

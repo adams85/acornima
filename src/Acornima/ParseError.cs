@@ -33,7 +33,7 @@ public abstract class ParseError
 
     public string? SourceFile { get; }
 
-    public ParseError(string code, string description, int index = -1, Position position = default, string? sourceFile = null)
+    protected ParseError(string code, string description, int index = -1, Position position = default, string? sourceFile = null)
     {
         Code = code ?? throw new ArgumentNullException(nameof(code));
         Description = description ?? throw new ArgumentNullException(nameof(description));

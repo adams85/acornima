@@ -1475,7 +1475,7 @@ public partial class Parser
             }
         }
 
-    // Parse element name
+        // Parse element name
     ParseElementName:
         Expression key;
         bool computed;

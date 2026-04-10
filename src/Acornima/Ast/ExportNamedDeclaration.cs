@@ -29,7 +29,7 @@ public sealed partial class ExportNamedDeclaration : ExportDeclaration
     public StringLiteral? Source { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public ref readonly NodeList<ImportAttribute> Attributes { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref _attributes; }
 
-    private ExportNamedDeclaration Rewrite(Declaration? declaration, in NodeList<ExportSpecifier> specifiers, StringLiteral? source, in NodeList<ImportAttribute> attributes)
+    private static ExportNamedDeclaration Rewrite(Declaration? declaration, in NodeList<ExportSpecifier> specifiers, StringLiteral? source, in NodeList<ImportAttribute> attributes)
     {
         return new ExportNamedDeclaration(declaration, specifiers, source, attributes);
     }

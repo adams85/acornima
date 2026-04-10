@@ -20,7 +20,7 @@ public sealed partial class IfStatement : Statement
     public Statement Consequent { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public Statement? Alternate { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-    private IfStatement Rewrite(Expression test, Statement consequent, Statement? alternate)
+    private static IfStatement Rewrite(Expression test, Statement consequent, Statement? alternate)
     {
         return new IfStatement(test, consequent, alternate);
     }

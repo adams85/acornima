@@ -21,7 +21,7 @@ public sealed partial class ImportSpecifier : ImportDeclarationSpecifier
 
     internal override Node? NextChildNode(ref ChildNodes.Enumerator enumerator) => enumerator.MoveNextImportSpecifier(Imported, Local);
 
-    private ImportSpecifier Rewrite(Expression imported, Identifier local)
+    private static ImportSpecifier Rewrite(Expression imported, Identifier local)
     {
         return new ImportSpecifier(imported, local);
     }

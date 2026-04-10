@@ -140,7 +140,7 @@ public class AstTests
         var script = parser.ParseScript(source);
 
         var variableDeclarations = script.ChildNodes
-            .SelectMany(z => z!.DescendantNodesAndSelf().OfType<VariableDeclaration>())
+            .SelectMany(z => z.DescendantNodesAndSelf().OfType<VariableDeclaration>())
             .ToList();
 
         Assert.Equal(8, variableDeclarations.Count);

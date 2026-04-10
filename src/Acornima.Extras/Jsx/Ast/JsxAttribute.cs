@@ -19,7 +19,7 @@ public sealed partial class JsxAttribute : JsxAttributeLike
     public JsxName Name { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public Expression? Value { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-    private JsxAttribute Rewrite(JsxName name, Expression? value)
+    private static JsxAttribute Rewrite(JsxName name, Expression? value)
     {
         return new JsxAttribute(name, value);
     }

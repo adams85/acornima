@@ -16,7 +16,7 @@ public sealed partial class ExportDefaultDeclaration : ExportDeclaration
     /// </remarks>
     public StatementOrExpression Declaration { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-    private ExportDefaultDeclaration Rewrite(StatementOrExpression declaration)
+    private static ExportDefaultDeclaration Rewrite(StatementOrExpression declaration)
     {
         return new ExportDefaultDeclaration(declaration);
     }

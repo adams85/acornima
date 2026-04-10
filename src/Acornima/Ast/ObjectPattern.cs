@@ -18,7 +18,7 @@ public sealed partial class ObjectPattern : DestructuringPattern
     /// </remarks>
     public ref readonly NodeList<Node> Properties { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref _properties; }
 
-    private ObjectPattern Rewrite(in NodeList<Node> properties)
+    private static ObjectPattern Rewrite(in NodeList<Node> properties)
     {
         return new ObjectPattern(properties);
     }

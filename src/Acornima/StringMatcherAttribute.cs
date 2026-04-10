@@ -3,7 +3,7 @@ using System;
 namespace Acornima;
 
 [AttributeUsage(AttributeTargets.Method, Inherited = false)]
-internal class StringMatcherAttribute : Attribute
+internal sealed class StringMatcherAttribute : Attribute
 {
     public StringMatcherAttribute(params string[] targets)
     {

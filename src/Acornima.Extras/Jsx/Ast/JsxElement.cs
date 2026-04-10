@@ -48,7 +48,7 @@ public sealed partial class JsxElement : JsxElementOrFragment
         }
     }
 
-    private JsxElement Rewrite(JsxOpeningElement openingElement, in NodeList<JsxNode> children, JsxClosingElement? closingElement)
+    private static JsxElement Rewrite(JsxOpeningElement openingElement, in NodeList<JsxNode> children, JsxClosingElement? closingElement)
     {
         return new JsxElement(openingElement, children, closingElement);
     }

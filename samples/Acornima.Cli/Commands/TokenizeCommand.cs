@@ -10,7 +10,7 @@ using McMaster.Extensions.CommandLineUtils;
 namespace Acornima.Cli.Commands;
 
 [Command(CommandName, Description = "Tokenize JS code and print collected tokens in JSON format.")]
-internal sealed class TokenizeCommand
+public sealed class TokenizeCommand
 {
     public const string CommandName = "tokenize";
 

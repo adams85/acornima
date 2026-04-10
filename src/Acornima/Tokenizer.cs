@@ -1891,7 +1891,7 @@ public sealed partial class Tokenizer : ITokenizer
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/parseutil.js > `pp.unexpected = function`
 
         Unexpected(pos);
-        return default!;
+        return default;
     }
 
     // This function is used to raise exceptions on parse errors. It
@@ -1919,7 +1919,7 @@ public sealed partial class Tokenizer : ITokenizer
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/location.js > `pp.raise = function`
 
         Raise(pos, message, errorFactory, code);
-        return default!;
+        return default;
     }
 
     internal ParseError RaiseRecoverable(int pos, string message, ParseError.Factory? errorFactory = null,

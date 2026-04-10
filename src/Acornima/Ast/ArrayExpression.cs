@@ -18,7 +18,7 @@ public sealed partial class ArrayExpression : Expression
     /// </summary>
     public ref readonly NodeList<Expression?> Elements { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref _elements; }
 
-    private ArrayExpression Rewrite(in NodeList<Expression?> elements)
+    private static ArrayExpression Rewrite(in NodeList<Expression?> elements)
     {
         return new ArrayExpression(elements);
     }

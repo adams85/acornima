@@ -18,7 +18,7 @@ public sealed partial class AssignmentPattern : Node, IDestructuringPatternEleme
     public Node Left { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public Expression Right { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-    private AssignmentPattern Rewrite(Node left, Expression right)
+    private static AssignmentPattern Rewrite(Node left, Expression right)
     {
         return new AssignmentPattern(left, right);
     }
