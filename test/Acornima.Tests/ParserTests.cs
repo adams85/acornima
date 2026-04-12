@@ -2630,14 +2630,17 @@ public partial class ParserTests
         Assert.IsType<ImportDefaultSpecifier>(decl.Specifiers[0]);
     }
 
-    [Fact]
-    public void SourcePhaseImport_RegularImportWithSourceAsBinding()
+    [Theory]
+    [InlineData("import source from 'mod';", 1)]
+    [InlineData("import source, { x } from 'mod';", 2)]
+    [InlineData("import source, * as ns from 'mod';", 2)]
+    public void SourcePhaseImport_RegularImportWithSourceAsBinding(string code, int expectedSpecifierCount)
     {
         var parser = CreateImportPhasesParser();
-        var module = parser.ParseModule("import source from 'mod';");
+        var module = parser.ParseModule(code);
         var decl = Assert.IsType<ImportDeclaration>(Assert.Single(module.Body));
         Assert.Equal(ImportPhase.None, decl.Phase);
-        Assert.Single(decl.Specifiers);
+        Assert.Equal(expectedSpecifierCount, decl.Specifiers.Count);
         var spec = Assert.IsType<ImportDefaultSpecifier>(decl.Specifiers[0]);
         Assert.Equal("source", spec.Local.Name);
     }

@@ -2179,14 +2179,21 @@ public partial class Parser
         return FinishNode(startMarker, new ImportDeclaration(specifiers, source, NodeList.From(ref attributes), phase));
     }
 
-    // Disambiguation for `import source X from "mod"` (source-phase import) vs `import source from "mod"` (regular default import).
-    // Returns true if the `source` (or `defer`) token is the binding name of a regular default import.
-    // Uses the pattern: `import <phase> from <string>` is a regular import; anything else with the phase keyword is a phase import.
+    // Disambiguation for `import source X from "mod"` (source-phase import) vs regular imports where `source` is just a binding name.
+    // Returns true if the phase keyword token is the binding name of a regular default import.
+    // Regular import cases: `import source from "mod"`, `import source, { x } from "mod"`, `import source, * as ns from "mod"`.
     private bool IsImportPhaseAmbiguousAsDefaultImport(string phaseKeyword)
     {
         var next = _tokenizer.NextTokenPosition(out var nextLine, out var nextLineStart);
-        var fromKeyword = "from";
-        var fromEndPos = next + fromKeyword.Length;
+
+        // `import source, ...` — source is a default binding followed by additional specifiers.
+        // Source-phase imports never have a comma after the phase keyword.
+        if (_tokenizer.CharCodeAt(next) == ',')
+        {
+            return true;
+        }
+
+        var fromEndPos = next + 4 /* "from".Length */;
         int after;
 
         // Check if the next token after the phase keyword is "from"
@@ -2195,7 +2202,7 @@ public partial class Parser
             && !Tokenizer.IsIdentifierChar(after = _tokenizer.FullCharCodeAt(fromEndPos), allowAstral: true)
             && after != '\\')
         {
-            // Check if the token after "from" is a string literal
+            // Check if the token after "from" is a string literal: `import source from "mod"`
             var afterFrom = _tokenizer.NextTokenPositionAt(fromEndPos, ref nextLine, ref nextLineStart);
             var ch = _tokenizer.CharCodeAt(afterFrom);
             if (ch is '"' or '\'')
