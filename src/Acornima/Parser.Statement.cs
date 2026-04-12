@@ -2141,7 +2141,20 @@ public partial class Parser
 
         NodeList<ImportDeclarationSpecifier> specifiers;
 
-        if (_tokenizer._type == TokenType.String)
+        if (phase == ImportPhase.Source)
+        {
+            // import source <binding> from "<specifier>"
+            // Source phase only allows a single default binding (ImportedBinding).
+            var nodes = new ArrayList<ImportDeclarationSpecifier>();
+            nodes.Add(ParseImportDefaultSpecifier());
+            specifiers = NodeList.From(ref nodes);
+            ExpectContextual("from");
+            if (_tokenizer._type != TokenType.String)
+            {
+                Unexpected();
+            }
+        }
+        else if (_tokenizer._type == TokenType.String)
         {
             // import '...'
             specifiers = default;
