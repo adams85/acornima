@@ -1098,37 +1098,12 @@ public partial class Parser
             Unexpected();
         }
 
-        // Parse node.source.
+        // Parse node.source — import.source() and import.defer() take exactly one argument.
         var source = ParseMaybeAssign(ref NullRef<DestructuringErrors>());
 
-        Expression? options = null;
-        if (_tokenizerOptions.AllowImportAttributes()
-            && Eat(TokenType.Comma) && _tokenizer._type != TokenType.ParenRight)
-        {
-            options = ParseMaybeAssign(ref NullRef<DestructuringErrors>());
-            if (Eat(TokenType.Comma))
-            {
-                AfterTrailingComma(TokenType.ParenRight, notNext: true);
-            }
-            Expect(TokenType.ParenRight);
-        }
-        // Verify ending.
-        else if (!Eat(TokenType.ParenRight))
-        {
-            var errorState = new TokenState(_tokenizer);
+        Expect(TokenType.ParenRight);
 
-            if (Eat(TokenType.Comma) && Eat(TokenType.ParenRight))
-            {
-                // RaiseRecoverable(errorPos, "Trailing comma is not allowed in import()"); // original acornjs error reporting
-                RaiseRecoverable(errorState.Position, errorState.TokenType, errorState.TokenValue);
-            }
-            else
-            {
-                Unexpected(errorState);
-            }
-        }
-
-        return FinishNode(startMarker, new ImportExpression(source, options, phase));
+        return FinishNode(startMarker, new ImportExpression(source, options: null, phase));
     }
 
     private Expression ParseParenExpression()

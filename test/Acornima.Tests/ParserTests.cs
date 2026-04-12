@@ -2698,8 +2698,6 @@ public partial class ParserTests
     [Theory]
     [InlineData("import.source('mod')")]
     [InlineData("import.defer('mod')")]
-    [InlineData("import.source('mod', { with: { type: 'json' } })")]
-    [InlineData("import.defer('mod', { with: { type: 'json' } })")]
     public void DynamicImportPhase_ValidForms(string code)
     {
         var parser = CreateImportPhasesParser();
@@ -2712,6 +2710,8 @@ public partial class ParserTests
     [Theory]
     [InlineData("import.source()")]
     [InlineData("import.defer()")]
+    [InlineData("import.source('mod', { with: { type: 'json' } })")]
+    [InlineData("import.defer('mod', { with: { type: 'json' } })")]
     [InlineData("new import.source('mod')")]
     [InlineData("new import.defer('mod')")]
     [InlineData("import.source(...['mod'])")]
