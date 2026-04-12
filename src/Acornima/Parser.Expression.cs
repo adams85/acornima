@@ -1098,12 +1098,40 @@ public partial class Parser
             Unexpected();
         }
 
-        // Parse node.source — import.source() and import.defer() take exactly one argument.
+        // Parse node.source.
         var source = ParseMaybeAssign(ref NullRef<DestructuringErrors>());
 
-        Expect(TokenType.ParenRight);
+        // import.source() takes exactly one argument (per tc39.es/proposal-source-phase-imports).
+        // import.defer() reuses ImportCallArguments, so it takes an optional second argument (per tc39.es/proposal-defer-import-eval).
+        Expression? options = null;
+        if (phase == ImportPhase.Defer
+            && _tokenizerOptions.AllowImportAttributes()
+            && Eat(TokenType.Comma) && _tokenizer._type != TokenType.ParenRight)
+        {
+            options = ParseMaybeAssign(ref NullRef<DestructuringErrors>());
+            if (Eat(TokenType.Comma))
+            {
+                AfterTrailingComma(TokenType.ParenRight, notNext: true);
+            }
+            Expect(TokenType.ParenRight);
+        }
+        // Verify ending.
+        else if (!Eat(TokenType.ParenRight))
+        {
+            var errorState = new TokenState(_tokenizer);
 
-        return FinishNode(startMarker, new ImportExpression(source, options: null, phase));
+            if (phase == ImportPhase.Defer && Eat(TokenType.Comma) && Eat(TokenType.ParenRight))
+            {
+                // RaiseRecoverable(errorPos, "Trailing comma is not allowed in import()"); // original acornjs error reporting
+                RaiseRecoverable(errorState.Position, errorState.TokenType, errorState.TokenValue);
+            }
+            else
+            {
+                Unexpected(errorState);
+            }
+        }
+
+        return FinishNode(startMarker, new ImportExpression(source, options, phase));
     }
 
     private Expression ParseParenExpression()
