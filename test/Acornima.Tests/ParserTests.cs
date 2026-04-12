@@ -2669,13 +2669,17 @@ public partial class ParserTests
         Assert.IsType<ImportNamespaceSpecifier>(decl.Specifiers[0]);
     }
 
-    [Fact]
-    public void ImportDefer_RegularImportWithDeferAsBinding()
+    [Theory]
+    [InlineData("import defer from 'mod';", 1)]
+    [InlineData("import defer, { x } from 'mod';", 2)]
+    [InlineData("import defer, * as ns from 'mod';", 2)]
+    public void ImportDefer_RegularImportWithDeferAsBinding(string code, int expectedSpecifierCount)
     {
         var parser = CreateImportPhasesParser();
-        var module = parser.ParseModule("import defer from 'mod';");
+        var module = parser.ParseModule(code);
         var decl = Assert.IsType<ImportDeclaration>(Assert.Single(module.Body));
         Assert.Equal(ImportPhase.None, decl.Phase);
+        Assert.Equal(expectedSpecifierCount, decl.Specifiers.Count);
         var spec = Assert.IsType<ImportDefaultSpecifier>(decl.Specifiers[0]);
         Assert.Equal("defer", spec.Local.Name);
     }

@@ -2126,7 +2126,7 @@ public partial class Parser
 
         if (_tokenizerOptions.AllowSourcePhaseImports()
             && IsContextual("source")
-            && !IsImportPhaseAmbiguousAsDefaultImport("source"))
+            && !IsSourcePhaseAmbiguousAsDefaultImport())
         {
             phase = ImportPhase.Source;
             Next(); // consume "source"
@@ -2180,9 +2180,9 @@ public partial class Parser
     }
 
     // Disambiguation for `import source X from "mod"` (source-phase import) vs regular imports where `source` is just a binding name.
-    // Returns true if the phase keyword token is the binding name of a regular default import.
+    // Returns true if `source` is the binding name of a regular default import.
     // Regular import cases: `import source from "mod"`, `import source, { x } from "mod"`, `import source, * as ns from "mod"`.
-    private bool IsImportPhaseAmbiguousAsDefaultImport(string phaseKeyword)
+    private bool IsSourcePhaseAmbiguousAsDefaultImport()
     {
         var next = _tokenizer.NextTokenPosition(out var nextLine, out var nextLineStart);
 

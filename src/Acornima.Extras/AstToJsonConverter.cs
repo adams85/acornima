@@ -194,12 +194,7 @@ public class AstToJsonConverter : AstVisitor
         }
         else
         {
-            _writer.String(phase switch
-            {
-                ImportPhase.Source => "source",
-                ImportPhase.Defer => "defer",
-                _ => "unknown"
-            });
+            _writer.String(phase.GetImportPhaseToken());
         }
     }
 
