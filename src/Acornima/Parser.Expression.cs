@@ -992,7 +992,7 @@ public partial class Parser
         {
             var meta = FinishNode(startMarker, new Identifier(TokenType.Import.Label));
 
-            return ParseImportMeta(startMarker, meta);
+            return ParseImportMetaOrPhase(startMarker, meta, context);
         }
         else
         {
@@ -1039,7 +1039,7 @@ public partial class Parser
         return FinishNode(startMarker, new ImportExpression(source, attributes));
     }
 
-    private MetaProperty ParseImportMeta(in Marker startMarker, Identifier meta)
+    private Expression ParseImportMetaOrPhase(in Marker startMarker, Identifier meta, ExpressionContext context)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/expression.js > `pp.parseImportMeta = function`
 
@@ -1048,23 +1048,61 @@ public partial class Parser
         var containsEsc = _tokenizer._containsEscape;
         var property = ParseIdentifier(liberal: true);
 
-        if (property.Name != "meta")
+        if (property.Name == "meta")
         {
-            // RaiseRecoverable(property.Start, "The only valid meta property for import is 'import.meta'"); // original acornjs error reporting
-            Unexpected(property.Start, TokenType.Name, property.Name);
-        }
-        if (containsEsc)
-        {
-            // RaiseRecoverable(property.Start, "'import.meta' must not contain escaped characters"); // original acornjs error reporting
-            RaiseRecoverable(property.Start, InvalidEscapedMetaProperty, new object[] { "import.meta" });
-        }
-        if (!_inModule && !_options._allowImportExportEverywhere)
-        {
-            //RaiseRecoverable(property.Start, "Cannot use 'import.meta' outside a module"); // original acornjs error reporting
-            Raise(property.Start, ImportMetaOutsideModule);
+            if (containsEsc)
+            {
+                // RaiseRecoverable(property.Start, "'import.meta' must not contain escaped characters"); // original acornjs error reporting
+                RaiseRecoverable(property.Start, InvalidEscapedMetaProperty, new object[] { "import.meta" });
+            }
+            if (!_inModule && !_options._allowImportExportEverywhere)
+            {
+                //RaiseRecoverable(property.Start, "Cannot use 'import.meta' outside a module"); // original acornjs error reporting
+                Raise(property.Start, ImportMetaOutsideModule);
+            }
+
+            return FinishNode(startMarker, new MetaProperty(meta, property));
         }
 
-        return FinishNode(startMarker, new MetaProperty(meta, property));
+        if (_tokenizerOptions.AllowSourcePhaseImports() && property.Name == "source" && !containsEsc)
+        {
+            return ParseDynamicImportPhase(startMarker, ImportPhase.Source, context);
+        }
+
+        if (_tokenizerOptions.AllowImportDefer() && property.Name == "defer" && !containsEsc)
+        {
+            return ParseDynamicImportPhase(startMarker, ImportPhase.Defer, context);
+        }
+
+        // RaiseRecoverable(property.Start, "The only valid meta property for import is 'import.meta'"); // original acornjs error reporting
+        Unexpected(property.Start, TokenType.Name, property.Name);
+        return default!; // unreachable
+    }
+
+    private ImportExpression ParseDynamicImportPhase(in Marker startMarker, ImportPhase phase, ExpressionContext context)
+    {
+        if ((context & ExpressionContext.ForNew) != 0)
+        {
+            Unexpected();
+        }
+
+        Expect(TokenType.ParenLeft);
+
+        if (_tokenizer._type == TokenType.ParenRight)
+        {
+            Unexpected();
+        }
+
+        if (_tokenizer._type == TokenType.Ellipsis)
+        {
+            Unexpected();
+        }
+
+        var source = ParseMaybeAssign(ref NullRef<DestructuringErrors>());
+
+        Expect(TokenType.ParenRight);
+
+        return FinishNode(startMarker, new ImportExpression(source, options: null, phase));
     }
 
     private Expression ParseParenExpression()

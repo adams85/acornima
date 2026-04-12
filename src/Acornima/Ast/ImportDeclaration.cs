@@ -12,11 +12,19 @@ public sealed partial class ImportDeclaration : ImportOrExportDeclaration
         in NodeList<ImportDeclarationSpecifier> specifiers,
         StringLiteral source,
         in NodeList<ImportAttribute> attributes)
+        : this(specifiers, source, attributes, ImportPhase.None) { }
+
+    public ImportDeclaration(
+        in NodeList<ImportDeclarationSpecifier> specifiers,
+        StringLiteral source,
+        in NodeList<ImportAttribute> attributes,
+        ImportPhase phase)
         : base(NodeType.ImportDeclaration)
     {
         _specifiers = specifiers;
         Source = source;
         _attributes = attributes;
+        Phase = phase;
     }
 
     /// <remarks>
@@ -25,9 +33,10 @@ public sealed partial class ImportDeclaration : ImportOrExportDeclaration
     public ref readonly NodeList<ImportDeclarationSpecifier> Specifiers { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref _specifiers; }
     public StringLiteral Source { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public ref readonly NodeList<ImportAttribute> Attributes { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref _attributes; }
+    public ImportPhase Phase { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-    private static ImportDeclaration Rewrite(in NodeList<ImportDeclarationSpecifier> specifiers, StringLiteral source, in NodeList<ImportAttribute> attributes)
+    private ImportDeclaration Rewrite(in NodeList<ImportDeclarationSpecifier> specifiers, StringLiteral source, in NodeList<ImportAttribute> attributes)
     {
-        return new ImportDeclaration(specifiers, source, attributes);
+        return new ImportDeclaration(specifiers, source, attributes, Phase);
     }
 }

@@ -2122,6 +2122,23 @@ public partial class Parser
 
         Next();
 
+        var phase = ImportPhase.None;
+
+        if (_tokenizerOptions.AllowSourcePhaseImports()
+            && IsContextual("source")
+            && !IsImportPhaseAmbiguousAsDefaultImport("source"))
+        {
+            phase = ImportPhase.Source;
+            Next(); // consume "source"
+        }
+        else if (_tokenizerOptions.AllowImportDefer()
+            && IsContextual("defer")
+            && IsDeferNamespaceImport())
+        {
+            phase = ImportPhase.Defer;
+            Next(); // consume "defer"
+        }
+
         NodeList<ImportDeclarationSpecifier> specifiers;
 
         if (_tokenizer._type == TokenType.String)
@@ -2146,7 +2163,42 @@ public partial class Parser
 
         Semicolon();
 
-        return FinishNode(startMarker, new ImportDeclaration(specifiers, source, NodeList.From(ref attributes)));
+        return FinishNode(startMarker, new ImportDeclaration(specifiers, source, NodeList.From(ref attributes), phase));
+    }
+
+    // Disambiguation for `import source X from "mod"` (source-phase import) vs `import source from "mod"` (regular default import).
+    // Returns true if the `source` (or `defer`) token is the binding name of a regular default import.
+    // Uses the pattern: `import <phase> from <string>` is a regular import; anything else with the phase keyword is a phase import.
+    private bool IsImportPhaseAmbiguousAsDefaultImport(string phaseKeyword)
+    {
+        var next = _tokenizer.NextTokenPosition(out var nextLine, out var nextLineStart);
+        var fromKeyword = "from";
+        var fromEndPos = next + fromKeyword.Length;
+        int after;
+
+        // Check if the next token after the phase keyword is "from"
+        if (fromEndPos < _tokenizer._endPosition
+            && _tokenizer._input.SliceBetween(next, fromEndPos) is "from"
+            && !Tokenizer.IsIdentifierChar(after = _tokenizer.FullCharCodeAt(fromEndPos), allowAstral: true)
+            && after != '\\')
+        {
+            // Check if the token after "from" is a string literal
+            var afterFrom = _tokenizer.NextTokenPositionAt(fromEndPos, ref nextLine, ref nextLineStart);
+            var ch = _tokenizer.CharCodeAt(afterFrom);
+            if (ch is '"' or '\'')
+            {
+                return true; // `import source from "mod"` — regular default import
+            }
+        }
+
+        return false; // source-phase import
+    }
+
+    // Returns true if `import defer *` is followed by `*`, indicating a deferred namespace import.
+    private bool IsDeferNamespaceImport()
+    {
+        var next = _tokenizer.NextTokenPosition(out _, out _);
+        return _tokenizer.CharCodeAt(next) == '*';
     }
 
     private ImportSpecifier ParseImportSpecifier()
