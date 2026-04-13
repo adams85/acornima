@@ -46,7 +46,14 @@ static string DecodeStringIfEscaped(string value) => JavaScriptString.IsStringLi
     ? JavaScriptString.Decode(value)
     : value;
 
-var tokenizerOptions = new TokenizerOptions { ExperimentalESFeatures = ExperimentalESFeatures.RegExpModifiers, RegExpParseMode = RegExpParseMode.AdaptToInterpreted, Tolerant = true };
+var tokenizerOptions = new TokenizerOptions
+{
+#pragma warning disable CS0618 // Type or member is obsolete
+    RegExpParseMode = RegExpParseMode.AdaptToInterpreted,
+#pragma warning restore CS0618 // Type or member is obsolete
+    Tolerant = true
+};
+
 var tokenizer = new Tokenizer(string.Empty, tokenizerOptions);
 var regexParser = new Tokenizer.RegExpParser(tokenizer);
 
@@ -79,7 +86,11 @@ while ((line = reader.ReadLine()) is not null)
 
         regexParser.Reset(pattern, patternStartIndex: 0, flags, flagsStartIndex: 0);
 
-        try { adaptedPattern = regexParser.ParseCore(validateOnly, out _, out _, out _) ?? ")inconvertible("; }
+        try
+        {
+            var parseResult = regexParser.Parse();
+            adaptedPattern = parseResult.Success ? parseResult.Regex!.ToString() : ")inconvertible(";
+        }
         catch (SyntaxErrorException) { adaptedPattern = ")syntax-error("; }
         var encodedDotnetPattern = JavaScriptString.Encode(adaptedPattern, addDoubleQuotes: false);
         if (adaptedPattern != encodedDotnetPattern)
