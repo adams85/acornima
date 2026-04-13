@@ -42,7 +42,7 @@ public static class ParserOptionsExtensions
             }
         }
 
-        private void SetParentNode(Node node, OnNodeContext context)
+        private void SetParentNode(Node node, in OnNodeContext context)
         {
             foreach (var child in node.ChildNodes)
             {

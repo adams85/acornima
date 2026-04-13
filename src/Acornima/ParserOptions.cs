@@ -13,7 +13,7 @@ public delegate void OnInsertedSemicolonHandler(int lastTokenEnd, Position lastT
 
 public delegate void OnTrailingCommaHandler(int lastTokenEnd, Position lastTokenEndLocation);
 
-public delegate void OnNodeHandler(Node node, OnNodeContext context);
+public delegate void OnNodeHandler(Node node, in OnNodeContext context);
 
 internal interface IOnNodeHandlerWrapper
 {

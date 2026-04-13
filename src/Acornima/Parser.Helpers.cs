@@ -32,7 +32,7 @@ public partial class Parser
 
         node._range = new Range(startMarker.Index, endMarker.Index);
         node._location = new SourceLocation(startMarker.Position, endMarker.Position, _tokenizer._sourceFile);
-        _options._onNode?.Invoke(node, new OnNodeContext(scope, _scopeStack));
+        _options._onNode?.Invoke(node, new OnNodeContext(_tokenizer, scope, _scopeStack));
         return node;
     }
 
@@ -43,7 +43,7 @@ public partial class Parser
 
         node._range = new Range(startMarker.Index, _tokenizer._lastTokenEnd);
         node._location = new SourceLocation(startMarker.Position, _tokenizer._lastTokenEndLocation, _tokenizer._sourceFile);
-        _options._onNode?.Invoke(node, new OnNodeContext(scope, _scopeStack));
+        _options._onNode?.Invoke(node, new OnNodeContext(_tokenizer, scope, _scopeStack));
         return node;
     }
 
@@ -51,7 +51,7 @@ public partial class Parser
     {
         node._range = originalNode._range;
         node._location = originalNode._location;
-        _options._onNode?.Invoke(node, new OnNodeContext(default, _scopeStack));
+        _options._onNode?.Invoke(node, new OnNodeContext(_tokenizer, default, _scopeStack));
         return node;
     }
 
