@@ -1,4 +1,4 @@
-﻿# Generated from testcases.template.txt at 2026-04-13T20:42:07
+﻿# Generated from testcases.template.txt at 2026-04-13T22:03:04
 
 # This file defines test cases for regular expression conversion testing (see RegExpTests.ExecuteTestCase).
 # Each uncommented, non-whitespace line specifies a test case in a tab-delimited format, with the following fields:
@@ -1030,7 +1030,7 @@ PIJAMALı HASTA YAĞıZ ŞOFÖRE ÇABUCAK GÜVENDI	vi	)inconvertible(	pijamalı 
 \c\cA	u	)syntax-error(	"\\c\x01"	"Invalid Unicode escape"
 \c\cA	v	)syntax-error(	"\\c\x01"	"Invalid Unicode escape"
 
-\c$		"\\\\c$"	\c	[{"captures":["\\c"],"index":0}]
+\c$		"\\\\c\\z"	\c	[{"captures":["\\c"],"index":0}]
 \c$	u	)syntax-error(	\c	"Invalid Unicode escape"
 \c$	v	)syntax-error(	\c	"Invalid Unicode escape"
 \c(		)syntax-error(	\c(	"Unterminated group"
@@ -1471,7 +1471,7 @@ PIJAMALı HASTA YAĞıZ ŞOFÖRE ÇABUCAK GÜVENDI	vi	)inconvertible(	pijamalı 
 \xf	u	)syntax-error(	xf	"Invalid escape"
 \xf	v	)syntax-error(	xf	"Invalid escape"
 
-\x0$		x0$	x0	[{"captures":["x0"],"index":0}]
+\x0$		"x0\\z"	x0	[{"captures":["x0"],"index":0}]
 \x0$	u	)syntax-error(	x0	"Invalid escape"
 \x0$	v	)syntax-error(	x0	"Invalid escape"
 \x0(		)syntax-error(	x0(	"Unterminated group"
@@ -1709,7 +1709,7 @@ PIJAMALı HASTA YAĞıZ ŞOFÖRE ÇABUCAK GÜVENDI	vi	)inconvertible(	pijamalı 
 \u00f	u	)syntax-error(	u00f	"Invalid Unicode escape"
 \u00f	v	)syntax-error(	u00f	"Invalid Unicode escape"
 
-\u000$		u000$	u000	[{"captures":["u000"],"index":0}]
+\u000$		"u000\\z"	u000	[{"captures":["u000"],"index":0}]
 \u000$	u	)syntax-error(	u000	"Invalid Unicode escape"
 \u000$	v	)syntax-error(	u000	"Invalid Unicode escape"
 \u000(		)syntax-error(	u000(	"Unterminated group"
@@ -2107,18 +2107,18 @@ PIJAMALı HASTA YAĞıZ ŞOFÖRE ÇABUCAK GÜVENDI	vi	)inconvertible(	pijamalı 
 ^.	usm	"(?<=[\n\r\u2028\u2029]|^)(?:[\ud800-\udbff][\udc00-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]|[^\ud800-\udfff])"	"09\naz\rAZ\r\nMṎbẏǅǋʱⱼªﹴ̒𛲝ःꨯ҈꙰9🯶ᛮ𐍁³𖭞  \u2028\u2029\u0001­𑂽\udc4f\udbc9􊭣_⁔-֊(﴿)₎«⸠»⸝#𐩒+﬩$𑿞^˨¦🫅͹઱"	[{"captures":["0"],"index":0},{"captures":["a"],"index":3},{"captures":["A"],"index":6},{"captures":["\n"],"index":9},{"captures":["M"],"index":10},{"captures":["\u2029"],"index":39},{"captures":["\u0001"],"index":40}]
 ^.	vsm	)inconvertible(	"09\naz\rAZ\r\nMṎbẏǅǋʱⱼªﹴ̒𛲝ःꨯ҈꙰9🯶ᛮ𐍁³𖭞  \u2028\u2029\u0001­𑂽\udc4f\udbc9􊭣_⁔-֊(﴿)₎«⸠»⸝#𐩒+﬩$𑿞^˨¦🫅͹઱"	[{"captures":["0"],"index":0},{"captures":["a"],"index":3},{"captures":["A"],"index":6},{"captures":["\n"],"index":9},{"captures":["M"],"index":10},{"captures":["\u2029"],"index":39},{"captures":["\u0001"],"index":40}]
 
-.$	m	"[^\n\r\u2028\u2029](?=[\n\r\u2028\u2029]|$)"	"09\naz\rAZ\r\nMṎbẏǅǋʱⱼªﹴ̒𛲝ःꨯ҈꙰9🯶ᛮ𐍁³𖭞  \u2028\u2029\u0001­𑂽\udc4f\udbc9􊭣_⁔-֊(﴿)₎«⸠»⸝#𐩒+﬩$𑿞^˨¦🫅͹઱"	[{"captures":["9"],"index":1},{"captures":["z"],"index":4},{"captures":["Z"],"index":7},{"captures":[" "],"index":37},{"captures":["઱"],"index":76}]
-.$	um	"(?:[\ud800-\udbff][\udc00-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]|[^\n\r\u2028\u2029\ud800-\udfff])(?=[\n\r\u2028\u2029]|$)"	"09\naz\rAZ\r\nMṎbẏǅǋʱⱼªﹴ̒𛲝ःꨯ҈꙰9🯶ᛮ𐍁³𖭞  \u2028\u2029\u0001­𑂽\udc4f\udbc9􊭣_⁔-֊(﴿)₎«⸠»⸝#𐩒+﬩$𑿞^˨¦🫅͹઱"	[{"captures":["9"],"index":1},{"captures":["z"],"index":4},{"captures":["Z"],"index":7},{"captures":[" "],"index":37},{"captures":["઱"],"index":76}]
+.$	m	"[^\n\r\u2028\u2029](?=[\n\r\u2028\u2029]|\\z)"	"09\naz\rAZ\r\nMṎbẏǅǋʱⱼªﹴ̒𛲝ःꨯ҈꙰9🯶ᛮ𐍁³𖭞  \u2028\u2029\u0001­𑂽\udc4f\udbc9􊭣_⁔-֊(﴿)₎«⸠»⸝#𐩒+﬩$𑿞^˨¦🫅͹઱"	[{"captures":["9"],"index":1},{"captures":["z"],"index":4},{"captures":["Z"],"index":7},{"captures":[" "],"index":37},{"captures":["઱"],"index":76}]
+.$	um	"(?:[\ud800-\udbff][\udc00-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]|[^\n\r\u2028\u2029\ud800-\udfff])(?=[\n\r\u2028\u2029]|\\z)"	"09\naz\rAZ\r\nMṎbẏǅǋʱⱼªﹴ̒𛲝ःꨯ҈꙰9🯶ᛮ𐍁³𖭞  \u2028\u2029\u0001­𑂽\udc4f\udbc9􊭣_⁔-֊(﴿)₎«⸠»⸝#𐩒+﬩$𑿞^˨¦🫅͹઱"	[{"captures":["9"],"index":1},{"captures":["z"],"index":4},{"captures":["Z"],"index":7},{"captures":[" "],"index":37},{"captures":["઱"],"index":76}]
 .$	vm	)inconvertible(	"09\naz\rAZ\r\nMṎbẏǅǋʱⱼªﹴ̒𛲝ःꨯ҈꙰9🯶ᛮ𐍁³𖭞  \u2028\u2029\u0001­𑂽\udc4f\udbc9􊭣_⁔-֊(﴿)₎«⸠»⸝#𐩒+﬩$𑿞^˨¦🫅͹઱"	[{"captures":["9"],"index":1},{"captures":["z"],"index":4},{"captures":["Z"],"index":7},{"captures":[" "],"index":37},{"captures":["઱"],"index":76}]
-.$	sm	"[\\s\\S](?=[\n\r\u2028\u2029]|$)"	"09\naz\rAZ\r\nMṎbẏǅǋʱⱼªﹴ̒𛲝ःꨯ҈꙰9🯶ᛮ𐍁³𖭞  \u2028\u2029\u0001­𑂽\udc4f\udbc9􊭣_⁔-֊(﴿)₎«⸠»⸝#𐩒+﬩$𑿞^˨¦🫅͹઱"	[{"captures":["9"],"index":1},{"captures":["z"],"index":4},{"captures":["Z"],"index":7},{"captures":["\r"],"index":8},{"captures":[" "],"index":37},{"captures":["\u2028"],"index":38},{"captures":["઱"],"index":76}]
-.$	usm	"(?:[\ud800-\udbff][\udc00-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]|[^\ud800-\udfff])(?=[\n\r\u2028\u2029]|$)"	"09\naz\rAZ\r\nMṎbẏǅǋʱⱼªﹴ̒𛲝ःꨯ҈꙰9🯶ᛮ𐍁³𖭞  \u2028\u2029\u0001­𑂽\udc4f\udbc9􊭣_⁔-֊(﴿)₎«⸠»⸝#𐩒+﬩$𑿞^˨¦🫅͹઱"	[{"captures":["9"],"index":1},{"captures":["z"],"index":4},{"captures":["Z"],"index":7},{"captures":["\r"],"index":8},{"captures":[" "],"index":37},{"captures":["\u2028"],"index":38},{"captures":["઱"],"index":76}]
+.$	sm	"[\\s\\S](?=[\n\r\u2028\u2029]|\\z)"	"09\naz\rAZ\r\nMṎbẏǅǋʱⱼªﹴ̒𛲝ःꨯ҈꙰9🯶ᛮ𐍁³𖭞  \u2028\u2029\u0001­𑂽\udc4f\udbc9􊭣_⁔-֊(﴿)₎«⸠»⸝#𐩒+﬩$𑿞^˨¦🫅͹઱"	[{"captures":["9"],"index":1},{"captures":["z"],"index":4},{"captures":["Z"],"index":7},{"captures":["\r"],"index":8},{"captures":[" "],"index":37},{"captures":["\u2028"],"index":38},{"captures":["઱"],"index":76}]
+.$	usm	"(?:[\ud800-\udbff][\udc00-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]|[^\ud800-\udfff])(?=[\n\r\u2028\u2029]|\\z)"	"09\naz\rAZ\r\nMṎbẏǅǋʱⱼªﹴ̒𛲝ःꨯ҈꙰9🯶ᛮ𐍁³𖭞  \u2028\u2029\u0001­𑂽\udc4f\udbc9􊭣_⁔-֊(﴿)₎«⸠»⸝#𐩒+﬩$𑿞^˨¦🫅͹઱"	[{"captures":["9"],"index":1},{"captures":["z"],"index":4},{"captures":["Z"],"index":7},{"captures":["\r"],"index":8},{"captures":[" "],"index":37},{"captures":["\u2028"],"index":38},{"captures":["઱"],"index":76}]
 .$	vsm	)inconvertible(	"09\naz\rAZ\r\nMṎbẏǅǋʱⱼªﹴ̒𛲝ःꨯ҈꙰9🯶ᛮ𐍁³𖭞  \u2028\u2029\u0001­𑂽\udc4f\udbc9􊭣_⁔-֊(﴿)₎«⸠»⸝#𐩒+﬩$𑿞^˨¦🫅͹઱"	[{"captures":["9"],"index":1},{"captures":["z"],"index":4},{"captures":["Z"],"index":7},{"captures":["\r"],"index":8},{"captures":[" "],"index":37},{"captures":["\u2028"],"index":38},{"captures":["઱"],"index":76}]
 
-^.$	m	"(?<=[\n\r\u2028\u2029]|^)[^\n\r\u2028\u2029](?=[\n\r\u2028\u2029]|$)"	"09\naz\rAZ\r\nMṎbẏǅǋʱⱼªﹴ̒𛲝ःꨯ҈꙰9🯶ᛮ𐍁³𖭞  \u2028\u2029\u0001­𑂽\udc4f\udbc9􊭣_⁔-֊(﴿)₎«⸠»⸝#𐩒+﬩$𑿞^˨¦🫅͹઱"	[]
-^.$	um	"(?<=[\n\r\u2028\u2029]|^)(?:[\ud800-\udbff][\udc00-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]|[^\n\r\u2028\u2029\ud800-\udfff])(?=[\n\r\u2028\u2029]|$)"	"09\naz\rAZ\r\nMṎbẏǅǋʱⱼªﹴ̒𛲝ःꨯ҈꙰9🯶ᛮ𐍁³𖭞  \u2028\u2029\u0001­𑂽\udc4f\udbc9􊭣_⁔-֊(﴿)₎«⸠»⸝#𐩒+﬩$𑿞^˨¦🫅͹઱"	[]
+^.$	m	"(?<=[\n\r\u2028\u2029]|^)[^\n\r\u2028\u2029](?=[\n\r\u2028\u2029]|\\z)"	"09\naz\rAZ\r\nMṎbẏǅǋʱⱼªﹴ̒𛲝ःꨯ҈꙰9🯶ᛮ𐍁³𖭞  \u2028\u2029\u0001­𑂽\udc4f\udbc9􊭣_⁔-֊(﴿)₎«⸠»⸝#𐩒+﬩$𑿞^˨¦🫅͹઱"	[]
+^.$	um	"(?<=[\n\r\u2028\u2029]|^)(?:[\ud800-\udbff][\udc00-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]|[^\n\r\u2028\u2029\ud800-\udfff])(?=[\n\r\u2028\u2029]|\\z)"	"09\naz\rAZ\r\nMṎbẏǅǋʱⱼªﹴ̒𛲝ःꨯ҈꙰9🯶ᛮ𐍁³𖭞  \u2028\u2029\u0001­𑂽\udc4f\udbc9􊭣_⁔-֊(﴿)₎«⸠»⸝#𐩒+﬩$𑿞^˨¦🫅͹઱"	[]
 ^.$	vm	)inconvertible(	"09\naz\rAZ\r\nMṎbẏǅǋʱⱼªﹴ̒𛲝ःꨯ҈꙰9🯶ᛮ𐍁³𖭞  \u2028\u2029\u0001­𑂽\udc4f\udbc9􊭣_⁔-֊(﴿)₎«⸠»⸝#𐩒+﬩$𑿞^˨¦🫅͹઱"	[]
-^.$	sm	"(?<=[\n\r\u2028\u2029]|^)[\\s\\S](?=[\n\r\u2028\u2029]|$)"	"09\naz\rAZ\r\nMṎbẏǅǋʱⱼªﹴ̒𛲝ःꨯ҈꙰9🯶ᛮ𐍁³𖭞  \u2028\u2029\u0001­𑂽\udc4f\udbc9􊭣_⁔-֊(﴿)₎«⸠»⸝#𐩒+﬩$𑿞^˨¦🫅͹઱"	[]
-^.$	usm	"(?<=[\n\r\u2028\u2029]|^)(?:[\ud800-\udbff][\udc00-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]|[^\ud800-\udfff])(?=[\n\r\u2028\u2029]|$)"	"09\naz\rAZ\r\nMṎbẏǅǋʱⱼªﹴ̒𛲝ःꨯ҈꙰9🯶ᛮ𐍁³𖭞  \u2028\u2029\u0001­𑂽\udc4f\udbc9􊭣_⁔-֊(﴿)₎«⸠»⸝#𐩒+﬩$𑿞^˨¦🫅͹઱"	[]
+^.$	sm	"(?<=[\n\r\u2028\u2029]|^)[\\s\\S](?=[\n\r\u2028\u2029]|\\z)"	"09\naz\rAZ\r\nMṎbẏǅǋʱⱼªﹴ̒𛲝ःꨯ҈꙰9🯶ᛮ𐍁³𖭞  \u2028\u2029\u0001­𑂽\udc4f\udbc9􊭣_⁔-֊(﴿)₎«⸠»⸝#𐩒+﬩$𑿞^˨¦🫅͹઱"	[]
+^.$	usm	"(?<=[\n\r\u2028\u2029]|^)(?:[\ud800-\udbff][\udc00-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]|[^\ud800-\udfff])(?=[\n\r\u2028\u2029]|\\z)"	"09\naz\rAZ\r\nMṎbẏǅǋʱⱼªﹴ̒𛲝ःꨯ҈꙰9🯶ᛮ𐍁³𖭞  \u2028\u2029\u0001­𑂽\udc4f\udbc9􊭣_⁔-֊(﴿)₎«⸠»⸝#𐩒+﬩$𑿞^˨¦🫅͹઱"	[]
 ^.$	vsm	)inconvertible(	"09\naz\rAZ\r\nMṎbẏǅǋʱⱼªﹴ̒𛲝ःꨯ҈꙰9🯶ᛮ𐍁³𖭞  \u2028\u2029\u0001­𑂽\udc4f\udbc9􊭣_⁔-֊(﴿)₎«⸠»⸝#𐩒+﬩$𑿞^˨¦🫅͹઱"	[]
 
 .	m	"[^\n\r\u2028\u2029]"	\na\n\n\na\n	[{"captures":["\\"],"index":0},{"captures":["n"],"index":1},{"captures":["a"],"index":2},{"captures":["\\"],"index":3},{"captures":["n"],"index":4},{"captures":["\\"],"index":5},{"captures":["n"],"index":6},{"captures":["\\"],"index":7},{"captures":["n"],"index":8},{"captures":["a"],"index":9},{"captures":["\\"],"index":10},{"captures":["n"],"index":11}]
@@ -3030,8 +3030,8 @@ a|ab	v	)inconvertible(	abc	[{"captures":["a"],"index":0}]
 (?:(a)|(ab))(?:(c)|(bc))	u	(?:(a)|(ab))(?:(c)|(bc))	abc	[{"captures":["abc","a",null,null,"bc"],"index":0}]
 (?:(a)|(ab))(?:(c)|(bc))	v	)inconvertible(	abc	[{"captures":["abc","a",null,null,"bc"],"index":0}]
 
-\.(?:png|jpe?g|webp|avif|gif)$	i	"\\.(?:png|jpe?g|webp|avif|gif)$"	image.jpg	[{"captures":[".jpg"],"index":5}]
-\.(?:png|jpe?g|webp|avif|gif)$	ui	"\\.(?:png|jpe?g|webp|avif|gif)$"	image.jpg	[{"captures":[".jpg"],"index":5}]
+\.(?:png|jpe?g|webp|avif|gif)$	i	"\\.(?:png|jpe?g|webp|avif|gif)\\z"	image.jpg	[{"captures":[".jpg"],"index":5}]
+\.(?:png|jpe?g|webp|avif|gif)$	ui	"\\.(?:png|jpe?g|webp|avif|gif)\\z"	image.jpg	[{"captures":[".jpg"],"index":5}]
 \.(?:png|jpe?g|webp|avif|gif)$	vi	)inconvertible(	image.jpg	[{"captures":[".jpg"],"index":5}]
 
 \bgr(a|e)y\b		"\\bgr(a|e)y\\b"	The gray wolf blended in among the grey rocks.	[{"captures":["gray","a"],"index":4},{"captures":["grey","e"],"index":35}]
@@ -3149,8 +3149,8 @@ c(?=(ab))	v	)inconvertible(	cab	[{"captures":["c","ab"],"index":0}]
 ((a+)?(b+)?(c))*	u	((a+)?(b+)?(c))*	aacbbbcac	[{"captures":["aacbbbcac","ac","a",null,"c"],"index":0},{"captures":["",null,null,null,null],"index":9}]	!ignore-undefined-captures
 ((a+)?(b+)?(c))*	v	)inconvertible(	aacbbbcac	[{"captures":["aacbbbcac","ac","a",null,"c"],"index":0},{"captures":["",null,null,null,null],"index":9}]	!ignore-undefined-captures
 
-^(\d{4})-(\d{2})-(\d{2})$		"^(\\d{4})-(\\d{2})-(\\d{2})$"	2019-01-01	[{"captures":["2019-01-01","2019","01","01"],"index":0}]
-^(\d{4})-(\d{2})-(\d{2})$	u	"^(\\d{4})-(\\d{2})-(\\d{2})$"	2019-01-01	[{"captures":["2019-01-01","2019","01","01"],"index":0}]
+^(\d{4})-(\d{2})-(\d{2})$		"^(\\d{4})-(\\d{2})-(\\d{2})\\z"	2019-01-01	[{"captures":["2019-01-01","2019","01","01"],"index":0}]
+^(\d{4})-(\d{2})-(\d{2})$	u	"^(\\d{4})-(\\d{2})-(\\d{2})\\z"	2019-01-01	[{"captures":["2019-01-01","2019","01","01"],"index":0}]
 ^(\d{4})-(\d{2})-(\d{2})$	v	)inconvertible(	2019-01-01	[{"captures":["2019-01-01","2019","01","01"],"index":0}]
 
 (\w+)\s(\1)\W	i	"([\\d\\x41-\\x5A\\x5F\\x61-\\x7A]+)[\\s   - \u2028\u2029  　﻿](\\1)[\x00-\\x2F\\x3A-\\x40\\x5B-\\x5E\\x60\\x7B-￿]"	He said that that was the the correct answer.	[{"captures":["that that ","that","that"],"index":8},{"captures":["the the ","the","the"],"index":22}]
@@ -3201,8 +3201,8 @@ c(?=(?<$ab>ab)(?<__utf8_246162>))	v	)inconvertible(	cab	[{"captures":["c","ab","
 ((?<\u{13000}>a+)?(?<\u{13001}>b+)?(?<\u{13002}>c))*	u	(((?<__utf8_F0938080>a+))?((?<__utf8_F0938081>b+))?((?<__utf8_F0938082>c)))*	aacbbbcac	[{"captures":["aacbbbcac","ac","a",null,"c"],"index":0,"groups":{"𓀀":"a","𓀂":"c"}},{"captures":["",null,null,null,null],"index":9,"groups":{}}]	!ignore-undefined-captures
 ((?<\u{13000}>a+)?(?<\u{13001}>b+)?(?<\u{13002}>c))*	v	)inconvertible(	aacbbbcac	[{"captures":["aacbbbcac","ac","a",null,"c"],"index":0,"groups":{"𓀀":"a","𓀂":"c"}},{"captures":["",null,null,null,null],"index":9,"groups":{}}]	!ignore-undefined-captures
 
-^(?<Year>\d{4})-(?<Month>\d{2})-(?<Day>\d{2})$		"^((?<Year>\\d{4}))-((?<Month>\\d{2}))-((?<Day>\\d{2}))$"	2019-01-01	[{"captures":["2019-01-01","2019","01","01"],"index":0,"groups":{"Year":"2019","Month":"01","Day":"01"}}]
-^(?<Year>\d{4})-(?<Month>\d{2})-(?<Day>\d{2})$	u	"^((?<Year>\\d{4}))-((?<Month>\\d{2}))-((?<Day>\\d{2}))$"	2019-01-01	[{"captures":["2019-01-01","2019","01","01"],"index":0,"groups":{"Year":"2019","Month":"01","Day":"01"}}]
+^(?<Year>\d{4})-(?<Month>\d{2})-(?<Day>\d{2})$		"^((?<Year>\\d{4}))-((?<Month>\\d{2}))-((?<Day>\\d{2}))\\z"	2019-01-01	[{"captures":["2019-01-01","2019","01","01"],"index":0,"groups":{"Year":"2019","Month":"01","Day":"01"}}]
+^(?<Year>\d{4})-(?<Month>\d{2})-(?<Day>\d{2})$	u	"^((?<Year>\\d{4}))-((?<Month>\\d{2}))-((?<Day>\\d{2}))\\z"	2019-01-01	[{"captures":["2019-01-01","2019","01","01"],"index":0,"groups":{"Year":"2019","Month":"01","Day":"01"}}]
 ^(?<Year>\d{4})-(?<Month>\d{2})-(?<Day>\d{2})$	v	)inconvertible(	2019-01-01	[{"captures":["2019-01-01","2019","01","01"],"index":0,"groups":{"Year":"2019","Month":"01","Day":"01"}}]
 
 (?<timestamp>\d+),(?<author>.+)		"((?<timestamp>\\d+)),((?<author>[^\n\r\u2028\u2029]+))"	1560979912,Caroline	[{"captures":["1560979912,Caroline","1560979912","Caroline"],"index":0,"groups":{"timestamp":"1560979912","author":"Caroline"}}]
@@ -3277,11 +3277,11 @@ styles(?:\.[\da-f]+)?		"styles(?:\\.[\\da-f]+)?"	styles.1234.min.css	[{"captures
 styles(?:\.[\da-f]+)?	u	"styles(?:\\.(?:[\\x30-\\x39\\x61-\\x66])+)?"	styles.1234.min.css	[{"captures":["styles.1234"],"index":0}]
 styles(?:\.[\da-f]+)?	v	)inconvertible(	styles.1234.min.css	[{"captures":["styles.1234"],"index":0}]
 
-\.(?:png|jpe?g|webp|avif|gif)$	i	"\\.(?:png|jpe?g|webp|avif|gif)$"	image.png	[{"captures":[".png"],"index":5}]
-\.(?:png|jpe?g|webp|avif|gif)$	ui	"\\.(?:png|jpe?g|webp|avif|gif)$"	image.png	[{"captures":[".png"],"index":5}]
+\.(?:png|jpe?g|webp|avif|gif)$	i	"\\.(?:png|jpe?g|webp|avif|gif)\\z"	image.png	[{"captures":[".png"],"index":5}]
+\.(?:png|jpe?g|webp|avif|gif)$	ui	"\\.(?:png|jpe?g|webp|avif|gif)\\z"	image.png	[{"captures":[".png"],"index":5}]
 \.(?:png|jpe?g|webp|avif|gif)$	vi	)inconvertible(	image.png	[{"captures":[".png"],"index":5}]
-\.(?:png|jpe?g|webp|avif|gif)$	i	"\\.(?:png|jpe?g|webp|avif|gif)$"	image.pdf	[]
-\.(?:png|jpe?g|webp|avif|gif)$	ui	"\\.(?:png|jpe?g|webp|avif|gif)$"	image.pdf	[]
+\.(?:png|jpe?g|webp|avif|gif)$	i	"\\.(?:png|jpe?g|webp|avif|gif)\\z"	image.pdf	[]
+\.(?:png|jpe?g|webp|avif|gif)$	ui	"\\.(?:png|jpe?g|webp|avif|gif)\\z"	image.pdf	[]
 \.(?:png|jpe?g|webp|avif|gif)$	vi	)inconvertible(	image.pdf	[]
 
 (?:title|name)=(["'])(.*?)\1		"(?:title|name)=([\"'])([^\n\r\u2028\u2029]*?)\\1"	name="foo"	[{"captures":["name=\"foo\"","\"","foo"],"index":0}]
@@ -3660,53 +3660,53 @@ ${1,}?x		)syntax-error(	xxyx	"Nothing to repeat"
 ${1,}?x	u	)syntax-error(	xxyx	"Nothing to repeat"
 ${1,}?x	v	)syntax-error(	xxyx	"Nothing to repeat"
 
-^(a|b|c)*$		^(a|b|c)*$	"aabbbcc"	[{"captures":["aabbbcc","c"],"index":0}]
-^(a|b|c)*$	u	^(a|b|c)*$	"aabbbcc"	[{"captures":["aabbbcc","c"],"index":0}]
+^(a|b|c)*$		"^(a|b|c)*\\z"	"aabbbcc"	[{"captures":["aabbbcc","c"],"index":0}]
+^(a|b|c)*$	u	"^(a|b|c)*\\z"	"aabbbcc"	[{"captures":["aabbbcc","c"],"index":0}]
 ^(a|b|c)*$	v	)inconvertible(	"aabbbcc"	[{"captures":["aabbbcc","c"],"index":0}]
-^(a|b|c)*$	m	"(?<=[\n\r\u2028\u2029]|^)(a|b|c)*(?=[\n\r\u2028\u2029]|$)"	"aabbbcc"	[{"captures":["aabbbcc","c"],"index":0}]
-^(a|b|c)*$	um	"(?<=[\n\r\u2028\u2029]|^)(a|b|c)*(?=[\n\r\u2028\u2029]|$)"	"aabbbcc"	[{"captures":["aabbbcc","c"],"index":0}]
+^(a|b|c)*$	m	"(?<=[\n\r\u2028\u2029]|^)(a|b|c)*(?=[\n\r\u2028\u2029]|\\z)"	"aabbbcc"	[{"captures":["aabbbcc","c"],"index":0}]
+^(a|b|c)*$	um	"(?<=[\n\r\u2028\u2029]|^)(a|b|c)*(?=[\n\r\u2028\u2029]|\\z)"	"aabbbcc"	[{"captures":["aabbbcc","c"],"index":0}]
 ^(a|b|c)*$	vm	)inconvertible(	"aabbbcc"	[{"captures":["aabbbcc","c"],"index":0}]
 
-^(a|b|c)*$		^(a|b|c)*$	"aabb\rbcc"	[]
-^(a|b|c)*$	u	^(a|b|c)*$	"aabb\rbcc"	[]
+^(a|b|c)*$		"^(a|b|c)*\\z"	"aabb\rbcc"	[]
+^(a|b|c)*$	u	"^(a|b|c)*\\z"	"aabb\rbcc"	[]
 ^(a|b|c)*$	v	)inconvertible(	"aabb\rbcc"	[]
-^(a|b|c)*$	m	"(?<=[\n\r\u2028\u2029]|^)(a|b|c)*(?=[\n\r\u2028\u2029]|$)"	"aabb\rbcc"	[{"captures":["aabb","b"],"index":0},{"captures":["bcc","c"],"index":5}]
-^(a|b|c)*$	um	"(?<=[\n\r\u2028\u2029]|^)(a|b|c)*(?=[\n\r\u2028\u2029]|$)"	"aabb\rbcc"	[{"captures":["aabb","b"],"index":0},{"captures":["bcc","c"],"index":5}]
+^(a|b|c)*$	m	"(?<=[\n\r\u2028\u2029]|^)(a|b|c)*(?=[\n\r\u2028\u2029]|\\z)"	"aabb\rbcc"	[{"captures":["aabb","b"],"index":0},{"captures":["bcc","c"],"index":5}]
+^(a|b|c)*$	um	"(?<=[\n\r\u2028\u2029]|^)(a|b|c)*(?=[\n\r\u2028\u2029]|\\z)"	"aabb\rbcc"	[{"captures":["aabb","b"],"index":0},{"captures":["bcc","c"],"index":5}]
 ^(a|b|c)*$	vm	)inconvertible(	"aabb\rbcc"	[{"captures":["aabb","b"],"index":0},{"captures":["bcc","c"],"index":5}]
 
-^(a|b|c)*$		^(a|b|c)*$	"aabb\nbcc"	[]
-^(a|b|c)*$	u	^(a|b|c)*$	"aabb\nbcc"	[]
+^(a|b|c)*$		"^(a|b|c)*\\z"	"aabb\nbcc"	[]
+^(a|b|c)*$	u	"^(a|b|c)*\\z"	"aabb\nbcc"	[]
 ^(a|b|c)*$	v	)inconvertible(	"aabb\nbcc"	[]
-^(a|b|c)*$	m	"(?<=[\n\r\u2028\u2029]|^)(a|b|c)*(?=[\n\r\u2028\u2029]|$)"	"aabb\nbcc"	[{"captures":["aabb","b"],"index":0},{"captures":["bcc","c"],"index":5}]
-^(a|b|c)*$	um	"(?<=[\n\r\u2028\u2029]|^)(a|b|c)*(?=[\n\r\u2028\u2029]|$)"	"aabb\nbcc"	[{"captures":["aabb","b"],"index":0},{"captures":["bcc","c"],"index":5}]
+^(a|b|c)*$	m	"(?<=[\n\r\u2028\u2029]|^)(a|b|c)*(?=[\n\r\u2028\u2029]|\\z)"	"aabb\nbcc"	[{"captures":["aabb","b"],"index":0},{"captures":["bcc","c"],"index":5}]
+^(a|b|c)*$	um	"(?<=[\n\r\u2028\u2029]|^)(a|b|c)*(?=[\n\r\u2028\u2029]|\\z)"	"aabb\nbcc"	[{"captures":["aabb","b"],"index":0},{"captures":["bcc","c"],"index":5}]
 ^(a|b|c)*$	vm	)inconvertible(	"aabb\nbcc"	[{"captures":["aabb","b"],"index":0},{"captures":["bcc","c"],"index":5}]
 
-^(a|b|c)*$		^(a|b|c)*$	"aabb\u2028bcc"	[]
-^(a|b|c)*$	u	^(a|b|c)*$	"aabb\u2028bcc"	[]
+^(a|b|c)*$		"^(a|b|c)*\\z"	"aabb\u2028bcc"	[]
+^(a|b|c)*$	u	"^(a|b|c)*\\z"	"aabb\u2028bcc"	[]
 ^(a|b|c)*$	v	)inconvertible(	"aabb\u2028bcc"	[]
-^(a|b|c)*$	m	"(?<=[\n\r\u2028\u2029]|^)(a|b|c)*(?=[\n\r\u2028\u2029]|$)"	"aabb\u2028bcc"	[{"captures":["aabb","b"],"index":0},{"captures":["bcc","c"],"index":5}]
-^(a|b|c)*$	um	"(?<=[\n\r\u2028\u2029]|^)(a|b|c)*(?=[\n\r\u2028\u2029]|$)"	"aabb\u2028bcc"	[{"captures":["aabb","b"],"index":0},{"captures":["bcc","c"],"index":5}]
+^(a|b|c)*$	m	"(?<=[\n\r\u2028\u2029]|^)(a|b|c)*(?=[\n\r\u2028\u2029]|\\z)"	"aabb\u2028bcc"	[{"captures":["aabb","b"],"index":0},{"captures":["bcc","c"],"index":5}]
+^(a|b|c)*$	um	"(?<=[\n\r\u2028\u2029]|^)(a|b|c)*(?=[\n\r\u2028\u2029]|\\z)"	"aabb\u2028bcc"	[{"captures":["aabb","b"],"index":0},{"captures":["bcc","c"],"index":5}]
 ^(a|b|c)*$	vm	)inconvertible(	"aabb\u2028bcc"	[{"captures":["aabb","b"],"index":0},{"captures":["bcc","c"],"index":5}]
 
-^(a|b|c)*$		^(a|b|c)*$	"aabb\u2029bcc"	[]
-^(a|b|c)*$	u	^(a|b|c)*$	"aabb\u2029bcc"	[]
+^(a|b|c)*$		"^(a|b|c)*\\z"	"aabb\u2029bcc"	[]
+^(a|b|c)*$	u	"^(a|b|c)*\\z"	"aabb\u2029bcc"	[]
 ^(a|b|c)*$	v	)inconvertible(	"aabb\u2029bcc"	[]
-^(a|b|c)*$	m	"(?<=[\n\r\u2028\u2029]|^)(a|b|c)*(?=[\n\r\u2028\u2029]|$)"	"aabb\u2029bcc"	[{"captures":["aabb","b"],"index":0},{"captures":["bcc","c"],"index":5}]
-^(a|b|c)*$	um	"(?<=[\n\r\u2028\u2029]|^)(a|b|c)*(?=[\n\r\u2028\u2029]|$)"	"aabb\u2029bcc"	[{"captures":["aabb","b"],"index":0},{"captures":["bcc","c"],"index":5}]
+^(a|b|c)*$	m	"(?<=[\n\r\u2028\u2029]|^)(a|b|c)*(?=[\n\r\u2028\u2029]|\\z)"	"aabb\u2029bcc"	[{"captures":["aabb","b"],"index":0},{"captures":["bcc","c"],"index":5}]
+^(a|b|c)*$	um	"(?<=[\n\r\u2028\u2029]|^)(a|b|c)*(?=[\n\r\u2028\u2029]|\\z)"	"aabb\u2029bcc"	[{"captures":["aabb","b"],"index":0},{"captures":["bcc","c"],"index":5}]
 ^(a|b|c)*$	vm	)inconvertible(	"aabb\u2029bcc"	[{"captures":["aabb","b"],"index":0},{"captures":["bcc","c"],"index":5}]
 
-^(a|b|c)*$		^(a|b|c)*$	"aabb\u202abcc"	[]
-^(a|b|c)*$	u	^(a|b|c)*$	"aabb\u202abcc"	[]
+^(a|b|c)*$		"^(a|b|c)*\\z"	"aabb\u202abcc"	[]
+^(a|b|c)*$	u	"^(a|b|c)*\\z"	"aabb\u202abcc"	[]
 ^(a|b|c)*$	v	)inconvertible(	"aabb\u202abcc"	[]
-^(a|b|c)*$	m	"(?<=[\n\r\u2028\u2029]|^)(a|b|c)*(?=[\n\r\u2028\u2029]|$)"	"aabb\u202abcc"	[]
-^(a|b|c)*$	um	"(?<=[\n\r\u2028\u2029]|^)(a|b|c)*(?=[\n\r\u2028\u2029]|$)"	"aabb\u202abcc"	[]
+^(a|b|c)*$	m	"(?<=[\n\r\u2028\u2029]|^)(a|b|c)*(?=[\n\r\u2028\u2029]|\\z)"	"aabb\u202abcc"	[]
+^(a|b|c)*$	um	"(?<=[\n\r\u2028\u2029]|^)(a|b|c)*(?=[\n\r\u2028\u2029]|\\z)"	"aabb\u202abcc"	[]
 ^(a|b|c)*$	vm	)inconvertible(	"aabb\u202abcc"	[]
 
-^(a|b|c)*$		^(a|b|c)*$	"aabb\u2028\u2029bcc"	[]
-^(a|b|c)*$	u	^(a|b|c)*$	"aabb\u2028\u2029bcc"	[]
+^(a|b|c)*$		"^(a|b|c)*\\z"	"aabb\u2028\u2029bcc"	[]
+^(a|b|c)*$	u	"^(a|b|c)*\\z"	"aabb\u2028\u2029bcc"	[]
 ^(a|b|c)*$	v	)inconvertible(	"aabb\u2028\u2029bcc"	[]
-^(a|b|c)*$	m	"(?<=[\n\r\u2028\u2029]|^)(a|b|c)*(?=[\n\r\u2028\u2029]|$)"	"aabb\u2028\u2029bcc"	[{"captures":["aabb","b"],"index":0},{"captures":["",null],"index":5},{"captures":["bcc","c"],"index":6}]
-^(a|b|c)*$	um	"(?<=[\n\r\u2028\u2029]|^)(a|b|c)*(?=[\n\r\u2028\u2029]|$)"	"aabb\u2028\u2029bcc"	[{"captures":["aabb","b"],"index":0},{"captures":["",null],"index":5},{"captures":["bcc","c"],"index":6}]
+^(a|b|c)*$	m	"(?<=[\n\r\u2028\u2029]|^)(a|b|c)*(?=[\n\r\u2028\u2029]|\\z)"	"aabb\u2028\u2029bcc"	[{"captures":["aabb","b"],"index":0},{"captures":["",null],"index":5},{"captures":["bcc","c"],"index":6}]
+^(a|b|c)*$	um	"(?<=[\n\r\u2028\u2029]|^)(a|b|c)*(?=[\n\r\u2028\u2029]|\\z)"	"aabb\u2028\u2029bcc"	[{"captures":["aabb","b"],"index":0},{"captures":["",null],"index":5},{"captures":["bcc","c"],"index":6}]
 ^(a|b|c)*$	vm	)inconvertible(	"aabb\u2028\u2029bcc"	[{"captures":["aabb","b"],"index":0},{"captures":["",null],"index":5},{"captures":["bcc","c"],"index":6}]
 
 ^(a|b|c)*		^(a|b|c)*	"aabb\u2028\u2029bcc"	[{"captures":["aabb","b"],"index":0}]
@@ -3723,19 +3723,61 @@ ${1,}?x	v	)syntax-error(	xxyx	"Nothing to repeat"
 (a|b|c)*^	um	"(a|b|c)*(?<=[\n\r\u2028\u2029]|^)"	"aabb\u2028\u2029bcc"	[{"captures":["",null],"index":0},{"captures":["",null],"index":5},{"captures":["",null],"index":6}]
 (a|b|c)*^	vm	)inconvertible(	"aabb\u2028\u2029bcc"	[{"captures":["",null],"index":0},{"captures":["",null],"index":5},{"captures":["",null],"index":6}]
 
-(a|b|c)*$		(a|b|c)*$	"aabb\u2028\u2029bcc"	[{"captures":["bcc","c"],"index":6},{"captures":["",null],"index":9}]
-(a|b|c)*$	u	(a|b|c)*$	"aabb\u2028\u2029bcc"	[{"captures":["bcc","c"],"index":6},{"captures":["",null],"index":9}]
+(a|b|c)*$		"(a|b|c)*\\z"	"aabb\u2028\u2029bcc"	[{"captures":["bcc","c"],"index":6},{"captures":["",null],"index":9}]
+(a|b|c)*$	u	"(a|b|c)*\\z"	"aabb\u2028\u2029bcc"	[{"captures":["bcc","c"],"index":6},{"captures":["",null],"index":9}]
 (a|b|c)*$	v	)inconvertible(	"aabb\u2028\u2029bcc"	[{"captures":["bcc","c"],"index":6},{"captures":["",null],"index":9}]
-(a|b|c)*$	m	"(a|b|c)*(?=[\n\r\u2028\u2029]|$)"	"aabb\u2028\u2029bcc"	[{"captures":["aabb","b"],"index":0},{"captures":["",null],"index":4},{"captures":["",null],"index":5},{"captures":["bcc","c"],"index":6},{"captures":["",null],"index":9}]
-(a|b|c)*$	um	"(a|b|c)*(?=[\n\r\u2028\u2029]|$)"	"aabb\u2028\u2029bcc"	[{"captures":["aabb","b"],"index":0},{"captures":["",null],"index":4},{"captures":["",null],"index":5},{"captures":["bcc","c"],"index":6},{"captures":["",null],"index":9}]
+(a|b|c)*$	m	"(a|b|c)*(?=[\n\r\u2028\u2029]|\\z)"	"aabb\u2028\u2029bcc"	[{"captures":["aabb","b"],"index":0},{"captures":["",null],"index":4},{"captures":["",null],"index":5},{"captures":["bcc","c"],"index":6},{"captures":["",null],"index":9}]
+(a|b|c)*$	um	"(a|b|c)*(?=[\n\r\u2028\u2029]|\\z)"	"aabb\u2028\u2029bcc"	[{"captures":["aabb","b"],"index":0},{"captures":["",null],"index":4},{"captures":["",null],"index":5},{"captures":["bcc","c"],"index":6},{"captures":["",null],"index":9}]
 (a|b|c)*$	vm	)inconvertible(	"aabb\u2028\u2029bcc"	[{"captures":["aabb","b"],"index":0},{"captures":["",null],"index":4},{"captures":["",null],"index":5},{"captures":["bcc","c"],"index":6},{"captures":["",null],"index":9}]
 
-$(a|b|c)*		$(a|b|c)*	"aabb\u2028\u2029bcc"	[{"captures":["",null],"index":9}]
-$(a|b|c)*	u	$(a|b|c)*	"aabb\u2028\u2029bcc"	[{"captures":["",null],"index":9}]
+$(a|b|c)*		"\\z(a|b|c)*"	"aabb\u2028\u2029bcc"	[{"captures":["",null],"index":9}]
+$(a|b|c)*	u	"\\z(a|b|c)*"	"aabb\u2028\u2029bcc"	[{"captures":["",null],"index":9}]
 $(a|b|c)*	v	)inconvertible(	"aabb\u2028\u2029bcc"	[{"captures":["",null],"index":9}]
-$(a|b|c)*	m	"(?=[\n\r\u2028\u2029]|$)(a|b|c)*"	"aabb\u2028\u2029bcc"	[{"captures":["",null],"index":4},{"captures":["",null],"index":5},{"captures":["",null],"index":9}]
-$(a|b|c)*	um	"(?=[\n\r\u2028\u2029]|$)(a|b|c)*"	"aabb\u2028\u2029bcc"	[{"captures":["",null],"index":4},{"captures":["",null],"index":5},{"captures":["",null],"index":9}]
+$(a|b|c)*	m	"(?=[\n\r\u2028\u2029]|\\z)(a|b|c)*"	"aabb\u2028\u2029bcc"	[{"captures":["",null],"index":4},{"captures":["",null],"index":5},{"captures":["",null],"index":9}]
+$(a|b|c)*	um	"(?=[\n\r\u2028\u2029]|\\z)(a|b|c)*"	"aabb\u2028\u2029bcc"	[{"captures":["",null],"index":4},{"captures":["",null],"index":5},{"captures":["",null],"index":9}]
 $(a|b|c)*	vm	)inconvertible(	"aabb\u2028\u2029bcc"	[{"captures":["",null],"index":4},{"captures":["",null],"index":5},{"captures":["",null],"index":9}]
+
+^a\nb\nc$		"^a\\nb\\nc\\z"	"a\nb\nc"	[{"captures":["a\nb\nc"],"index":0}]
+^a\nb\nc$	u	"^a\\nb\\nc\\z"	"a\nb\nc"	[{"captures":["a\nb\nc"],"index":0}]
+^a\nb\nc$	v	)inconvertible(	"a\nb\nc"	[{"captures":["a\nb\nc"],"index":0}]
+^a\nb\nc$	m	"(?<=[\n\r\u2028\u2029]|^)a\\nb\\nc(?=[\n\r\u2028\u2029]|\\z)"	"a\nb\nc"	[{"captures":["a\nb\nc"],"index":0}]
+^a\nb\nc$	mu	"(?<=[\n\r\u2028\u2029]|^)a\\nb\\nc(?=[\n\r\u2028\u2029]|\\z)"	"a\nb\nc"	[{"captures":["a\nb\nc"],"index":0}]
+^a\nb\nc$	mv	)inconvertible(	"a\nb\nc"	[{"captures":["a\nb\nc"],"index":0}]
+
+^a\nb\nc$		"^a\\nb\\nc\\z"	"\na\nb\nc\n"	[]
+^a\nb\nc$	u	"^a\\nb\\nc\\z"	"\na\nb\nc\n"	[]
+^a\nb\nc$	v	)inconvertible(	"\na\nb\nc\n"	[]
+^a\nb\nc$	m	"(?<=[\n\r\u2028\u2029]|^)a\\nb\\nc(?=[\n\r\u2028\u2029]|\\z)"	"\na\nb\nc\n"	[{"captures":["a\nb\nc"],"index":1}]
+^a\nb\nc$	mu	"(?<=[\n\r\u2028\u2029]|^)a\\nb\\nc(?=[\n\r\u2028\u2029]|\\z)"	"\na\nb\nc\n"	[{"captures":["a\nb\nc"],"index":1}]
+^a\nb\nc$	mv	)inconvertible(	"\na\nb\nc\n"	[{"captures":["a\nb\nc"],"index":1}]
+
+^a\nb\nc$		"^a\\nb\\nc\\z"	"a\nb\nc\n"	[]
+^a\nb\nc$	u	"^a\\nb\\nc\\z"	"a\nb\nc\n"	[]
+^a\nb\nc$	v	)inconvertible(	"a\nb\nc\n"	[]
+^a\nb\nc$	m	"(?<=[\n\r\u2028\u2029]|^)a\\nb\\nc(?=[\n\r\u2028\u2029]|\\z)"	"a\nb\nc\n"	[{"captures":["a\nb\nc"],"index":0}]
+^a\nb\nc$	mu	"(?<=[\n\r\u2028\u2029]|^)a\\nb\\nc(?=[\n\r\u2028\u2029]|\\z)"	"a\nb\nc\n"	[{"captures":["a\nb\nc"],"index":0}]
+^a\nb\nc$	mv	)inconvertible(	"a\nb\nc\n"	[{"captures":["a\nb\nc"],"index":0}]
+
+^a\n(?m:^b$)\nc$		"^a\\n(?:(?<=[\n\r\u2028\u2029]|^)b(?=[\n\r\u2028\u2029]|\\z))\\nc\\z"	"a\nb\nc"	[{"captures":["a\nb\nc"],"index":0}]
+^a\n(?m:^b$)\nc$	u	"^a\\n(?:(?<=[\n\r\u2028\u2029]|^)b(?=[\n\r\u2028\u2029]|\\z))\\nc\\z"	"a\nb\nc"	[{"captures":["a\nb\nc"],"index":0}]
+^a\n(?m:^b$)\nc$	v	)inconvertible(	"a\nb\nc"	[{"captures":["a\nb\nc"],"index":0}]
+^a\n(?m:^b$)\nc$	m	"(?<=[\n\r\u2028\u2029]|^)a\\n(?:(?<=[\n\r\u2028\u2029]|^)b(?=[\n\r\u2028\u2029]|\\z))\\nc(?=[\n\r\u2028\u2029]|\\z)"	"a\nb\nc"	[{"captures":["a\nb\nc"],"index":0}]
+^a\n(?m:^b$)\nc$	mu	"(?<=[\n\r\u2028\u2029]|^)a\\n(?:(?<=[\n\r\u2028\u2029]|^)b(?=[\n\r\u2028\u2029]|\\z))\\nc(?=[\n\r\u2028\u2029]|\\z)"	"a\nb\nc"	[{"captures":["a\nb\nc"],"index":0}]
+^a\n(?m:^b$)\nc$	mv	)inconvertible(	"a\nb\nc"	[{"captures":["a\nb\nc"],"index":0}]
+
+^a\n(?m:^b$)\nc$		"^a\\n(?:(?<=[\n\r\u2028\u2029]|^)b(?=[\n\r\u2028\u2029]|\\z))\\nc\\z"	"\na\nb\nc"	[]
+^a\n(?m:^b$)\nc$	u	"^a\\n(?:(?<=[\n\r\u2028\u2029]|^)b(?=[\n\r\u2028\u2029]|\\z))\\nc\\z"	"\na\nb\nc"	[]
+^a\n(?m:^b$)\nc$	v	)inconvertible(	"\na\nb\nc"	[]
+^a\n(?m:^b$)\nc$	m	"(?<=[\n\r\u2028\u2029]|^)a\\n(?:(?<=[\n\r\u2028\u2029]|^)b(?=[\n\r\u2028\u2029]|\\z))\\nc(?=[\n\r\u2028\u2029]|\\z)"	"\na\nb\nc"	[{"captures":["a\nb\nc"],"index":1}]
+^a\n(?m:^b$)\nc$	mu	"(?<=[\n\r\u2028\u2029]|^)a\\n(?:(?<=[\n\r\u2028\u2029]|^)b(?=[\n\r\u2028\u2029]|\\z))\\nc(?=[\n\r\u2028\u2029]|\\z)"	"\na\nb\nc"	[{"captures":["a\nb\nc"],"index":1}]
+^a\n(?m:^b$)\nc$	mv	)inconvertible(	"\na\nb\nc"	[{"captures":["a\nb\nc"],"index":1}]
+
+^a\n(?m:^b$)\nc$		"^a\\n(?:(?<=[\n\r\u2028\u2029]|^)b(?=[\n\r\u2028\u2029]|\\z))\\nc\\z"	"a\nb\nc\n"	[]
+^a\n(?m:^b$)\nc$	u	"^a\\n(?:(?<=[\n\r\u2028\u2029]|^)b(?=[\n\r\u2028\u2029]|\\z))\\nc\\z"	"a\nb\nc\n"	[]
+^a\n(?m:^b$)\nc$	v	)inconvertible(	"a\nb\nc\n"	[]
+^a\n(?m:^b$)\nc$	m	"(?<=[\n\r\u2028\u2029]|^)a\\n(?:(?<=[\n\r\u2028\u2029]|^)b(?=[\n\r\u2028\u2029]|\\z))\\nc(?=[\n\r\u2028\u2029]|\\z)"	"a\nb\nc\n"	[{"captures":["a\nb\nc"],"index":0}]
+^a\n(?m:^b$)\nc$	mu	"(?<=[\n\r\u2028\u2029]|^)a\\n(?:(?<=[\n\r\u2028\u2029]|^)b(?=[\n\r\u2028\u2029]|\\z))\\nc(?=[\n\r\u2028\u2029]|\\z)"	"a\nb\nc\n"	[{"captures":["a\nb\nc"],"index":0}]
+^a\n(?m:^b$)\nc$	mv	)inconvertible(	"a\nb\nc\n"	[{"captures":["a\nb\nc"],"index":0}]
 
 (?<=^[^a-c]{3})def		(?<=^[^a-c]{3})def	"abcdef"	[]
 
@@ -3743,14 +3785,14 @@ $(a|b|c)*	vm	)inconvertible(	"aabb\u2028\u2029bcc"	[{"captures":["",null],"index
 (?<=^[a-c]{3})def		(?<=^[a-c]{3})def	"abcdef"	[{"captures":["def"],"index":3}]
 (?<=^[a-c]{3})def	m	"(?<=(?<=[\n\r\u2028\u2029]|^)[a-c]{3})def"	"xyz\nabcdef"	[{"captures":["def"],"index":7}]
 (?<=^)\w+	m	"(?<=(?<=[\n\r\u2028\u2029]|^))[\\d\\x41-\\x5A\\x5F\\x61-\\x7A]+"	"ab\ncd\nefg"	[{"captures":["ab"],"index":0},{"captures":["cd"],"index":3},{"captures":["efg"],"index":6}]
-\w+(?<=$)	m	"[\\d\\x41-\\x5A\\x5F\\x61-\\x7A]+(?<=(?=[\n\r\u2028\u2029]|$))"	"ab\ncd\nefg"	[{"captures":["ab"],"index":0},{"captures":["cd"],"index":3},{"captures":["efg"],"index":6}]
-(?<=^)\w+(?<=$)	m	"(?<=(?<=[\n\r\u2028\u2029]|^))[\\d\\x41-\\x5A\\x5F\\x61-\\x7A]+(?<=(?=[\n\r\u2028\u2029]|$))"	"ab\ncd\nefg"	[{"captures":["ab"],"index":0},{"captures":["cd"],"index":3},{"captures":["efg"],"index":6}]
+\w+(?<=$)	m	"[\\d\\x41-\\x5A\\x5F\\x61-\\x7A]+(?<=(?=[\n\r\u2028\u2029]|\\z))"	"ab\ncd\nefg"	[{"captures":["ab"],"index":0},{"captures":["cd"],"index":3},{"captures":["efg"],"index":6}]
+(?<=^)\w+(?<=$)	m	"(?<=(?<=[\n\r\u2028\u2029]|^))[\\d\\x41-\\x5A\\x5F\\x61-\\x7A]+(?<=(?=[\n\r\u2028\u2029]|\\z))"	"ab\ncd\nefg"	[{"captures":["ab"],"index":0},{"captures":["cd"],"index":3},{"captures":["efg"],"index":6}]
 
-^foo(?<=^fo+)$		^foo(?<=^fo+)$	"foo"	[{"captures":["foo"],"index":0}]
+^foo(?<=^fo+)$		"^foo(?<=^fo+)\\z"	"foo"	[{"captures":["foo"],"index":0}]
 ^foooo(?<=^fo*)		^foooo(?<=^fo*)	"foooo"	[{"captures":["foooo"],"index":0}]
-^(f)oo(?<=^\1o+)$		"^(f)oo(?<=^\\1o+)$"	"foo"	[{"captures":["foo","f"],"index":0}]
-^(f)oo(?<=^\1o+)$	i	"^(f)oo(?<=^\\1o+)$"	"foo"	[{"captures":["foo","f"],"index":0}]
-^(f)oo(?<=^\1o+).$	i	"^(f)oo(?<=^\\1o+)[^\n\r\u2028\u2029]$"	"foo\u1234"	[{"captures":["fooሴ","f"],"index":0}]
+^(f)oo(?<=^\1o+)$		"^(f)oo(?<=^\\1o+)\\z"	"foo"	[{"captures":["foo","f"],"index":0}]
+^(f)oo(?<=^\1o+)$	i	"^(f)oo(?<=^\\1o+)\\z"	"foo"	[{"captures":["foo","f"],"index":0}]
+^(f)oo(?<=^\1o+).$	i	"^(f)oo(?<=^\\1o+)[^\n\r\u2028\u2029]\\z"	"foo\u1234"	[{"captures":["fooሴ","f"],"index":0}]
 (?<=^\w+)def		"(?<=^[\\d\\x41-\\x5A\\x5F\\x61-\\x7A]+)def"	"abcdefdef"	[{"captures":["def"],"index":3},{"captures":["def"],"index":6}]
 
 # Word boundary assertions
@@ -3877,8 +3919,8 @@ c\b	v	)inconvertible(	abc	[{"captures":["c"],"index":2}]
 
 # Lookbehind assertions
 
-(?<=([ab]+)([bc]+))$		(?<=([ab]+)([bc]+))$	abc	[{"captures":["","a","bc"],"index":3}]
-(?<=([ab]+)([bc]+))$	u	"(?<=((?:[\\x61\\x62])+)((?:[\\x62\\x63])+))$"	abc	[{"captures":["","a","bc"],"index":3}]
+(?<=([ab]+)([bc]+))$		"(?<=([ab]+)([bc]+))\\z"	abc	[{"captures":["","a","bc"],"index":3}]
+(?<=([ab]+)([bc]+))$	u	"(?<=((?:[\\x61\\x62])+)((?:[\\x62\\x63])+))\\z"	abc	[{"captures":["","a","bc"],"index":3}]
 (?<=([ab]+)([bc]+))$	v	)inconvertible(	abc	[{"captures":["","a","bc"],"index":3}]
 
 (?<=\$)\d+(?:\.\d*)?		"(?<=\\$)\\d+(?:\\.\\d*)?"	$10.53	[{"captures":["10.53"],"index":1}]
@@ -3930,8 +3972,8 @@ c\b	v	)inconvertible(	abc	[{"captures":["c"],"index":2}]
 
 ## Basic multiline modifier
 (?m:^a)		"(?:(?<=[\n\r\u2028\u2029]|^)a)"	"b\na"	[{"captures":["a"],"index":2}]
-(?m:a$)		"(?:a(?=[\n\r\u2028\u2029]|$))"	"a\nb"	[{"captures":["a"],"index":0}]
-(?m:^a$)		"(?:(?<=[\n\r\u2028\u2029]|^)a(?=[\n\r\u2028\u2029]|$))"	"b\na\nb"	[{"captures":["a"],"index":2}]
+(?m:a$)		"(?:a(?=[\n\r\u2028\u2029]|\\z))"	"a\nb"	[{"captures":["a"],"index":0}]
+(?m:^a$)		"(?:(?<=[\n\r\u2028\u2029]|^)a(?=[\n\r\u2028\u2029]|\\z))"	"b\na\nb"	[{"captures":["a"],"index":2}]
 
 ## Basic dotAll modifier
 (?s:.)		"(?:[\\s\\S])"	"\n"	[{"captures":["\n"],"index":0}]
@@ -4307,7 +4349,7 @@ a(?i:b)c		a(?i:b)c	abc	[{"captures":["abc"],"index":0}]
 ^[\\d--\\d]+$	u	)syntax-error(	012abc	"Range out of order in character class"
 ^[\\d--\\d]+$	v	)syntax-error(	012abc	"Invalid set operation in character class"
 
-^[\d--\d]+$		"^[\\d\\x2D\\x2D\\d]+$"	012abc	[]
+^[\d--\d]+$		"^[\\d\\x2D\\x2D\\d]+\\z"	012abc	[]
 ^[\d--\d]+$	u	)syntax-error(	012abc	"Invalid character class"
 ^[\d--\d]+$	v	)inconvertible(	012abc	[]
 

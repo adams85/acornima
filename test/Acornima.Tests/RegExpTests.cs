@@ -161,8 +161,8 @@ public partial class RegExpTests
         var noNl = "[^\n\r\u2028\u2029]";
 
         // multiline modifier: ^/$ get rewritten to lookaround inside the group, plain outside
-        AssertConversion("(?m:^a$)", "", $"(?:(?<={nl}|^)a(?={nl}|$))");
-        AssertConversion("^(?m:^a$)$", "", $"^(?:(?<={nl}|^)a(?={nl}|$))$");
+        AssertConversion("(?m:^a$)", "", $"(?:(?<={nl}|^)a(?={nl}|\\z))");
+        AssertConversion("^(?m:^a$)$", "", $"^(?:(?<={nl}|^)a(?={nl}|\\z))\\z");
 
         // dotAll modifier: . gets rewritten to [\s\S] inside the group, [^\n\r\u2028\u2029] outside
         AssertConversion("(?s:.).", "", $"(?:[\\s\\S]){noNl}");

@@ -621,9 +621,11 @@ public partial class Tokenizer
                     case '$':
                         if (sb is not null)
                         {
+                            // NOTE: The semantics of $ is slightly different in .NET: it requires the match to occur at the end of the string
+                            // or before \n at the end of the input string. We need to use \z to match the JS behavior.
                             _ = (_effectiveFlags & RegExpFlags.Multiline) != 0
-                                ? sb.Append("(?=").Append(MatchNewLineRegex).Append('|').Append(ch).Append(')')
-                                : sb.Append(ch);
+                                ? sb.Append("(?=").Append(MatchNewLineRegex).Append('|').Append(@"\z").Append(')')
+                                : sb.Append(@"\z");
                         }
 
                         SetFollowingQuantifierError(RegExpNothingToRepeat);
