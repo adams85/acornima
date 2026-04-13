@@ -673,6 +673,15 @@ namespace Acornima {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid regular expression: /{0}/{1}: \ at end of pattern.
+        /// </summary>
+        internal static string RegExpEscapeAtEndOfPattern {
+            get {
+                return ResourceManager.GetString("RegExpEscapeAtEndOfPattern", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid regular expression: /{0}/{1}: Incomplete quantifier.
         /// </summary>
         internal static string RegExpIncompleteQuantifier {

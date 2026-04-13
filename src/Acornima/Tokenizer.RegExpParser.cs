@@ -677,7 +677,11 @@ public partial class Tokenizer
                         break;
 
                     case '\\':
-                        Debug.Assert(i + 1 < _pattern.Length, "Unexpected end of escape sequence in regular expression.");
+                        if (i + 1 >= _pattern.Length)
+                        {
+                            ReportSyntaxError(i, RegExpEscapeAtEndOfPattern);
+                        }
+
                         if (!mode.AdjustEscapeSequence(this, out conversionError))
                         {
                             return null;

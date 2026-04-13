@@ -102,20 +102,25 @@ public partial class RegExpTests
         }
     }
 
-    [InlineData("ab?c", "u", true)]
-    [InlineData("ab|?c", "u", false)]
-    [InlineData("\\1a(b?)c", "u", true)]
+    [InlineData("\\", "", nameof(SyntaxErrorMessages.RegExpEscapeAtEndOfPattern))]
+    [InlineData("\\\\", "", null)]
+    [InlineData("\\\\\\", "", nameof(SyntaxErrorMessages.RegExpEscapeAtEndOfPattern))]
+    [InlineData("a\\", "", nameof(SyntaxErrorMessages.RegExpEscapeAtEndOfPattern))]
+    [InlineData("ab?c", "u", null)]
+    [InlineData("ab|?c", "u", nameof(SyntaxErrorMessages.RegExpNothingToRepeat))]
+    [InlineData("\\1a(b?)c", "u", null)]
     [Theory]
-    public void ValidateRegExpShouldWork(string pattern, string flags, bool expectedResult)
+    public void ValidateRegExpShouldWork(string pattern, string flags, string? expectedErrorCode)
     {
-        Assert.Equal(expectedResult, Tokenizer.ValidateRegExp(pattern, flags, out var error));
-        if (expectedResult)
+        Assert.Equal(expectedErrorCode is null, Tokenizer.ValidateRegExp(pattern, flags, out var error));
+        if (expectedErrorCode is null)
         {
             Assert.Null(error);
         }
         else
         {
             Assert.NotNull(error);
+            Assert.Equal(expectedErrorCode, error.Code);
         }
     }
 

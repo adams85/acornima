@@ -386,6 +386,10 @@
     <value>Invalid regular expression: /{0}/{1}: Duplicate capture group name</value>
     <comment>https://github.com/v8/v8/blob/14.8.3/src/regexp/regexp-error.h</comment>
   </data>
+  <data name="RegExpEscapeAtEndOfPattern" xml:space="preserve">
+    <value>Invalid regular expression: /{0}/{1}: \ at end of pattern</value>
+    <comment>https://github.com/v8/v8/blob/14.8.3/src/regexp/regexp-error.h</comment>
+  </data>
   <data name="RegExpIncompleteQuantifier" xml:space="preserve">
     <value>Invalid regular expression: /{0}/{1}: Incomplete quantifier</value>
     <comment>https://github.com/v8/v8/blob/14.8.3/src/regexp/regexp-error.h</comment>
