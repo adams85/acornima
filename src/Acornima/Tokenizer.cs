@@ -1938,7 +1938,7 @@ public sealed partial class Tokenizer : ITokenizer
     /// Checks whether an ECMAScript regular expression is syntactically correct.
     /// </summary>
     /// <returns><see langword="true"/> if the regular expression is syntactically correct, otherwise <see langword="false"/>.</returns>
-    public static bool ValidateRegExp(string pattern, string flags, out ParseError? error,
+    public static bool ValidateRegExp(string pattern, string flags, [NotNullWhen(false)] out ParseError? error,
         EcmaVersion ecmaVersion = EcmaVersion.Latest, ExperimentalESFeatures experimentalESFeatures = ExperimentalESFeatures.None)
     {
         if (pattern is null)
