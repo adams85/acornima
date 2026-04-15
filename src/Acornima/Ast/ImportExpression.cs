@@ -6,20 +6,25 @@ namespace Acornima.Ast;
 public sealed partial class ImportExpression : Expression
 {
     public ImportExpression(Expression source)
-        : this(source, null) { }
+        : this(source, null, ImportPhase.None) { }
 
     public ImportExpression(Expression source, Expression? options)
+        : this(source, options, ImportPhase.None) { }
+
+    public ImportExpression(Expression source, Expression? options, ImportPhase phase)
         : base(NodeType.ImportExpression)
     {
         Source = source;
         Options = options;
+        Phase = phase;
     }
 
     public Expression Source { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public Expression? Options { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
+    public ImportPhase Phase { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-    private static ImportExpression Rewrite(Expression source, Expression? options)
+    private ImportExpression Rewrite(Expression source, Expression? options)
     {
-        return new ImportExpression(source, options);
+        return new ImportExpression(source, options, Phase);
     }
 }

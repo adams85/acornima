@@ -10,6 +10,8 @@ public abstract partial class Test262Test
     private static readonly string[] s_testableExperimentalFeatures = new[]
     {
         "decorators",
+        "source-phase-imports",
+        "import-defer",
     };
 
     public static bool TestsExperimentalFeature(Test262File file)

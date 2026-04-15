@@ -475,13 +475,13 @@ internal sealed class TestRewriter : JsxAstRewriter
     protected internal override object? VisitImportDeclaration(ImportDeclaration importDeclaration)
     {
         return ForceNewObjectByControlType((ImportDeclaration)base.VisitImportDeclaration(importDeclaration)!,
-            node => new ImportDeclaration(node.Specifiers, node.Source, importDeclaration.Attributes));
+            node => new ImportDeclaration(node.Specifiers, node.Source, importDeclaration.Attributes, importDeclaration.Phase));
     }
 
     protected internal override object? VisitImportExpression(ImportExpression importExpression)
     {
         return ForceNewObjectByControlType((ImportExpression)base.VisitImportExpression(importExpression)!,
-            node => new ImportExpression(node.Source, node.Options));
+            node => new ImportExpression(node.Source, node.Options, importExpression.Phase));
     }
 
     protected internal override object? VisitImportNamespaceSpecifier(ImportNamespaceSpecifier importNamespaceSpecifier)

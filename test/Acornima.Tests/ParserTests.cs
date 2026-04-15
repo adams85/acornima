@@ -2608,4 +2608,133 @@ public partial class ParserTests
             _ => throw new InvalidOperationException()
         };
     }
+
+    #region Import Phases
+
+    private static Parser CreateImportPhasesParser()
+    {
+        return new Parser(new ParserOptions { ExperimentalESFeatures = ExperimentalESFeatures.SourcePhaseImports | ExperimentalESFeatures.DeferImportEvaluation });
+    }
+
+    [Theory]
+    [InlineData("import source x from 'mod';")]
+    [InlineData("import source source from 'mod';")]
+    [InlineData("import source from from 'mod';")]
+    public void SourcePhaseImport_ValidStaticForms(string code)
+    {
+        var parser = CreateImportPhasesParser();
+        var module = parser.ParseModule(code);
+        var decl = Assert.IsType<ImportDeclaration>(Assert.Single(module.Body));
+        Assert.Equal(ImportPhase.Source, decl.Phase);
+        Assert.Single(decl.Specifiers);
+        Assert.IsType<ImportDefaultSpecifier>(decl.Specifiers[0]);
+    }
+
+    [Theory]
+    [InlineData("import source from 'mod';", 1)]
+    [InlineData("import source, { x } from 'mod';", 2)]
+    [InlineData("import source, * as ns from 'mod';", 2)]
+    public void SourcePhaseImport_RegularImportWithSourceAsBinding(string code, int expectedSpecifierCount)
+    {
+        var parser = CreateImportPhasesParser();
+        var module = parser.ParseModule(code);
+        var decl = Assert.IsType<ImportDeclaration>(Assert.Single(module.Body));
+        Assert.Equal(ImportPhase.None, decl.Phase);
+        Assert.Equal(expectedSpecifierCount, decl.Specifiers.Count);
+        var spec = Assert.IsType<ImportDefaultSpecifier>(decl.Specifiers[0]);
+        Assert.Equal("source", spec.Local.Name);
+    }
+
+    [Theory]
+    [InlineData("import source { x } from 'mod';")]
+    [InlineData("import source * as ns from 'mod';")]
+    [InlineData("import source 'mod';")]
+    [InlineData("import source x, y from 'mod';")]
+    public void SourcePhaseImport_InvalidStaticForms(string code)
+    {
+        var parser = CreateImportPhasesParser();
+        Assert.Throws<SyntaxErrorException>(() => parser.ParseModule(code));
+    }
+
+    [Theory]
+    [InlineData("import defer * as ns from 'mod';")]
+    [InlineData("import defer * as ns from 'mod' with { };")]
+    public void ImportDefer_ValidStaticForms(string code)
+    {
+        var parser = CreateImportPhasesParser();
+        var module = parser.ParseModule(code);
+        var decl = Assert.IsType<ImportDeclaration>(Assert.Single(module.Body));
+        Assert.Equal(ImportPhase.Defer, decl.Phase);
+        Assert.Single(decl.Specifiers);
+        Assert.IsType<ImportNamespaceSpecifier>(decl.Specifiers[0]);
+    }
+
+    [Theory]
+    [InlineData("import defer from 'mod';", 1)]
+    [InlineData("import defer, { x } from 'mod';", 2)]
+    [InlineData("import defer, * as ns from 'mod';", 2)]
+    public void ImportDefer_RegularImportWithDeferAsBinding(string code, int expectedSpecifierCount)
+    {
+        var parser = CreateImportPhasesParser();
+        var module = parser.ParseModule(code);
+        var decl = Assert.IsType<ImportDeclaration>(Assert.Single(module.Body));
+        Assert.Equal(ImportPhase.None, decl.Phase);
+        Assert.Equal(expectedSpecifierCount, decl.Specifiers.Count);
+        var spec = Assert.IsType<ImportDefaultSpecifier>(decl.Specifiers[0]);
+        Assert.Equal("defer", spec.Local.Name);
+    }
+
+    [Theory]
+    [InlineData("import defer x from 'mod';")]
+    [InlineData("import defer { x } from 'mod';")]
+    [InlineData("import defer x, * as ns from 'mod';")]
+    [InlineData("export defer * as ns from 'mod';")]
+    public void ImportDefer_InvalidStaticForms(string code)
+    {
+        var parser = CreateImportPhasesParser();
+        Assert.Throws<SyntaxErrorException>(() => parser.ParseModule(code));
+    }
+
+    [Theory]
+    [InlineData("import.source('mod')")]
+    [InlineData("import.defer('mod')")]
+    [InlineData("import.defer('mod', { with: { type: 'json' } })")]
+    public void DynamicImportPhase_ValidForms(string code)
+    {
+        var parser = CreateImportPhasesParser();
+        var program = parser.ParseScript(code);
+        var stmt = (ExpressionStatement)Assert.Single(program.Body);
+        var expr = Assert.IsType<ImportExpression>(stmt.Expression);
+        Assert.NotEqual(ImportPhase.None, expr.Phase);
+    }
+
+    [Theory]
+    [InlineData("import.source()")]
+    [InlineData("import.defer()")]
+    [InlineData("import.source('mod', { with: { type: 'json' } })")]
+    [InlineData("new import.source('mod')")]
+    [InlineData("new import.defer('mod')")]
+    [InlineData("import.source(...['mod'])")]
+    [InlineData("import.defer(...['mod'])")]
+    [InlineData("import.UNKNOWN('mod')")]
+    public void DynamicImportPhase_InvalidForms(string code)
+    {
+        var parser = CreateImportPhasesParser();
+        Assert.Throws<SyntaxErrorException>(() => parser.ParseScript(code));
+    }
+
+    [Fact]
+    public void SourcePhaseImport_NotEnabledWithoutFlag()
+    {
+        var parser = new Parser();
+        // Without the flag, `source` is just a binding name
+        var module = parser.ParseModule("import source from 'mod';");
+        var decl = Assert.IsType<ImportDeclaration>(Assert.Single(module.Body));
+        Assert.Equal(ImportPhase.None, decl.Phase);
+
+        // import.source is rejected without the flag
+        Assert.Throws<SyntaxErrorException>(() => parser.ParseScript("import.source('mod')"));
+    }
+
+    #endregion
 }

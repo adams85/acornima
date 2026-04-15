@@ -184,6 +184,15 @@ public class AstToJsonConverter : AstVisitor
         Member(name, value);
     }
 
+    protected void Member(string name, ImportPhase phase)
+    {
+        var value = phase is >= ImportPhase.None and <= ImportPhase.Defer
+            ? ImportDeclaration.GetImportPhaseToken(phase)
+            : "unknown";
+
+        Member(name, value);
+    }
+
     protected void Member<T>(string name, in NodeList<T> nodes) where T : Node?
     {
         Member(name);
@@ -642,6 +651,10 @@ public class AstToJsonConverter : AstVisitor
         {
             Member("specifiers", node.Specifiers);
             Member("source", node.Source);
+            if (node.Phase != ImportPhase.None)
+            {
+                Member("phase", node.Phase);
+            }
             if (node.Attributes.Count > 0)
             {
                 Member("attributes", node.Attributes);
@@ -666,6 +679,10 @@ public class AstToJsonConverter : AstVisitor
         using (StartNodeObject(node))
         {
             Member("source", node.Source);
+            if (node.Phase != ImportPhase.None)
+            {
+                Member("phase", node.Phase);
+            }
 
             if (node.Options is not null)
             {

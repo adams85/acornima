@@ -2123,22 +2123,49 @@ public partial class Parser
         Next();
 
         NodeList<ImportDeclarationSpecifier> specifiers;
+        var phase = ImportPhase.None;
 
         if (_tokenizer._type == TokenType.String)
         {
             // import '...'
             specifiers = default;
-        }
-        else
-        {
-            specifiers = ParseImportSpecifiers();
-            ExpectContextual("from");
-            if (_tokenizer._type != TokenType.String)
-            {
-                Unexpected();
-            }
+            goto ParseSource;
         }
 
+        if (_tokenizerOptions.AllowSourcePhaseImports()
+            && IsContextual("source")
+            && !IsSourcePhaseAmbiguousAsDefaultImport())
+        {
+            phase = ImportPhase.Source;
+            Next();
+
+            // import source <binding> from "<specifier>"
+            // Source phase only allows a single default binding (ImportedBinding).
+            var nodes = new ArrayList<ImportDeclarationSpecifier>();
+            nodes.Add(ParseImportDefaultSpecifier());
+            specifiers = NodeList.From(ref nodes);
+
+            goto ParseFrom;
+        }
+
+        if (_tokenizerOptions.AllowDeferImportEvaluation()
+            && IsContextual("defer")
+            && IsDeferNamespaceImport())
+        {
+            phase = ImportPhase.Defer;
+            Next();
+        }
+
+        specifiers = ParseImportSpecifiers();
+
+    ParseFrom:
+        ExpectContextual("from");
+        if (_tokenizer._type != TokenType.String)
+        {
+            Unexpected();
+        }
+
+    ParseSource:
         var source = ParseExprAtom(ref NullRef<DestructuringErrors>()).As<StringLiteral>();
         var attributes = _tokenizerOptions.AllowImportAttributes()
             ? ParseImportAttributes()
@@ -2146,7 +2173,48 @@ public partial class Parser
 
         Semicolon();
 
-        return FinishNode(startMarker, new ImportDeclaration(specifiers, source, NodeList.From(ref attributes)));
+        return FinishNode(startMarker, new ImportDeclaration(specifiers, source, NodeList.From(ref attributes), phase));
+    }
+
+    // Disambiguation for `import source X from "mod"` (source-phase import) vs regular imports where `source` is just a binding name.
+    // Returns true if `source` is the binding name of a regular default import.
+    // Regular import cases: `import source from "mod"`, `import source, { x } from "mod"`, `import source, * as ns from "mod"`.
+    private bool IsSourcePhaseAmbiguousAsDefaultImport()
+    {
+        var next = _tokenizer.NextTokenPosition(out var nextLine, out var nextLineStart);
+
+        // `import source, ...` — source is a default binding followed by additional specifiers.
+        // Source-phase imports never have a comma after the phase keyword.
+        if (_tokenizer.CharCodeAt(next) == ',')
+        {
+            return true;
+        }
+
+        var fromEndPos = next + 4 /* "from".Length */;
+        int after;
+
+        // Check if the next token after the phase keyword is "from"
+        if (fromEndPos < _tokenizer._endPosition
+            && _tokenizer._input.SliceBetween(next, fromEndPos) is "from"
+            && !Tokenizer.IsIdentifierChar(after = _tokenizer.FullCharCodeAt(fromEndPos), allowAstral: true)
+            && after != '\\')
+        {
+            // Check if the token after "from" is a string literal: `import source from "mod"`
+            next = _tokenizer.NextTokenPositionAt(fromEndPos, ref nextLine, ref nextLineStart);
+            if (_tokenizer.CharCodeAt(next) is '"' or '\'')
+            {
+                return true; // `import source from "mod"` — regular default import
+            }
+        }
+
+        return false; // source-phase import
+    }
+
+    // Returns true if `import defer *` is followed by `*`, indicating a deferred namespace import.
+    private bool IsDeferNamespaceImport()
+    {
+        var next = _tokenizer.NextTokenPosition(out _, out _);
+        return _tokenizer.CharCodeAt(next) == '*';
     }
 
     private ImportSpecifier ParseImportSpecifier()

@@ -1062,6 +1062,11 @@ public partial class AstToJavaScriptConverter : AstVisitor
     {
         Writer.WriteKeyword("import", TokenFlags.SurroundingSpaceRecommended, ref _writeContext);
 
+        if (node.Phase != ImportPhase.None)
+        {
+            Writer.WriteKeyword(ImportDeclaration.GetImportPhaseToken(node.Phase)!, TokenFlags.TrailingSpaceRecommended, ref _writeContext);
+        }
+
         // Specifiers need special care because of the unusual syntax.
 
         _writeContext.SetNodeProperty(nameof(node.Specifiers), static node => ref node.As<ImportDeclaration>().Specifiers);
@@ -1138,6 +1143,12 @@ public partial class AstToJavaScriptConverter : AstVisitor
     protected internal override object? VisitImportExpression(ImportExpression node)
     {
         Writer.WriteKeyword("import", ref _writeContext);
+
+        if (node.Phase != ImportPhase.None)
+        {
+            Writer.WritePunctuator(".", TokenFlags.InBetween, ref _writeContext);
+            Writer.WriteKeyword(ImportDeclaration.GetImportPhaseToken(node.Phase)!, ref _writeContext);
+        }
 
         Writer.WritePunctuator("(", TokenFlags.Leading, ref _writeContext);
 

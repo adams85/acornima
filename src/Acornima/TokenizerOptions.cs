@@ -155,4 +155,18 @@ public record class TokenizerOptions
             || _ecmaVersion >= EcmaVersion.ES9 && (_experimentalESFeatures & ExperimentalESFeatures.RegExpModifiers) != 0;
 #pragma warning restore CS0618 // Type or member is obsolete
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal bool AllowSourcePhaseImports()
+    {
+        // NOTE: Dynamic import, which is part of this feature, is only available since ES2020.
+        return _ecmaVersion >= EcmaVersion.ES11 && (_experimentalESFeatures & ExperimentalESFeatures.SourcePhaseImports) != 0;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal bool AllowDeferImportEvaluation()
+    {
+        // NOTE: Dynamic import, which is part of this feature, is only available since ES2020.
+        return _ecmaVersion >= EcmaVersion.ES11 && (_experimentalESFeatures & ExperimentalESFeatures.DeferImportEvaluation) != 0;
+    }
 }
