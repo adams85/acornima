@@ -367,11 +367,29 @@ namespace Acornima {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot use new with {0}.
+        /// </summary>
+        internal static string ImportCallNotNewExpression {
+            get {
+                return ResourceManager.GetString("ImportCallNotNewExpression", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot use &apos;import.meta&apos; outside a module.
         /// </summary>
         internal static string ImportMetaOutsideModule {
             get {
                 return ResourceManager.GetString("ImportMetaOutsideModule", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} requires a specifier.
+        /// </summary>
+        internal static string ImportMissingSpecifier {
+            get {
+                return ResourceManager.GetString("ImportMissingSpecifier", resourceCulture);
             }
         }
         

@@ -252,8 +252,16 @@
     <value>Import attributes has duplicate key '{0}'</value>
     <comment>https://github.com/v8/v8/blob/14.8.3/src/common/message-template.h</comment>
   </data>
+  <data name="ImportCallNotNewExpression" xml:space="preserve">
+    <value>Cannot use new with {0}</value>
+    <comment>https://github.com/v8/v8/blob/14.8.3/src/common/message-template.h</comment>
+  </data>
   <data name="ImportMetaOutsideModule" xml:space="preserve">
     <value>Cannot use 'import.meta' outside a module</value>
+    <comment>https://github.com/v8/v8/blob/14.8.3/src/common/message-template.h</comment>
+  </data>
+  <data name="ImportMissingSpecifier" xml:space="preserve">
+    <value>{0} requires a specifier</value>
     <comment>https://github.com/v8/v8/blob/14.8.3/src/common/message-template.h</comment>
   </data>
   <data name="ImportOutsideModule" xml:space="preserve">

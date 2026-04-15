@@ -100,7 +100,7 @@ public partial class Parser
         {
             // We deviate a bit from the original acornjs implementation here to match the error reporting behavior of V8.
             if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES8
-                && _tokenizer._input.SliceBetween(_tokenizer._lastTokenStart, _tokenizer._lastTokenEnd).SequenceEqual("await".AsSpan()) && !CanAwait)
+                && _tokenizer._input.SliceBetween(_tokenizer._lastTokenStart, _tokenizer._lastTokenEnd) is "await" && !CanAwait)
             {
                 Raise(_tokenizer._lastTokenStart, AwaitNotInAsyncContext);
             }

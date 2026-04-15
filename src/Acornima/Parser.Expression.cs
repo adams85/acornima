@@ -572,7 +572,7 @@ public partial class Parser
         }
 
         if (expr.Type == NodeType.ArrowFunctionExpression
-            && !_tokenizer._input.SliceBetween(_tokenizer._lastTokenStart, _tokenizer._lastTokenEnd).SequenceEqual(")".AsSpan()))
+            && _tokenizer._input.SliceBetween(_tokenizer._lastTokenStart, _tokenizer._lastTokenEnd) is not ")")
         {
             return expr;
         }
@@ -984,59 +984,100 @@ public partial class Parser
 
         Next();
 
-        if (_tokenizer._type == TokenType.ParenLeft && (context & ExpressionContext.ForNew) == 0)
+        ImportExpression? import;
+        if (_tokenizer._type == TokenType.ParenLeft)
         {
-            return ParseDynamicImport(startMarker);
+            import = ParseDynamicImport(startMarker);
         }
         else if (_tokenizer._type == TokenType.Dot)
         {
             var meta = FinishNode(startMarker, new Identifier(TokenType.Import.Label));
-
-            return ParseImportMetaOrPhase(startMarker, meta, context);
+            var expr = ParseImportMetaOrPhase(startMarker, meta, context);
+            import = expr as ImportExpression;
+            if (import is null)
+            {
+                return expr;
+            }
         }
         else
         {
             return Unexpected<Expression>();
         }
+
+        if ((context & ExpressionContext.ForNew) != 0)
+        {
+            // Unexpected(); // original acornjs error reporting
+            var importExpr = "import" + (import.Phase == ImportPhase.None ? string.Empty : ".") + ImportDeclaration.GetImportPhaseToken(import.Phase);
+            Raise(import.Start, ImportCallNotNewExpression, new[] { importExpr });
+        }
+
+        return import;
     }
 
-    private ImportExpression ParseDynamicImport(in Marker startMarker)
+    private ImportExpression ParseDynamicImport(in Marker startMarker, ImportPhase phase = ImportPhase.None)
     {
-        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/expression.js > `pp.parseDynamicImport = function`
+        // https://github.com/acornjs/acorn/blob/e37a9c31423db95ee8de97a2e645a702240e2aa8/acorn/src/expression.js > `pp.parseDynamicImport = function`
 
         Next(); // skip `(`
+
+        if (_tokenizer._type == TokenType.ParenRight)
+        {
+            // Unexpected(); // original acornjs error reporting
+            var importExpr = "import" + (phase == ImportPhase.None ? string.Empty : ".") + ImportDeclaration.GetImportPhaseToken(phase);
+            Raise(_tokenizer._lastTokenStart, ImportMissingSpecifier, new object[] { importExpr });
+        }
 
         // Parse node.source.
         var source = ParseMaybeAssign(ref NullRef<DestructuringErrors>());
 
         Expression? options = null;
-        if (_tokenizerOptions.AllowImportAttributes()
-            && Eat(TokenType.Comma) && _tokenizer._type != TokenType.ParenRight)
+        if (!Eat(TokenType.ParenRight))
         {
-            options = ParseMaybeAssign(ref NullRef<DestructuringErrors>());
-            if (Eat(TokenType.Comma))
+            if (phase == ImportPhase.None && _tokenizerOptions.AllowImportAttributes()
+                || phase == ImportPhase.Defer)
             {
-                AfterTrailingComma(TokenType.ParenRight, notNext: true);
-            }
-            Expect(TokenType.ParenRight);
-        }
-        // Verify ending.
-        else if (!Eat(TokenType.ParenRight))
-        {
-            var errorState = new TokenState(_tokenizer);
+                Expect(TokenType.Comma);
 
-            if (Eat(TokenType.Comma) && Eat(TokenType.ParenRight))
-            {
-                // RaiseRecoverable(errorPos, "Trailing comma is not allowed in import()"); // original acornjs error reporting
-                RaiseRecoverable(errorState.Position, errorState.TokenType, errorState.TokenValue);
+                if (!AfterTrailingComma(TokenType.ParenRight))
+                {
+                    options = ParseMaybeAssign(ref NullRef<DestructuringErrors>());
+
+                    if (!Eat(TokenType.ParenRight))
+                    {
+                        Expect(TokenType.Comma);
+
+                        if (!AfterTrailingComma(TokenType.ParenRight))
+                        {
+                            Unexpected();
+                        }
+                    }
+                }
             }
             else
             {
-                Unexpected(errorState);
+                // Verify ending.
+
+                // Original acornjs implementation.
+                //var errorState = new TokenState(_tokenizer);
+
+                //if (Eat(TokenType.Comma) && Eat(TokenType.ParenRight))
+                //{
+                //    RaiseRecoverable(errorPos, "Trailing comma is not allowed in import()"); // original acornjs error reporting
+                //}
+                //else
+                //{
+                //    Unexpected(errorState);
+                //}
+
+                if (!Eat(TokenType.Comma)
+                    || !AfterTrailingComma(TokenType.ParenRight, isAllowed: phase != ImportPhase.None))
+                {
+                    Unexpected();
+                }
             }
         }
 
-        return FinishNode(startMarker, new ImportExpression(source, options, ImportPhase.None));
+        return FinishNode(startMarker, new ImportExpression(source, options, phase));
     }
 
     private Expression ParseImportMetaOrPhase(in Marker startMarker, Identifier meta, ExpressionContext context)
@@ -1064,81 +1105,24 @@ public partial class Parser
             return FinishNode(startMarker, new MetaProperty(meta, property));
         }
 
-        if (_tokenizerOptions.AllowSourcePhaseImports() && property.Name == "source")
+        if (_tokenizerOptions.AllowSourcePhaseImports() && property.Name == "source"
+            || _tokenizerOptions.AllowDeferImportEvaluation() && property.Name == "defer")
         {
             if (containsEsc)
             {
-                RaiseRecoverable(property.Start, InvalidEscapedMetaProperty, new object[] { "import.source" });
+                var importExpr = string.Concat("import", ".", property.Name);
+                RaiseRecoverable(property.Start, InvalidEscapedMetaProperty, new object[] { importExpr });
             }
-            return ParseDynamicImportPhase(startMarker, ImportPhase.Source, context);
-        }
-
-        if (_tokenizerOptions.AllowDeferImportEvaluation() && property.Name == "defer")
-        {
-            if (containsEsc)
+            if (_tokenizer._type != TokenType.ParenLeft)
             {
-                RaiseRecoverable(property.Start, InvalidEscapedMetaProperty, new object[] { "import.defer" });
+                Unexpected();
             }
-            return ParseDynamicImportPhase(startMarker, ImportPhase.Defer, context);
+            return ParseDynamicImport(startMarker, property.Name[0] == 's' ? ImportPhase.Source : ImportPhase.Defer);
         }
 
         // RaiseRecoverable(property.Start, "The only valid meta property for import is 'import.meta'"); // original acornjs error reporting
         Unexpected(property.Start, TokenType.Name, property.Name);
         return default!; // unreachable, just to keep the compiler happy
-    }
-
-    private ImportExpression ParseDynamicImportPhase(in Marker startMarker, ImportPhase phase, ExpressionContext context)
-    {
-        if ((context & ExpressionContext.ForNew) != 0)
-        {
-            Unexpected();
-        }
-
-        Expect(TokenType.ParenLeft);
-
-        if (_tokenizer._type == TokenType.ParenRight)
-        {
-            Unexpected();
-        }
-
-        if (_tokenizer._type == TokenType.Ellipsis)
-        {
-            Unexpected();
-        }
-
-        // Parse node.source.
-        var source = ParseMaybeAssign(ref NullRef<DestructuringErrors>());
-
-        // import.source() takes exactly one argument (per tc39.es/proposal-source-phase-imports).
-        // import.defer() reuses ImportCallArguments, so it takes an optional second argument (per tc39.es/proposal-defer-import-eval).
-        Expression? options = null;
-        if (phase == ImportPhase.Defer
-            && _tokenizerOptions.AllowImportAttributes()
-            && Eat(TokenType.Comma) && _tokenizer._type != TokenType.ParenRight)
-        {
-            options = ParseMaybeAssign(ref NullRef<DestructuringErrors>());
-            if (Eat(TokenType.Comma))
-            {
-                AfterTrailingComma(TokenType.ParenRight, notNext: true);
-            }
-            Expect(TokenType.ParenRight);
-        }
-        // Verify ending.
-        else if (!Eat(TokenType.ParenRight))
-        {
-            var errorState = new TokenState(_tokenizer);
-
-            if (phase == ImportPhase.Defer && Eat(TokenType.Comma) && Eat(TokenType.ParenRight))
-            {
-                RaiseRecoverable(errorState.Position, errorState.TokenType, errorState.TokenValue);
-            }
-            else
-            {
-                Unexpected(errorState);
-            }
-        }
-
-        return FinishNode(startMarker, new ImportExpression(source, options, phase));
     }
 
     private Expression ParseParenExpression()

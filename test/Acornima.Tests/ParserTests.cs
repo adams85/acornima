@@ -2737,4 +2737,30 @@ public partial class ParserTests
     }
 
     #endregion
+
+    [Theory]
+    [InlineData("import('x')", -1)]
+    [InlineData("import('x',)", 10)]
+    [InlineData("import('x', {})", -1)]
+    [InlineData("import('x', {},)", 14)]
+    [InlineData("import.source('x')", -1)]
+    [InlineData("import.source('x',)", 17)]
+    [InlineData("import.defer('x')", -1)]
+    [InlineData("import.defer('x' ,)", 17)]
+    [InlineData("import.defer('x', {})", -1)]
+    [InlineData("import.defer('x', {},)", 20)]
+    public void DynamicImport_AfterTrailingCommaShouldWork(string input, int expectedTrailingCommaPosition)
+    {
+        var actualTrailingCommaPosition = -1;
+
+        var parser = new Parser(new ParserOptions
+        {
+            OnTrailingComma = (pos, _) => actualTrailingCommaPosition = actualTrailingCommaPosition < 0 ? pos : int.MaxValue,
+            ExperimentalESFeatures = ExperimentalESFeatures.SourcePhaseImports | ExperimentalESFeatures.DeferImportEvaluation
+        });
+
+        parser.ParseScript(input);
+
+        Assert.Equal(expectedTrailingCommaPosition, actualTrailingCommaPosition);
+    }
 }

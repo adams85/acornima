@@ -320,8 +320,7 @@ public partial class Parser
                     if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES10 && startType.Keyword.Value == Keyword.Import)
                     {
                         var next = _tokenizer.NextTokenPosition(out _, out _);
-                        var nextCh = _tokenizer.CharCodeAt(next);
-                        if (nextCh is '(' or '.')
+                        if (_tokenizer.CharCodeAt(next) is '(' or '.')
                         {
                             return ExitRecursion(ParseExpressionStatement(startMarker, ParseExpression(ref NullRef<DestructuringErrors>())));
                         }
