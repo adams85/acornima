@@ -14,7 +14,7 @@ public sealed partial class ObjectExpression : Expression
     }
 
     /// <remarks>
-    /// { <see cref="Property"/> | <see cref="SpreadElement"/> }
+    /// { <see cref="ObjectProperty"/> | <see cref="SpreadElement"/> }
     /// </remarks>
     public ref readonly NodeList<Node> Properties { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref _properties; }
 
