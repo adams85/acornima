@@ -1009,11 +1009,11 @@ public partial class Parser
         // Parse node.source.
         var source = ParseMaybeAssign(ref NullRef<DestructuringErrors>());
 
-        Expression? attributes = null;
+        Expression? options = null;
         if (_tokenizerOptions.AllowImportAttributes()
             && Eat(TokenType.Comma) && _tokenizer._type != TokenType.ParenRight)
         {
-            attributes = ParseMaybeAssign(ref NullRef<DestructuringErrors>());
+            options = ParseMaybeAssign(ref NullRef<DestructuringErrors>());
             if (Eat(TokenType.Comma))
             {
                 AfterTrailingComma(TokenType.ParenRight, notNext: true);
@@ -1036,7 +1036,7 @@ public partial class Parser
             }
         }
 
-        return FinishNode(startMarker, new ImportExpression(source, attributes));
+        return FinishNode(startMarker, new ImportExpression(source, options, ImportPhase.None));
     }
 
     private Expression ParseImportMetaOrPhase(in Marker startMarker, Identifier meta, ExpressionContext context)
@@ -1064,19 +1064,27 @@ public partial class Parser
             return FinishNode(startMarker, new MetaProperty(meta, property));
         }
 
-        if (_tokenizerOptions.AllowSourcePhaseImports() && property.Name == "source" && !containsEsc)
+        if (_tokenizerOptions.AllowSourcePhaseImports() && property.Name == "source")
         {
+            if (containsEsc)
+            {
+                RaiseRecoverable(property.Start, InvalidEscapedMetaProperty, new object[] { "import.source" });
+            }
             return ParseDynamicImportPhase(startMarker, ImportPhase.Source, context);
         }
 
-        if (_tokenizerOptions.AllowImportDefer() && property.Name == "defer" && !containsEsc)
+        if (_tokenizerOptions.AllowDeferImportEvaluation() && property.Name == "defer")
         {
+            if (containsEsc)
+            {
+                RaiseRecoverable(property.Start, InvalidEscapedMetaProperty, new object[] { "import.defer" });
+            }
             return ParseDynamicImportPhase(startMarker, ImportPhase.Defer, context);
         }
 
         // RaiseRecoverable(property.Start, "The only valid meta property for import is 'import.meta'"); // original acornjs error reporting
         Unexpected(property.Start, TokenType.Name, property.Name);
-        return default!; // unreachable
+        return default!; // unreachable, just to keep the compiler happy
     }
 
     private ImportExpression ParseDynamicImportPhase(in Marker startMarker, ImportPhase phase, ExpressionContext context)
@@ -1122,7 +1130,6 @@ public partial class Parser
 
             if (phase == ImportPhase.Defer && Eat(TokenType.Comma) && Eat(TokenType.ParenRight))
             {
-                // RaiseRecoverable(errorPos, "Trailing comma is not allowed in import()"); // original acornjs error reporting
                 RaiseRecoverable(errorState.Position, errorState.TokenType, errorState.TokenValue);
             }
             else

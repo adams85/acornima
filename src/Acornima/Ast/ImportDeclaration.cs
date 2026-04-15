@@ -1,10 +1,21 @@
 using System.Runtime.CompilerServices;
+using Acornima.Helpers;
 
 namespace Acornima.Ast;
+
+using static ExceptionHelper;
 
 [VisitableNode(ChildProperties = new[] { nameof(Specifiers), nameof(Source), nameof(Attributes) })]
 public sealed partial class ImportDeclaration : ImportOrExportDeclaration
 {
+    public static string? GetImportPhaseToken(ImportPhase phase) => phase switch
+    {
+        ImportPhase.None => null,
+        ImportPhase.Source => "source",
+        ImportPhase.Defer => "defer",
+        _ => ThrowArgumentOutOfRangeException(nameof(phase), phase.ToString(), null)
+    };
+
     private readonly NodeList<ImportDeclarationSpecifier> _specifiers;
     private readonly NodeList<ImportAttribute> _attributes;
 

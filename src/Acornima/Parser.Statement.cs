@@ -2122,53 +2122,50 @@ public partial class Parser
 
         Next();
 
+        NodeList<ImportDeclarationSpecifier> specifiers;
         var phase = ImportPhase.None;
+
+        if (_tokenizer._type == TokenType.String)
+        {
+            // import '...'
+            specifiers = default;
+            goto ParseSource;
+        }
 
         if (_tokenizerOptions.AllowSourcePhaseImports()
             && IsContextual("source")
             && !IsSourcePhaseAmbiguousAsDefaultImport())
         {
             phase = ImportPhase.Source;
-            Next(); // consume "source"
-        }
-        else if (_tokenizerOptions.AllowImportDefer()
-            && IsContextual("defer")
-            && IsDeferNamespaceImport())
-        {
-            phase = ImportPhase.Defer;
-            Next(); // consume "defer"
-        }
+            Next();
 
-        NodeList<ImportDeclarationSpecifier> specifiers;
-
-        if (phase == ImportPhase.Source)
-        {
             // import source <binding> from "<specifier>"
             // Source phase only allows a single default binding (ImportedBinding).
             var nodes = new ArrayList<ImportDeclarationSpecifier>();
             nodes.Add(ParseImportDefaultSpecifier());
             specifiers = NodeList.From(ref nodes);
-            ExpectContextual("from");
-            if (_tokenizer._type != TokenType.String)
-            {
-                Unexpected();
-            }
-        }
-        else if (_tokenizer._type == TokenType.String)
-        {
-            // import '...'
-            specifiers = default;
-        }
-        else
-        {
-            specifiers = ParseImportSpecifiers();
-            ExpectContextual("from");
-            if (_tokenizer._type != TokenType.String)
-            {
-                Unexpected();
-            }
+
+            goto ParseFrom;
         }
 
+        if (_tokenizerOptions.AllowDeferImportEvaluation()
+            && IsContextual("defer")
+            && IsDeferNamespaceImport())
+        {
+            phase = ImportPhase.Defer;
+            Next();
+        }
+
+        specifiers = ParseImportSpecifiers();
+
+    ParseFrom:
+        ExpectContextual("from");
+        if (_tokenizer._type != TokenType.String)
+        {
+            Unexpected();
+        }
+
+    ParseSource:
         var source = ParseExprAtom(ref NullRef<DestructuringErrors>()).As<StringLiteral>();
         var attributes = _tokenizerOptions.AllowImportAttributes()
             ? ParseImportAttributes()
@@ -2203,9 +2200,8 @@ public partial class Parser
             && after != '\\')
         {
             // Check if the token after "from" is a string literal: `import source from "mod"`
-            var afterFrom = _tokenizer.NextTokenPositionAt(fromEndPos, ref nextLine, ref nextLineStart);
-            var ch = _tokenizer.CharCodeAt(afterFrom);
-            if (ch is '"' or '\'')
+            next = _tokenizer.NextTokenPositionAt(fromEndPos, ref nextLine, ref nextLineStart);
+            if (_tokenizer.CharCodeAt(next) is '"' or '\'')
             {
                 return true; // `import source from "mod"` — regular default import
             }

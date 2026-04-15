@@ -1064,7 +1064,7 @@ public partial class AstToJavaScriptConverter : AstVisitor
 
         if (node.Phase != ImportPhase.None)
         {
-            Writer.WriteKeyword(node.Phase.GetImportPhaseToken(), TokenFlags.SurroundingSpaceRecommended, ref _writeContext);
+            Writer.WriteKeyword(ImportDeclaration.GetImportPhaseToken(node.Phase)!, TokenFlags.TrailingSpaceRecommended, ref _writeContext);
         }
 
         // Specifiers need special care because of the unusual syntax.
@@ -1147,7 +1147,7 @@ public partial class AstToJavaScriptConverter : AstVisitor
         if (node.Phase != ImportPhase.None)
         {
             Writer.WritePunctuator(".", TokenFlags.InBetween, ref _writeContext);
-            Writer.WriteKeyword(node.Phase.GetImportPhaseToken(), ref _writeContext);
+            Writer.WriteKeyword(ImportDeclaration.GetImportPhaseToken(node.Phase)!, ref _writeContext);
         }
 
         Writer.WritePunctuator("(", TokenFlags.Leading, ref _writeContext);

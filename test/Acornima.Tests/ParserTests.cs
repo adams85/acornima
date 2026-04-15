@@ -2613,7 +2613,7 @@ public partial class ParserTests
 
     private static Parser CreateImportPhasesParser()
     {
-        return new Parser(new ParserOptions { ExperimentalESFeatures = ExperimentalESFeatures.SourcePhaseImports | ExperimentalESFeatures.ImportDefer });
+        return new Parser(new ParserOptions { ExperimentalESFeatures = ExperimentalESFeatures.SourcePhaseImports | ExperimentalESFeatures.DeferImportEvaluation });
     }
 
     [Theory]

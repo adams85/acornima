@@ -42,9 +42,9 @@ public enum ExperimentalESFeatures
     SourcePhaseImports = 1 << 5,
 
     /// <summary>
-    /// Import defer feature as specified by this <seealso href="https://github.com/tc39/proposal-defer-import-eval">proposal</seealso>. Available only when <see cref="ParserOptions.EcmaVersion"/> >= ES2020.
+    /// Deferring module evaluation feature as specified by this <seealso href="https://github.com/tc39/proposal-defer-import-eval">proposal</seealso>. Available only when <see cref="ParserOptions.EcmaVersion"/> >= ES2020.
     /// </summary>
-    ImportDefer = 1 << 6,
+    DeferImportEvaluation = 1 << 6,
 
     All = Decorators
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -54,5 +54,5 @@ public enum ExperimentalESFeatures
         | RegExpModifiers
 #pragma warning restore CS0618 // Type or member is obsolete
         | SourcePhaseImports
-        | ImportDefer
+        | DeferImportEvaluation
 }

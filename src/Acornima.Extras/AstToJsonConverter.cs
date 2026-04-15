@@ -186,16 +186,11 @@ public class AstToJsonConverter : AstVisitor
 
     protected void Member(string name, ImportPhase phase)
     {
-        Member(name);
+        var value = phase is >= ImportPhase.None and <= ImportPhase.Defer
+            ? ImportDeclaration.GetImportPhaseToken(phase)
+            : "unknown";
 
-        if (phase == ImportPhase.None)
-        {
-            _writer.Null();
-        }
-        else
-        {
-            _writer.String(phase.GetImportPhaseToken());
-        }
+        Member(name, value);
     }
 
     protected void Member<T>(string name, in NodeList<T> nodes) where T : Node?

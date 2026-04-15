@@ -164,9 +164,9 @@ public record class TokenizerOptions
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal bool AllowImportDefer()
+    internal bool AllowDeferImportEvaluation()
     {
         // NOTE: Dynamic import, which is part of this feature, is only available since ES2020.
-        return _ecmaVersion >= EcmaVersion.ES11 && (_experimentalESFeatures & ExperimentalESFeatures.ImportDefer) != 0;
+        return _ecmaVersion >= EcmaVersion.ES11 && (_experimentalESFeatures & ExperimentalESFeatures.DeferImportEvaluation) != 0;
     }
 }
