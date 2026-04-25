@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <AssemblyName>Acornima.Tests</AssemblyName>
@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\src\Acornima\Acornima.csproj" />
+    <PackageReference Include="Acornima" VersionOverride="1.*" />
   </ItemGroup>
 
 </Project>
