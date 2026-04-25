@@ -288,10 +288,6 @@ public partial class ParserTests
         var parser = new Parser(new ParserOptions
         {
             OnToken = (in token) => tokens.Add(token),
-#pragma warning disable CS0618 // Type or member is obsolete
-            RegExpParseMode = RegExpParseMode.AdaptToInterpreted,
-            RegexTimeout = TimeSpan.FromSeconds(1)
-#pragma warning restore CS0618 // Type or member is obsolete
         });
 
         var code =
@@ -370,7 +366,6 @@ public partial class ParserTests
         Assert.Equal("a", regExpValue.Pattern);
         Assert.Equal("u", regExpValue.Flags);
         Assert.True(token.RegExpParseResult?.Success);
-        Assert.NotNull(token.RegExpParseResult?.Regex);
         Assert.Equal(Range.From(56, 60), token.Range);
         Assert.Equal(SourceLocation.From(Position.From(3, 23), Position.From(3, 27)), token.Location);
 
