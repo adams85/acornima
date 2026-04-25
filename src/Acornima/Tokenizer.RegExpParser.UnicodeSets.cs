@@ -1,14 +1,11 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Text;
 using Acornima.Helpers;
 
 namespace Acornima;
 
 using static SyntaxErrorMessages;
-
-#pragma warning disable CS0618 // Type or member is obsolete
 
 public partial class Tokenizer
 {
@@ -28,68 +25,37 @@ public partial class Tokenizer
 
             // Outside character classes, flag 'v' behaves like flag 'u'.
 
-            public void ProcessChar(char ch, Action<StringBuilder, char>? appender, RegExpParser parser)
+            public void EatChar(char ch, RegExpParser parser)
             {
-                var pattern = parser._pattern;
-                ref var i = ref parser._index;
-
-                if (ch.IsHighSurrogate() && ((char)pattern.CharCodeAt(i + 1)).IsLowSurrogate())
+                if (ch.IsHighSurrogate())
                 {
-                    i++;
+                    var pattern = parser._pattern;
+                    ref var i = ref parser._index;
+
+                    if (((char)pattern.CharCodeAt(i + 1)).IsLowSurrogate())
+                    {
+                        i++;
+                    }
                 }
             }
 
-            public void ProcessSetSpecialChar(char ch, RegExpParser parser)
+            public void EatSetChar(char ch, RegExpParser parser, int startIndex)
             {
-                Debug.Fail($"{nameof(ProcessSetSpecialChar)} should not be called for {nameof(UnicodeSetsMode)} as {nameof(ParseSet)} handles all set logic.");
+                Debug.Fail($"{nameof(EatSetChar)} should not be called for {nameof(UnicodeSetsMode)} as {nameof(ParseSet)} handles all set logic.");
             }
 
-            public void ProcessSetChar(char ch, Action<StringBuilder, char>? appender, RegExpParser parser, int startIndex)
+            public void EatEscapeSequence(RegExpParser parser)
             {
-                Debug.Fail($"{nameof(ProcessSetChar)} should not be called for {nameof(UnicodeSetsMode)} as {nameof(ParseSet)} handles all set logic.");
-            }
+                Debug.Assert(!parser.WithinSet, $"{nameof(EatEscapeSequence)} should not be called for sets in {nameof(UnicodeSetsMode)} as those escape sequences are handled by {nameof(EatCharacterEscape)} and {nameof(EatCharacterClassEscape)}.");
 
-            public bool RewriteSet(RegExpParser parser)
-            {
-                Debug.Fail($"{nameof(RewriteSet)} should not be called for {nameof(UnicodeSetsMode)} as it is validation only.");
-                return false;
-            }
-
-            public void RewriteDot(RegExpParser parser)
-            {
-                // No-op for this mode as it is validation only.
-            }
-
-            public bool AllowsQuantifierAfterGroup(RegExpGroupType groupType)
-            {
-                // Assertion groups may not be followed by quantifiers.
-                return groupType is not
-                (
-                    RegExpGroupType.LookaheadAssertion or
-                    RegExpGroupType.NegativeLookaheadAssertion or
-                    RegExpGroupType.LookbehindAssertion or
-                    RegExpGroupType.NegativeLookbehindAssertion
-                );
-            }
-
-            public void HandleInvalidRangeQuantifier(RegExpParser parser, int startIndex)
-            {
-                parser.ReportSyntaxError(startIndex, RegExpIncompleteQuantifier);
-            }
-
-            public bool AdjustEscapeSequence(RegExpParser parser, out RegExpConversionError? conversionError)
-            {
-                Debug.Assert(!parser.WithinSet, $"{nameof(AdjustEscapeSequence)} should not be called for sets in {nameof(UnicodeSetsMode)} as those escape sequences are handled by {nameof(EatCharacterEscape)} and {nameof(EatCharacterClassEscape)}.");
-
-                // Since only validation is currently supported for flag 'v', parser._stringBuilder is always null.
-                return UnicodeMode.AdjustEscapeSequence(allowStringProperties: true, parser, out conversionError);
+                UnicodeMode.EatEscapeSequence(allowStringProperties: true, parser);
             }
 
             #region Character class parsing
 
             // Based on: https://github.com/acornjs/acorn/blob/8.16.0/acorn/src/regexp.js
 
-            public bool ParseSet(RegExpParser parser, out RegExpConversionError? conversionError)
+            public void ParseSet(RegExpParser parser)
             {
                 // Parse the entire [...] block recursively.
 
@@ -112,9 +78,6 @@ public partial class Tokenizer
                 }
 
                 parser.ClearFollowingQuantifierError();
-
-                conversionError = null;
-                return true;
             }
 
             // https://tc39.es/ecma262/#prod-ClassSetExpression
@@ -581,7 +544,7 @@ public partial class Tokenizer
                                 var expression = pattern.AsMemory(nameStartIndex, endIndex - nameStartIndex);
 
                                 // First check if it's a valid unicode property (non-string).
-                                if (UnicodeMode.ValidateUnicodeProperty(expression, translateToRanges: false, parser, out _))
+                                if (UnicodeMode.ValidateUnicodeProperty(expression, parser))
                                 {
                                     i = endIndex;
                                     return CharSetOk;
@@ -676,6 +639,23 @@ public partial class Tokenizer
             }
 
             #endregion
+
+            public bool AllowsQuantifierAfterGroup(RegExpGroupType groupType)
+            {
+                // Assertion groups may not be followed by quantifiers.
+                return groupType is not
+                (
+                    RegExpGroupType.LookaheadAssertion or
+                    RegExpGroupType.NegativeLookaheadAssertion or
+                    RegExpGroupType.LookbehindAssertion or
+                    RegExpGroupType.NegativeLookbehindAssertion
+                );
+            }
+
+            public void HandleInvalidRangeQuantifier(RegExpParser parser, int startIndex)
+            {
+                parser.ReportSyntaxError(startIndex, RegExpIncompleteQuantifier);
+            }
         }
     }
 }
