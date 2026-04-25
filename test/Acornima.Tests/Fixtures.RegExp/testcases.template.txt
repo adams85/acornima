@@ -3963,6 +3963,9 @@ c\b	v	abc
 (?i:abc)		ABC
 (?i:abc)		abc
 (?i:abc)		AbC
+(?i:abc)?		ABC
+(?i:abc)?		abc
+(?i:abc)?		AbC
 (?i:abc)	u	ABC
 (?i:abc)	v	ABC
 (?i:abc)	u	abc

@@ -206,36 +206,34 @@ public partial class Tokenizer
 
                     // CharacterEscape -> c ControlLetter
                     case 'c':
-                        if (i + 1 < pattern.Length)
+                        charCode = (ushort)pattern.CharCodeAt(i + 1);
+                        if (((char)charCode).IsBasicLatinLetter())
                         {
-                            if (((char)(charCode = pattern[i + 1])).IsBasicLatinLetter())
+                            charCode = (ushort)(charCode & 0x1Fu); // value is equal to the character code modulo 32
+
+                            if (!parser.WithinSet)
+                            {
+                                parser._appendCharSafe?.Invoke(sb!, (char)charCode);
+                                parser.ClearFollowingQuantifierError();
+                            }
+                            else
+                            {
+                                ProcessSetChar((char)charCode, parser._appendCharSafe, parser, startIndex);
+                            }
+                            i++;
+                            break;
+                        }
+
+                        if (parser.WithinSet)
+                        {
+                            // Within character sets, '_' and decimal digits are also allowed.
+                            if (charCode == '_' || ((char)charCode).IsDecimalDigit())
                             {
                                 charCode = (ushort)(charCode & 0x1Fu); // value is equal to the character code modulo 32
 
-                                if (!parser.WithinSet)
-                                {
-                                    parser._appendCharSafe?.Invoke(sb!, (char)charCode);
-                                    parser.ClearFollowingQuantifierError();
-                                }
-                                else
-                                {
-                                    ProcessSetChar((char)charCode, parser._appendCharSafe, parser, startIndex);
-                                }
+                                ProcessSetChar((char)charCode, parser._appendCharSafe, parser, startIndex);
                                 i++;
                                 break;
-                            }
-
-                            if (parser.WithinSet)
-                            {
-                                // Within character sets, '_' and decimal digits are also allowed.
-                                if ((charCode = pattern[i + 1]) == '_' || ((char)charCode).IsDecimalDigit())
-                                {
-                                    charCode = (ushort)(charCode & 0x1Fu); // value is equal to the character code modulo 32
-
-                                    ProcessSetChar((char)charCode, parser._appendCharSafe, parser, startIndex);
-                                    i++;
-                                    break;
-                                }
                             }
                         }
 
@@ -250,7 +248,7 @@ public partial class Tokenizer
                         }
                         else
                         {
-                            // Unterminated/invalid cases like \c is interpreted as \\c even in character sets:
+                            // Unterminated/invalid cases like \c are interpreted as \\c even in character sets:
                             // /[\c]/ is equivalent to @"[\\c]" (not a typo, this does match both '\' and 'c')
                             sb?.Append('\\');
                             ProcessSetChar('\\', parser._appendChar, parser, startIndex);
@@ -338,7 +336,7 @@ public partial class Tokenizer
                         }
                         else
                         {
-                            // \k escape sequence within character sets is not allowed
+                            // \k escape sequences within character sets are not allowed
                             // (except when there are no named capturing groups; see above).
                             parser.ReportSyntaxError(startIndex, RegExpInvalidEscape);
                         }

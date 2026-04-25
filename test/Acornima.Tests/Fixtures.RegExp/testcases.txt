@@ -1,4 +1,4 @@
-﻿# Generated from testcases.template.txt at 2026-04-13T22:03:04
+﻿# Generated from testcases.template.txt at 2026-04-25T19:47:22
 
 # This file defines test cases for regular expression conversion testing (see RegExpTests.ExecuteTestCase).
 # Each uncommented, non-whitespace line specifies a test case in a tab-delimited format, with the following fields:
@@ -3965,6 +3965,9 @@ c\b	v	)inconvertible(	abc	[{"captures":["c"],"index":2}]
 (?i:abc)		(?i:abc)	ABC	[{"captures":["ABC"],"index":0}]
 (?i:abc)		(?i:abc)	abc	[{"captures":["abc"],"index":0}]
 (?i:abc)		(?i:abc)	AbC	[{"captures":["AbC"],"index":0}]
+(?i:abc)?		(?i:abc)?	ABC	[{"captures":["ABC"],"index":0},{"captures":[""],"index":3}]
+(?i:abc)?		(?i:abc)?	abc	[{"captures":["abc"],"index":0},{"captures":[""],"index":3}]
+(?i:abc)?		(?i:abc)?	AbC	[{"captures":["AbC"],"index":0},{"captures":[""],"index":3}]
 (?i:abc)	u	(?i:abc)	ABC	[{"captures":["ABC"],"index":0}]
 (?i:abc)	v	)inconvertible(	ABC	[{"captures":["ABC"],"index":0}]
 (?i:abc)	u	(?i:abc)	abc	[{"captures":["abc"],"index":0}]

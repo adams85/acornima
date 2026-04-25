@@ -816,7 +816,7 @@ public partial class Tokenizer
                         }
                         else
                         {
-                            // \k escape sequence before ES2018 or within character sets is not allowed.
+                            // \k escape sequences before ES2018 or within character sets are not allowed.
                             parser.ReportSyntaxError(startIndex, RegExpInvalidEscape);
                         }
                         break;

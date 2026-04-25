@@ -62,7 +62,14 @@ public partial class Tokenizer
 
             public bool AllowsQuantifierAfterGroup(RegExpGroupType groupType)
             {
-                return groupType is RegExpGroupType.Capturing or RegExpGroupType.NamedCapturing or RegExpGroupType.NonCapturing;
+                // Assertion groups may not be followed by quantifiers.
+                return groupType is not
+                (
+                    RegExpGroupType.LookaheadAssertion or
+                    RegExpGroupType.NegativeLookaheadAssertion or
+                    RegExpGroupType.LookbehindAssertion or
+                    RegExpGroupType.NegativeLookbehindAssertion
+                );
             }
 
             public void HandleInvalidRangeQuantifier(RegExpParser parser, int startIndex)
