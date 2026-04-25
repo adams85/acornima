@@ -1,6 +1,4 @@
-using System;
 using System.Runtime.CompilerServices;
-using System.Text.RegularExpressions;
 using Acornima.Helpers;
 
 namespace Acornima;
@@ -45,22 +43,6 @@ public record class TokenizerOptions
     /// Defaults to <see langword="null"/>, in which case hashbang comment is allowed if <see cref="EcmaVersion"/> >= ES2023.
     /// </summary>
     public bool? AllowHashBang { get => _allowHashBang; init => _allowHashBang = value; }
-
-#pragma warning disable CS0618 // Type or member is obsolete
-    internal RegExpParseMode _regExpParseMode = RegExpParseMode.Validate;
-    /// <summary>
-    /// Gets or sets how regular expressions should be parsed. Defaults to <see cref="RegExpParseMode.Validate"/>.
-    /// </summary>
-    [Obsolete("This option is deprecated as JS RegExp to .NET Regex conversion will be removed from the library in the next major version. Use the `OnRegExp` option instead.")]
-    public RegExpParseMode RegExpParseMode { get => _regExpParseMode; init => _regExpParseMode = value; }
-#pragma warning restore CS0618 // Type or member is obsolete
-
-    internal TimeSpan _regexTimeout = TimeSpan.FromSeconds(5);
-    /// <summary>
-    /// Gets or sets the default timeout for created <see cref="Regex"/> instances. Defaults to 5 seconds.
-    /// </summary>
-    [Obsolete("This option is deprecated as JS RegExp to .NET Regex conversion will be removed from the library in the next major version.")]
-    public TimeSpan RegexTimeout { get => _regexTimeout; init => _regexTimeout = value; }
 
     internal bool _tolerant;
     /// <summary>

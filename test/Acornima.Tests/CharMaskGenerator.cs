@@ -105,7 +105,7 @@ public class CharMaskGenerator
         {
             var ranges = new ArrayList<CodePointRange>();
 
-            CodePointRange.AddRanges(ref ranges, match, start: 0x10000);
+            CodePointRangeHelper.AddRanges(ref ranges, match, start: 0x10000);
 
             if (ranges.Count == 0)
             {

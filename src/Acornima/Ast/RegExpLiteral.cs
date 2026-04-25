@@ -16,8 +16,9 @@ public sealed class RegExpLiteral : Literal
     }
 
     /// <remarks>
-    /// Can be <see langword="null"/> when the parser was not configured to convert regular expressions to <see cref="Regex"/> objects
-    /// (see also <see cref="ParserOptions.RegExpParseMode"/>) or tolerant parsing was enabled and it was not possible to construct an equivalent <see cref="Regex"/> object.
+    /// Will be <see langword="null"/> unless the parser is configured to convert regular expressions to <see cref="Regex"/> objects
+    /// via <see cref="ParserOptions.OnRegExp"/>. (However, the library offers no built-in conversion. For this purpose,
+    /// you can use a third-party library such as <see href="https://github.com/adams85/regexp2regex">regexp2regex</see>.)
     /// </remarks>
     public new Regex? Value { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ParseResult.Regex; }
 

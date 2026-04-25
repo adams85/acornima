@@ -1,21 +1,21 @@
-using System;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Acornima.Helpers;
 
 namespace Acornima;
 
-using static ExceptionHelper;
 using static Unsafe;
-
-#pragma warning disable CS0618 // Type or member is obsolete
 
 public readonly struct RegExpParseResult
 {
     private static readonly object s_boxedDefaultResult = new ValueHolder();
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static RegExpParseResult ForValid()
+        => new RegExpParseResult(s_boxedDefaultResult, additionalData: null);
+
     public static RegExpParseResult ForSuccess(object? conversionResult = null, object? additionalData = null)
-        => new RegExpParseResult(new ValueHolder(conversionResult), additionalData);
+        => new RegExpParseResult(conversionResult is not null ? new ValueHolder(conversionResult) : s_boxedDefaultResult, additionalData);
 
     public static RegExpParseResult ForFailure(ParseError? conversionError = null, object? additionalData = null)
         => new RegExpParseResult(conversionError, additionalData);
@@ -29,14 +29,6 @@ public readonly struct RegExpParseResult
         _wrappedResultOrError = wrappedResultOrError;
         _additionalData = additionalData;
     }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal RegExpParseResult(Regex regex, Tokenizer.RegExpCapturingGroup[] capturingGroups)
-        : this(new ValueHolder(regex), capturingGroups) { }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal RegExpParseResult(RegExpConversionError? conversionError)
-        : this(conversionError ?? s_boxedDefaultResult, additionalData: null) { }
 
     public bool Success
     {
@@ -66,23 +58,5 @@ public readonly struct RegExpParseResult
         get => _wrappedResultOrError is ValueHolder
             ? Unbox<ValueHolder>(_wrappedResultOrError).Data as Regex
             : null;
-    }
-
-    [Obsolete("This property is deprecated as JS RegExp to .NET Regex conversion will be removed from the library in the next major version.")]
-    public int ActualRegexGroupCount => _additionalData is Tokenizer.RegExpCapturingGroup[] capturingGroups
-        ? capturingGroups.Length + 1
-        : ThrowInvalidOperationException<int>();
-
-    [Obsolete("This method is deprecated as JS RegExp to .NET Regex conversion will be removed from the library in the next major version.")]
-    public string? GetRegexGroupName(int number)
-    {
-        if (_additionalData is Tokenizer.RegExpCapturingGroup[] capturingGroups)
-        {
-            return (uint)--number < (uint)capturingGroups.Length
-                ? capturingGroups[number].Name
-                : null;
-        }
-
-        return ThrowInvalidOperationException<string>();
     }
 }

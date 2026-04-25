@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using Acornima.Ast;
 using Acornima.Tests.Helpers;
 using Xunit;
@@ -76,14 +74,14 @@ public partial class RegExpTests : IClassFixture<RegExpTests.SharedContextFixtur
 
         var skipValidationTest = hintArray.Contains("!skip-validation");
 
-        var skipConversionTest = hintArray.Contains("!skip")
-#if !NET10_0_OR_GREATER
-                || hintArray.Contains("!skip-before-net10.0")
-#endif
-#if NETFRAMEWORK
-                || hintArray.Contains("!skip-on-netframework")
-#endif
-            ;
+        //var skipConversionTest = hintArray.Contains("!skip")
+        //#if !NET10_0_OR_GREATER
+        //        || hintArray.Contains("!skip-before-net10.0")
+        //#endif
+        //#if NETFRAMEWORK
+        //        || hintArray.Contains("!skip-on-netframework")
+        //#endif
+        //    ;
 
         // Both Newtonsoft.Json and System.Text.Json mess up lone surrogates,
         // so we need to parse the JSON containing the matches "manually"...
@@ -92,106 +90,101 @@ public partial class RegExpTests : IClassFixture<RegExpTests.SharedContextFixtur
         var regExpValidator = _fixture.RegExpValidator;
         regExpValidator.Reset(pattern, patternStartIndex: 0, flags, flagsStartIndex: 0);
 
-        var regExpConverter = expectedMatches is not null ? _fixture.RegExpConverterTolerant : _fixture.RegExpConverterNonTolerant;
-        regExpConverter.Reset(pattern, patternStartIndex: 0, flags, flagsStartIndex: 0);
+        //var regExpConverter = expectedMatches is not null ? _fixture.RegExpConverterTolerant : _fixture.RegExpConverterNonTolerant;
+        //regExpConverter.Reset(pattern, patternStartIndex: 0, flags, flagsStartIndex: 0);
 
         if (expectedMatches is not null)
         {
-            RegExpParseResult parseResult;
-
             if (!skipValidationTest)
             {
-                parseResult = regExpValidator.Parse();
-                Assert.True(parseResult.Success);
-                Assert.Null(parseResult.Regex);
-                Assert.Null(parseResult.ConversionError);
+                regExpValidator.Validate();
             }
 
-            if (!skipConversionTest)
-            {
-                parseResult = regExpConverter.Parse();
-                if (expectedAdaptedPattern != ")inconvertible(")
-                {
-                    Assert.True(parseResult.Success);
-                    Assert.NotNull(parseResult.Regex);
+            //if (!skipConversionTest)
+            //{
+            //    var parseResult = regExpConverter.Parse();
+            //    if (expectedAdaptedPattern != ")inconvertible(")
+            //    {
+            //        Assert.True(parseResult.Success);
+            //        Assert.NotNull(parseResult.Regex);
 
-                    var actualAdaptedPattern = parseResult.Regex.ToString();
-                    Assert.Equal(expectedAdaptedPattern, actualAdaptedPattern);
+            //        var actualAdaptedPattern = parseResult.Regex.ToString();
+            //        Assert.Equal(expectedAdaptedPattern, actualAdaptedPattern);
 
-                    var actualMatchEnumerable = parseResult.Regex.Matches(testString).Cast<Match>();
+            //        var actualMatchEnumerable = parseResult.Regex.Matches(testString).Cast<Match>();
 
-                    // In unicode mode, we can't prevent empty matches within surrogate pairs currently,
-                    // so we need to remove such matches from the match collection to make assertions pass.
-                    var actualMatches = flags.IndexOf('u') >= 0
-                        ? actualMatchEnumerable
-                            .Cast<Match>()
-                            .Where(m => m.Length != 0
-                                || m.Index == 0 || m.Index == testString.Length
-                                || !(char.IsHighSurrogate(testString[m.Index - 1]) && char.IsLowSurrogate(testString[m.Index])))
-                            .ToArray()
-                        : actualMatchEnumerable.ToArray();
+            //        // In unicode mode, we can't prevent empty matches within surrogate pairs currently,
+            //        // so we need to remove such matches from the match collection to make assertions pass.
+            //        var actualMatches = flags.IndexOf('u') >= 0
+            //            ? actualMatchEnumerable
+            //                .Cast<Match>()
+            //                .Where(m => m.Length != 0
+            //                    || m.Index == 0 || m.Index == testString.Length
+            //                    || !(char.IsHighSurrogate(testString[m.Index - 1]) && char.IsLowSurrogate(testString[m.Index])))
+            //                .ToArray()
+            //            : actualMatchEnumerable.ToArray();
 
-                    Assert.Equal(expectedMatches.Length, actualMatches.Length);
+            //        Assert.Equal(expectedMatches.Length, actualMatches.Length);
 
-                    for (var i = 0; i < actualMatches.Length; i++)
-                    {
-                        var actualMatch = actualMatches[i];
-                        var expectedMatch = expectedMatches[i];
+            //        for (var i = 0; i < actualMatches.Length; i++)
+            //        {
+            //            var actualMatch = actualMatches[i];
+            //            var expectedMatch = expectedMatches[i];
 
-                        Assert.Equal(expectedMatch.Index, actualMatch.Index);
-                        Assert.Equal(expectedMatch.Captures.Length, parseResult.ActualRegexGroupCount);
-                        Assert.True(expectedMatch.Captures.Length <= actualMatch.Groups.Count);
+            //            Assert.Equal(expectedMatch.Index, actualMatch.Index);
+            //            Assert.Equal(expectedMatch.Captures.Length, parseResult.ActualRegexGroupCount);
+            //            Assert.True(expectedMatch.Captures.Length <= actualMatch.Groups.Count);
 
-                        var ignoreGroupCaptures = hintArray.Contains("!ignore-group-captures");
-                        var captureCount = !ignoreGroupCaptures ? expectedMatch.Captures.Length : 1;
+            //            var ignoreGroupCaptures = hintArray.Contains("!ignore-group-captures");
+            //            var captureCount = !ignoreGroupCaptures ? expectedMatch.Captures.Length : 1;
 
-                        for (var j = 0; j < captureCount; j++)
-                        {
-                            var actualGroup = actualMatch.Groups[j];
-                            var expectedCapture = expectedMatch.Captures[j];
+            //            for (var j = 0; j < captureCount; j++)
+            //            {
+            //                var actualGroup = actualMatch.Groups[j];
+            //                var expectedCapture = expectedMatch.Captures[j];
 
-#if NET6_0_OR_GREATER
-                            var actualGroupName = actualGroup.Name;
-#else
-                            var actualGroupName = parseResult.Regex.GetGroupNames()[j];
-#endif
-                            Assert.True(int.TryParse(actualGroupName, NumberStyles.None, CultureInfo.InvariantCulture, out var actualGroupIndex));
-                            Assert.Equal(j, actualGroupIndex);
+            //                #if NET6_0_OR_GREATER
+            //                var actualGroupName = actualGroup.Name;
+            //                #else
+            //                var actualGroupName = parseResult.Regex.GetGroupNames()[j];
+            //                #endif
+            //                Assert.True(int.TryParse(actualGroupName, NumberStyles.None, CultureInfo.InvariantCulture, out var actualGroupIndex));
+            //                Assert.Equal(j, actualGroupIndex);
 
-                            if (expectedCapture is not null)
-                            {
-                                Assert.True(actualGroup.Success);
-                                Assert.Equal(expectedCapture, actualGroup.Value);
-                            }
-                            else if (!hintArray.Contains("!ignore-undefined-captures"))
-                            {
-                                Assert.False(actualGroup.Success);
-                            }
-                        }
+            //                if (expectedCapture is not null)
+            //                {
+            //                    Assert.True(actualGroup.Success);
+            //                    Assert.Equal(expectedCapture, actualGroup.Value);
+            //                }
+            //                else if (!hintArray.Contains("!ignore-undefined-captures"))
+            //                {
+            //                    Assert.False(actualGroup.Success);
+            //                }
+            //            }
 
-                        if (!ignoreGroupCaptures && expectedMatch.Groups is not null)
-                        {
-                            foreach (var kvp in expectedMatch.Groups)
-                            {
-                                var actualGroup = actualMatch.Groups[kvp.Key];
-                                if (!actualGroup.Success)
-                                {
-                                    actualGroup = actualMatch.Groups[Tokenizer.RegExpParser.EncodeGroupName(kvp.Key)];
-                                }
+            //            if (!ignoreGroupCaptures && expectedMatch.Groups is not null)
+            //            {
+            //                foreach (var kvp in expectedMatch.Groups)
+            //                {
+            //                    var actualGroup = actualMatch.Groups[kvp.Key];
+            //                    if (!actualGroup.Success)
+            //                    {
+            //                        actualGroup = actualMatch.Groups[Tokenizer.RegExpParser.EncodeGroupName(kvp.Key)];
+            //                    }
 
-                                Assert.True(actualGroup.Success);
-                                Assert.Equal(kvp.Value, actualGroup.Value);
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    Assert.False(parseResult.Success);
-                    Assert.Null(parseResult.Regex);
-                    Assert.NotNull(parseResult.ConversionError);
-                }
-            }
+            //                    Assert.True(actualGroup.Success);
+            //                    Assert.Equal(kvp.Value, actualGroup.Value);
+            //                }
+            //            }
+            //        }
+            //    }
+            //    else
+            //    {
+            //        Assert.False(parseResult.Success);
+            //        Assert.Null(parseResult.Regex);
+            //        Assert.NotNull(parseResult.ConversionError);
+            //    }
+            //}
         }
         else
         {
@@ -199,7 +192,7 @@ public partial class RegExpTests : IClassFixture<RegExpTests.SharedContextFixtur
 
             if (!skipValidationTest)
             {
-                ex = Assert.Throws<SyntaxErrorException>(() => regExpValidator.Parse());
+                ex = Assert.Throws<SyntaxErrorException>(() => regExpValidator.Validate());
 
                 if (!hintArray.Contains("!ignore-error-message"))
                 {
@@ -207,24 +200,24 @@ public partial class RegExpTests : IClassFixture<RegExpTests.SharedContextFixtur
                 }
             }
 
-            if (!skipConversionTest)
-            {
-                ex = Assert.ThrowsAny<ParseErrorException>(() => regExpConverter.Parse());
+            //if (!skipConversionTest)
+            //{
+            //    ex = Assert.ThrowsAny<ParseErrorException>(() => regExpConverter.Parse());
 
-                if (expectedAdaptedPattern != ")inconvertible(")
-                {
-                    Assert.IsType<SyntaxErrorException>(ex);
-                    if (!hintArray.Contains("!ignore-error-message"))
-                    {
-                        Assert.Equal($"Invalid regular expression: /{pattern}/{flags}: {syntaxError}", ex.Error?.Description);
-                    }
-                }
-                else
-                {
-                    Assert.IsType<RegExpConversionErrorException>(ex);
-                    Assert.StartsWith("Cannot convert regular expression", ex.Error?.Description, StringComparison.Ordinal);
-                }
-            }
+            //    if (expectedAdaptedPattern != ")inconvertible(")
+            //    {
+            //        Assert.IsType<SyntaxErrorException>(ex);
+            //        if (!hintArray.Contains("!ignore-error-message"))
+            //        {
+            //            Assert.Equal($"Invalid regular expression: /{pattern}/{flags}: {syntaxError}", ex.Error?.Description);
+            //        }
+            //    }
+            //    else
+            //    {
+            //        Assert.IsType<RegExpConversionErrorException>(ex);
+            //        Assert.StartsWith("Cannot convert regular expression", ex.Error?.Description, StringComparison.Ordinal);
+            //    }
+            //}
         }
     }
 
@@ -280,25 +273,25 @@ public partial class RegExpTests : IClassFixture<RegExpTests.SharedContextFixtur
     public sealed class SharedContextFixture : IDisposable
     {
         private readonly Tokenizer _tokenizerForRegExpValidator;
-        private readonly Tokenizer _tokenizerForNonTolerantRegExpConverter;
-        private readonly Tokenizer _tokenizerForTolerantRegExpConverter;
+        //private readonly Tokenizer _tokenizerForNonTolerantRegExpConverter;
+        //private readonly Tokenizer _tokenizerForTolerantRegExpConverter;
 
         public SharedContextFixture()
         {
-            _tokenizerForRegExpValidator = new Tokenizer(string.Empty, new TokenizerOptions { RegExpParseMode = RegExpParseMode.Validate, Tolerant = false });
-            _tokenizerForNonTolerantRegExpConverter = new Tokenizer(string.Empty, new TokenizerOptions { RegExpParseMode = RegExpParseMode.AdaptToInterpreted, Tolerant = false });
-            _tokenizerForTolerantRegExpConverter = new Tokenizer(string.Empty, new TokenizerOptions { RegExpParseMode = RegExpParseMode.AdaptToInterpreted, Tolerant = true });
+            _tokenizerForRegExpValidator = new Tokenizer(string.Empty);
+            //_tokenizerForNonTolerantRegExpConverter = new Tokenizer(string.Empty, new TokenizerOptions { RegExpParseMode = RegExpParseMode.AdaptToInterpreted, Tolerant = false });
+            //_tokenizerForTolerantRegExpConverter = new Tokenizer(string.Empty, new TokenizerOptions { RegExpParseMode = RegExpParseMode.AdaptToInterpreted, Tolerant = true });
         }
 
         public void Dispose()
         {
             _tokenizerForRegExpValidator.ReleaseLargeBuffersForRegExpParser();
-            _tokenizerForNonTolerantRegExpConverter.ReleaseLargeBuffersForRegExpParser();
-            _tokenizerForTolerantRegExpConverter.ReleaseLargeBuffersForRegExpParser();
+            //_tokenizerForNonTolerantRegExpConverter.ReleaseLargeBuffersForRegExpParser();
+            //_tokenizerForTolerantRegExpConverter.ReleaseLargeBuffersForRegExpParser();
         }
 
         internal Tokenizer.RegExpParser RegExpValidator => _tokenizerForRegExpValidator._regExpParser ??= new(_tokenizerForRegExpValidator);
-        internal Tokenizer.RegExpParser RegExpConverterNonTolerant => _tokenizerForNonTolerantRegExpConverter._regExpParser ??= new(_tokenizerForNonTolerantRegExpConverter);
-        internal Tokenizer.RegExpParser RegExpConverterTolerant => _tokenizerForTolerantRegExpConverter._regExpParser ??= new(_tokenizerForTolerantRegExpConverter);
+        //internal Tokenizer.RegExpParser RegExpConverterNonTolerant => _tokenizerForNonTolerantRegExpConverter._regExpParser ??= new(_tokenizerForNonTolerantRegExpConverter);
+        //internal Tokenizer.RegExpParser RegExpConverterTolerant => _tokenizerForTolerantRegExpConverter._regExpParser ??= new(_tokenizerForTolerantRegExpConverter);
     }
 }

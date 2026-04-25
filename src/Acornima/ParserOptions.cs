@@ -1,5 +1,3 @@
-using System;
-using System.Text.RegularExpressions;
 using Acornima.Ast;
 using Acornima.Helpers;
 
@@ -155,20 +153,6 @@ public record class ParserOptions
     /// </summary>
     public bool PreserveParens { get => _preserveParens; init => _preserveParens = value; }
 
-#pragma warning disable CS0618 // Type or member is obsolete
-    /// <summary>
-    /// Gets or sets how regular expressions should be parsed. Defaults to <see cref="RegExpParseMode.Validate"/>.
-    /// </summary>
-    [Obsolete("This option is deprecated as JS RegExp to .NET Regex conversion will be removed from the library in the next major version. Use the `OnRegExp` option instead.")]
-    public RegExpParseMode RegExpParseMode { get => _tokenizerOptions._regExpParseMode; init => _tokenizerOptions._regExpParseMode = value; }
-#pragma warning restore CS0618 // Type or member is obsolete
-
-    /// <summary>
-    /// Gets or sets the default timeout for created <see cref="Regex"/> instances. Defaults to 5 seconds.
-    /// </summary>
-    [Obsolete("This option is deprecated as JS RegExp to .NET Regex conversion will be removed from the library in the next major version.")]
-    public TimeSpan RegexTimeout { get => _tokenizerOptions._regexTimeout; init => _tokenizerOptions._regexTimeout = value; }
-
     /// <summary>
     /// Gets or sets whether to ignore minor errors that do not affect the semantics of the parsed program.
     /// Defaults to <see langword="false"/>.
@@ -202,7 +186,7 @@ public record class ParserOptions
     public OnCommentHandler? OnComment { get => _tokenizerOptions._onComment; init => _tokenizerOptions._onComment = value; }
 
     /// <summary>
-    /// Gets or sets an optional callback function which will be called instead of the built-in parsing logic
+    /// Gets or sets an optional callback function which will be called instead of the built-in validation logic
     /// whenever a regular expression is read.
     /// </summary>
     /// <remarks>

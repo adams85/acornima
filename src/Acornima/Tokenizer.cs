@@ -4,7 +4,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using Acornima.Helpers;
 
@@ -777,23 +776,17 @@ public sealed partial class Tokenizer : ITokenizer
                         var flagsCached = DeduplicateString(flags, ref _stringPool);
 
                         RegExpParseResult parseResult;
+                        (_regExpParser ??= new RegExpParser(this)).Reset(patternCached, start, flagsCached, flagsStart);
                         if (_options._onRegExp is { } onRegExp)
                         {
-                            (_regExpParser ??= new RegExpParser(this)).Reset(patternCached, start, flagsCached, flagsStart);
                             parseResult = onRegExp(new RegExpParsingContext(_regExpParser,
                                 new Range(start - 1, _position),
                                 new SourceLocation(new Position(startPosition.Line, startPosition.Column - 1), CurrentPosition, _sourceFile)));
                         }
-#pragma warning disable CS0618 // Type or member is obsolete
-                        else if (_options._regExpParseMode != RegExpParseMode.Skip)
-#pragma warning restore CS0618 // Type or member is obsolete
-                        {
-                            (_regExpParser ??= new RegExpParser(this)).Reset(patternCached, start, flagsCached, flagsStart);
-                            parseResult = _regExpParser.Parse();
-                        }
                         else
                         {
-                            parseResult = default;
+                            _regExpParser.Validate();
+                            parseResult = RegExpParseResult.ForValid();
                         }
 
                         var regExpValue = new RegExpValue(patternCached, flagsCached);
@@ -1957,10 +1950,6 @@ public sealed partial class Tokenizer : ITokenizer
             var tokenizerOptions = tokenizer._options;
             tokenizerOptions._ecmaVersion = ecmaVersion;
             tokenizerOptions._experimentalESFeatures = experimentalESFeatures;
-#pragma warning disable CS0618 // Type or member is obsolete
-            tokenizerOptions._regExpParseMode = RegExpParseMode.Validate;
-#pragma warning restore CS0618 // Type or member is obsolete
-            tokenizerOptions._tolerant = false;
 
             var regExpParser = tokenizer._regExpParser ??= new RegExpParser(tokenizer);
             regExpParser.Reset(pattern, patternStartIndex: 0, flags, flagsStartIndex: 0);
@@ -1979,59 +1968,6 @@ public sealed partial class Tokenizer : ITokenizer
 
         error = default;
         return true;
-    }
-
-    /// <summary>
-    /// Parses an ECMAScript regular expression and tries to construct a <see cref="Regex"/> instance with the equivalent behavior.
-    /// </summary>
-    /// <remarks>
-    /// Please note that, because of some fundamental differences between the ECMAScript and .NET regular expression engines,
-    /// not every ECMAScript regular expression can be converted to an equivalent <see cref="Regex"/> (or can be converted with compromises only).<br/>
-    /// You can read more about the known issues and limitations of the conversion <see href="https://github.com/adams85/acornima#regular-expressions">here</see>.
-    /// </remarks>
-    /// <returns>
-    /// An instance of <see cref="RegExpParseResult"/>, whose <see cref="RegExpParseResult.Regex"/> property contains the equivalent <see cref="Regex"/> if the conversion was possible,
-    /// otherwise <see langword="null"/> (unless <paramref name="throwIfNotAdaptable"/> is <see langword="true"/>).
-    /// </returns>
-    /// <exception cref="SyntaxErrorException">
-    /// <paramref name="pattern"/> is an invalid regular expression pattern (if <paramref name="throwIfNotAdaptable"/> is <see langword="true"/>).
-    /// </exception>
-    /// <exception cref="RegExpConversionErrorException">
-    /// <paramref name="pattern"/> cannot be converted to an equivalent <see cref="Regex"/> (if <paramref name="throwIfNotAdaptable"/> is <see langword="true"/>).
-    /// </exception>
-    [Obsolete("This method is deprecated as JS RegExp to .NET Regex conversion will be removed from the library in the next major version.")]
-    public static RegExpParseResult AdaptRegExp(string pattern, string flags, bool compiled = false, TimeSpan? matchTimeout = null, bool throwIfNotAdaptable = false,
-        EcmaVersion ecmaVersion = EcmaVersion.Latest, ExperimentalESFeatures experimentalESFeatures = ExperimentalESFeatures.None)
-    {
-        if (pattern is null)
-        {
-            throw new ArgumentNullException(nameof(pattern));
-        }
-
-        if (flags is null)
-        {
-            throw new ArgumentNullException(nameof(flags));
-        }
-
-        var tokenizer = Interlocked.Exchange(ref s_cachedInstanceForRegExpParsing, value: null) ?? new Tokenizer(string.Empty, new TokenizerOptions());
-        try
-        {
-            var tokenizerOptions = tokenizer._options;
-            tokenizerOptions._ecmaVersion = ecmaVersion;
-            tokenizerOptions._experimentalESFeatures = experimentalESFeatures;
-            tokenizerOptions._regExpParseMode = !compiled ? RegExpParseMode.AdaptToInterpreted : RegExpParseMode.AdaptToCompiled;
-            tokenizerOptions._regexTimeout = matchTimeout ?? TokenizerOptions.Default.RegexTimeout;
-            tokenizerOptions._tolerant = !throwIfNotAdaptable;
-
-            var regExpParser = tokenizer._regExpParser ??= new RegExpParser(tokenizer);
-            regExpParser.Reset(pattern, patternStartIndex: 0, flags, flagsStartIndex: 0);
-            return regExpParser.Parse();
-        }
-        finally
-        {
-            tokenizer.ReleaseLargeBuffersForRegExpParser();
-            Volatile.Write(ref s_cachedInstanceForRegExpParsing, tokenizer);
-        }
     }
 
     internal interface IExtension

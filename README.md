@@ -13,7 +13,7 @@ It should also be mentioned that there is an earlier .NET port of acornjs, [Acor
 
 ### Here is how this Frankenstein's monster looks like:
 
-* The tokenizer is mostly a direct translation of the acornjs tokenizer to C# (with many bigger and smaller performance improvements, partly inspired by Esprima.NET) - apart from the regex validation/conversion logic, which has been borrowed from Esprima.NET.
+* The tokenizer is mostly a direct translation of the acornjs tokenizer to C# (with many bigger and smaller performance improvements, partly inspired by Esprima.NET) - apart from some parts of the regex validation logic, which have been borrowed from Esprima.NET.
 * The parser is ~99% acornjs (also with a bunch of minor improvements) and ~1% Esprima.NET (strict mode detection, public API). It is also worth mentioning that the error reporting has been changed to use the error messages of V8.
 * It includes protection against the non-catchable `StackOverflowException` using [the same approach](https://github.com/adams85/acornima/blob/v1.0.0/src/Acornima/Helpers/StackGuard.cs) as Roslyn.
 * Both parent projects follow the ESTree specification, so does Acornima. The actual AST implementation is based on that of Esprima.NET, with further minor improvements to the class hierarchy that bring it even closer to the spec and allow encoding a bit more information.
@@ -230,8 +230,7 @@ Projects using Esprima.NET can be converted to Acornima relatively easily as the
 
 The most notable changes to keep in mind with regard to migration are the following:
 
-* The default value of the `ParserOptions.RegExpParseMode` property has been changed to `RegExpParseMode.Validate`.
-* The default value of the `ParserOptions.RegexTimeout` property has been changed to 5 seconds.
+* The `ParserOptions.RegExpParseMode` and `ParserOptions.RegexTimeout` properties (along with the ability to convert JS regular expressions to .NET `Regex` instances) have been removed. Regular expressions are validated by default, but you can override this behavior using `ParserOptions.OnRegExp`. (To replicate `RegExpParseMode.Skip`, return `default(RegExpParseResult)` from the callback. To replicate `RegExpParseMode.AdaptTo...`, you can use the [regexp2regex](https://github.com/adams85/regexp2regex) library.)
 * The default value of the `ParserOptions.Tolerant` property has been changed to `false`.
 * The `Location` struct has been renamed to `SourceLocation`.
 * The `TokenType` and `CommentType` enums have been renamed named to `TokenKind` and `CommentKind`, respectively. Also, some of the member names have been changed.
@@ -247,7 +246,7 @@ The most notable changes to keep in mind with regard to migration are the follow
 * The `Strict` property of function expression/declaration node classes has been moved to `FunctionBody`.
 * The `JsxExpression` node class has been renamed to `JsxNode`.
 * The `JsxElement` node class has been renamed to `JsxElementOrFragment` and two sealed subclasses have been introduced: `JsxElement` and `JsxFragment`.
-* The `ParserException` class has been renamed to `ParseErrorException` and been made abstract. Two concrete subclasses (`SyntaxErrorException` and `RegExpConversionError`) have been introduced to indicate different kinds of errors that can occur during parsing.
+* The `ParserException` class has been renamed to `ParseErrorException` and been made abstract. A concrete subclass named `SyntaxErrorException` has been introduced to indicate syntax errors.
 * The message format of the `ParseErrorException` class has been changed. The reported messages are translatable text resources, so it is not recommended to rely on them to determine the reason of the error. For such purposes, you can use the `ParseErrorException.Error.Code` property.
 * The `ParseErrorException.Column` property has been changed to store zero-based indices. (The exception message still includes one-based column indices though.)
 
@@ -289,24 +288,5 @@ IterationCount=15  LaunchCount=2  WarmupCount=10
 |                 |                     |             |            |
 | Acornima v1.4.0 | yui-3.12.0          | 3,618.3 μs  | 2607.91 KB |
 | Esprima v3.0.5  | yui-3.12.0          | 3,674.8 μs  | 2585.77 KB |
-
-### Known issues and limitations
-
-#### Regular expressions
-
-The parser can be configured to convert JS regular expression literals to .NET `Regex` instances (see `ParserOptions.RegExpParseMode`).
-However, because of the fundamental differences between the JS and .NET regex engines, in many cases this conversion can't be done perfectly (or, in some cases, at all): 
-
-* Case-insensitive matching [won't always yield the same results](https://github.com/adams85/acornima/blob/488e55472113af21e31cbc24a79c18b01d23dcc7/src/Acornima/Tokenizer.RegExpParser.cs#L99). Implementing a workaround for this issue would be extremely hard, if not impossible.
-* The JS regex engine assigns numbers to capturing groups sequentially (regardless of the group being named or not named) but [.NET uses a different, weird approach](https://learn.microsoft.com/en-us/dotnet/standard/base-types/grouping-constructs-in-regular-expressions#grouping-constructs-and-regular-expression-objects): "Captures that use parentheses are numbered automatically from left to right based on the order of the opening parentheses in the regular expression, starting from 1. However, named capture groups are always ordered last, after non-named capture groups." Without some adjustments, this would totally mess up numbered backreferences and replace pattern references. So, as a workaround, the converter wraps all named capturing groups in a non-named capturing group to force .NET to include all the original capturing groups in the resulting match in the expected order. (Of course, this won't prevent named groups from being listed after the numbered ones.) If needed, the original number of groups can be obtained from the returned `RegExpParseResult` object's `ActualRegexGroupCount` property.
-* The characters allowed in group names differs in the two regex engines. For example, the group name `$group` is valid in JS but invalid in .NET. So, as a workaround, the converter [encodes the problematic group names](https://github.com/adams85/acornima/blob/488e55472113af21e31cbc24a79c18b01d23dcc7/src/Acornima/Tokenizer.RegExpParser.cs#L1041) to names that are valid in .NET and probably won't collide with other group names present in the pattern. For example, `$group` is encoded like `__utf8_2467726F7570`. The original group names can be obtained using the returned `RegExpParseResult` object's `GetRegexGroupName` method.
-* Self-referencing capturing groups like `/((a+)(\1) ?)+/` may not produce the exact same captures. [`RegexOptions.ECMAScript` is supposed to cover this](https://learn.microsoft.com/en-us/dotnet/standard/base-types/regular-expression-options#ecmascript-matching-behavior), however even the MSDN example doesn't produce the same matches. (As a side note, `RegexOptions.ECMAScript` is kind of a false promise, it can't even get some basic cases right by itself.)
-* Similarily, repeated nested groups like `/((a+)?(b+)?(c))*/` may produce different captures for the groups. ([JS has an overwrite behavior](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Regular_expressions/Capturing_group#description) while .NET doesn't).
-* .NET treats forward references like `\1(\w)` differently than JS and it's not possible to convert this kind of patterns reliably. (The converter could make some patterns work by rewriting them to something like `(?:)(\w)` but there are cases where even this wouldn't work.)
-* Unicode mode issues:
-  * There could be false positive empty string matches in the middle of surrogate pairs. Patterns as simple as `/a?/u` will cause this issue when the input string contains astral Unicode chars. There is no out-of-the-box workaround for this issue but it can be mitigated somewhat using a bit of "post-processing", i.e., by filtering out the false positive matches after evaluation like it's done [here](https://github.com/adams85/acornima/blob/488e55472113af21e31cbc24a79c18b01d23dcc7/test/Acornima.Tests/RegExpTests.Fixtures.cs#L112). Probably there is no way to improve this situation until .NET adds the option to treat the input string as Unicode code points.
-  * Support for Unicode property escapes is pretty limited (see [explanation](https://github.com/adams85/acornima/blob/488e55472113af21e31cbc24a79c18b01d23dcc7/src/Acornima/Tokenizer.RegExpParser.Unicode.cs#L871)). Currently, only General Category expressions are converted. But even this is not perfect as the result will depend the Unicode version included in the specific .NET runtime which is executing the parser's code.
-
-To sum it up, legacy pattern conversion is pretty solid apart from the minor issues listed above. However, support for unicode mode (flag u) patterns is partial and quirky, while conversion of the upcoming unicode sets mode (flag v) will be next to impossible - until the .NET regex engine gets some improved Unicode support.
 
 ### *Any feedback appreciated, contributions are welcome!*
