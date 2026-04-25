@@ -296,6 +296,11 @@ public partial class Tokenizer
 
                 if (ch == '\\')
                 {
+                    if (i + 1 >= _pattern.Length)
+                    {
+                        ReportSyntaxError(i, RegExpEscapeAtEndOfPattern);
+                    }
+
                     // Skip escape
                     i++;
                     continue;
@@ -681,11 +686,7 @@ public partial class Tokenizer
                         break;
 
                     case '\\':
-                        if (i + 1 >= _pattern.Length)
-                        {
-                            ReportSyntaxError(i, RegExpEscapeAtEndOfPattern);
-                        }
-
+                        Debug.Assert(i + 1 < _pattern.Length, "Unexpected end of escape sequence in regular expression.");
                         if (!mode.AdjustEscapeSequence(this, out conversionError))
                         {
                             return null;

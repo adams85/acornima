@@ -41,12 +41,12 @@ public partial class Tokenizer
 
             public void ProcessSetSpecialChar(char ch, RegExpParser parser)
             {
-                Debug.Fail($"{nameof(ProcessSetSpecialChar)} should not be called for {nameof(UnicodeSetsMode)} as ProcessSetStart handles all set logic.");
+                Debug.Fail($"{nameof(ProcessSetSpecialChar)} should not be called for {nameof(UnicodeSetsMode)} as {nameof(ParseSet)} handles all set logic.");
             }
 
             public void ProcessSetChar(char ch, Action<StringBuilder, char>? appender, RegExpParser parser, int startIndex)
             {
-                Debug.Fail($"{nameof(ProcessSetChar)} should not be called for {nameof(UnicodeSetsMode)} as ProcessSetStart handles all set logic.");
+                Debug.Fail($"{nameof(ProcessSetChar)} should not be called for {nameof(UnicodeSetsMode)} as {nameof(ParseSet)} handles all set logic.");
             }
 
             public bool RewriteSet(RegExpParser parser)
