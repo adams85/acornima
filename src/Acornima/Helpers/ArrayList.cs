@@ -252,31 +252,6 @@ internal partial struct ArrayList<T> : IList<T>, IReadOnlyList<T>
         PushRef() = item;
     }
 
-    public void AddRange(ReadOnlySpan<T> items)
-    {
-        AssertUnchanged();
-
-        var itemCount = items.Length;
-        if (itemCount == 0)
-        {
-            return;
-        }
-
-        var oldCount = _count;
-        var newCount = oldCount + itemCount;
-
-        if (Capacity < newCount)
-        {
-            Array.Resize(ref _items, Math.Max(newCount, MinAllocatedCount));
-        }
-
-        Debug.Assert(_items is not null);
-        items.CopyTo(_items.AsSpan(oldCount, itemCount));
-        _count = newCount;
-
-        OnChanged();
-    }
-
     public readonly bool Contains(T item)
     {
         return IndexOf(item) >= 0;
@@ -360,28 +335,6 @@ internal partial struct ArrayList<T> : IList<T>, IReadOnlyList<T>
         _items![_count] = default!;
 
         OnChanged();
-    }
-
-    public void Sort(IComparer<T>? comparer = null)
-    {
-        AssertUnchanged();
-
-        if (_count > 1)
-        {
-            Array.Sort(_items!, 0, _count, comparer);
-        }
-
-        OnChanged();
-    }
-
-    public void TrimExcess(int threshold = MinAllocatedCount)
-    {
-        AssertUnchanged();
-
-        if (Capacity - _count > threshold)
-        {
-            Capacity = _count;
-        }
     }
 
     /// <remarks>

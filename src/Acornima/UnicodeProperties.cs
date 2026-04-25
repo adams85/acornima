@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using Acornima.Helpers;
 
 namespace Acornima;
@@ -9,64 +8,69 @@ namespace Acornima;
 
 internal static class UnicodeProperties
 {
-    private static readonly Dictionary<ReadOnlyMemory<char>, KeyValuePair<int, int>> s_generalCategoryLookup = new(StringSliceEqualityComparer.Instance);
+    private static readonly HashSet<ReadOnlyMemory<char>> s_generalCategoryLookup = new(StringSliceEqualityComparer.Instance);
     private static readonly Dictionary<ReadOnlyMemory<char>, EcmaVersion> s_scriptValueLookup = new(StringSliceEqualityComparer.Instance);
     private static readonly Dictionary<ReadOnlyMemory<char>, EcmaVersion> s_binaryValueLookup = new(StringSliceEqualityComparer.Instance);
     private static readonly Dictionary<ReadOnlyMemory<char>, EcmaVersion> s_binaryOfStringsValueLookup = new(StringSliceEqualityComparer.Instance);
 
     static UnicodeProperties()
     {
-        static KeyValuePair<int, int> PopulateGeneralCategoryLookup(string name1, string name2, KeyValuePair<int, int> category)
+        static void PopulateGeneralCategoryLookup(string name1, string name2)
         {
-            s_generalCategoryLookup[name1.AsMemory()] = category;
-            s_generalCategoryLookup[name2.AsMemory()] = category;
-            return category;
+            s_generalCategoryLookup.Add(name1.AsMemory());
+            s_generalCategoryLookup.Add(name2.AsMemory());
         }
 
-        PopulateGeneralCategoryLookup("L", "Letter", CodePointRange.Cache.LetterCategory);
-        PopulateGeneralCategoryLookup("LC", "Cased_Letter", CodePointRange.Cache.CasedLetterCategory);
-        PopulateGeneralCategoryLookup("Lu", "Uppercase_Letter", CodePointRange.Cache.CategoryFrom(UnicodeCategory.UppercaseLetter));
-        PopulateGeneralCategoryLookup("Ll", "Lowercase_Letter", CodePointRange.Cache.CategoryFrom(UnicodeCategory.LowercaseLetter));
-        PopulateGeneralCategoryLookup("Lt", "Titlecase_Letter", CodePointRange.Cache.CategoryFrom(UnicodeCategory.TitlecaseLetter));
-        PopulateGeneralCategoryLookup("Lm", "Modifier_Letter", CodePointRange.Cache.CategoryFrom(UnicodeCategory.ModifierLetter));
-        PopulateGeneralCategoryLookup("Lo", "Other_Letter", CodePointRange.Cache.CategoryFrom(UnicodeCategory.OtherLetter));
+        static void PopulateGeneralCategoryLookupAlt(string name1, string name2, string name3)
+        {
+            PopulateGeneralCategoryLookup(name1, name2);
+            s_generalCategoryLookup.Add(name3.AsMemory());
+        }
 
-        s_generalCategoryLookup["Combining_Mark".AsMemory()] = PopulateGeneralCategoryLookup("M", "Mark", CodePointRange.Cache.MarkCategory);
-        PopulateGeneralCategoryLookup("Mn", "Nonspacing_Mark", CodePointRange.Cache.CategoryFrom(UnicodeCategory.NonSpacingMark));
-        PopulateGeneralCategoryLookup("Mc", "Spacing_Mark", CodePointRange.Cache.CategoryFrom(UnicodeCategory.SpacingCombiningMark));
-        PopulateGeneralCategoryLookup("Me", "Enclosing_Mark", CodePointRange.Cache.CategoryFrom(UnicodeCategory.EnclosingMark));
+        PopulateGeneralCategoryLookup("L", "Letter");
+        PopulateGeneralCategoryLookup("LC", "Cased_Letter");
+        PopulateGeneralCategoryLookup("Lu", "Uppercase_Letter");
+        PopulateGeneralCategoryLookup("Ll", "Lowercase_Letter");
+        PopulateGeneralCategoryLookup("Lt", "Titlecase_Letter");
+        PopulateGeneralCategoryLookup("Lm", "Modifier_Letter");
+        PopulateGeneralCategoryLookup("Lo", "Other_Letter");
 
-        PopulateGeneralCategoryLookup("N", "Number", CodePointRange.Cache.NumberCategory);
-        s_generalCategoryLookup["digit".AsMemory()] = PopulateGeneralCategoryLookup("Nd", "Decimal_Number", CodePointRange.Cache.CategoryFrom(UnicodeCategory.DecimalDigitNumber));
-        PopulateGeneralCategoryLookup("Nl", "Letter_Number", CodePointRange.Cache.CategoryFrom(UnicodeCategory.LetterNumber));
-        PopulateGeneralCategoryLookup("No", "Other_Number", CodePointRange.Cache.CategoryFrom(UnicodeCategory.OtherNumber));
+        PopulateGeneralCategoryLookupAlt("M", "Mark", "Combining_Mark");
+        PopulateGeneralCategoryLookup("Mn", "Nonspacing_Mark");
+        PopulateGeneralCategoryLookup("Mc", "Spacing_Mark");
+        PopulateGeneralCategoryLookup("Me", "Enclosing_Mark");
 
-        s_generalCategoryLookup["punct".AsMemory()] = PopulateGeneralCategoryLookup("P", "Punctuation", CodePointRange.Cache.PunctuationCategory);
-        PopulateGeneralCategoryLookup("Pc", "Connector_Punctuation", CodePointRange.Cache.CategoryFrom(UnicodeCategory.ConnectorPunctuation));
-        PopulateGeneralCategoryLookup("Pd", "Dash_Punctuation", CodePointRange.Cache.CategoryFrom(UnicodeCategory.DashPunctuation));
-        PopulateGeneralCategoryLookup("Ps", "Open_Punctuation", CodePointRange.Cache.CategoryFrom(UnicodeCategory.OpenPunctuation));
-        PopulateGeneralCategoryLookup("Pe", "Close_Punctuation", CodePointRange.Cache.CategoryFrom(UnicodeCategory.ClosePunctuation));
-        PopulateGeneralCategoryLookup("Pi", "Initial_Punctuation", CodePointRange.Cache.CategoryFrom(UnicodeCategory.InitialQuotePunctuation));
-        PopulateGeneralCategoryLookup("Pf", "Final_Punctuation", CodePointRange.Cache.CategoryFrom(UnicodeCategory.FinalQuotePunctuation));
-        PopulateGeneralCategoryLookup("Po", "Other_Punctuation", CodePointRange.Cache.CategoryFrom(UnicodeCategory.OtherPunctuation));
+        PopulateGeneralCategoryLookup("N", "Number");
+        PopulateGeneralCategoryLookupAlt("Nd", "Decimal_Number", "digit");
+        PopulateGeneralCategoryLookup("Nl", "Letter_Number");
+        PopulateGeneralCategoryLookup("No", "Other_Number");
 
-        PopulateGeneralCategoryLookup("S", "Symbol", CodePointRange.Cache.SymbolCategory);
-        PopulateGeneralCategoryLookup("Sm", "Math_Symbol", CodePointRange.Cache.CategoryFrom(UnicodeCategory.MathSymbol));
-        PopulateGeneralCategoryLookup("Sc", "Currency_Symbol", CodePointRange.Cache.CategoryFrom(UnicodeCategory.CurrencySymbol));
-        PopulateGeneralCategoryLookup("Sk", "Modifier_Symbol", CodePointRange.Cache.CategoryFrom(UnicodeCategory.ModifierSymbol));
-        PopulateGeneralCategoryLookup("So", "Other_Symbol", CodePointRange.Cache.CategoryFrom(UnicodeCategory.OtherSymbol));
+        PopulateGeneralCategoryLookupAlt("P", "Punctuation", "punct");
+        PopulateGeneralCategoryLookup("Pc", "Connector_Punctuation");
+        PopulateGeneralCategoryLookup("Pd", "Dash_Punctuation");
+        PopulateGeneralCategoryLookup("Ps", "Open_Punctuation");
+        PopulateGeneralCategoryLookup("Pe", "Close_Punctuation");
+        PopulateGeneralCategoryLookup("Pi", "Initial_Punctuation");
+        PopulateGeneralCategoryLookup("Pf", "Final_Punctuation");
+        PopulateGeneralCategoryLookup("Po", "Other_Punctuation");
 
-        PopulateGeneralCategoryLookup("Z", "Separator", CodePointRange.Cache.SeparatorCategory);
-        PopulateGeneralCategoryLookup("Zs", "Space_Separator", CodePointRange.Cache.CategoryFrom(UnicodeCategory.SpaceSeparator));
-        PopulateGeneralCategoryLookup("Zl", "Line_Separator", CodePointRange.Cache.CategoryFrom(UnicodeCategory.LineSeparator));
-        PopulateGeneralCategoryLookup("Zp", "Paragraph_Separator", CodePointRange.Cache.CategoryFrom(UnicodeCategory.ParagraphSeparator));
+        PopulateGeneralCategoryLookup("S", "Symbol");
+        PopulateGeneralCategoryLookup("Sm", "Math_Symbol");
+        PopulateGeneralCategoryLookup("Sc", "Currency_Symbol");
+        PopulateGeneralCategoryLookup("Sk", "Modifier_Symbol");
+        PopulateGeneralCategoryLookup("So", "Other_Symbol");
 
-        PopulateGeneralCategoryLookup("C", "Other", CodePointRange.Cache.OtherCategory);
-        s_generalCategoryLookup["cntrl".AsMemory()] = PopulateGeneralCategoryLookup("Cc", "Control", CodePointRange.Cache.CategoryFrom(UnicodeCategory.Control));
-        PopulateGeneralCategoryLookup("Cf", "Format", CodePointRange.Cache.CategoryFrom(UnicodeCategory.Format));
-        PopulateGeneralCategoryLookup("Cs", "Surrogate", CodePointRange.Cache.CategoryFrom(UnicodeCategory.Surrogate));
-        PopulateGeneralCategoryLookup("Co", "Private_Use", CodePointRange.Cache.CategoryFrom(UnicodeCategory.PrivateUse));
-        PopulateGeneralCategoryLookup("Cn", "Unassigned", CodePointRange.Cache.CategoryFrom(UnicodeCategory.OtherNotAssigned));
+        PopulateGeneralCategoryLookup("Z", "Separator");
+        PopulateGeneralCategoryLookup("Zs", "Space_Separator");
+        PopulateGeneralCategoryLookup("Zl", "Line_Separator");
+        PopulateGeneralCategoryLookup("Zp", "Paragraph_Separator");
+
+        PopulateGeneralCategoryLookup("C", "Other");
+        PopulateGeneralCategoryLookupAlt("Cc", "Control", "cntrl");
+        PopulateGeneralCategoryLookup("Cf", "Format");
+        PopulateGeneralCategoryLookup("Cs", "Surrogate");
+        PopulateGeneralCategoryLookup("Co", "Private_Use");
+        PopulateGeneralCategoryLookup("Cn", "Unassigned");
 
         static void PopulateVersionLookup(Dictionary<ReadOnlyMemory<char>, EcmaVersion> dictionary, EcmaVersion ecmaVersion, params string[] values)
         {
@@ -111,15 +115,7 @@ internal static class UnicodeProperties
 
     public static bool IsAllowedGeneralCategoryValue(ReadOnlyMemory<char> propertyValue)
     {
-        return s_generalCategoryLookup.ContainsKey(propertyValue);
-    }
-
-    public static CodePointRange[]? GetGeneralCategoryRange(ReadOnlyMemory<char> propertyValue, CodePointRange.Cache cache)
-    {
-        // https://tc39.es/ecma262/#sec-runtime-semantics-unicodematchpropertyvalue-p-v
-        // https://unicode.org/Public/UCD/latest/ucd/PropertyValueAliases.txt
-
-        return s_generalCategoryLookup.TryGetValue(propertyValue, out var category) ? cache.GetGeneralCategory(category) : null;
+        return s_generalCategoryLookup.Contains(propertyValue);
     }
 
     public static bool IsAllowedScriptValue(ReadOnlyMemory<char> propertyValue, EcmaVersion ecmaVersion)

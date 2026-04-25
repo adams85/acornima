@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics;
-using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -53,25 +52,6 @@ internal static class UnicodeHelper
         return (((int)cp - (char.MaxValue + 1)) >> 31) + 2;
     }
 
-    public static string CodePointToString(int cp)
-    {
-        Debug.Assert(cp is >= 0 and <= LastCodePoint);
-
-        if (cp <= char.MaxValue)
-        {
-            return ((char)cp).ToStringCached();
-        }
-
-        Span<char> chars = stackalloc char[2];
-        GetSurrogatePair((uint)cp, out chars[0], out chars[1]);
-
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-        return new string(chars);
-#else
-        return chars.ToString();
-#endif
-    }
-
     public static StringBuilder AppendCodePoint(this StringBuilder sb, int cp)
     {
         Debug.Assert(cp is >= 0 and <= LastCodePoint);
@@ -88,18 +68,6 @@ internal static class UnicodeHelper
         return sb.Append(chars);
 #else
         return sb.Append(chars[0]).Append(chars[1]);
-#endif
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static UnicodeCategory GetUnicodeCategory(int codePoint)
-    {
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-        return CharUnicodeInfo.GetUnicodeCategory(codePoint);
-#else
-        return codePoint <= char.MaxValue
-            ? CharUnicodeInfo.GetUnicodeCategory((char)codePoint)
-            : CharUnicodeInfo.GetUnicodeCategory(CodePointToString(codePoint), 0);
 #endif
     }
 }
