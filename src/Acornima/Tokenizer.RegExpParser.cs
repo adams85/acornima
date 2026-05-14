@@ -920,7 +920,6 @@ public partial class Tokenizer
                 {
                     if (slice.FindIndex(ch => !ch.IsDecimalDigit()) >= 0)
                     {
-                        min = max = default;
                         return false;
                     }
                     max = -1;

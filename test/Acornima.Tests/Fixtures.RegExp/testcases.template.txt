@@ -51,6 +51,17 @@
 []]	u	]
 []]	v	]
 
+[\		\
+[\	u	\
+[\	v	\
+[[\	v	\
+[[]][[\	v	\
+[[]&&[\	v	\
+[][\		\
+[][\	u	\
+[][\	v	\
+[][[\	v	\
+
 \2(x))		x
 \2(x))	u	x	!ignore-error-message
 \2(x))	v	x	!ignore-error-message
@@ -3061,6 +3072,10 @@ y|{1,2}x		xxyx
 y|{1,2}x	u	xxyx
 y|{1,2}x	v	xxyx
 
+{2,1}		xxyx{2,1}	!ignore-error-message
+{2,1}	u	xxyx{2,1}	!ignore-error-message
+{2,1}	v	xxyx{2,1}	!ignore-error-message
+
 # Invalid groups
 
 (?i		i
@@ -3260,6 +3275,62 @@ c(?=(?<$ab>ab)(?<__utf8_246162>))	v	cab
 (?<name>{1,}x)	u	xxyx
 (?<name>{1,}x)	v	xxyx
 
+## Duplicate named capturing groups
+
+(?<a>x)(?<a>y)		xyz
+(?<a>x)(?<a>y)	u	xyz
+(?<a>x)(?<a>y)	v	xyz
+
+((?<a>x)(?<a>y))		xyz
+((?<a>x))(?<a>y)		xyz
+(?<a>x)((?<a>y))		xyz
+
+(((?<a>x)(?<a>y)))		xyz
+(((?<a>x))(?<a>y))		xyz
+(((?<a>x)))(?<a>y)		xyz
+((?<a>x))((?<a>y))		xyz
+(?<a>x)(((?<a>y)))		xyz
+
+(?<a>x)(?<b>y)(?<a>z)		xyz
+((?<a>x)(?<b>y))(?<a>z)		xyz
+(?<a>x)((?<b>y)(?<a>z))		xyz
+(?<a>x)(((?<b>y)))(?<a>z)		xyz
+
+(?<b>x)(?<a>y)(?<a>z)		xyz
+((?<b>x)(?<a>y))(?<a>z)		xyz
+(?<b>x)((?<a>y)(?<a>z))		xyz
+(?<b>x)(((?<a>y)))(?<a>z)		xyz
+(?<c>z)|(?<b>x)(((?<a>y)))(?<a>z)		xyz
+((?<c>z))|(?<b>x)(((?<a>y)))(?<a>z)		xyz
+(((?<c>z)))|(?<b>x)(((?<a>y)))(?<a>z)		xyz
+
+(?<a>x)|(?<a>y)		xyz
+(?<a>x)|(?<a>y)	u	xyz
+(?<a>x)|(?<a>y)	v	xyz
+
+((?<a>x)|(?<a>y))		xyz
+((?<a>x))|(?<a>y)		xyz
+(?<a>x)|((?<a>y))		xyz
+
+(((?<a>x)|(?<a>y)))		xyz
+(((?<a>x))|(?<a>y))		xyz
+(((?<a>x)))|(?<a>y)		xyz
+((?<a>x))|((?<a>y))		xyz
+(?<a>x)|(((?<a>y)))		xyz
+
+(?<a>x)|(?<a>y)|(?<a>z)		xyz
+((?<a>x)|(?<a>y))|(?<a>z)		xyz
+(?<a>x)|((?<a>y)|(?<a>z))		xyz
+(?<a>x)|(((?<a>y)))|(?<a>z)		xyz
+
+(?:(?<a>x))|(?<a>y)		xyz
+(?<!(?<a>x))|(?<a>y)		xyz
+(?<a>x)|(?:(?<a>y))		xyz
+(?<a>x)|(?!(?<a>y))		xyz
+
+\k<b>(?<a>x)(?<b>y)|(?<a>x)(?<b>y)		xyz
+(((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((?<_0>x)(?<_1>x)(?<_2>x)(?<_3>x)(?<_4>x)(?<_5>x)(?<_6>x)(?<_7>x)(?<_8>x)(?<_9>x)(?<_a>x)(?<_b>x)(?<_c>x)(?<_d>x)(?<_e>x)(?<_f>x)(?<_10>x)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))		xyz
+
 # Non-capturing groups
 
 styles(?:\.[\da-f]+)?		styles.css
@@ -3299,6 +3370,9 @@ styles(?:\.[\da-f]+)?	v	styles.1234.min.css
 
 # Invalid group name references
 
+\k		kx
+\k	u	kx
+\k	v	kx
 \kx		kx
 \kx	u	kx
 \kx	v	kx
@@ -3319,10 +3393,81 @@ styles(?:\.[\da-f]+)?	v	styles.1234.min.css
 \k<b>(?<a>)		x
 \k<b>(?<a>)	u	x
 \k<b>(?<a>)	v	x
+\k<b>(?<b)		x	!ignore-error-message
+\k<b>(?<b)	u	x	!ignore-error-message
+\k<b>(?<b)	v	x	!ignore-error-message
+\k<b>(?<(?<b>>)		x	!ignore-error-message
+\k<b>(?<(?<b>>)	u	x	!ignore-error-message
+\k<b>(?<(?<b>>)	v	x	!ignore-error-message
 
+\1\k<\u>(?<\u>)		x	!ignore-error-message
+\1\k<\u>(?<\u>)	u	x	!ignore-error-message
+\1\k<\u>(?<\u>)	v	x	!ignore-error-message
+\1\k<\u{>(?<\u{>)		x	!ignore-error-message
+\1\k<\u{>(?<\u{>)	u	x	!ignore-error-message
+\1\k<\u{>(?<\u{>)	v	x	!ignore-error-message
+\1\k<\u{(}>(?<\u{(}>)		x	!ignore-error-message
+\1\k<\u{(}>(?<\u{(}>)	u	x	!ignore-error-message
+\1\k<\u{(}>(?<\u{(}>)	v	x	!ignore-error-message
+\1\k<\x61>(?<\x61>)		x	!ignore-error-message
+\1\k<\x61>(?<\x61>)	u	x	!ignore-error-message
+\1\k<\x61>(?<\x61>)	v	x	!ignore-error-message
+\1\k<\u0061>(?<\u0061>)		x
+\1\k<\u0061>(?<\u0061>)	u	x
+\1\k<\u0061>(?<\u0061>)	v	x
+\1\k<\u{61}>(?<\u{61}>)		x
+\1\k<\u{61}>(?<\u{61}>)	u	x
+\1\k<\u{61}>(?<\u{61}>)	v	x
+
+\1\k<a\u>(?<a\u>)		x	!ignore-error-message
+\1\k<a\u>(?<a\u>)	u	x	!ignore-error-message
+\1\k<a\u>(?<a\u>)	v	x	!ignore-error-message
+\1\k<a\u{>(?<a\u{>)		x	!ignore-error-message
+\1\k<a\u{>(?<a\u{>)	u	x	!ignore-error-message
+\1\k<a\u{>(?<a\u{>)	v	x	!ignore-error-message
+\1\k<a\u{(}>(?<a\u{(}>)		x	!ignore-error-message
+\1\k<a\u{(}>(?<a\u{(}>)	u	x	!ignore-error-message
+\1\k<a\u{(}>(?<a\u{(}>)	v	x	!ignore-error-message
+\1\k<a\x61>(?<a\x61>)		x	!ignore-error-message
+\1\k<a\x61>(?<a\x61>)	u	x	!ignore-error-message
+\1\k<a\x61>(?<a\x61>)	v	x	!ignore-error-message
+\1\k<a\u0061>(?<a\u0061>)		x
+\1\k<a\u0061>(?<a\u0061>)	u	x
+\1\k<a\u0061>(?<a\u0061>)	v	x
+\1\k<a\u{61}>(?<a\u{61}>)		x
+\1\k<a\u{61}>(?<a\u{61}>)	u	x
+\1\k<a\u{61}>(?<a\u{61}>)	v	x
+
+[\k<b>)]		x
+[\k<b>)]	u	x
+[\k<b>)]	v	x
+[\k<b>)](?		x	!ignore-error-message
+[\k<b>)](?	u	x	!ignore-error-message
+[\k<b>)](?	v	x	!ignore-error-message
+[\k<b>)](?<=		x	!ignore-error-message
+[\k<b>)](?<=	u	x	!ignore-error-message
+[\k<b>)](?<=	v	x	!ignore-error-message
+[\k<b>)](?<!		x	!ignore-error-message
+[\k<b>)](?<!	u	x	!ignore-error-message
+[\k<b>)](?<!	v	x	!ignore-error-message
+[\k<b>)](?<a)		x	!ignore-error-message
+[\k<b>)](?<a)	u	x	!ignore-error-message
+[\k<b>)](?<a)	v	x	!ignore-error-message
+[\k<b>)](?<b)		x	!ignore-error-message
+[\k<b>)](?<b)	u	x	!ignore-error-message
+[\k<b>)](?<b)	v	x	!ignore-error-message
 [\k<b>)](?<b>)		x
 [\k<b>)](?<b>)	u	x
 [\k<b>)](?<b>)	v	x
+[\k<b>)](?<(?<b>>)		x	!ignore-error-message
+[\k<b>)](?<(?<b>>)	u	x	!ignore-error-message
+[\k<b>)](?<(?<b>>)	v	x	!ignore-error-message
+
+[\k<b>)]\k[[\]\k<b>]]]		x
+[\k<b>)]\k[[\]\k<b>]]](?<a)		x	!ignore-error-message
+[\k<b>)]\k[[\]\k<b>]]](?<b)		x	!ignore-error-message
+[\k<b>)]\k[[\]\k<b>]]](?<b>)		x
+[\k<b>)]\k[[\]\k<b>]]](?<(?<b>)>)		x	!ignore-error-message
 
 # Backreferences
 
@@ -3362,6 +3507,37 @@ title=(?<quote>["'])(?<content>.*?)\k<quote>	v	title="Named capturing groups' ad
 \1(?<g>a)		aa
 \1(?<g>a)	u	aa
 \1(?<g>a)	v	aa
+\1\k[[\](]]]		x
+\1\k[[\](]]]	u	x	!ignore-error-message
+\1\k[[\](]]]	v	x	!ignore-error-message
+\1\k[[\](]]]()		x
+\1\k[[\](]]]()	u	x	!ignore-error-message
+\1\k[[\](]]]()	v	x	!ignore-error-message
+\1\k[[\](]]](		x	!ignore-error-message
+\1\k[[\](]]](	u	x	!ignore-error-message
+\1\k[[\](]]](	v	x	!ignore-error-message
+\1\k[[\](]]](?:		x	!ignore-error-message
+\1\k[[\](]]](?:	u	x	!ignore-error-message
+\1\k[[\](]]](?:	v	x	!ignore-error-message
+\1\k[[\](]]](?i:		x	!ignore-error-message
+\1\k[[\](]]](?i:	u	x	!ignore-error-message
+\1\k[[\](]]](?i:	v	x	!ignore-error-message
+\1\k[[\](]]](?=		x	!ignore-error-message
+\1\k[[\](]]](?=	u	x	!ignore-error-message
+\1\k[[\](]]](?=	v	x	!ignore-error-message
+\1\k[[\](]]](?!		x	!ignore-error-message
+\1\k[[\](]]](?!	u	x	!ignore-error-message
+\1\k[[\](]]](?!	v	x	!ignore-error-message
+\1\k[[\](]]](?<=		x	!ignore-error-message
+\1\k[[\](]]](?<=	u	x	!ignore-error-message
+\1\k[[\](]]](?<=	v	x	!ignore-error-message
+\1\k[[\](]]](?<!		x	!ignore-error-message
+\1\k[[\](]]](?<!	u	x	!ignore-error-message
+\1\k[[\](]]](?<!	v	x	!ignore-error-message
+\1\k[[\](]]]\k<()>		x
+\1\k[[\](]]]\k<()>	u	x	!ignore-error-message
+\1\k[[\](]]]\k<()>	v	x	!ignore-error-message
+
 \k<g>(?<g>a)		aa
 \k<g>(?<g>a)	u	aa
 \k<g>(?<g>a)	v	aa
@@ -4044,13 +4220,16 @@ a(?i:b)c		abc
 (?m:^a)	v	"b\na"
 
 ## Error cases (these should produce syntax errors)
-(?z:a)		a
+(?S:a)		a
+(?sz:a)		a
 (?ii:a)		a
 (?i-i:a)		a
 (?i-s-i:a)		a
 (?-:a)		a
 (?I:a)		a
 (?1:a)		a
+(?-S:a)		a
+(?-sz:a)		a
 (?-ss:a)		a
 (?mm:a)		a
 
@@ -4068,10 +4247,6 @@ a(?i:b)c		abc
 ## Class set syntax characters (most of these are already tested above)
 
 [|]	v	
-
-[\q{|}]	v	
-[\q{/}]	v	
-[\q{\}]	v	
 
 ## Class set reserved double punctuators
 
@@ -4104,7 +4279,13 @@ a(?i:b)c		abc
 
 [\&\-\!\#\%\,\:\;\<\=\>\@\`\~]	v	&-!#%,:;<=>@`~
 
+[\0-\#]	v	0#
+[\#-\0]	v	0#
+
 ## Class set expression edge cases
+
+[x&&[]	v	
+[x--[]	v	
 
 [a-]	v	
 [a-0]	v	
@@ -4115,7 +4296,6 @@ a(?i:b)c		abc
 [a-\q{}]	v	
 [a-[]	v		!ignore-error-message
 [a-[]]	v	
-[a-&&]	v	
 [a-/]	v	
 [a-b-c]	v	
 [a-&&]	v	
@@ -4149,7 +4329,6 @@ a(?i:b)c		abc
 [za-\q{}]	v	
 [za-[]	v		!ignore-error-message
 [za-[]]	v	
-[za-&&]	v	
 [za-/]	v	
 [za-b-c]	v	
 [za-&&]	v	
@@ -4183,7 +4362,6 @@ a(?i:b)c		abc
 [[]-\q{}]	v	
 [[]-[]	v		!ignore-error-message
 [[]-[]]	v	
-[[]-&&]	v	
 [[]-/]	v	
 [[]-b-c]	v	
 [[]-&&]	v	
@@ -4217,7 +4395,6 @@ a(?i:b)c		abc
 [z[]-\q{}]	v	
 [z[]-[]	v		!ignore-error-message
 [z[]-[]]	v	
-[z[]-&&]	v	
 [z[]-/]	v	
 [z[]-b-c]	v	
 [z[]-&&]	v	
@@ -4261,8 +4438,6 @@ a(?i:b)c		abc
 [\q{#}]	v	##
 [\q{##}]	v	##
 [\q{/}]	v	//
-[\q{/}]	v	//
-[\q{\}]	v	\\
 [\q{\}]	v	\\
 [\q{\0}]	v	0
 [\q{\d}]	v	0
@@ -4333,14 +4508,14 @@ a(?i:b)c		abc
 [[a-z]--[aeiou]]	v	abc123
 [[a-f][0-9]]	v	abc123
 [[[a-f]--[b]][0-9]]	v	abc123
-[\\p{Decimal_Number}&&[0-9]]	v	abc123
+[\p{Decimal_Number}&&[0-9]]	v	abc123
 
 
-[\\q{a}]	v	abc123
-[\\q{a|}]	v	abc123
-[\\q{|a}]	v	abc123
-[\\q{abc|def}]	v	abc123
-[\\q{abc|d|ef}]	v	abc123
+[\q{a}]	v	abc123
+[\q{a|}]	v	abc123
+[\q{|a}]	v	abc123
+[\q{abc|def}]	v	abc123
+[\q{abc|d|ef}]	v	abc123
 
 # Issues
 

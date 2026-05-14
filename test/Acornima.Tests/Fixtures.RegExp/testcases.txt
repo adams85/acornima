@@ -1,4 +1,4 @@
-﻿# Generated from testcases.template.txt at 2026-04-25T19:47:22
+﻿# Generated from testcases.template.txt at 2026-05-16T14:29:11
 
 # This file defines test cases for regular expression conversion testing (see RegExpTests.ExecuteTestCase).
 # Each uncommented, non-whitespace line specifies a test case in a tab-delimited format, with the following fields:
@@ -52,6 +52,17 @@
 []]		"[^\\s\\S]]"	]	[]
 []]	u	)syntax-error(	]	"Lone quantifier brackets"
 []]	v	)syntax-error(	]	"Lone quantifier brackets"
+
+[\		)syntax-error(	\	"\\ at end of pattern"
+[\	u	)syntax-error(	\	"\\ at end of pattern"
+[\	v	)syntax-error(	\	"\\ at end of pattern"
+[[\	v	)syntax-error(	\	"\\ at end of pattern"
+[[]][[\	v	)syntax-error(	\	"\\ at end of pattern"
+[[]&&[\	v	)syntax-error(	\	"\\ at end of pattern"
+[][\		)syntax-error(	\	"\\ at end of pattern"
+[][\	u	)syntax-error(	\	"\\ at end of pattern"
+[][\	v	)syntax-error(	\	"\\ at end of pattern"
+[][[\	v	)syntax-error(	\	"\\ at end of pattern"
 
 \2(x))		)syntax-error(	x	"Unmatched ')'"
 \2(x))	u	)syntax-error(	x	"Invalid escape"	!ignore-error-message
@@ -3063,6 +3074,10 @@ y|{1,2}x		)syntax-error(	xxyx	"Nothing to repeat"
 y|{1,2}x	u	)syntax-error(	xxyx	"Nothing to repeat"
 y|{1,2}x	v	)syntax-error(	xxyx	"Nothing to repeat"
 
+{2,1}		)syntax-error(	xxyx{2,1}	"Nothing to repeat"	!ignore-error-message
+{2,1}	u	)syntax-error(	xxyx{2,1}	"Nothing to repeat"	!ignore-error-message
+{2,1}	v	)syntax-error(	xxyx{2,1}	"Nothing to repeat"	!ignore-error-message
+
 # Invalid groups
 
 (?i		)syntax-error(	i	"Invalid group"
@@ -3262,6 +3277,62 @@ c(?=(?<$ab>ab)(?<__utf8_246162>))	v	)inconvertible(	cab	[{"captures":["c","ab","
 (?<name>{1,}x)	u	)syntax-error(	xxyx	"Nothing to repeat"
 (?<name>{1,}x)	v	)syntax-error(	xxyx	"Nothing to repeat"
 
+## Duplicate named capturing groups
+
+(?<a>x)(?<a>y)		)syntax-error(	xyz	"Duplicate capture group name"
+(?<a>x)(?<a>y)	u	)syntax-error(	xyz	"Duplicate capture group name"
+(?<a>x)(?<a>y)	v	)syntax-error(	xyz	"Duplicate capture group name"
+
+((?<a>x)(?<a>y))		)syntax-error(	xyz	"Duplicate capture group name"
+((?<a>x))(?<a>y)		)syntax-error(	xyz	"Duplicate capture group name"
+(?<a>x)((?<a>y))		)syntax-error(	xyz	"Duplicate capture group name"
+
+(((?<a>x)(?<a>y)))		)syntax-error(	xyz	"Duplicate capture group name"
+(((?<a>x))(?<a>y))		)syntax-error(	xyz	"Duplicate capture group name"
+(((?<a>x)))(?<a>y)		)syntax-error(	xyz	"Duplicate capture group name"
+((?<a>x))((?<a>y))		)syntax-error(	xyz	"Duplicate capture group name"
+(?<a>x)(((?<a>y)))		)syntax-error(	xyz	"Duplicate capture group name"
+
+(?<a>x)(?<b>y)(?<a>z)		)syntax-error(	xyz	"Duplicate capture group name"
+((?<a>x)(?<b>y))(?<a>z)		)syntax-error(	xyz	"Duplicate capture group name"
+(?<a>x)((?<b>y)(?<a>z))		)syntax-error(	xyz	"Duplicate capture group name"
+(?<a>x)(((?<b>y)))(?<a>z)		)syntax-error(	xyz	"Duplicate capture group name"
+
+(?<b>x)(?<a>y)(?<a>z)		)syntax-error(	xyz	"Duplicate capture group name"
+((?<b>x)(?<a>y))(?<a>z)		)syntax-error(	xyz	"Duplicate capture group name"
+(?<b>x)((?<a>y)(?<a>z))		)syntax-error(	xyz	"Duplicate capture group name"
+(?<b>x)(((?<a>y)))(?<a>z)		)syntax-error(	xyz	"Duplicate capture group name"
+(?<c>z)|(?<b>x)(((?<a>y)))(?<a>z)		)syntax-error(	xyz	"Duplicate capture group name"
+((?<c>z))|(?<b>x)(((?<a>y)))(?<a>z)		)syntax-error(	xyz	"Duplicate capture group name"
+(((?<c>z)))|(?<b>x)(((?<a>y)))(?<a>z)		)syntax-error(	xyz	"Duplicate capture group name"
+
+(?<a>x)|(?<a>y)		((?<a>x))|((?<a>y))	xyz	[{"captures":["x","x",null],"index":0,"groups":{"a":"x"}},{"captures":["y",null,"y"],"index":1,"groups":{"a":"y"}}]
+(?<a>x)|(?<a>y)	u	((?<a>x))|((?<a>y))	xyz	[{"captures":["x","x",null],"index":0,"groups":{"a":"x"}},{"captures":["y",null,"y"],"index":1,"groups":{"a":"y"}}]
+(?<a>x)|(?<a>y)	v	)inconvertible(	xyz	[{"captures":["x","x",null],"index":0,"groups":{"a":"x"}},{"captures":["y",null,"y"],"index":1,"groups":{"a":"y"}}]
+
+((?<a>x)|(?<a>y))		(((?<a>x))|((?<a>y)))	xyz	[{"captures":["x","x","x",null],"index":0,"groups":{"a":"x"}},{"captures":["y","y",null,"y"],"index":1,"groups":{"a":"y"}}]
+((?<a>x))|(?<a>y)		(((?<a>x)))|((?<a>y))	xyz	[{"captures":["x","x","x",null],"index":0,"groups":{"a":"x"}},{"captures":["y",null,null,"y"],"index":1,"groups":{"a":"y"}}]
+(?<a>x)|((?<a>y))		((?<a>x))|(((?<a>y)))	xyz	[{"captures":["x","x",null,null],"index":0,"groups":{"a":"x"}},{"captures":["y",null,"y","y"],"index":1,"groups":{"a":"y"}}]
+
+(((?<a>x)|(?<a>y)))		((((?<a>x))|((?<a>y))))	xyz	[{"captures":["x","x","x","x",null],"index":0,"groups":{"a":"x"}},{"captures":["y","y","y",null,"y"],"index":1,"groups":{"a":"y"}}]
+(((?<a>x))|(?<a>y))		((((?<a>x)))|((?<a>y)))	xyz	[{"captures":["x","x","x","x",null],"index":0,"groups":{"a":"x"}},{"captures":["y","y",null,null,"y"],"index":1,"groups":{"a":"y"}}]
+(((?<a>x)))|(?<a>y)		((((?<a>x))))|((?<a>y))	xyz	[{"captures":["x","x","x","x",null],"index":0,"groups":{"a":"x"}},{"captures":["y",null,null,null,"y"],"index":1,"groups":{"a":"y"}}]
+((?<a>x))|((?<a>y))		(((?<a>x)))|(((?<a>y)))	xyz	[{"captures":["x","x","x",null,null],"index":0,"groups":{"a":"x"}},{"captures":["y",null,null,"y","y"],"index":1,"groups":{"a":"y"}}]
+(?<a>x)|(((?<a>y)))		((?<a>x))|((((?<a>y))))	xyz	[{"captures":["x","x",null,null,null],"index":0,"groups":{"a":"x"}},{"captures":["y",null,"y","y","y"],"index":1,"groups":{"a":"y"}}]
+
+(?<a>x)|(?<a>y)|(?<a>z)		((?<a>x))|((?<a>y))|((?<a>z))	xyz	[{"captures":["x","x",null,null],"index":0,"groups":{"a":"x"}},{"captures":["y",null,"y",null],"index":1,"groups":{"a":"y"}},{"captures":["z",null,null,"z"],"index":2,"groups":{"a":"z"}}]
+((?<a>x)|(?<a>y))|(?<a>z)		(((?<a>x))|((?<a>y)))|((?<a>z))	xyz	[{"captures":["x","x","x",null,null],"index":0,"groups":{"a":"x"}},{"captures":["y","y",null,"y",null],"index":1,"groups":{"a":"y"}},{"captures":["z",null,null,null,"z"],"index":2,"groups":{"a":"z"}}]
+(?<a>x)|((?<a>y)|(?<a>z))		((?<a>x))|(((?<a>y))|((?<a>z)))	xyz	[{"captures":["x","x",null,null,null],"index":0,"groups":{"a":"x"}},{"captures":["y",null,"y","y",null],"index":1,"groups":{"a":"y"}},{"captures":["z",null,"z",null,"z"],"index":2,"groups":{"a":"z"}}]
+(?<a>x)|(((?<a>y)))|(?<a>z)		((?<a>x))|((((?<a>y))))|((?<a>z))	xyz	[{"captures":["x","x",null,null,null,null],"index":0,"groups":{"a":"x"}},{"captures":["y",null,"y","y","y",null],"index":1,"groups":{"a":"y"}},{"captures":["z",null,null,null,null,"z"],"index":2,"groups":{"a":"z"}}]
+
+(?:(?<a>x))|(?<a>y)		(?:((?<a>x)))|((?<a>y))	xyz	[{"captures":["x","x",null],"index":0,"groups":{"a":"x"}},{"captures":["y",null,"y"],"index":1,"groups":{"a":"y"}}]
+(?<!(?<a>x))|(?<a>y)		(?<!((?<a>x)))|((?<a>y))	xyz	[{"captures":["",null,null],"index":0,"groups":{}},{"captures":["y",null,"y"],"index":1,"groups":{"a":"y"}},{"captures":["",null,null],"index":2,"groups":{}},{"captures":["",null,null],"index":3,"groups":{}}]
+(?<a>x)|(?:(?<a>y))		((?<a>x))|(?:((?<a>y)))	xyz	[{"captures":["x","x",null],"index":0,"groups":{"a":"x"}},{"captures":["y",null,"y"],"index":1,"groups":{"a":"y"}}]
+(?<a>x)|(?!(?<a>y))		((?<a>x))|(?!((?<a>y)))	xyz	[{"captures":["x","x",null],"index":0,"groups":{"a":"x"}},{"captures":["",null,null],"index":2,"groups":{}},{"captures":["",null,null],"index":3,"groups":{}}]
+
+\k<b>(?<a>x)(?<b>y)|(?<a>x)(?<b>y)		)inconvertible(	xyz	[{"captures":["xy","x","y",null,null],"index":0,"groups":{"a":"x","b":"y"}}]
+(((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((?<_0>x)(?<_1>x)(?<_2>x)(?<_3>x)(?<_4>x)(?<_5>x)(?<_6>x)(?<_7>x)(?<_8>x)(?<_9>x)(?<_a>x)(?<_b>x)(?<_c>x)(?<_d>x)(?<_e>x)(?<_f>x)(?<_10>x)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))		((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((?<_0>x))((?<_1>x))((?<_2>x))((?<_3>x))((?<_4>x))((?<_5>x))((?<_6>x))((?<_7>x))((?<_8>x))((?<_9>x))((?<_a>x))((?<_b>x))((?<_c>x))((?<_d>x))((?<_e>x))((?<_f>x))((?<_10>x))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))	xyz	[]
+
 # Non-capturing groups
 
 styles(?:\.[\da-f]+)?		"styles(?:\\.[\\da-f]+)?"	styles.css	[{"captures":["styles.c"],"index":0}]
@@ -3301,6 +3372,9 @@ styles(?:\.[\da-f]+)?	v	)inconvertible(	styles.1234.min.css	[{"captures":["style
 
 # Invalid group name references
 
+\k		k	kx	[{"captures":["k"],"index":0}]
+\k	u	)syntax-error(	kx	"Invalid named reference"
+\k	v	)syntax-error(	kx	"Invalid named reference"
 \kx		kx	kx	[{"captures":["kx"],"index":0}]
 \kx	u	)syntax-error(	kx	"Invalid named reference"
 \kx	v	)syntax-error(	kx	"Invalid named reference"
@@ -3321,10 +3395,81 @@ styles(?:\.[\da-f]+)?	v	)inconvertible(	styles.1234.min.css	[{"captures":["style
 \k<b>(?<a>)		)syntax-error(	x	"Invalid named capture referenced"
 \k<b>(?<a>)	u	)syntax-error(	x	"Invalid named capture referenced"
 \k<b>(?<a>)	v	)syntax-error(	x	"Invalid named capture referenced"
+\k<b>(?<b)		)syntax-error(	x	"Invalid capture group name"	!ignore-error-message
+\k<b>(?<b)	u	)syntax-error(	x	"Invalid capture group name"	!ignore-error-message
+\k<b>(?<b)	v	)syntax-error(	x	"Invalid capture group name"	!ignore-error-message
+\k<b>(?<(?<b>>)		)syntax-error(	x	"Invalid capture group name"	!ignore-error-message
+\k<b>(?<(?<b>>)	u	)syntax-error(	x	"Invalid capture group name"	!ignore-error-message
+\k<b>(?<(?<b>>)	v	)syntax-error(	x	"Invalid capture group name"	!ignore-error-message
 
+\1\k<\u>(?<\u>)		)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message
+\1\k<\u>(?<\u>)	u	)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message
+\1\k<\u>(?<\u>)	v	)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message
+\1\k<\u{>(?<\u{>)		)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message
+\1\k<\u{>(?<\u{>)	u	)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message
+\1\k<\u{>(?<\u{>)	v	)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message
+\1\k<\u{(}>(?<\u{(}>)		)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message
+\1\k<\u{(}>(?<\u{(}>)	u	)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message
+\1\k<\u{(}>(?<\u{(}>)	v	)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message
+\1\k<\x61>(?<\x61>)		)syntax-error(	x	"Invalid capture group name"	!ignore-error-message
+\1\k<\x61>(?<\x61>)	u	)syntax-error(	x	"Invalid capture group name"	!ignore-error-message
+\1\k<\x61>(?<\x61>)	v	)syntax-error(	x	"Invalid capture group name"	!ignore-error-message
+\1\k<\u0061>(?<\u0061>)		)inconvertible(	x	[{"captures":["",""],"index":0,"groups":{"a":""}},{"captures":["",""],"index":1,"groups":{"a":""}}]
+\1\k<\u0061>(?<\u0061>)	u	)inconvertible(	x	[{"captures":["",""],"index":0,"groups":{"a":""}},{"captures":["",""],"index":1,"groups":{"a":""}}]
+\1\k<\u0061>(?<\u0061>)	v	)inconvertible(	x	[{"captures":["",""],"index":0,"groups":{"a":""}},{"captures":["",""],"index":1,"groups":{"a":""}}]
+\1\k<\u{61}>(?<\u{61}>)		)inconvertible(	x	[{"captures":["",""],"index":0,"groups":{"a":""}},{"captures":["",""],"index":1,"groups":{"a":""}}]
+\1\k<\u{61}>(?<\u{61}>)	u	)inconvertible(	x	[{"captures":["",""],"index":0,"groups":{"a":""}},{"captures":["",""],"index":1,"groups":{"a":""}}]
+\1\k<\u{61}>(?<\u{61}>)	v	)inconvertible(	x	[{"captures":["",""],"index":0,"groups":{"a":""}},{"captures":["",""],"index":1,"groups":{"a":""}}]
+
+\1\k<a\u>(?<a\u>)		)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message
+\1\k<a\u>(?<a\u>)	u	)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message
+\1\k<a\u>(?<a\u>)	v	)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message
+\1\k<a\u{>(?<a\u{>)		)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message
+\1\k<a\u{>(?<a\u{>)	u	)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message
+\1\k<a\u{>(?<a\u{>)	v	)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message
+\1\k<a\u{(}>(?<a\u{(}>)		)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message
+\1\k<a\u{(}>(?<a\u{(}>)	u	)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message
+\1\k<a\u{(}>(?<a\u{(}>)	v	)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message
+\1\k<a\x61>(?<a\x61>)		)syntax-error(	x	"Invalid capture group name"	!ignore-error-message
+\1\k<a\x61>(?<a\x61>)	u	)syntax-error(	x	"Invalid capture group name"	!ignore-error-message
+\1\k<a\x61>(?<a\x61>)	v	)syntax-error(	x	"Invalid capture group name"	!ignore-error-message
+\1\k<a\u0061>(?<a\u0061>)		)inconvertible(	x	[{"captures":["",""],"index":0,"groups":{"aa":""}},{"captures":["",""],"index":1,"groups":{"aa":""}}]
+\1\k<a\u0061>(?<a\u0061>)	u	)inconvertible(	x	[{"captures":["",""],"index":0,"groups":{"aa":""}},{"captures":["",""],"index":1,"groups":{"aa":""}}]
+\1\k<a\u0061>(?<a\u0061>)	v	)inconvertible(	x	[{"captures":["",""],"index":0,"groups":{"aa":""}},{"captures":["",""],"index":1,"groups":{"aa":""}}]
+\1\k<a\u{61}>(?<a\u{61}>)		)inconvertible(	x	[{"captures":["",""],"index":0,"groups":{"aa":""}},{"captures":["",""],"index":1,"groups":{"aa":""}}]
+\1\k<a\u{61}>(?<a\u{61}>)	u	)inconvertible(	x	[{"captures":["",""],"index":0,"groups":{"aa":""}},{"captures":["",""],"index":1,"groups":{"aa":""}}]
+\1\k<a\u{61}>(?<a\u{61}>)	v	)inconvertible(	x	[{"captures":["",""],"index":0,"groups":{"aa":""}},{"captures":["",""],"index":1,"groups":{"aa":""}}]
+
+[\k<b>)]		[k<b>)]	x	[]
+[\k<b>)]	u	)syntax-error(	x	"Invalid escape"
+[\k<b>)]	v	)syntax-error(	x	"Invalid escape"
+[\k<b>)](?		)syntax-error(	x	"Invalid group"	!ignore-error-message
+[\k<b>)](?	u	)syntax-error(	x	"Invalid escape"	!ignore-error-message
+[\k<b>)](?	v	)syntax-error(	x	"Invalid escape"	!ignore-error-message
+[\k<b>)](?<=		)syntax-error(	x	"Unterminated group"	!ignore-error-message
+[\k<b>)](?<=	u	)syntax-error(	x	"Invalid escape"	!ignore-error-message
+[\k<b>)](?<=	v	)syntax-error(	x	"Invalid escape"	!ignore-error-message
+[\k<b>)](?<!		)syntax-error(	x	"Unterminated group"	!ignore-error-message
+[\k<b>)](?<!	u	)syntax-error(	x	"Invalid escape"	!ignore-error-message
+[\k<b>)](?<!	v	)syntax-error(	x	"Invalid escape"	!ignore-error-message
+[\k<b>)](?<a)		)syntax-error(	x	"Invalid escape"	!ignore-error-message
+[\k<b>)](?<a)	u	)syntax-error(	x	"Invalid escape"	!ignore-error-message
+[\k<b>)](?<a)	v	)syntax-error(	x	"Invalid escape"	!ignore-error-message
+[\k<b>)](?<b)		)syntax-error(	x	"Invalid escape"	!ignore-error-message
+[\k<b>)](?<b)	u	)syntax-error(	x	"Invalid escape"	!ignore-error-message
+[\k<b>)](?<b)	v	)syntax-error(	x	"Invalid escape"	!ignore-error-message
 [\k<b>)](?<b>)		)syntax-error(	x	"Invalid escape"
 [\k<b>)](?<b>)	u	)syntax-error(	x	"Invalid escape"
 [\k<b>)](?<b>)	v	)syntax-error(	x	"Invalid escape"
+[\k<b>)](?<(?<b>>)		)syntax-error(	x	"Invalid escape"	!ignore-error-message
+[\k<b>)](?<(?<b>>)	u	)syntax-error(	x	"Invalid escape"	!ignore-error-message
+[\k<b>)](?<(?<b>>)	v	)syntax-error(	x	"Invalid escape"	!ignore-error-message
+
+[\k<b>)]\k[[\]\k<b>]]]		"[k<b>)]k[[\\]k<b>]]]"	x	[]
+[\k<b>)]\k[[\]\k<b>]]](?<a)		)syntax-error(	x	"Invalid escape"	!ignore-error-message
+[\k<b>)]\k[[\]\k<b>]]](?<b)		)syntax-error(	x	"Invalid escape"	!ignore-error-message
+[\k<b>)]\k[[\]\k<b>]]](?<b>)		)syntax-error(	x	"Invalid escape"
+[\k<b>)]\k[[\]\k<b>]]](?<(?<b>)>)		)syntax-error(	x	"Invalid escape"	!ignore-error-message
 
 # Backreferences
 
@@ -3364,6 +3509,37 @@ title=(?<quote>["'])(?<content>.*?)\k<quote>	v	)inconvertible(	title="Named capt
 \1(?<g>a)		)inconvertible(	aa	[{"captures":["a","a"],"index":0,"groups":{"g":"a"}},{"captures":["a","a"],"index":1,"groups":{"g":"a"}}]
 \1(?<g>a)	u	)inconvertible(	aa	[{"captures":["a","a"],"index":0,"groups":{"g":"a"}},{"captures":["a","a"],"index":1,"groups":{"g":"a"}}]
 \1(?<g>a)	v	)inconvertible(	aa	[{"captures":["a","a"],"index":0,"groups":{"g":"a"}},{"captures":["a","a"],"index":1,"groups":{"g":"a"}}]
+\1\k[[\](]]]		"\x01k[[\\](]]]"	x	[]
+\1\k[[\](]]]	u	)syntax-error(	x	"Invalid escape"	!ignore-error-message
+\1\k[[\](]]]	v	)syntax-error(	x	"Invalid escape"	!ignore-error-message
+\1\k[[\](]]]()		)inconvertible(	x	[]
+\1\k[[\](]]]()	u	)syntax-error(	x	"Invalid named reference"	!ignore-error-message
+\1\k[[\](]]]()	v	)syntax-error(	x	"Invalid named reference"	!ignore-error-message
+\1\k[[\](]]](		)syntax-error(	x	"Unterminated group"	!ignore-error-message
+\1\k[[\](]]](	u	)syntax-error(	x	"Invalid named reference"	!ignore-error-message
+\1\k[[\](]]](	v	)syntax-error(	x	"Invalid named reference"	!ignore-error-message
+\1\k[[\](]]](?:		)syntax-error(	x	"Unterminated group"	!ignore-error-message
+\1\k[[\](]]](?:	u	)syntax-error(	x	"Invalid escape"	!ignore-error-message
+\1\k[[\](]]](?:	v	)syntax-error(	x	"Invalid escape"	!ignore-error-message
+\1\k[[\](]]](?i:		)syntax-error(	x	"Unterminated group"	!ignore-error-message
+\1\k[[\](]]](?i:	u	)syntax-error(	x	"Invalid escape"	!ignore-error-message
+\1\k[[\](]]](?i:	v	)syntax-error(	x	"Invalid escape"	!ignore-error-message
+\1\k[[\](]]](?=		)syntax-error(	x	"Unterminated group"	!ignore-error-message
+\1\k[[\](]]](?=	u	)syntax-error(	x	"Invalid escape"	!ignore-error-message
+\1\k[[\](]]](?=	v	)syntax-error(	x	"Invalid escape"	!ignore-error-message
+\1\k[[\](]]](?!		)syntax-error(	x	"Unterminated group"	!ignore-error-message
+\1\k[[\](]]](?!	u	)syntax-error(	x	"Invalid escape"	!ignore-error-message
+\1\k[[\](]]](?!	v	)syntax-error(	x	"Invalid escape"	!ignore-error-message
+\1\k[[\](]]](?<=		)syntax-error(	x	"Unterminated group"	!ignore-error-message
+\1\k[[\](]]](?<=	u	)syntax-error(	x	"Invalid escape"	!ignore-error-message
+\1\k[[\](]]](?<=	v	)syntax-error(	x	"Invalid escape"	!ignore-error-message
+\1\k[[\](]]](?<!		)syntax-error(	x	"Unterminated group"	!ignore-error-message
+\1\k[[\](]]](?<!	u	)syntax-error(	x	"Invalid escape"	!ignore-error-message
+\1\k[[\](]]](?<!	v	)syntax-error(	x	"Invalid escape"	!ignore-error-message
+\1\k[[\](]]]\k<()>		)inconvertible(	x	[]
+\1\k[[\](]]]\k<()>	u	)syntax-error(	x	"Invalid named reference"	!ignore-error-message
+\1\k[[\](]]]\k<()>	v	)syntax-error(	x	"Invalid named reference"	!ignore-error-message
+
 \k<g>(?<g>a)		)inconvertible(	aa	[{"captures":["a","a"],"index":0,"groups":{"g":"a"}},{"captures":["a","a"],"index":1,"groups":{"g":"a"}}]
 \k<g>(?<g>a)	u	)inconvertible(	aa	[{"captures":["a","a"],"index":0,"groups":{"g":"a"}},{"captures":["a","a"],"index":1,"groups":{"g":"a"}}]
 \k<g>(?<g>a)	v	)inconvertible(	aa	[{"captures":["a","a"],"index":0,"groups":{"g":"a"}},{"captures":["a","a"],"index":1,"groups":{"g":"a"}}]
@@ -4046,13 +4222,16 @@ a(?i:b)c		a(?i:b)c	abc	[{"captures":["abc"],"index":0}]
 (?m:^a)	v	)inconvertible(	"b\na"	[{"captures":["a"],"index":2}]
 
 ## Error cases (these should produce syntax errors)
-(?z:a)		)syntax-error(	a	"Invalid group"
+(?S:a)		)syntax-error(	a	"Invalid group"
+(?sz:a)		)syntax-error(	a	"Invalid group"
 (?ii:a)		)syntax-error(	a	"Repeated flag in flag group"
 (?i-i:a)		)syntax-error(	a	"Repeated flag in flag group"
 (?i-s-i:a)		)syntax-error(	a	"Multiple dashes in flag group"
 (?-:a)		)syntax-error(	a	"Invalid flag group"
 (?I:a)		)syntax-error(	a	"Invalid group"
 (?1:a)		)syntax-error(	a	"Invalid group"
+(?-S:a)		)syntax-error(	a	"Invalid group"
+(?-sz:a)		)syntax-error(	a	"Invalid group"
 (?-ss:a)		)syntax-error(	a	"Repeated flag in flag group"
 (?mm:a)		)syntax-error(	a	"Repeated flag in flag group"
 
@@ -4070,10 +4249,6 @@ a(?i:b)c		a(?i:b)c	abc	[{"captures":["abc"],"index":0}]
 ## Class set syntax characters (most of these are already tested above)
 
 [|]	v	)syntax-error(		"Invalid character in character class"
-
-[\q{|}]	v	)inconvertible(		[{"captures":[""],"index":0}]
-[\q{/}]	v	)syntax-error(		"Invalid character in character class"
-[\q{\}]	v	)syntax-error(		"Invalid character in character class"
 
 ## Class set reserved double punctuators
 
@@ -4106,7 +4281,13 @@ a(?i:b)c		a(?i:b)c	abc	[{"captures":["abc"],"index":0}]
 
 [\&\-\!\#\%\,\:\;\<\=\>\@\`\~]	v	)inconvertible(	&-!#%,:;<=>@`~	[{"captures":["&"],"index":0},{"captures":["-"],"index":1},{"captures":["!"],"index":2},{"captures":["#"],"index":3},{"captures":["%"],"index":4},{"captures":[","],"index":5},{"captures":[":"],"index":6},{"captures":[";"],"index":7},{"captures":["<"],"index":8},{"captures":["="],"index":9},{"captures":[">"],"index":10},{"captures":["@"],"index":11},{"captures":["`"],"index":12},{"captures":["~"],"index":13}]
 
+[\0-\#]	v	)inconvertible(	0#	[{"captures":["#"],"index":1}]
+[\#-\0]	v	)syntax-error(	0#	"Range out of order in character class"
+
 ## Class set expression edge cases
+
+[x&&[]	v	)syntax-error(		"Unterminated character class"
+[x--[]	v	)syntax-error(		"Unterminated character class"
 
 [a-]	v	)syntax-error(		"Invalid character in character class"
 [a-0]	v	)syntax-error(		"Range out of order in character class"
@@ -4117,7 +4298,6 @@ a(?i:b)c		a(?i:b)c	abc	[{"captures":["abc"],"index":0}]
 [a-\q{}]	v	)syntax-error(		"Invalid character class"
 [a-[]	v	)syntax-error(		"Invalid character class"	!ignore-error-message
 [a-[]]	v	)syntax-error(		"Invalid character class"
-[a-&&]	v	)syntax-error(		"Invalid set operation in character class"
 [a-/]	v	)syntax-error(		"Invalid character in character class"
 [a-b-c]	v	)syntax-error(		"Invalid character class"
 [a-&&]	v	)syntax-error(		"Invalid set operation in character class"
@@ -4151,7 +4331,6 @@ a(?i:b)c		a(?i:b)c	abc	[{"captures":["abc"],"index":0}]
 [za-\q{}]	v	)syntax-error(		"Invalid character class"
 [za-[]	v	)syntax-error(		"Invalid character class"	!ignore-error-message
 [za-[]]	v	)syntax-error(		"Invalid character class"
-[za-&&]	v	)syntax-error(		"Invalid set operation in character class"
 [za-/]	v	)syntax-error(		"Invalid character in character class"
 [za-b-c]	v	)syntax-error(		"Invalid character class"
 [za-&&]	v	)syntax-error(		"Invalid set operation in character class"
@@ -4185,7 +4364,6 @@ a(?i:b)c		a(?i:b)c	abc	[{"captures":["abc"],"index":0}]
 [[]-\q{}]	v	)syntax-error(		"Invalid character class"
 [[]-[]	v	)syntax-error(		"Invalid character class"	!ignore-error-message
 [[]-[]]	v	)syntax-error(		"Invalid character class"
-[[]-&&]	v	)syntax-error(		"Invalid character class"
 [[]-/]	v	)syntax-error(		"Invalid character class"
 [[]-b-c]	v	)syntax-error(		"Invalid character class"
 [[]-&&]	v	)syntax-error(		"Invalid character class"
@@ -4219,7 +4397,6 @@ a(?i:b)c		a(?i:b)c	abc	[{"captures":["abc"],"index":0}]
 [z[]-\q{}]	v	)syntax-error(		"Invalid character class"
 [z[]-[]	v	)syntax-error(		"Invalid character class"	!ignore-error-message
 [z[]-[]]	v	)syntax-error(		"Invalid character class"
-[z[]-&&]	v	)syntax-error(		"Invalid character class"
 [z[]-/]	v	)syntax-error(		"Invalid character class"
 [z[]-b-c]	v	)syntax-error(		"Invalid character class"
 [z[]-&&]	v	)syntax-error(		"Invalid character class"
@@ -4263,8 +4440,6 @@ a(?i:b)c		a(?i:b)c	abc	[{"captures":["abc"],"index":0}]
 [\q{#}]	v	)inconvertible(	##	[{"captures":["#"],"index":0},{"captures":["#"],"index":1}]
 [\q{##}]	v	)syntax-error(	##	"Invalid set operation in character class"
 [\q{/}]	v	)syntax-error(	//	"Invalid character in character class"
-[\q{/}]	v	)syntax-error(	//	"Invalid character in character class"
-[\q{\}]	v	)syntax-error(	\\	"Invalid character in character class"
 [\q{\}]	v	)syntax-error(	\\	"Invalid character in character class"
 [\q{\0}]	v	)inconvertible(	0	[]
 [\q{\d}]	v	)syntax-error(	0	"Invalid escape"
@@ -4335,14 +4510,14 @@ a(?i:b)c		a(?i:b)c	abc	[{"captures":["abc"],"index":0}]
 [[a-z]--[aeiou]]	v	)inconvertible(	abc123	[{"captures":["b"],"index":1},{"captures":["c"],"index":2}]
 [[a-f][0-9]]	v	)inconvertible(	abc123	[{"captures":["a"],"index":0},{"captures":["b"],"index":1},{"captures":["c"],"index":2},{"captures":["1"],"index":3},{"captures":["2"],"index":4},{"captures":["3"],"index":5}]
 [[[a-f]--[b]][0-9]]	v	)inconvertible(	abc123	[{"captures":["a"],"index":0},{"captures":["c"],"index":2},{"captures":["1"],"index":3},{"captures":["2"],"index":4},{"captures":["3"],"index":5}]
-[\\p{Decimal_Number}&&[0-9]]	v	)syntax-error(	abc123	"Invalid character in character class"
+[\p{Decimal_Number}&&[0-9]]	v	)inconvertible(	abc123	[{"captures":["1"],"index":3},{"captures":["2"],"index":4},{"captures":["3"],"index":5}]
 
 
-[\\q{a}]	v	)syntax-error(	abc123	"Invalid character in character class"
-[\\q{a|}]	v	)syntax-error(	abc123	"Invalid character in character class"
-[\\q{|a}]	v	)syntax-error(	abc123	"Invalid character in character class"
-[\\q{abc|def}]	v	)syntax-error(	abc123	"Invalid character in character class"
-[\\q{abc|d|ef}]	v	)syntax-error(	abc123	"Invalid character in character class"
+[\q{a}]	v	)inconvertible(	abc123	[{"captures":["a"],"index":0}]
+[\q{a|}]	v	)inconvertible(	abc123	[{"captures":["a"],"index":0},{"captures":[""],"index":1},{"captures":[""],"index":2},{"captures":[""],"index":3},{"captures":[""],"index":4},{"captures":[""],"index":5},{"captures":[""],"index":6}]
+[\q{|a}]	v	)inconvertible(	abc123	[{"captures":["a"],"index":0},{"captures":[""],"index":1},{"captures":[""],"index":2},{"captures":[""],"index":3},{"captures":[""],"index":4},{"captures":[""],"index":5},{"captures":[""],"index":6}]
+[\q{abc|def}]	v	)inconvertible(	abc123	[{"captures":["abc"],"index":0}]
+[\q{abc|d|ef}]	v	)inconvertible(	abc123	[{"captures":["abc"],"index":0}]
 
 # Issues
 

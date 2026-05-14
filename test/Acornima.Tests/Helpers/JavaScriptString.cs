@@ -9,7 +9,7 @@ public static class JavaScriptString
     private static readonly ParserOptions s_parserOptions = new() { OnRegExp = (in _) => default, Tolerant = false };
 
 #pragma warning disable CA1865 // Use char overload
-    public static bool IsStringLiteral(string value) => value.Length > 2
+    public static bool IsStringLiteral(string value) => value.Length >= 2
         && (value.StartsWith("\"", StringComparison.Ordinal) && value.EndsWith("\"", StringComparison.Ordinal)
             || value.StartsWith("'", StringComparison.Ordinal) && value.EndsWith("'", StringComparison.Ordinal));
 #pragma warning restore CA1865 // Use char overload

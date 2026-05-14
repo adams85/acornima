@@ -539,10 +539,14 @@ public partial class Tokenizer
                         break;
 
                     default:
-                        if (TryGetSimpleEscapeCharCode((char)ch, withinSet: true, out charCode)
-                            || IsClassSetReservedPunctuator((char)ch))
+                        if (TryGetSimpleEscapeCharCode((char)ch, withinSet: true, out charCode))
                         {
                             cp = charCode;
+                            return true;
+                        }
+                        else if (IsClassSetReservedPunctuator((char)ch))
+                        {
+                            cp = ch;
                             return true;
                         }
 

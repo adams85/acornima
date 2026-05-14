@@ -102,6 +102,7 @@ public partial class RegExpTests
         }
     }
 
+    [Theory]
     [InlineData("\\", "", nameof(SyntaxErrorMessages.RegExpEscapeAtEndOfPattern))]
     [InlineData("\\\\", "", null)]
     [InlineData("\\\\\\", "", nameof(SyntaxErrorMessages.RegExpEscapeAtEndOfPattern))]
@@ -109,7 +110,9 @@ public partial class RegExpTests
     [InlineData("ab?c", "u", null)]
     [InlineData("ab|?c", "u", nameof(SyntaxErrorMessages.RegExpNothingToRepeat))]
     [InlineData("\\1a(b?)c", "u", null)]
-    [Theory]
+    [InlineData("ab?c", "v", null)]
+    [InlineData("ab|?c", "v", nameof(SyntaxErrorMessages.RegExpNothingToRepeat))]
+    [InlineData("\\1a(b?)c", "v", null)]
     public void ValidateRegExpShouldWork(string pattern, string flags, string? expectedErrorCode)
     {
         Assert.Equal(expectedErrorCode is null, Tokenizer.ValidateRegExp(pattern, flags, out var error));
@@ -124,32 +127,80 @@ public partial class RegExpTests
         }
     }
 
-    [InlineData("(?<a>x)|(?<a>y)", "u", "((?<a>x))|((?<a>y))")]
-    [InlineData("((?<a>x))|(?<a>y)", "u", "(((?<a>x)))|((?<a>y))")]
-    [InlineData("(?:(?<a>x))|(?<a>y)", "u", "(?:((?<a>x)))|((?<a>y))")]
-    [InlineData("(?<!(?<a>x))|(?<a>y)", "u", "(?<!((?<a>x)))|((?<a>y))")]
-    [InlineData("(?<a>x)|((?<a>y))", "u", "((?<a>x))|(((?<a>y)))")]
-    [InlineData("(?<a>x)|(?:(?<a>y))", "u", "((?<a>x))|(?:((?<a>y)))")]
-    [InlineData("(?<a>x)|(?!(?<a>y))", "u", "((?<a>x))|(?!((?<a>y)))")]
-    [InlineData("(?<a>x)|(?<a>y)|(?<a>z)", "u", "((?<a>x))|((?<a>y))|((?<a>z))")]
-    [InlineData("((?<a>x)|(?<a>y))|(?<a>z)", "u", "(((?<a>x))|((?<a>y)))|((?<a>z))")]
-    [InlineData("(?<a>x)|((?<a>y)|(?<a>z))", "u", "((?<a>x))|(((?<a>y))|((?<a>z)))")]
-    [InlineData("(?<a>x)|(((?<a>y)))|(?<a>z)", "u", "((?<a>x))|((((?<a>y))))|((?<a>z))")]
     [Theory]
-    public void ShouldAllowDuplicateGroupNamesInAlternates(string pattern, string flags, string expectedAdaptedPattern)
+    [InlineData("\\p{L}", "", null)]
+    [InlineData("\\p{L}", "u", nameof(SyntaxErrorMessages.RegExpInvalidEscape))]
+    [InlineData("[\\p{L}]", "", null)]
+    [InlineData("[\\p{L}]", "u", nameof(SyntaxErrorMessages.RegExpInvalidEscape))]
+    public void ShouldRejectUnicodeCharacterClassEscapesBeforeES2018(string pattern, string flags, string? expectedErrorCode)
     {
-        // TODO: Generate these tests when Duplicate named capturing groups (https://github.com/tc39/proposal-duplicate-named-capturing-groups) gets implemented in V8.
+        var parser = CreateRegExpParser(pattern, flags, new TokenizerOptions { EcmaVersion = EcmaVersion.ES2017 });
 
-        var parser = CreateRegExpParser(pattern, flags, new TokenizerOptions
+        if (expectedErrorCode is null)
         {
-            RegExpParseMode = RegExpParseMode.AdaptToInterpreted,
-            Tolerant = false
-        });
+            parser.Validate();
+        }
+        else
+        {
+            var ex = Assert.Throws<SyntaxErrorException>(() => parser.Validate());
+            Assert.Equal(expectedErrorCode, ex.Error.Code);
+        }
+    }
 
-        var parseResult = parser.Parse();
+    [Theory]
+    [InlineData("(?<a>)\\k<a>", "", nameof(SyntaxErrorMessages.RegExpInvalidGroup))]
+    [InlineData("(?<a>)\\k<a>", "u", nameof(SyntaxErrorMessages.RegExpInvalidGroup))]
+    [InlineData("\\k<a>(?<a>)", "", nameof(SyntaxErrorMessages.RegExpInvalidGroup))]
+    [InlineData("\\k<a>(?<a>)", "u", nameof(SyntaxErrorMessages.RegExpInvalidGroup))]
+    [InlineData("(?<a>)[\\k<a>]", "", nameof(SyntaxErrorMessages.RegExpInvalidGroup))]
+    [InlineData("(?<a>)[\\k<a>]", "u", nameof(SyntaxErrorMessages.RegExpInvalidGroup))]
+    [InlineData("[\\k<a>](?<a>)", "", nameof(SyntaxErrorMessages.RegExpInvalidGroup))]
+    [InlineData("[\\k<a>](?<a>)", "u", nameof(SyntaxErrorMessages.RegExpInvalidGroup))]
+    [InlineData("\\2(?<a>)", "", nameof(SyntaxErrorMessages.RegExpInvalidGroup))]
+    [InlineData("\\2(?<a>)", "u", nameof(SyntaxErrorMessages.RegExpInvalidGroup))]
+    public void ShouldRejectNamedBackreferencesBeforeES2018(string pattern, string flags, string expectedErrorCode)
+    {
+        var parser = CreateRegExpParser(pattern, flags, new TokenizerOptions { EcmaVersion = EcmaVersion.ES2017 });
 
-        Assert.NotNull(parseResult.Regex);
-        Assert.Equal(expectedAdaptedPattern, parseResult.Regex.ToString());
+        var ex = Assert.Throws<SyntaxErrorException>(() => parser.Validate());
+        Assert.Equal(expectedErrorCode, ex.Error.Code);
+    }
+
+    [Theory]
+    [InlineData("\\1\\k<a\\u{61}>(?<a\\u{61}>)", "", nameof(SyntaxErrorMessages.RegExpInvalidCaptureGroupName))]
+    [InlineData("\\1\\k<a\\u{61}>(?<a\\u{61}>)", "u", null)]
+    public void ShouldRejectAstralUnicodeEscapeInNamedBackreferencesBeforeES2020(string pattern, string flags, string? expectedErrorCode)
+    {
+        var parser = CreateRegExpParser(pattern, flags, new TokenizerOptions { EcmaVersion = EcmaVersion.ES2019 });
+
+        if (expectedErrorCode is null)
+        {
+            parser.Validate();
+        }
+        else
+        {
+            var ex = Assert.Throws<SyntaxErrorException>(() => parser.Validate());
+            Assert.Equal(expectedErrorCode, ex.Error.Code);
+        }
+    }
+
+    [Theory]
+    [InlineData("(?<a>x)|(?<a>y)", "u")]
+    [InlineData("((?<a>x))|(?<a>y)", "u")]
+    [InlineData("(?:(?<a>x))|(?<a>y)", "u")]
+    [InlineData("(?<!(?<a>x))|(?<a>y)", "u")]
+    [InlineData("(?<a>x)|((?<a>y))", "u")]
+    [InlineData("(?<a>x)|(?:(?<a>y))", "u")]
+    [InlineData("(?<a>x)|(?!(?<a>y))", "u")]
+    [InlineData("(?<a>x)|(?<a>y)|(?<a>z)", "u")]
+    [InlineData("((?<a>x)|(?<a>y))|(?<a>z)", "u")]
+    [InlineData("(?<a>x)|((?<a>y)|(?<a>z))", "u")]
+    [InlineData("(?<a>x)|(((?<a>y)))|(?<a>z)", "u")]
+    public void ShouldRejectDuplicateGroupNamesInAlternatesBeforeES2025(string pattern, string flags)
+    {
+        var parser = CreateRegExpParser(pattern, flags, new TokenizerOptions { EcmaVersion = EcmaVersion.ES2024 });
+
+        Assert.Throws<SyntaxErrorException>(() => parser.Validate());
     }
 
     // Conversion tests for modifiers involving multiline/dotAll that produce patterns with
