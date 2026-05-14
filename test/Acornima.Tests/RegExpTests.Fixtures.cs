@@ -20,7 +20,7 @@ public partial class RegExpTests : IClassFixture<RegExpTests.SharedContextFixtur
         _fixture = fixture;
     }
 
-    public static IEnumerable<object[]> TestCases(string relativePath)
+    private static IEnumerable<object[]> GetTestCases(string relativePath, bool forConversion)
     {
         var fixturesPath = Path.Combine(ParserTests.GetFixturesPath(), relativePath);
         var testCasesFilePath = Path.Combine(fixturesPath, "testcases.txt");
@@ -49,6 +49,8 @@ public partial class RegExpTests : IClassFixture<RegExpTests.SharedContextFixtur
             yield return parts;
         }
     }
+
+    public static IEnumerable<object[]> TestCases(string relativePath) => GetTestCases(relativePath, forConversion: false);
 
     [Theory]
     [MemberData(nameof(TestCases), "Fixtures.RegExp")]
@@ -194,7 +196,7 @@ public partial class RegExpTests : IClassFixture<RegExpTests.SharedContextFixtur
             {
                 ex = Assert.Throws<SyntaxErrorException>(() => regExpValidator.Validate());
 
-                if (!hintArray.Contains("!ignore-error-message"))
+                if (!hintArray.Contains("!ignore-validation-error-message"))
                 {
                     Assert.Equal($"Invalid regular expression: /{pattern}/{flags}: {syntaxError}", ex.Error?.Description);
                 }
