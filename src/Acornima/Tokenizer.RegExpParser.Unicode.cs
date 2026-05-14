@@ -23,7 +23,7 @@ public partial class Tokenizer
                     var pattern = parser._pattern;
                     ref var i = ref parser._index;
 
-                    if (((char)pattern.CharCodeAt(i + 1)).IsLowSurrogate())
+                    if (((char)pattern.CharCodeAt(i)).IsLowSurrogate())
                     {
                         i++;
                     }
@@ -38,7 +38,7 @@ public partial class Tokenizer
                     ref var i = ref parser._index;
                     char ch2;
 
-                    if ((ch2 = (char)pattern.CharCodeAt(i + 1)).IsLowSurrogate())
+                    if ((ch2 = (char)pattern.CharCodeAt(i)).IsLowSurrogate())
                     {
                         i++;
                         ProcessSetCodePoint((int)UnicodeHelper.GetCodePoint(ch, ch2), parser, startIndex);
@@ -78,40 +78,43 @@ public partial class Tokenizer
                 }
             }
 
-            public void EatEscapeSequence(RegExpParser parser)
+            public bool EatEscapeSequence(RegExpParser parser, int startIndex)
             {
-                EatEscapeSequence(allowStringProperties: false, parser);
+                return EatEscapeSequence(allowStringProperties: false, parser, startIndex);
             }
 
-            internal static void EatEscapeSequence(bool allowStringProperties, RegExpParser parser)
+            internal static bool EatEscapeSequence(bool allowStringProperties, RegExpParser parser, int startIndex)
             {
                 // https://tc39.es/ecma262/#prod-AtomEscape
 
                 var pattern = parser._pattern;
                 ref var i = ref parser._index;
+                int endIndex;
+
+                if ((uint)i >= (uint)pattern.Length)
+                {
+                    parser.ReportSyntaxError(startIndex, RegExpEscapeAtEndOfPattern);
+                }
+
+                var isQuantifiable = true;
 
                 ushort charCode, charCode2;
                 int cp;
-                var startIndex = i++;
-                int endIndex;
                 var ch = pattern[i];
                 switch (ch)
                 {
                     // CharacterEscape -> RegExpUnicodeEscapeSequence -> u{ CodePoint }
                     case 'u' when pattern.CharCodeAt(i + 1) == '{':
-                        if (!TryReadCodePoint(pattern, ref i, endIndex: pattern.Length, out cp))
+                        if (TryReadCodePoint(pattern, ref i, endIndex: pattern.Length, out cp))
                         {
-                            parser.ReportSyntaxError(startIndex, RegExpInvalidUnicodeEscape);
-                            cp = default; // unreachable, just to keep the compiler happy
-                        }
-
-                        if (!parser.WithinSet)
-                        {
-                            parser.ClearFollowingQuantifierError();
+                            if (parser.WithinSet)
+                            {
+                                ProcessSetCodePoint(cp, parser, startIndex);
+                            }
                         }
                         else
                         {
-                            ProcessSetCodePoint(cp, parser, startIndex);
+                            parser.ReportSyntaxError(startIndex, RegExpInvalidUnicodeEscape);
                         }
                         break;
 
@@ -127,13 +130,10 @@ public partial class Tokenizer
                                 if (TryReadHexEscape(pattern, ref endIndex, endIndex: pattern.Length, charCodeLength: 4, out charCode2) && ((char)charCode2).IsLowSurrogate())
                                 {
                                     i = endIndex;
-                                    cp = (int)UnicodeHelper.GetCodePoint((char)charCode, (char)charCode2);
-                                    if (!parser.WithinSet)
+
+                                    if (parser.WithinSet)
                                     {
-                                        parser.ClearFollowingQuantifierError();
-                                    }
-                                    else
-                                    {
+                                        cp = (int)UnicodeHelper.GetCodePoint((char)charCode, (char)charCode2);
                                         ProcessSetCodePoint(cp, parser, startIndex);
                                     }
 
@@ -141,11 +141,7 @@ public partial class Tokenizer
                                 }
                             }
 
-                            if (!parser.WithinSet)
-                            {
-                                parser.ClearFollowingQuantifierError();
-                            }
-                            else
+                            if (parser.WithinSet)
                             {
                                 ProcessSetCodePoint((char)charCode, parser, startIndex);
                             }
@@ -169,11 +165,7 @@ public partial class Tokenizer
                         if (((char)cp).IsBasicLatinLetter())
                         {
                             i++;
-                            if (!parser.WithinSet)
-                            {
-                                parser.ClearFollowingQuantifierError();
-                            }
-                            else
+                            if (parser.WithinSet)
                             {
                                 charCode = (ushort)(cp & 0x1F); // value is equal to the character code modulo 32
                                 ProcessSetCodePoint(charCode, parser, startIndex);
@@ -188,11 +180,7 @@ public partial class Tokenizer
                     case '0':
                         if (!((char)pattern.CharCodeAt(i + 1)).IsDecimalDigit())
                         {
-                            if (!parser.WithinSet)
-                            {
-                                parser.ClearFollowingQuantifierError();
-                            }
-                            else
+                            if (parser.WithinSet)
                             {
                                 ProcessSetCodePoint(0, parser, startIndex);
                             }
@@ -207,12 +195,9 @@ public partial class Tokenizer
                     case >= '1' and <= '9':
                         if (!parser.WithinSet)
                         {
-                            // TODO: handle forward refs?
-
                             // Outside character sets, numbers may be backreferences (in this case the number is interpreted as decimal).
-                            if (parser.TryEatBackreference(startIndex))
+                            if (parser.TryConsumeBackreference(startIndex))
                             {
-                                parser.ClearFollowingQuantifierError();
                                 break;
                             }
                         }
@@ -232,8 +217,7 @@ public partial class Tokenizer
                     case 'k':
                         if (!parser.WithinSet && parser._tokenizer._options._ecmaVersion >= EcmaVersion.ES9)
                         {
-                            parser.EatNamedBackreference(startIndex);
-                            parser.ClearFollowingQuantifierError();
+                            parser.ConsumeNamedBackreference(startIndex);
                         }
                         else
                         {
@@ -244,11 +228,7 @@ public partial class Tokenizer
 
                     // CharacterClassEscape
                     case 'd' or 'D' or 's' or 'S' or 'w' or 'W':
-                        if (!parser.WithinSet)
-                        {
-                            parser.ClearFollowingQuantifierError();
-                        }
-                        else
+                        if (parser.WithinSet)
                         {
                             if (parser._setRangeStart < 0)
                             {
@@ -275,11 +255,7 @@ public partial class Tokenizer
                                     && (ValidateUnicodeProperty(expression = pattern.AsMemory(nameStartIndex, endIndex - nameStartIndex), parser)
                                         || allowStringProperties && ch != 'P' && UnicodeProperties.IsAllowedBinaryOfStringsValue(expression, parser._tokenizer._options._ecmaVersion)))
                                 {
-                                    if (!parser.WithinSet)
-                                    {
-                                        parser.ClearFollowingQuantifierError();
-                                    }
-                                    else
+                                    if (parser.WithinSet)
                                     {
                                         if (parser._setRangeStart < 0)
                                         {
@@ -310,29 +286,26 @@ public partial class Tokenizer
                         }
                         break;
 
+                    // Assertion -> \b | \B
+                    case 'b' or 'B' when !parser.WithinSet:
+                        isQuantifiable = false;
+                        break;
+
                     default:
                         if (!TryGetSimpleEscapeCharCode(ch, parser.WithinSet, out charCode))
                         {
                             parser.ReportSyntaxError(startIndex, RegExpInvalidEscape);
                         }
 
-                        if (!parser.WithinSet)
-                        {
-                            if (ch is 'b' or 'B')
-                            {
-                                parser.SetFollowingQuantifierError(RegExpNothingToRepeat);
-                            }
-                            else
-                            {
-                                parser.ClearFollowingQuantifierError();
-                            }
-                        }
-                        else
+                        if (parser.WithinSet)
                         {
                             ProcessSetCodePoint(charCode, parser, startIndex);
                         }
                         break;
                 }
+
+                i++;
+                return isQuantifiable;
             }
 
             internal static bool ValidateUnicodeProperty(ReadOnlyMemory<char> expression, RegExpParser parser)
@@ -358,9 +331,9 @@ public partial class Tokenizer
                 }
             }
 
-            public void ParseSet(RegExpParser parser)
+            public void ParseSet(RegExpParser parser, int startIndex)
             {
-                parser.ParseSetDefault(this);
+                parser.ParseSetDefault(this, startIndex);
             }
 
             public bool AllowsQuantifierAfterGroup(RegExpGroupType groupType)
@@ -373,11 +346,6 @@ public partial class Tokenizer
                     RegExpGroupType.LookbehindAssertion or
                     RegExpGroupType.NegativeLookbehindAssertion
                 );
-            }
-
-            public void HandleInvalidRangeQuantifier(RegExpParser parser, int startIndex)
-            {
-                parser.ReportSyntaxError(startIndex, RegExpIncompleteQuantifier);
             }
         }
     }

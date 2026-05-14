@@ -18,8 +18,13 @@ public partial class Tokenizer
 
             public void EatChar(char ch, RegExpParser parser) { }
 
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void EatSetChar(char ch, RegExpParser parser, int startIndex)
+            {
+                ProcessSetChar(ch, parser, startIndex);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private static void ProcessSetChar(char ch, RegExpParser parser, int startIndex)
             {
                 ProcessSetChar(ch, ch, parser, startIndex);
             }
@@ -44,15 +49,21 @@ public partial class Tokenizer
                 }
             }
 
-            public void EatEscapeSequence(RegExpParser parser)
+            public bool EatEscapeSequence(RegExpParser parser, int startIndex)
             {
                 // https://tc39.es/ecma262/#prod-AtomEscape
 
                 var pattern = parser._pattern;
                 ref var i = ref parser._index;
 
+                if ((uint)i >= (uint)pattern.Length)
+                {
+                    parser.ReportSyntaxError(startIndex, RegExpEscapeAtEndOfPattern);
+                }
+
+                var isQuantifiable = true;
+
                 ushort charCode;
-                var startIndex = i++;
                 var ch = pattern[i];
                 switch (ch)
                 {
@@ -62,13 +73,9 @@ public partial class Tokenizer
                     case 'x':
                         if (TryReadHexEscape(pattern, ref i, endIndex: pattern.Length, charCodeLength: ch == 'u' ? 4 : 2, out charCode))
                         {
-                            if (!parser.WithinSet)
+                            if (parser.WithinSet)
                             {
-                                parser.ClearFollowingQuantifierError();
-                            }
-                            else
-                            {
-                                EatSetChar((char)charCode, parser, startIndex);
+                                ProcessSetChar((char)charCode, parser, startIndex);
                             }
                         }
                         else
@@ -79,13 +86,9 @@ public partial class Tokenizer
                             // * invalid \x escape sequences (e.g. /\x0y/ --> @"x0y"),
                             // * invalid \u escape sequences (e.g. /\u012y/ --> @"u012y"), including
                             // * UTF32-like invalid escape sequences (e.g. /\u{0010FFFF}/ --> @"u{0010FFFF}").
-                            if (!parser.WithinSet)
+                            if (parser.WithinSet)
                             {
-                                parser.ClearFollowingQuantifierError();
-                            }
-                            else
-                            {
-                                EatSetChar(ch, parser, startIndex);
+                                ProcessSetChar(ch, parser, startIndex);
                             }
                         }
                         break;
@@ -96,14 +99,10 @@ public partial class Tokenizer
                         if (((char)charCode).IsBasicLatinLetter())
                         {
                             i++;
-                            if (!parser.WithinSet)
-                            {
-                                parser.ClearFollowingQuantifierError();
-                            }
-                            else
+                            if (parser.WithinSet)
                             {
                                 charCode = (ushort)(charCode & 0x1Fu); // value is equal to the character code modulo 32
-                                EatSetChar((char)charCode, parser, startIndex);
+                                ProcessSetChar((char)charCode, parser, startIndex);
                             }
                             break;
                         }
@@ -115,7 +114,7 @@ public partial class Tokenizer
                             {
                                 i++;
                                 charCode = (ushort)(charCode & 0x1Fu); // value is equal to the character code modulo 32
-                                EatSetChar((char)charCode, parser, startIndex);
+                                ProcessSetChar((char)charCode, parser, startIndex);
                                 break;
                             }
                         }
@@ -124,29 +123,21 @@ public partial class Tokenizer
                         // * unterminated caret notation escapes (e.g. /\c/ --> @"\\c",
                         // * invalid caret notation escapes (e.g. /\ch/ --> @"\\ch").
                         // (See also https://stackoverflow.com/a/48718489/8656352)
-                        if (!parser.WithinSet)
-                        {
-                            parser.ClearFollowingQuantifierError();
-                        }
-                        else
+                        if (parser.WithinSet)
                         {
                             // Unterminated/invalid cases like \c are interpreted as \\c even in character sets:
                             // /[\c]/ is equivalent to /[\\c]/ (not a typo, this does match both '\' and 'c')
-                            EatSetChar('\\', parser, startIndex);
-                            EatSetChar(ch, parser, startIndex);
+                            ProcessSetChar('\\', parser, startIndex);
+                            ProcessSetChar(ch, parser, startIndex);
                         }
                         break;
 
                     // CharacterEscape (octal)
                     case '0':
                         ReadOctalEscape(pattern, ref i, out charCode);
-                        if (!parser.WithinSet)
+                        if (parser.WithinSet)
                         {
-                            parser.ClearFollowingQuantifierError();
-                        }
-                        else
-                        {
-                            EatSetChar((char)charCode, parser, startIndex);
+                            ProcessSetChar((char)charCode, parser, startIndex);
                         }
                         break;
 
@@ -155,9 +146,8 @@ public partial class Tokenizer
                         if (!parser.WithinSet)
                         {
                             // Outside character sets, numbers may be backreferences (in this case the number is interpreted as decimal).
-                            if (parser.TryEatBackreference(startIndex))
+                            if (parser.TryConsumeBackreference(startIndex))
                             {
-                                parser.ClearFollowingQuantifierError();
                                 break;
                             }
                         }
@@ -170,35 +160,34 @@ public partial class Tokenizer
                         else
                         {
                             // \8 and \9 are interpreted as plain digit characters.
-                            if (!parser.WithinSet)
+                            if (parser.WithinSet)
                             {
-                                parser.ClearFollowingQuantifierError();
-                            }
-                            else
-                            {
-                                EatSetChar(ch, parser, startIndex);
+                                ProcessSetChar(ch, parser, startIndex);
                             }
                         }
                         break;
 
                     // 'k' GroupName
                     case 'k':
-                        if (parser._capturingGroupNames is not { Count: > 0 })
+                        if (parser._capturingGroupNames is null)
                         {
-                            // TODO: reparse?
+                            if (!parser._hasScannedForCapturingGroups && parser._tokenizer._options._ecmaVersion >= EcmaVersion.ES9)
+                            {
+                                parser.ScanForCapturingGroups(startIndex);
+                                if (parser._capturingGroupNames is not null)
+                                {
+                                    goto HasNamedCapturingGroups;
+                                }
+                            }
 
                             // When the pattern contains no named capturing group, \k escapes are ignored.
-                            if (!parser.WithinSet)
-                            {
-                                parser.ClearFollowingQuantifierError();
-                            }
                             break;
                         }
 
+                    HasNamedCapturingGroups:
                         if (!parser.WithinSet)
                         {
-                            parser.EatNamedBackreference(startIndex);
-                            parser.ClearFollowingQuantifierError();
+                            parser.ConsumeNamedBackreference(startIndex);
                         }
                         else
                         {
@@ -210,29 +199,19 @@ public partial class Tokenizer
 
                     // CharacterClassEscape
                     case 'd' or 'D' or 's' or 'S' or 'w' or 'W':
-                        if (!parser.WithinSet)
-                        {
-                            parser.ClearFollowingQuantifierError();
-                        }
-                        else
+                        if (parser.WithinSet)
                         {
                             parser._setRangeStart = parser._setRangeStart >= 0 ? SetRangeStartedWithCharClass : SetRangeNotStarted;
                         }
                         break;
 
+                    // Assertion -> \b | \B
+                    case 'b' or 'B' when !parser.WithinSet:
+                        isQuantifiable = false;
+                        break;
+
                     default:
-                        if (!parser.WithinSet)
-                        {
-                            if (ch is 'b' or 'B')
-                            {
-                                parser.SetFollowingQuantifierError(RegExpNothingToRepeat);
-                            }
-                            else
-                            {
-                                parser.ClearFollowingQuantifierError();
-                            }
-                        }
-                        else
+                        if (parser.WithinSet)
                         {
                             if (!TryGetSimpleEscapeCharCode(ch, withinSet: true, out charCode))
                             {
@@ -243,6 +222,9 @@ public partial class Tokenizer
                         }
                         break;
                 }
+
+                i++;
+                return isQuantifiable;
             }
 
             private static void ReadOctalEscape(string pattern, ref int i, out ushort charCode)
@@ -263,9 +245,9 @@ public partial class Tokenizer
                 i--;
             }
 
-            public void ParseSet(RegExpParser parser)
+            public void ParseSet(RegExpParser parser, int startIndex)
             {
-                parser.ParseSetDefault(this);
+                parser.ParseSetDefault(this, startIndex);
             }
 
             public bool AllowsQuantifierAfterGroup(RegExpGroupType groupType)
@@ -277,13 +259,6 @@ public partial class Tokenizer
                     RegExpGroupType.LookbehindAssertion or
                     RegExpGroupType.NegativeLookbehindAssertion
                 );
-            }
-
-            public void HandleInvalidRangeQuantifier(RegExpParser parser, int startIndex)
-            {
-                // Invalid {} quantifiers like /.{/, /.{}/, /.{-1}/, etc. are ignored.
-
-                parser.ClearFollowingQuantifierError();
             }
         }
     }
