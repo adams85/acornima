@@ -81,13 +81,13 @@ public partial class RegExpTests
     [InlineData("(?<a>)\\k<a>", "", nameof(SyntaxErrorMessages.RegExpInvalidGroup))]
     [InlineData("(?<a>)\\k<a>", "u", nameof(SyntaxErrorMessages.RegExpInvalidGroup))]
     [InlineData("\\k<a>(?<a>)", "", nameof(SyntaxErrorMessages.RegExpInvalidGroup))]
-    [InlineData("\\k<a>(?<a>)", "u", nameof(SyntaxErrorMessages.RegExpInvalidGroup))]
+    [InlineData("\\k<a>(?<a>)", "u", nameof(SyntaxErrorMessages.RegExpInvalidEscape))]
     [InlineData("(?<a>)[\\k<a>]", "", nameof(SyntaxErrorMessages.RegExpInvalidGroup))]
     [InlineData("(?<a>)[\\k<a>]", "u", nameof(SyntaxErrorMessages.RegExpInvalidGroup))]
     [InlineData("[\\k<a>](?<a>)", "", nameof(SyntaxErrorMessages.RegExpInvalidGroup))]
-    [InlineData("[\\k<a>](?<a>)", "u", nameof(SyntaxErrorMessages.RegExpInvalidGroup))]
+    [InlineData("[\\k<a>](?<a>)", "u", nameof(SyntaxErrorMessages.RegExpInvalidEscape))]
     [InlineData("\\2(?<a>)", "", nameof(SyntaxErrorMessages.RegExpInvalidGroup))]
-    [InlineData("\\2(?<a>)", "u", nameof(SyntaxErrorMessages.RegExpInvalidGroup))]
+    [InlineData("\\2(?<a>)", "u", nameof(SyntaxErrorMessages.RegExpInvalidEscape))]
     public void ShouldRejectNamedBackreferencesBeforeES2018(string pattern, string flags, string expectedErrorCode)
     {
         var parser = CreateRegExpParser(pattern, flags, new TokenizerOptions { EcmaVersion = EcmaVersion.ES2017 });
