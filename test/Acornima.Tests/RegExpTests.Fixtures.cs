@@ -30,7 +30,7 @@ public partial class RegExpTests
         s_fixture.Dispose();
     }
 
-    public static IEnumerable<(string, string, string, string, string, string)> TestCases(string relativePath)
+    private static IEnumerable<(string, string, string, string, string, string)> GetTestCases(string relativePath, bool forConversion)
     {
         var fixturesPath = Path.Combine(ParserTests.GetFixturesPath(), relativePath);
         var testCasesFilePath = Path.Combine(fixturesPath, "testcases.txt");
@@ -59,6 +59,8 @@ public partial class RegExpTests
             yield return (parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]);
         }
     }
+
+    public static IEnumerable<(string, string, string, string, string, string)> TestCases(string relativePath) => GetTestCases(relativePath, forConversion: false);
 
     [Test]
     [NotInParallel]
@@ -207,7 +209,7 @@ public partial class RegExpTests
             {
                 ex = Assert.Throws<SyntaxErrorException>(() => regExpValidator.Validate());
 
-                if (!hintArray.Contains("!ignore-error-message"))
+                if (!hintArray.Contains("!ignore-validation-error-message"))
                 {
                     Assert.Equal($"Invalid regular expression: /{pattern}/{flags}: {syntaxError}", ex.Error?.Description);
                 }

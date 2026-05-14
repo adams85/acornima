@@ -3394,24 +3394,24 @@ styles(?:\.[\da-f]+)?	v	styles.1234.min.css
 \k<b>(?<a>)	u	x
 \k<b>(?<a>)	v	x
 \k<b>(?<b)		x	!ignore-error-message
-\k<b>(?<b)	u	x	!ignore-error-message
-\k<b>(?<b)	v	x	!ignore-error-message
+\k<b>(?<b)	u	x	!ignore-error-message !ignore-validation-error-message
+\k<b>(?<b)	v	x	!ignore-error-message !ignore-validation-error-message
 \k<b>(?<(?<b>>)		x	!ignore-error-message
 \k<b>(?<(?<b>>)	u	x	!ignore-error-message
 \k<b>(?<(?<b>>)	v	x	!ignore-error-message
 
-\1\k<\u>(?<\u>)		x	!ignore-error-message
-\1\k<\u>(?<\u>)	u	x	!ignore-error-message
-\1\k<\u>(?<\u>)	v	x	!ignore-error-message
-\1\k<\u{>(?<\u{>)		x	!ignore-error-message
-\1\k<\u{>(?<\u{>)	u	x	!ignore-error-message
-\1\k<\u{>(?<\u{>)	v	x	!ignore-error-message
-\1\k<\u{(}>(?<\u{(}>)		x	!ignore-error-message
-\1\k<\u{(}>(?<\u{(}>)	u	x	!ignore-error-message
-\1\k<\u{(}>(?<\u{(}>)	v	x	!ignore-error-message
-\1\k<\x61>(?<\x61>)		x	!ignore-error-message
-\1\k<\x61>(?<\x61>)	u	x	!ignore-error-message
-\1\k<\x61>(?<\x61>)	v	x	!ignore-error-message
+\1\k<\u>(?<\u>)		x	!ignore-error-message !ignore-validation-error-message
+\1\k<\u>(?<\u>)	u	x	!ignore-error-message !ignore-validation-error-message
+\1\k<\u>(?<\u>)	v	x	!ignore-error-message !ignore-validation-error-message
+\1\k<\u{>(?<\u{>)		x	!ignore-error-message !ignore-validation-error-message
+\1\k<\u{>(?<\u{>)	u	x	!ignore-error-message !ignore-validation-error-message
+\1\k<\u{>(?<\u{>)	v	x	!ignore-error-message !ignore-validation-error-message
+\1\k<\u{(}>(?<\u{(}>)		x	!ignore-error-message !ignore-validation-error-message
+\1\k<\u{(}>(?<\u{(}>)	u	x	!ignore-error-message !ignore-validation-error-message
+\1\k<\u{(}>(?<\u{(}>)	v	x	!ignore-error-message !ignore-validation-error-message
+\1\k<\x61>(?<\x61>)		x	!ignore-error-message !ignore-validation-error-message
+\1\k<\x61>(?<\x61>)	u	x	!ignore-error-message !ignore-validation-error-message
+\1\k<\x61>(?<\x61>)	v	x	!ignore-error-message !ignore-validation-error-message
 \1\k<\u0061>(?<\u0061>)		x
 \1\k<\u0061>(?<\u0061>)	u	x
 \1\k<\u0061>(?<\u0061>)	v	x
@@ -3419,18 +3419,18 @@ styles(?:\.[\da-f]+)?	v	styles.1234.min.css
 \1\k<\u{61}>(?<\u{61}>)	u	x
 \1\k<\u{61}>(?<\u{61}>)	v	x
 
-\1\k<a\u>(?<a\u>)		x	!ignore-error-message
-\1\k<a\u>(?<a\u>)	u	x	!ignore-error-message
-\1\k<a\u>(?<a\u>)	v	x	!ignore-error-message
-\1\k<a\u{>(?<a\u{>)		x	!ignore-error-message
-\1\k<a\u{>(?<a\u{>)	u	x	!ignore-error-message
-\1\k<a\u{>(?<a\u{>)	v	x	!ignore-error-message
-\1\k<a\u{(}>(?<a\u{(}>)		x	!ignore-error-message
-\1\k<a\u{(}>(?<a\u{(}>)	u	x	!ignore-error-message
-\1\k<a\u{(}>(?<a\u{(}>)	v	x	!ignore-error-message
-\1\k<a\x61>(?<a\x61>)		x	!ignore-error-message
-\1\k<a\x61>(?<a\x61>)	u	x	!ignore-error-message
-\1\k<a\x61>(?<a\x61>)	v	x	!ignore-error-message
+\1\k<a\u>(?<a\u>)		x	!ignore-error-message !ignore-validation-error-message
+\1\k<a\u>(?<a\u>)	u	x	!ignore-error-message !ignore-validation-error-message
+\1\k<a\u>(?<a\u>)	v	x	!ignore-error-message !ignore-validation-error-message
+\1\k<a\u{>(?<a\u{>)		x	!ignore-error-message !ignore-validation-error-message
+\1\k<a\u{>(?<a\u{>)	u	x	!ignore-error-message !ignore-validation-error-message
+\1\k<a\u{>(?<a\u{>)	v	x	!ignore-error-message !ignore-validation-error-message
+\1\k<a\u{(}>(?<a\u{(}>)		x	!ignore-error-message !ignore-validation-error-message
+\1\k<a\u{(}>(?<a\u{(}>)	u	x	!ignore-error-message !ignore-validation-error-message
+\1\k<a\u{(}>(?<a\u{(}>)	v	x	!ignore-error-message !ignore-validation-error-message
+\1\k<a\x61>(?<a\x61>)		x	!ignore-error-message !ignore-validation-error-message
+\1\k<a\x61>(?<a\x61>)	u	x	!ignore-error-message !ignore-validation-error-message
+\1\k<a\x61>(?<a\x61>)	v	x	!ignore-error-message !ignore-validation-error-message
 \1\k<a\u0061>(?<a\u0061>)		x
 \1\k<a\u0061>(?<a\u0061>)	u	x
 \1\k<a\u0061>(?<a\u0061>)	v	x
@@ -3450,10 +3450,10 @@ styles(?:\.[\da-f]+)?	v	styles.1234.min.css
 [\k<b>)](?<!		x	!ignore-error-message
 [\k<b>)](?<!	u	x	!ignore-error-message
 [\k<b>)](?<!	v	x	!ignore-error-message
-[\k<b>)](?<a)		x	!ignore-error-message
+[\k<b>)](?<a)		x	!ignore-error-message !ignore-validation-error-message
 [\k<b>)](?<a)	u	x	!ignore-error-message
 [\k<b>)](?<a)	v	x	!ignore-error-message
-[\k<b>)](?<b)		x	!ignore-error-message
+[\k<b>)](?<b)		x	!ignore-error-message !ignore-validation-error-message
 [\k<b>)](?<b)	u	x	!ignore-error-message
 [\k<b>)](?<b)	v	x	!ignore-error-message
 [\k<b>)](?<b>)		x
@@ -3464,8 +3464,8 @@ styles(?:\.[\da-f]+)?	v	styles.1234.min.css
 [\k<b>)](?<(?<b>>)	v	x	!ignore-error-message
 
 [\k<b>)]\k[[\]\k<b>]]]		x
-[\k<b>)]\k[[\]\k<b>]]](?<a)		x	!ignore-error-message
-[\k<b>)]\k[[\]\k<b>]]](?<b)		x	!ignore-error-message
+[\k<b>)]\k[[\]\k<b>]]](?<a)		x	!ignore-error-message !ignore-validation-error-message
+[\k<b>)]\k[[\]\k<b>]]](?<b)		x	!ignore-error-message !ignore-validation-error-message
 [\k<b>)]\k[[\]\k<b>]]](?<b>)		x
 [\k<b>)]\k[[\]\k<b>]]](?<(?<b>)>)		x	!ignore-error-message
 

@@ -31,7 +31,7 @@ public class FileParsingBenchmark
 
         foreach (var fileName in s_files.Keys.ToList())
         {
-            s_files[fileName] = File.ReadAllText($"3rdparty/{fileName}.js");
+            s_files[fileName] = File.ReadAllText(Path.Combine("3rdparty", $"{fileName}.js"));
         }
 
         _acornimaParser = new(new ParserOptions { Tolerant = true });
