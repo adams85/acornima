@@ -1998,7 +1998,7 @@ public partial class Parser
                 // But there is no chance to pop the context if the keyword is consumed as an identifier such as a property name.
                 // If the previous token is a dot, this does not apply because the context-managing code already ignored the keyword
                 if (_tokenizer._type.Keyword.Value is Keyword.Class or Keyword.Function
-                    && (_tokenizer._lastTokenEnd != _tokenizer._lastTokenStart + 1 || _tokenizer._input.CharCodeAt(_tokenizer._lastTokenStart) != '.'))
+                    && (_tokenizer._lastTokenEnd != _tokenizer._lastTokenStart + 1 || _tokenizer._input[_tokenizer._lastTokenStart] != '.'))
                 {
                     _tokenizer._contextStack.Pop();
                 }

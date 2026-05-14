@@ -1383,7 +1383,7 @@ public sealed partial class Tokenizer : ITokenizer
             {
                 sb.Append(_input, chunkStart, index - chunkStart).Append('\n');
                 chunkStart = index + 1;
-                if (_input.CharCodeAt(index + 1) == '\n')
+                if (_input.CharCodeAt(chunkStart) == '\n')
                 {
                     chunkStart++;
                 }

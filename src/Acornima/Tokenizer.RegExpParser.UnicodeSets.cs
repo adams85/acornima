@@ -455,7 +455,7 @@ public partial class Tokenizer
                 ushort charCode, charCode2;
                 var startIndex = i++;
                 int endIndex;
-                var ch = pattern[i];
+                var ch = pattern.CharCodeAt(i);
                 switch (ch)
                 {
                     // CharacterEscape -> RegExpUnicodeEscapeSequence -> u{ CodePoint }
@@ -539,8 +539,8 @@ public partial class Tokenizer
                         break;
 
                     default:
-                        if (TryGetSimpleEscapeCharCode(ch, withinSet: true, out charCode)
-                            || IsClassSetReservedPunctuator(ch))
+                        if (TryGetSimpleEscapeCharCode((char)ch, withinSet: true, out charCode)
+                            || IsClassSetReservedPunctuator((char)ch))
                         {
                             cp = charCode;
                             return true;
