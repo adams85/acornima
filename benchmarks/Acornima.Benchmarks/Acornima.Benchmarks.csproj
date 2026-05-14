@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -19,6 +19,16 @@
 
   <ItemGroup>
     <None Include="..\..\test\Acornima.Tests\Fixtures.Parser\3rdparty\**" CopyToOutputDirectory="PreserveNewest" LinkBase="3rdparty" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\..\test\Acornima.Tests\Fixtures.RegExp\testcases.txt" Link="Data\testcases.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\test\Acornima.Tests\Helpers\JavaScriptString.cs" Link="Helpers\JavaScriptString.cs" />
   </ItemGroup>
 
 </Project>

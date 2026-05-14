@@ -23,7 +23,7 @@ public partial class Tokenizer
 
             private UnicodeSetsMode() { }
 
-            // Outside character classes, flag 'v' behaves like flag 'u'.
+            // Outside character sets, flag 'v' behaves like flag 'u'.
 
             public void EatChar(char ch, RegExpParser parser)
             {
@@ -32,7 +32,7 @@ public partial class Tokenizer
                     var pattern = parser._pattern;
                     ref var i = ref parser._index;
 
-                    if (((char)pattern.CharCodeAt(i + 1)).IsLowSurrogate())
+                    if (((char)pattern.CharCodeAt(i)).IsLowSurrogate())
                     {
                         i++;
                     }
@@ -44,40 +44,37 @@ public partial class Tokenizer
                 Debug.Fail($"{nameof(EatSetChar)} should not be called for {nameof(UnicodeSetsMode)} as {nameof(ParseSet)} handles all set logic.");
             }
 
-            public void EatEscapeSequence(RegExpParser parser)
+            public bool EatEscapeSequence(RegExpParser parser, int startIndex)
             {
-                Debug.Assert(!parser.WithinSet, $"{nameof(EatEscapeSequence)} should not be called for sets in {nameof(UnicodeSetsMode)} as those escape sequences are handled by {nameof(EatCharacterEscape)} and {nameof(EatCharacterClassEscape)}.");
+                Debug.Assert(!parser.WithinSet, $"{nameof(EatEscapeSequence)} should not be called for sets in {nameof(UnicodeSetsMode)} as those escape sequences are handled by {nameof(ConsumeCharacterEscape)} and {nameof(ConsumeCharacterClassEscape)}.");
 
-                UnicodeMode.EatEscapeSequence(allowStringProperties: true, parser);
+                return UnicodeMode.EatEscapeSequence(allowStringProperties: true, parser, startIndex);
             }
 
-            #region Character class parsing
+            #region Character set parsing
 
             // Based on: https://github.com/acornjs/acorn/blob/8.16.0/acorn/src/regexp.js
 
-            public void ParseSet(RegExpParser parser)
+            public void ParseSet(RegExpParser parser, int startIndex)
             {
                 // Parse the entire [...] block recursively.
 
                 var pattern = parser._pattern;
-                ref var i = ref parser._index;
-                var start = i;
 
-                // We're positioned at '['. Advance past it.
-                i++;
+                // We're positioned right after '['.
+                ref var i = ref parser._index;
 
                 var negate = Eat('^', pattern, ref i);
 
                 var result = ClassSetExpression(parser);
 
-                // i is now at ']', the main loop will advance past it.
-
                 if (negate && result == CharSetString)
                 {
-                    parser.ReportSyntaxError(start, RegExpNegatedCharacterClassWithStrings);
+                    parser.ReportSyntaxError(startIndex, RegExpNegatedCharacterClassWithStrings);
                 }
 
-                parser.ClearFollowingQuantifierError();
+                // i is now at ']', advance past it.
+                i++;
             }
 
             // https://tc39.es/ecma262/#prod-ClassSetExpression
@@ -287,7 +284,7 @@ public partial class Tokenizer
 
                 if (pattern.CharCodeAt(i) == '\\')
                 {
-                    var result = EatCharacterClassEscape(parser);
+                    var result = ConsumeCharacterClassEscape(parser);
                     if (result != CharSetNone)
                     {
                         i++;
@@ -384,7 +381,7 @@ public partial class Tokenizer
 
                 if (pattern.CharCodeAt(i) == '\\')
                 {
-                    if (EatCharacterEscape(parser, out cp))
+                    if (ConsumeCharacterEscape(parser, out cp))
                     {
                         i++;
                         return true;
@@ -411,14 +408,20 @@ public partial class Tokenizer
                 return true;
             }
 
-            private static bool EatCharacterEscape(RegExpParser parser, out int cp)
+            private static bool ConsumeCharacterEscape(RegExpParser parser, out int cp)
             {
                 var pattern = parser._pattern;
                 ref var i = ref parser._index;
-                ushort charCode, charCode2;
                 var startIndex = i++;
                 int endIndex;
-                var ch = pattern.CharCodeAt(i);
+
+                if ((uint)i >= (uint)pattern.Length)
+                {
+                    parser.ReportSyntaxError(startIndex, RegExpEscapeAtEndOfPattern);
+                }
+
+                ushort charCode, charCode2;
+                var ch = pattern[i];
                 switch (ch)
                 {
                     // CharacterEscape -> RegExpUnicodeEscapeSequence -> u{ CodePoint }
@@ -502,12 +505,12 @@ public partial class Tokenizer
                         break;
 
                     default:
-                        if (TryGetSimpleEscapeCharCode((char)ch, withinSet: true, out charCode))
+                        if (TryGetSimpleEscapeCharCode(ch, withinSet: true, out charCode))
                         {
                             cp = charCode;
                             return true;
                         }
-                        else if (IsClassSetReservedPunctuator((char)ch))
+                        else if (IsClassSetReservedPunctuator(ch))
                         {
                             cp = ch;
                             return true;
@@ -521,13 +524,19 @@ public partial class Tokenizer
                 return false;
             }
 
-            private static int EatCharacterClassEscape(RegExpParser parser)
+            private static int ConsumeCharacterClassEscape(RegExpParser parser)
             {
                 var pattern = parser._pattern;
                 ref var i = ref parser._index;
                 var startIndex = i++;
                 int endIndex;
-                var ch = pattern.CharCodeAt(i);
+
+                if ((uint)i >= (uint)pattern.Length)
+                {
+                    parser.ReportSyntaxError(startIndex, RegExpEscapeAtEndOfPattern);
+                }
+
+                var ch = pattern[i];
                 switch (ch)
                 {
                     case 'd' or 'D' or 's' or 'S' or 'w' or 'W':
@@ -650,11 +659,6 @@ public partial class Tokenizer
                     RegExpGroupType.LookbehindAssertion or
                     RegExpGroupType.NegativeLookbehindAssertion
                 );
-            }
-
-            public void HandleInvalidRangeQuantifier(RegExpParser parser, int startIndex)
-            {
-                parser.ReportSyntaxError(startIndex, RegExpIncompleteQuantifier);
             }
         }
     }

@@ -151,7 +151,7 @@ public static class NodeExtensions
                     nodes.Push(childNode);
                 }
 
-                nodes.AsSpan().Slice(lastIndex, nodes.Count - lastIndex).Reverse();
+                nodes.AsSpan(lastIndex).Reverse();
             }
             while (nodes.Count > 0);
         }
@@ -174,7 +174,7 @@ public static class NodeExtensions
                         nodes.Push(childNode);
                     }
 
-                    nodes.AsSpan().Slice(lastIndex, nodes.Count - lastIndex).Reverse();
+                    nodes.AsSpan(lastIndex).Reverse();
                 }
             }
             while (nodes.Count > 0);

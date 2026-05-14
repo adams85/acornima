@@ -105,9 +105,18 @@ internal partial struct ArrayList<T> : IList<T>, IReadOnlyList<T>
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal ArrayList(T[] items)
+        : this(items, items.Length) { }
+
+    /// <remarks>
+    /// WARNING: Expects ownership of the array.
+    /// </remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal ArrayList(T[] items, int count)
     {
+        Debug.Assert(0 <= count && count <= items.Length);
+
         _items = items;
-        _count = items.Length;
+        _count = count;
 
 #if DEBUG
         _localVersion = 0;
@@ -414,20 +423,20 @@ internal partial struct ArrayList<T> : IList<T>, IReadOnlyList<T>
     /// WARNING: Items should not be added or removed from the <see cref="ArrayList{T}"/> while the returned <see cref="Span{T}"/> is in use.
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal readonly Span<T> AsSpan()
+    internal readonly Span<T> AsSpan(int start = 0)
     {
         AssertUnchanged();
-        return new Span<T>(_items, 0, _count);
+        return new Span<T>(_items, start, _count - start);
     }
 
     /// <remarks>
     /// WARNING: Items should not be added or removed from the <see cref="ArrayList{T}"/> while the returned <see cref="ReadOnlySpan{T}"/> is in use.
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal readonly ReadOnlySpan<T> AsReadOnlySpan()
+    internal readonly ReadOnlySpan<T> AsReadOnlySpan(int start = 0)
     {
         AssertUnchanged();
-        return new ReadOnlySpan<T>(_items, 0, _count);
+        return new ReadOnlySpan<T>(_items, start, _count - start);
     }
 
     public readonly T[] ToArray()

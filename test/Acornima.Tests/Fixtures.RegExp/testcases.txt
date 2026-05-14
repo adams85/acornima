@@ -1,4 +1,4 @@
-﻿# Generated from testcases.template.txt at 2026-05-16T14:29:11
+﻿# Generated from testcases.template.txt at 2026-05-16T14:30:11
 
 # This file defines test cases for regular expression conversion testing (see RegExpTests.ExecuteTestCase).
 # Each uncommented, non-whitespace line specifies a test case in a tab-delimited format, with the following fields:
@@ -3396,24 +3396,24 @@ styles(?:\.[\da-f]+)?	v	)inconvertible(	styles.1234.min.css	[{"captures":["style
 \k<b>(?<a>)	u	)syntax-error(	x	"Invalid named capture referenced"
 \k<b>(?<a>)	v	)syntax-error(	x	"Invalid named capture referenced"
 \k<b>(?<b)		)syntax-error(	x	"Invalid capture group name"	!ignore-error-message
-\k<b>(?<b)	u	)syntax-error(	x	"Invalid capture group name"	!ignore-error-message
-\k<b>(?<b)	v	)syntax-error(	x	"Invalid capture group name"	!ignore-error-message
+\k<b>(?<b)	u	)syntax-error(	x	"Invalid capture group name"	!ignore-error-message !ignore-validation-error-message
+\k<b>(?<b)	v	)syntax-error(	x	"Invalid capture group name"	!ignore-error-message !ignore-validation-error-message
 \k<b>(?<(?<b>>)		)syntax-error(	x	"Invalid capture group name"	!ignore-error-message
 \k<b>(?<(?<b>>)	u	)syntax-error(	x	"Invalid capture group name"	!ignore-error-message
 \k<b>(?<(?<b>>)	v	)syntax-error(	x	"Invalid capture group name"	!ignore-error-message
 
-\1\k<\u>(?<\u>)		)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message
-\1\k<\u>(?<\u>)	u	)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message
-\1\k<\u>(?<\u>)	v	)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message
-\1\k<\u{>(?<\u{>)		)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message
-\1\k<\u{>(?<\u{>)	u	)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message
-\1\k<\u{>(?<\u{>)	v	)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message
-\1\k<\u{(}>(?<\u{(}>)		)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message
-\1\k<\u{(}>(?<\u{(}>)	u	)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message
-\1\k<\u{(}>(?<\u{(}>)	v	)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message
-\1\k<\x61>(?<\x61>)		)syntax-error(	x	"Invalid capture group name"	!ignore-error-message
-\1\k<\x61>(?<\x61>)	u	)syntax-error(	x	"Invalid capture group name"	!ignore-error-message
-\1\k<\x61>(?<\x61>)	v	)syntax-error(	x	"Invalid capture group name"	!ignore-error-message
+\1\k<\u>(?<\u>)		)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message !ignore-validation-error-message
+\1\k<\u>(?<\u>)	u	)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message !ignore-validation-error-message
+\1\k<\u>(?<\u>)	v	)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message !ignore-validation-error-message
+\1\k<\u{>(?<\u{>)		)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message !ignore-validation-error-message
+\1\k<\u{>(?<\u{>)	u	)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message !ignore-validation-error-message
+\1\k<\u{>(?<\u{>)	v	)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message !ignore-validation-error-message
+\1\k<\u{(}>(?<\u{(}>)		)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message !ignore-validation-error-message
+\1\k<\u{(}>(?<\u{(}>)	u	)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message !ignore-validation-error-message
+\1\k<\u{(}>(?<\u{(}>)	v	)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message !ignore-validation-error-message
+\1\k<\x61>(?<\x61>)		)syntax-error(	x	"Invalid capture group name"	!ignore-error-message !ignore-validation-error-message
+\1\k<\x61>(?<\x61>)	u	)syntax-error(	x	"Invalid capture group name"	!ignore-error-message !ignore-validation-error-message
+\1\k<\x61>(?<\x61>)	v	)syntax-error(	x	"Invalid capture group name"	!ignore-error-message !ignore-validation-error-message
 \1\k<\u0061>(?<\u0061>)		)inconvertible(	x	[{"captures":["",""],"index":0,"groups":{"a":""}},{"captures":["",""],"index":1,"groups":{"a":""}}]
 \1\k<\u0061>(?<\u0061>)	u	)inconvertible(	x	[{"captures":["",""],"index":0,"groups":{"a":""}},{"captures":["",""],"index":1,"groups":{"a":""}}]
 \1\k<\u0061>(?<\u0061>)	v	)inconvertible(	x	[{"captures":["",""],"index":0,"groups":{"a":""}},{"captures":["",""],"index":1,"groups":{"a":""}}]
@@ -3421,18 +3421,18 @@ styles(?:\.[\da-f]+)?	v	)inconvertible(	styles.1234.min.css	[{"captures":["style
 \1\k<\u{61}>(?<\u{61}>)	u	)inconvertible(	x	[{"captures":["",""],"index":0,"groups":{"a":""}},{"captures":["",""],"index":1,"groups":{"a":""}}]
 \1\k<\u{61}>(?<\u{61}>)	v	)inconvertible(	x	[{"captures":["",""],"index":0,"groups":{"a":""}},{"captures":["",""],"index":1,"groups":{"a":""}}]
 
-\1\k<a\u>(?<a\u>)		)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message
-\1\k<a\u>(?<a\u>)	u	)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message
-\1\k<a\u>(?<a\u>)	v	)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message
-\1\k<a\u{>(?<a\u{>)		)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message
-\1\k<a\u{>(?<a\u{>)	u	)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message
-\1\k<a\u{>(?<a\u{>)	v	)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message
-\1\k<a\u{(}>(?<a\u{(}>)		)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message
-\1\k<a\u{(}>(?<a\u{(}>)	u	)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message
-\1\k<a\u{(}>(?<a\u{(}>)	v	)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message
-\1\k<a\x61>(?<a\x61>)		)syntax-error(	x	"Invalid capture group name"	!ignore-error-message
-\1\k<a\x61>(?<a\x61>)	u	)syntax-error(	x	"Invalid capture group name"	!ignore-error-message
-\1\k<a\x61>(?<a\x61>)	v	)syntax-error(	x	"Invalid capture group name"	!ignore-error-message
+\1\k<a\u>(?<a\u>)		)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message !ignore-validation-error-message
+\1\k<a\u>(?<a\u>)	u	)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message !ignore-validation-error-message
+\1\k<a\u>(?<a\u>)	v	)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message !ignore-validation-error-message
+\1\k<a\u{>(?<a\u{>)		)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message !ignore-validation-error-message
+\1\k<a\u{>(?<a\u{>)	u	)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message !ignore-validation-error-message
+\1\k<a\u{>(?<a\u{>)	v	)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message !ignore-validation-error-message
+\1\k<a\u{(}>(?<a\u{(}>)		)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message !ignore-validation-error-message
+\1\k<a\u{(}>(?<a\u{(}>)	u	)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message !ignore-validation-error-message
+\1\k<a\u{(}>(?<a\u{(}>)	v	)syntax-error(	x	"Invalid Unicode escape"	!ignore-error-message !ignore-validation-error-message
+\1\k<a\x61>(?<a\x61>)		)syntax-error(	x	"Invalid capture group name"	!ignore-error-message !ignore-validation-error-message
+\1\k<a\x61>(?<a\x61>)	u	)syntax-error(	x	"Invalid capture group name"	!ignore-error-message !ignore-validation-error-message
+\1\k<a\x61>(?<a\x61>)	v	)syntax-error(	x	"Invalid capture group name"	!ignore-error-message !ignore-validation-error-message
 \1\k<a\u0061>(?<a\u0061>)		)inconvertible(	x	[{"captures":["",""],"index":0,"groups":{"aa":""}},{"captures":["",""],"index":1,"groups":{"aa":""}}]
 \1\k<a\u0061>(?<a\u0061>)	u	)inconvertible(	x	[{"captures":["",""],"index":0,"groups":{"aa":""}},{"captures":["",""],"index":1,"groups":{"aa":""}}]
 \1\k<a\u0061>(?<a\u0061>)	v	)inconvertible(	x	[{"captures":["",""],"index":0,"groups":{"aa":""}},{"captures":["",""],"index":1,"groups":{"aa":""}}]
@@ -3452,10 +3452,10 @@ styles(?:\.[\da-f]+)?	v	)inconvertible(	styles.1234.min.css	[{"captures":["style
 [\k<b>)](?<!		)syntax-error(	x	"Unterminated group"	!ignore-error-message
 [\k<b>)](?<!	u	)syntax-error(	x	"Invalid escape"	!ignore-error-message
 [\k<b>)](?<!	v	)syntax-error(	x	"Invalid escape"	!ignore-error-message
-[\k<b>)](?<a)		)syntax-error(	x	"Invalid escape"	!ignore-error-message
+[\k<b>)](?<a)		)syntax-error(	x	"Invalid escape"	!ignore-error-message !ignore-validation-error-message
 [\k<b>)](?<a)	u	)syntax-error(	x	"Invalid escape"	!ignore-error-message
 [\k<b>)](?<a)	v	)syntax-error(	x	"Invalid escape"	!ignore-error-message
-[\k<b>)](?<b)		)syntax-error(	x	"Invalid escape"	!ignore-error-message
+[\k<b>)](?<b)		)syntax-error(	x	"Invalid escape"	!ignore-error-message !ignore-validation-error-message
 [\k<b>)](?<b)	u	)syntax-error(	x	"Invalid escape"	!ignore-error-message
 [\k<b>)](?<b)	v	)syntax-error(	x	"Invalid escape"	!ignore-error-message
 [\k<b>)](?<b>)		)syntax-error(	x	"Invalid escape"
@@ -3466,8 +3466,8 @@ styles(?:\.[\da-f]+)?	v	)inconvertible(	styles.1234.min.css	[{"captures":["style
 [\k<b>)](?<(?<b>>)	v	)syntax-error(	x	"Invalid escape"	!ignore-error-message
 
 [\k<b>)]\k[[\]\k<b>]]]		"[k<b>)]k[[\\]k<b>]]]"	x	[]
-[\k<b>)]\k[[\]\k<b>]]](?<a)		)syntax-error(	x	"Invalid escape"	!ignore-error-message
-[\k<b>)]\k[[\]\k<b>]]](?<b)		)syntax-error(	x	"Invalid escape"	!ignore-error-message
+[\k<b>)]\k[[\]\k<b>]]](?<a)		)syntax-error(	x	"Invalid escape"	!ignore-error-message !ignore-validation-error-message
+[\k<b>)]\k[[\]\k<b>]]](?<b)		)syntax-error(	x	"Invalid escape"	!ignore-error-message !ignore-validation-error-message
 [\k<b>)]\k[[\]\k<b>]]](?<b>)		)syntax-error(	x	"Invalid escape"
 [\k<b>)]\k[[\]\k<b>]]](?<(?<b>)>)		)syntax-error(	x	"Invalid escape"	!ignore-error-message
 
