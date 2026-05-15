@@ -17,7 +17,7 @@ public readonly ref struct RegExpParsingContext
 
     public string Pattern { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _parser._pattern; }
 
-    public string Flags { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _parser._flagsOriginal; }
+    public string Flags { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _parser._flags; }
 
     internal readonly Range _range;
     public Range Range { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _range; }
