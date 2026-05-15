@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Acornima.Helpers;
 
 namespace Acornima;
@@ -10,342 +11,312 @@ public partial class Tokenizer
 {
     internal partial class RegExpParser
     {
-        private sealed class UnicodeMode : IMode
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void EatCharU(char ch)
         {
-            public static readonly UnicodeMode Instance = new();
-
-            private UnicodeMode() { }
-
-            public void EatChar(char ch, RegExpParser parser)
+            if (ch.IsHighSurrogate())
             {
-                if (ch.IsHighSurrogate())
-                {
-                    var pattern = parser._pattern;
-                    ref var i = ref parser._index;
+                ref var i = ref _index;
 
-                    if (((char)pattern.CharCodeAt(i)).IsLowSurrogate())
-                    {
-                        i++;
-                    }
+                if (((char)_pattern.CharCodeAt(i)).IsLowSurrogate())
+                {
+                    i++;
+                }
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void EatSetCharU(char ch, int startIndex)
+        {
+            if (ch.IsHighSurrogate())
+            {
+                ref var i = ref _index;
+                char ch2;
+
+                if ((ch2 = (char)_pattern.CharCodeAt(i)).IsLowSurrogate())
+                {
+                    i++;
+                    ProcessSetCodePoint((int)UnicodeHelper.GetCodePoint(ch, ch2), startIndex);
+                    return;
                 }
             }
 
-            public void EatSetChar(char ch, RegExpParser parser, int startIndex)
-            {
-                if (ch.IsHighSurrogate())
-                {
-                    var pattern = parser._pattern;
-                    ref var i = ref parser._index;
-                    char ch2;
+            ProcessSetCodePoint(ch, startIndex);
+        }
 
-                    if ((ch2 = (char)pattern.CharCodeAt(i)).IsLowSurrogate())
+        private void ProcessSetCodePoint(int cp, int startIndex)
+        {
+            Debug.Assert(cp is >= 0 and <= UnicodeHelper.LastCodePoint, "Invalid end code point.");
+
+            if (_setRangeStart >= 0)
+            {
+                _setRangeStart = cp;
+            }
+            else
+            {
+                _setRangeStart = ~_setRangeStart;
+
+                // Cases like /[z-a]/u or /[\d-a]/u are syntax error.
+                if (_setRangeStart > cp)
+                {
+                    if (_setRangeStart <= UnicodeHelper.LastCodePoint)
                     {
-                        i++;
-                        ProcessSetCodePoint((int)UnicodeHelper.GetCodePoint(ch, ch2), parser, startIndex);
-                        return;
+                        ReportSyntaxError(startIndex, RegExpRangeOutOfOrderCharacterClass);
+                    }
+                    else
+                    {
+                        ReportSyntaxError(startIndex, RegExpInvalidCharacterClass);
                     }
                 }
 
-                ProcessSetCodePoint(ch, parser, startIndex);
+                _setRangeStart = SetRangeNotStarted;
+            }
+        }
+
+        private bool EatEscapeSequenceU(int startIndex)
+        {
+            // https://tc39.es/ecma262/#prod-AtomEscape
+
+            ref var i = ref _index;
+            int endIndex;
+
+            if ((uint)i >= (uint)_pattern.Length)
+            {
+                ReportSyntaxError(startIndex, RegExpEscapeAtEndOfPattern);
             }
 
-            private static void ProcessSetCodePoint(int cp, RegExpParser parser, int startIndex)
+            var isQuantifiable = true;
+
+            ushort charCode, charCode2;
+            int cp;
+            var ch = _pattern[i];
+            switch (ch)
             {
-                Debug.Assert(cp is >= 0 and <= UnicodeHelper.LastCodePoint, "Invalid end code point.");
-
-                if (parser._setRangeStart >= 0)
-                {
-                    parser._setRangeStart = cp;
-                }
-                else
-                {
-                    parser._setRangeStart = ~parser._setRangeStart;
-
-                    // Cases like /[z-a]/u or /[\d-a]/u are syntax error.
-                    if (parser._setRangeStart > cp)
+                // CharacterEscape -> RegExpUnicodeEscapeSequence -> u{ CodePoint }
+                case 'u' when _pattern.CharCodeAt(i + 1) == '{':
+                    if (TryReadCodePoint(_pattern, ref i, endIndex: _pattern.Length, out cp))
                     {
-                        if (parser._setRangeStart <= UnicodeHelper.LastCodePoint)
+                        if (WithinSet)
                         {
-                            parser.ReportSyntaxError(startIndex, RegExpRangeOutOfOrderCharacterClass);
+                            ProcessSetCodePoint(cp, startIndex);
                         }
-                        else
-                        {
-                            parser.ReportSyntaxError(startIndex, RegExpInvalidCharacterClass);
-                        }
                     }
+                    else
+                    {
+                        ReportSyntaxError(startIndex, RegExpInvalidUnicodeEscape);
+                    }
+                    break;
 
-                    parser._setRangeStart = SetRangeNotStarted;
-                }
-            }
-
-            public bool EatEscapeSequence(RegExpParser parser, int startIndex)
-            {
-                return EatEscapeSequence(allowStringProperties: false, parser, startIndex);
-            }
-
-            internal static bool EatEscapeSequence(bool allowStringProperties, RegExpParser parser, int startIndex)
-            {
-                // https://tc39.es/ecma262/#prod-AtomEscape
-
-                var pattern = parser._pattern;
-                ref var i = ref parser._index;
-                int endIndex;
-
-                if ((uint)i >= (uint)pattern.Length)
-                {
-                    parser.ReportSyntaxError(startIndex, RegExpEscapeAtEndOfPattern);
-                }
-
-                var isQuantifiable = true;
-
-                ushort charCode, charCode2;
-                int cp;
-                var ch = pattern[i];
-                switch (ch)
-                {
-                    // CharacterEscape -> RegExpUnicodeEscapeSequence -> u{ CodePoint }
-                    case 'u' when pattern.CharCodeAt(i + 1) == '{':
-                        if (TryReadCodePoint(pattern, ref i, endIndex: pattern.Length, out cp))
+                // CharacterEscape -> RegExpUnicodeEscapeSequence
+                // CharacterEscape -> HexEscapeSequence
+                case 'u':
+                case 'x':
+                    if (TryReadHexEscape(_pattern, ref i, endIndex: _pattern.Length, charCodeLength: ch == 'u' ? 4 : 2, out charCode))
+                    {
+                        if (ch == 'u' && ((char)charCode).IsHighSurrogate() && (uint)(i + 2) < (uint)_pattern.Length && _pattern[i + 1] == '\\' && _pattern[i + 2] == 'u')
                         {
-                            if (parser.WithinSet)
+                            endIndex = i + 2;
+                            if (TryReadHexEscape(_pattern, ref endIndex, endIndex: _pattern.Length, charCodeLength: 4, out charCode2) && ((char)charCode2).IsLowSurrogate())
                             {
-                                ProcessSetCodePoint(cp, parser, startIndex);
-                            }
-                        }
-                        else
-                        {
-                            parser.ReportSyntaxError(startIndex, RegExpInvalidUnicodeEscape);
-                        }
-                        break;
+                                i = endIndex;
 
-                    // CharacterEscape -> RegExpUnicodeEscapeSequence
-                    // CharacterEscape -> HexEscapeSequence
-                    case 'u':
-                    case 'x':
-                        if (TryReadHexEscape(pattern, ref i, endIndex: pattern.Length, charCodeLength: ch == 'u' ? 4 : 2, out charCode))
-                        {
-                            if (ch == 'u' && ((char)charCode).IsHighSurrogate() && (uint)(i + 2) < (uint)pattern.Length && pattern[i + 1] == '\\' && pattern[i + 2] == 'u')
-                            {
-                                endIndex = i + 2;
-                                if (TryReadHexEscape(pattern, ref endIndex, endIndex: pattern.Length, charCodeLength: 4, out charCode2) && ((char)charCode2).IsLowSurrogate())
+                                if (WithinSet)
                                 {
-                                    i = endIndex;
-
-                                    if (parser.WithinSet)
-                                    {
-                                        cp = (int)UnicodeHelper.GetCodePoint((char)charCode, (char)charCode2);
-                                        ProcessSetCodePoint(cp, parser, startIndex);
-                                    }
-
-                                    break;
+                                    cp = (int)UnicodeHelper.GetCodePoint((char)charCode, (char)charCode2);
+                                    ProcessSetCodePoint(cp, startIndex);
                                 }
-                            }
 
-                            if (parser.WithinSet)
-                            {
-                                ProcessSetCodePoint((char)charCode, parser, startIndex);
-                            }
-                        }
-                        else
-                        {
-                            if (ch == 'u')
-                            {
-                                parser.ReportSyntaxError(startIndex, RegExpInvalidUnicodeEscape);
-                            }
-                            else
-                            {
-                                parser.ReportSyntaxError(startIndex, RegExpInvalidEscape);
-                            }
-                        }
-                        break;
-
-                    // CharacterEscape -> c ControlLetter
-                    case 'c':
-                        cp = pattern.CharCodeAt(i + 1);
-                        if (((char)cp).IsBasicLatinLetter())
-                        {
-                            i++;
-                            if (parser.WithinSet)
-                            {
-                                charCode = (ushort)(cp & 0x1F); // value is equal to the character code modulo 32
-                                ProcessSetCodePoint(charCode, parser, startIndex);
-                            }
-                            break;
-                        }
-
-                        parser.ReportSyntaxError(startIndex, RegExpInvalidUnicodeEscape);
-                        break;
-
-                    // CharacterEscape -> 0 [lookahead ∉ DecimalDigit]
-                    case '0':
-                        if (!((char)pattern.CharCodeAt(i + 1)).IsDecimalDigit())
-                        {
-                            if (parser.WithinSet)
-                            {
-                                ProcessSetCodePoint(0, parser, startIndex);
-                            }
-                        }
-                        else
-                        {
-                            parser.ReportSyntaxError(startIndex, RegExpInvalidDecimalEscape);
-                        }
-                        break;
-
-                    // DecimalEscape
-                    case >= '1' and <= '9':
-                        if (!parser.WithinSet)
-                        {
-                            // Outside character sets, numbers may be backreferences (in this case the number is interpreted as decimal).
-                            if (parser.TryConsumeBackreference(startIndex))
-                            {
                                 break;
                             }
                         }
 
-                        // When the number is not a backreference, it's a syntax error.
-                        if (!parser.WithinSet || ch >= '8')
+                        if (WithinSet)
                         {
-                            parser.ReportSyntaxError(startIndex, RegExpInvalidEscape);
+                            ProcessSetCodePoint((char)charCode, startIndex);
+                        }
+                    }
+                    else
+                    {
+                        if (ch == 'u')
+                        {
+                            ReportSyntaxError(startIndex, RegExpInvalidUnicodeEscape);
                         }
                         else
                         {
-                            parser.ReportSyntaxError(startIndex, RegExpInvalidDecimalEscape);
+                            ReportSyntaxError(startIndex, RegExpInvalidEscape);
+                        }
+                    }
+                    break;
+
+                // CharacterEscape -> c ControlLetter
+                case 'c':
+                    cp = _pattern.CharCodeAt(i + 1);
+                    if (((char)cp).IsBasicLatinLetter())
+                    {
+                        i++;
+                        if (WithinSet)
+                        {
+                            charCode = (ushort)(cp & 0x1F); // value is equal to the character code modulo 32
+                            ProcessSetCodePoint(charCode, startIndex);
                         }
                         break;
+                    }
 
-                    // 'k' GroupName
-                    case 'k':
-                        if (!parser.WithinSet && parser._tokenizer._options._ecmaVersion >= EcmaVersion.ES9)
-                        {
-                            parser.ConsumeNamedBackreference(startIndex);
-                        }
-                        else
-                        {
-                            // \k escape sequences before ES2018 or within character sets are not allowed.
-                            parser.ReportSyntaxError(startIndex, RegExpInvalidEscape);
-                        }
-                        break;
+                    ReportSyntaxError(startIndex, RegExpInvalidUnicodeEscape);
+                    break;
 
-                    // CharacterClassEscape
-                    case 'd' or 'D' or 's' or 'S' or 'w' or 'W':
-                        if (parser.WithinSet)
+                // CharacterEscape -> 0 [lookahead ∉ DecimalDigit]
+                case '0':
+                    if (!((char)_pattern.CharCodeAt(i + 1)).IsDecimalDigit())
+                    {
+                        if (WithinSet)
                         {
-                            if (parser._setRangeStart < 0)
+                            ProcessSetCodePoint(0, startIndex);
+                        }
+                    }
+                    else
+                    {
+                        ReportSyntaxError(startIndex, RegExpInvalidDecimalEscape);
+                    }
+                    break;
+
+                // DecimalEscape
+                case >= '1' and <= '9':
+                    if (!WithinSet)
+                    {
+                        // Outside character sets, numbers may be backreferences (in this case the number is interpreted as decimal).
+                        if (TryConsumeBackreference(startIndex))
+                        {
+                            break;
+                        }
+                    }
+
+                    // When the number is not a backreference, it's a syntax error.
+                    if (!WithinSet || ch >= '8')
+                    {
+                        ReportSyntaxError(startIndex, RegExpInvalidEscape);
+                    }
+                    else
+                    {
+                        ReportSyntaxError(startIndex, RegExpInvalidDecimalEscape);
+                    }
+                    break;
+
+                // 'k' GroupName
+                case 'k':
+                    if (!WithinSet && _tokenizer._options._ecmaVersion >= EcmaVersion.ES9)
+                    {
+                        ConsumeNamedBackreference(startIndex);
+                    }
+                    else
+                    {
+                        // \k escape sequences before ES2018 or within character sets are not allowed.
+                        ReportSyntaxError(startIndex, RegExpInvalidEscape);
+                    }
+                    break;
+
+                // CharacterClassEscape
+                case 'd' or 'D' or 's' or 'S' or 'w' or 'W':
+                    if (WithinSet)
+                    {
+                        if (_setRangeStart < 0)
+                        {
+                            ReportSyntaxError(startIndex, RegExpInvalidCharacterClass);
+                        }
+
+                        _setRangeStart = SetRangeStartedWithCharClass;
+                    }
+                    break;
+
+                // CharacterClassEscape -> p{ UnicodePropertyValueExpression }
+                // CharacterClassEscape -> P{ UnicodePropertyValueExpression }
+                case 'p' or 'P':
+                    if (_tokenizer._options._ecmaVersion >= EcmaVersion.ES9)
+                    {
+                        var nameStartIndex = i + 1;
+                        if (_pattern.CharCodeAt(nameStartIndex) == '{')
+                        {
+                            ReadOnlyMemory<char> expression;
+
+                            nameStartIndex++;
+                            endIndex = _pattern.IndexOf('}', nameStartIndex);
+                            if (endIndex >= 0
+                            && (ValidateUnicodeProperty(expression = _pattern.AsMemory(nameStartIndex, endIndex - nameStartIndex))
+                                || _isUnicodeSets && ch != 'P' && UnicodeProperties.IsAllowedBinaryOfStringsValue(expression, _tokenizer._options._ecmaVersion)))
                             {
-                                parser.ReportSyntaxError(startIndex, RegExpInvalidCharacterClass);
-                            }
-
-                            parser._setRangeStart = SetRangeStartedWithCharClass;
-                        }
-                        break;
-
-                    // CharacterClassEscape -> p{ UnicodePropertyValueExpression }
-                    // CharacterClassEscape -> P{ UnicodePropertyValueExpression }
-                    case 'p' or 'P':
-                        if (parser._tokenizer._options._ecmaVersion >= EcmaVersion.ES9)
-                        {
-                            var nameStartIndex = i + 1;
-                            if (pattern.CharCodeAt(nameStartIndex) == '{')
-                            {
-                                ReadOnlyMemory<char> expression;
-
-                                nameStartIndex++;
-                                endIndex = pattern.IndexOf('}', nameStartIndex);
-                                if (endIndex >= 0
-                                    && (ValidateUnicodeProperty(expression = pattern.AsMemory(nameStartIndex, endIndex - nameStartIndex), parser)
-                                        || allowStringProperties && ch != 'P' && UnicodeProperties.IsAllowedBinaryOfStringsValue(expression, parser._tokenizer._options._ecmaVersion)))
+                                if (WithinSet)
                                 {
-                                    if (parser.WithinSet)
+                                    if (_setRangeStart < 0)
                                     {
-                                        if (parser._setRangeStart < 0)
-                                        {
-                                            parser.ReportSyntaxError(startIndex, RegExpInvalidCharacterClass);
-                                        }
-
-                                        parser._setRangeStart = SetRangeStartedWithCharClass;
+                                        ReportSyntaxError(startIndex, RegExpInvalidCharacterClass);
                                     }
 
-                                    i = endIndex;
-                                    break;
+                                    _setRangeStart = SetRangeStartedWithCharClass;
                                 }
-                            }
 
-                            if (!parser.WithinSet)
-                            {
-                                parser.ReportSyntaxError(nameStartIndex, RegExpInvalidPropertyName);
+                                i = endIndex;
+                                break;
                             }
-                            else
-                            {
-                                parser.ReportSyntaxError(nameStartIndex, RegExpInvalidClassPropertyName);
-                            }
+                        }
+
+                        if (!WithinSet)
+                        {
+                            ReportSyntaxError(nameStartIndex, RegExpInvalidPropertyName);
                         }
                         else
                         {
-                            // \p and \P escape sequences before ES2018 are not allowed.
-                            parser.ReportSyntaxError(startIndex, RegExpInvalidEscape);
+                            ReportSyntaxError(nameStartIndex, RegExpInvalidClassPropertyName);
                         }
-                        break;
-
-                    // Assertion -> \b | \B
-                    case 'b' or 'B' when !parser.WithinSet:
-                        isQuantifiable = false;
-                        break;
-
-                    default:
-                        if (!TryGetSimpleEscapeCharCode(ch, parser.WithinSet, out charCode))
-                        {
-                            parser.ReportSyntaxError(startIndex, RegExpInvalidEscape);
-                        }
-
-                        if (parser.WithinSet)
-                        {
-                            ProcessSetCodePoint(charCode, parser, startIndex);
-                        }
-                        break;
-                }
-
-                i++;
-                return isQuantifiable;
-            }
-
-            internal static bool ValidateUnicodeProperty(ReadOnlyMemory<char> expression, RegExpParser parser)
-            {
-                var index = expression.Span.IndexOf('=');
-                if (index >= 0)
-                {
-                    // https://tc39.es/ecma262/#table-nonbinary-unicode-properties
-
-                    var propertyName = expression.Span.Slice(0, index);
-                    expression = expression.Slice(index + 1);
-                    return propertyName switch
+                    }
+                    else
                     {
-                        "gc" or "General_Category" => UnicodeProperties.IsAllowedGeneralCategoryValue(expression),
-                        "sc" or "Script" or "scx" or "Script_Extensions" => UnicodeProperties.IsAllowedScriptValue(expression, parser._tokenizer._options._ecmaVersion),
-                        _ => false,
-                    };
-                }
-                else
+                        // \p and \P escape sequences before ES2018 are not allowed.
+                        ReportSyntaxError(startIndex, RegExpInvalidEscape);
+                    }
+                    break;
+
+                // Assertion -> \b | \B
+                case 'b' or 'B' when !WithinSet:
+                    isQuantifiable = false;
+                    break;
+
+                default:
+                    if (!TryGetSimpleEscapeCharCode(ch, WithinSet, out charCode))
+                    {
+                        ReportSyntaxError(startIndex, RegExpInvalidEscape);
+                    }
+
+                    if (WithinSet)
+                    {
+                        ProcessSetCodePoint(charCode, startIndex);
+                    }
+                    break;
+            }
+
+            i++;
+            return isQuantifiable;
+        }
+
+        private bool ValidateUnicodeProperty(ReadOnlyMemory<char> expression)
+        {
+            var index = expression.Span.IndexOf('=');
+            if (index >= 0)
+            {
+                // https://tc39.es/ecma262/#table-nonbinary-unicode-properties
+
+                var propertyName = expression.Span.Slice(0, index);
+                expression = expression.Slice(index + 1);
+                return propertyName switch
                 {
-                    return UnicodeProperties.IsAllowedGeneralCategoryValue(expression)
-                        || UnicodeProperties.IsAllowedBinaryValue(expression, parser._tokenizer._options._ecmaVersion);
-                }
+                    "gc" or "General_Category" => UnicodeProperties.IsAllowedGeneralCategoryValue(expression),
+                    "sc" or "Script" or "scx" or "Script_Extensions" => UnicodeProperties.IsAllowedScriptValue(expression, _tokenizer._options._ecmaVersion),
+                    _ => false,
+                };
             }
-
-            public void ParseSet(RegExpParser parser, int startIndex)
+            else
             {
-                parser.ParseSetDefault(this, startIndex);
-            }
-
-            public bool AllowsQuantifierAfterGroup(RegExpGroupType groupType)
-            {
-                // Assertion groups may not be followed by quantifiers.
-                return groupType is not
-                (
-                    RegExpGroupType.LookaheadAssertion or
-                    RegExpGroupType.NegativeLookaheadAssertion or
-                    RegExpGroupType.LookbehindAssertion or
-                    RegExpGroupType.NegativeLookbehindAssertion
-                );
+                return UnicodeProperties.IsAllowedGeneralCategoryValue(expression)
+                    || UnicodeProperties.IsAllowedBinaryValue(expression, _tokenizer._options._ecmaVersion);
             }
         }
     }
