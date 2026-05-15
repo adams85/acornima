@@ -17,7 +17,7 @@ internal static class UnicodeHelper
             var ch = s[i];
             if (ch.IsSurrogate())
             {
-                if (ch >= 0xDC00 || !(++i < s.Length && s[i].IsLowSurrogate()))
+                if (ch >= 0xDC00 || !((uint)++i < (uint)s.Length && s[i].IsLowSurrogate()))
                 {
                     return true;
                 }

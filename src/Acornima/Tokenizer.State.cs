@@ -77,10 +77,10 @@ public partial class Tokenizer
     internal void ResetInternal(string input, int start, int length, SourceType sourceType, string? sourceFile, bool trackRegExpContext)
     {
         _input = input ?? throw new ArgumentNullException(nameof(input));
-        _startPosition = 0 <= start && start <= input.Length
+        _startPosition = (uint)start <= (uint)input.Length
             ? start
             : throw new ArgumentOutOfRangeException(nameof(start), start, null);
-        _endPosition = 0 <= length && length <= input.Length - start
+        _endPosition = (uint)length <= (uint)(input.Length - start)
             ? _startPosition + length
             : throw new ArgumentOutOfRangeException(nameof(length), length, null);
         _sourceType = sourceType;

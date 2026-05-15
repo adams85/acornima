@@ -955,12 +955,12 @@ public partial class Tokenizer
 
         private RegExpGroupType DetermineGroupType(int i)
         {
-            if (++i >= _pattern.Length || _pattern[i] != '?')
+            if ((uint)++i >= (uint)_pattern.Length || _pattern[i] != '?')
             {
                 return RegExpGroupType.Capturing;
             }
 
-            if (++i >= _pattern.Length)
+            if ((uint)++i >= (uint)_pattern.Length)
             {
                 return RegExpGroupType.Unknown;
             }

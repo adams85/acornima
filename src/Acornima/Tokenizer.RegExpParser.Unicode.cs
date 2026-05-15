@@ -679,7 +679,7 @@ public partial class Tokenizer
                     case 'x':
                         if (TryReadHexEscape(pattern, ref i, endIndex: pattern.Length, charCodeLength: ch == 'u' ? 4 : 2, out charCode))
                         {
-                            if (ch == 'u' && ((char)charCode).IsHighSurrogate() && i + 2 < pattern.Length && pattern[i + 1] == '\\' && pattern[i + 2] == 'u')
+                            if (ch == 'u' && ((char)charCode).IsHighSurrogate() && (uint)(i + 2) < (uint)pattern.Length && pattern[i + 1] == '\\' && pattern[i + 2] == 'u')
                             {
                                 endIndex = i + 2;
                                 if (TryReadHexEscape(pattern, ref endIndex, endIndex: pattern.Length, charCodeLength: 4, out charCode2) && ((char)charCode2).IsLowSurrogate())

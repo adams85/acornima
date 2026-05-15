@@ -67,7 +67,7 @@ internal static class StringExtensions
 
         // NOTE: For indicating an unavailable character, we use a negative value which
         // results in '\0' when converted to char. In some cases we may rely on this behavior.
-        return (uint)index < (uint)endIndex ? s[index] : int.MinValue;
+        return index < endIndex && (uint)index < (uint)s.Length ? s[index] : int.MinValue;
     }
 
     public static int CodePointAt(this string s, int index, int endIndex)
