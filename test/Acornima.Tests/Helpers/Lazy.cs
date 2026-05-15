@@ -9,19 +9,3 @@ internal static class Lazy
         return new Lazy<T, TMetadata>(factory, metadata);
     }
 }
-
-public sealed class Lazy<T, TMetadata> : Lazy<T>
-{
-    public TMetadata Metadata { get; }
-
-    public Lazy(Func<T> valueFactory, TMetadata metadata) :
-        base(valueFactory)
-    {
-        Metadata = metadata;
-    }
-
-    public override string ToString()
-    {
-        return $"{Metadata}";
-    }
-}

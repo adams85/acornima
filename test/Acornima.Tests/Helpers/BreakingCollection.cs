@@ -54,8 +54,8 @@ internal class BreakingCollection<T> : BreakingSequence<T>, ICollection<T>
         List = list;
     }
 
-    public BreakingCollection(int count) :
-        this(Enumerable.Repeat(default(T)!, count).ToList())
+    public BreakingCollection(int count)
+        : this(Enumerable.Repeat(default(T)!, count).ToList())
     {
     }
 

@@ -9,8 +9,8 @@
     <AnalysisLevel>None</AnalysisLevel>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\Acornima.Extras\Acornima.Extras.csproj" />
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+    <Reference Include="System.ComponentModel.Composition" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,6 +26,10 @@
     </PackageReference>
     <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="all" />
     <PackageReference Include="xunit.runner.console" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Acornima.Extras\Acornima.Extras.csproj" />
   </ItemGroup>
 
 </Project>
