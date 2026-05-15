@@ -123,7 +123,7 @@ public partial class Tokenizer
         _options._errorHandler.Reset();
     }
 
-    private void ReleaseLargeBuffers()
+    internal void ReleaseLargeBuffersForRegExpParser()
     {
         (_sb ?? throw new InvalidOperationException()).Clear();
         if (_sb.Capacity > 1024)
@@ -133,6 +133,11 @@ public partial class Tokenizer
 
         _stringPool = default;
 
+        _regExpParser?.ReleaseReferencesAndLargeBuffers();
+    }
+
+    private void ReleaseLargeBuffers()
+    {
         _contextStack.Clear();
         _contextStack.Push(TokenContext.BracketsInStatement);
         if (_contextStack.Capacity > 64)
@@ -140,14 +145,20 @@ public partial class Tokenizer
             _contextStack.Capacity = 64;
         }
 
-        _regExpParser?.ReleaseReferencesAndLargeBuffers();
+        ReleaseLargeBuffersForRegExpParser();
     }
 
     internal void ReleaseReferencesAndLargeBuffers()
     {
         _input = null!;
         _sourceFile = null!;
-        ReleaseLargeBuffers();
+
+        // Avoid cleaning up twice at the end of parsing,
+        // as the tokenizer already cleans up on reaching EOF (see NextToken).
+        if (_type != TokenType.EOF)
+        {
+            ReleaseLargeBuffers();
+        }
     }
 
     private Position CurrentPosition { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => new Position(_currentLine, _position - _lineStart); }

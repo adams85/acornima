@@ -112,8 +112,8 @@ public sealed partial class Tokenizer : ITokenizer
 
         if (_position >= _endPosition)
         {
-            FinishToken(TokenType.EOF, TokenValue.EOF);
-            ReleaseLargeBuffers();
+            try { FinishToken(TokenType.EOF, TokenValue.EOF); }
+            finally { ReleaseLargeBuffers(); }
             return;
         }
 
@@ -1973,7 +1973,7 @@ public sealed partial class Tokenizer : ITokenizer
         }
         finally
         {
-            tokenizer._regExpParser?.ReleaseReferencesAndLargeBuffers();
+            tokenizer.ReleaseLargeBuffersForRegExpParser();
             Volatile.Write(ref s_cachedInstanceForRegExpParsing, tokenizer);
         }
 
@@ -2029,7 +2029,7 @@ public sealed partial class Tokenizer : ITokenizer
         }
         finally
         {
-            tokenizer._regExpParser?.ReleaseReferencesAndLargeBuffers();
+            tokenizer.ReleaseLargeBuffersForRegExpParser();
             Volatile.Write(ref s_cachedInstanceForRegExpParsing, tokenizer);
         }
     }
