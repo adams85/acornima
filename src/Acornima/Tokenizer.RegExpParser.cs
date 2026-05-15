@@ -80,9 +80,8 @@ public partial class Tokenizer
 
         internal string _pattern;
         internal int _patternStartIndex;
-        internal string _flagsOriginal;
+        internal string _flags;
         internal int _flagsStartIndex;
-        private RegExpFlags _flags;
 
         internal RegExpParser(Tokenizer tokenizer)
         {
@@ -90,7 +89,7 @@ public partial class Tokenizer
             _recursionDepthProvider = tokenizer._recursionDepthProvider ?? this;
 
             _pattern = null!;
-            _flagsOriginal = null!;
+            _flags = null!;
         }
 
         internal void Reset(string pattern, int patternStartIndex, string flags, int flagsStartIndex)
@@ -99,7 +98,7 @@ public partial class Tokenizer
 
             _pattern = pattern;
             _patternStartIndex = patternStartIndex;
-            _flagsOriginal = flags;
+            _flags = flags;
             _flagsStartIndex = flagsStartIndex;
         }
 
@@ -113,36 +112,26 @@ public partial class Tokenizer
         internal void ReportSyntaxError(int index, string messageFormat,
             [CallerArgumentExpression(nameof(messageFormat))] string code = UnknownError)
         {
-            _tokenizer.Raise(_patternStartIndex + index, string.Format(null, messageFormat, _pattern, _flagsOriginal), code: code);
+            _tokenizer.Raise(_patternStartIndex + index, string.Format(null, messageFormat, _pattern, _flags), code: code);
         }
 
         public void Validate()
         {
-            _flags = ParseFlags(_flagsOriginal, _flagsStartIndex, _tokenizer);
+            var flags = ParseFlags(_flags, _flagsStartIndex, _tokenizer);
+            _isUnicode = (flags & (RegExpFlags.Unicode | RegExpFlags.UnicodeSets)) != 0;
+            _isUnicodeSets = (flags & RegExpFlags.UnicodeSets) != 0;
 
             _tokenizer.AcquireStringBuilder(out _auxiliaryStringBuilder);
             try
             {
                 ResetParseContext();
 
-                if ((_flags & RegExpFlags.UnicodeSets) != 0)
-                {
-                    ParsePattern(UnicodeSetsMode.Instance);
-                }
-                else if ((_flags & RegExpFlags.Unicode) != 0)
-                {
-                    ParsePattern(UnicodeMode.Instance);
-                }
-                else
-                {
-                    ParsePattern(LegacyMode.Instance);
-                }
+                ParsePattern();
             }
             finally { _tokenizer.ReleaseStringBuilder(ref _auxiliaryStringBuilder); }
         }
 
-        private void ParsePattern<TMode>(TMode mode)
-            where TMode : IMode
+        private void ParsePattern()
         {
             ref var i = ref _index;
             int min, max;
@@ -157,7 +146,14 @@ public partial class Tokenizer
                 switch (ch)
                 {
                     case '[':
-                        mode.ParseSet(this, startIndex);
+                        if (!_isUnicodeSets)
+                        {
+                            ParseSet(startIndex);
+                        }
+                        else
+                        {
+                            ParseSetV(startIndex);
+                        }
                         break;
 
                     case '(':
@@ -242,7 +238,23 @@ public partial class Tokenizer
 
                         groupType = _groupStack.PopRef().Type;
 
-                        isQuantifiable = mode.AllowsQuantifierAfterGroup(groupType);
+                        isQuantifiable = _isUnicode
+                            // In unicode or unicode sets mode, assertion groups may not be followed by quantifiers.
+                            ? groupType is not
+                            (
+                                RegExpGroupType.LookaheadAssertion or
+                                RegExpGroupType.NegativeLookaheadAssertion or
+                                RegExpGroupType.LookbehindAssertion or
+                                RegExpGroupType.NegativeLookbehindAssertion
+                            )
+                            // In legacy mode, lookbehind assertion groups may not be followed by quantifiers.
+                            // However, lookahead assertion groups may be.
+                            : groupType is not
+                            (
+                                RegExpGroupType.LookbehindAssertion or
+                                RegExpGroupType.NegativeLookbehindAssertion
+                            );
+
                         break;
 
                     case '^':
@@ -265,14 +277,14 @@ public partial class Tokenizer
 
                     case '}':
                     case ']':
-                        if (mode is not LegacyMode)
+                        if (_isUnicode)
                         {
                             ReportSyntaxError(startIndex, RegExpLoneQuantifierBrackets);
                         }
                         goto default;
 
                     case '\\':
-                        if (mode.EatEscapeSequence(this, startIndex))
+                        if (_isUnicode ? EatEscapeSequenceU(startIndex) : EatEscapeSequence(startIndex))
                         {
                             break;
                         }
@@ -282,7 +294,10 @@ public partial class Tokenizer
                         }
 
                     default:
-                        mode.EatChar(ch, this);
+                        if (_isUnicode)
+                        {
+                            EatCharU(ch);
+                        }
                         break;
                 }
 
@@ -310,7 +325,7 @@ public partial class Tokenizer
 
                             i++;
                         }
-                        else if (mode is LegacyMode)
+                        else if (!_isUnicode)
                         {
                             // In legacy mode, invalid {} quantifiers like /.{/, /.{}/, /.{-1}/, etc. are ignored.
                             i = startIndex;
@@ -349,8 +364,7 @@ public partial class Tokenizer
             }
         }
 
-        private void ParseSetDefault<TMode>(TMode mode, int startIndex)
-            where TMode : IMode
+        private void ParseSet(int startIndex)
         {
             ref var i = ref _index;
 
@@ -377,20 +391,32 @@ public partial class Tokenizer
                         {
                             // We use bitwise complement to indicate that '-' was encountered after a character (or character class like \d or \p{...}).
                             _setRangeStart = ~_setRangeStart;
+                            break;
+                        }
+
+                        // We encountered a case like /[-]/, /[0-9-]/, /[0-/d-]/, /[/d-0-]/ or /[\0--]/
+                        goto default;
+
+                    case '\\':
+                        if (_isUnicode)
+                        {
+                            EatEscapeSequenceU(startIndex);
                         }
                         else
                         {
-                            // We encountered a case like /[-]/, /[0-9-]/, /[0-/d-]/, /[/d-0-]/ or /[\0--]/
-                            mode.EatSetChar(ch, this, startIndex);
+                            EatEscapeSequence(startIndex);
                         }
                         break;
 
-                    case '\\':
-                        mode.EatEscapeSequence(this, startIndex);
-                        break;
-
                     default:
-                        mode.EatSetChar(ch, this, startIndex);
+                        if (_isUnicode)
+                        {
+                            EatSetCharU(ch, startIndex);
+                        }
+                        else
+                        {
+                            EatSetChar(ch, startIndex);
+                        }
                         break;
                 }
             }
@@ -427,7 +453,7 @@ public partial class Tokenizer
             {
                 // \k is always invalid within a character set in unicode mode, thus ScanForCapturingGroups
                 // should never be called within a set.
-                Debug.Assert((_flags & (RegExpFlags.Unicode | RegExpFlags.UnicodeSets)) == 0);
+                Debug.Assert(!_isUnicode);
 
                 while ((uint)i < (uint)_pattern.Length)
                 {
@@ -443,8 +469,6 @@ public partial class Tokenizer
 
             EndOfLoop:;
             }
-
-            var isUnicodeSets = (_flags & RegExpFlags.UnicodeSets) != 0;
 
             // Add count of captures after this position.
             while ((uint)i < (uint)_pattern.Length)
@@ -467,7 +491,7 @@ public partial class Tokenizer
                                 case '[':
                                     // For flag 'v', '[' inside a class is treated as a nested class.
                                     // Otherwise, '[' is a normal character.
-                                    if (isUnicodeSets)
+                                    if (_isUnicodeSets)
                                     {
                                         setDepth++;
                                     }
@@ -749,7 +773,7 @@ public partial class Tokenizer
             if (endIndex >= 0)
             {
                 var cp = _pattern.CodePointAt(i = nameStartIndex, endIndex);
-                var allowAstral = _tokenizer._options.EcmaVersion >= EcmaVersion.ES11 || (_flags & (RegExpFlags.Unicode | RegExpFlags.UnicodeSets)) != 0;
+                var allowAstral = _isUnicode || _tokenizer._options.EcmaVersion >= EcmaVersion.ES11;
                 if (IsIdentifierStart(cp, allowAstral) || cp == '\\')
                 {
                     var groupName = ReadIdentifier(ref i, endIndex, allowAstral, throwOnError);
@@ -942,6 +966,9 @@ public partial class Tokenizer
 
         private StringBuilder? _auxiliaryStringBuilder;
 
+        private bool _isUnicode;
+        private bool _isUnicodeSets;
+
         private bool _hasScannedForCapturingGroups;
 
         // If _hasScannedForCapturingGroups is false, the number of capturing groups encountered so far
@@ -979,7 +1006,7 @@ public partial class Tokenizer
 
         private void ResetParseContext()
         {
-            // _auxiliaryStringBuilder and _setRangeStart are reset externally.
+            // _auxiliaryStringBuilder, _isUnicode, _isUnicodeSets and _setRangeStart are reset externally.
 
             _index = 0;
 
@@ -999,7 +1026,7 @@ public partial class Tokenizer
         internal void ReleaseReferencesAndLargeBuffers()
         {
             _pattern = null!;
-            _flagsOriginal = null!;
+            _flags = null!;
 
             _capturingGroupNames = null;
 
@@ -1107,19 +1134,6 @@ public partial class Tokenizer
         }
 
         #endregion
-
-        private interface IMode
-        {
-            void EatChar(char ch, RegExpParser parser);
-
-            void EatSetChar(char ch, RegExpParser parser, int startIndex);
-
-            bool EatEscapeSequence(RegExpParser parser, int startIndex);
-
-            void ParseSet(RegExpParser parser, int startIndex);
-
-            bool AllowsQuantifierAfterGroup(RegExpGroupType groupType);
-        }
 
         // Enum values encodes the length of the group prefix so that (value / 4) is equal to prefix length.
         private enum RegExpGroupType : byte
