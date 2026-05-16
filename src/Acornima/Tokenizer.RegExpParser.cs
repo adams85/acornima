@@ -812,14 +812,15 @@ public partial class Tokenizer
 
         private static bool TryReadCodePoint(string pattern, ref int i, int endIndex, out int cp)
         {
-            var escapeEndIndex = pattern.IndexOf('}', i + 2, endIndex - (i + 2));
+            var valueStartIndex = i + 2;
+            var escapeEndIndex = pattern.IndexOf('}', valueStartIndex, endIndex - valueStartIndex);
             if (escapeEndIndex < 0)
             {
                 cp = default;
                 return false;
             }
 
-            var slice = pattern.AsSpan(i + 2, escapeEndIndex - (i + 2));
+            var slice = pattern.AsSpan(valueStartIndex, escapeEndIndex - valueStartIndex);
             if (!int.TryParse(slice.ToParsable(), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture, out cp)
                 // NOTE: int.TryParse with NumberStyles.AllowHexSpecifier may return a negative number (e.g. '80000000' -> -2147483648)!
                 || (uint)cp > UnicodeHelper.LastCodePoint)
@@ -879,20 +880,21 @@ public partial class Tokenizer
             var sb = _stringBuilder;
             ref var i = ref _index;
 
-            var endIndex = _pattern.IndexOf('}', i + 1);
-            if (endIndex < 0 || endIndex == i + 1)
+            var startIndex = i + 1;
+            var endIndex = _pattern.IndexOf('}', startIndex);
+            if (endIndex < 0 || endIndex == startIndex)
             {
                 return false;
             }
 
-            var index = _pattern.IndexOf(',', i + 1, endIndex - (i + 1));
+            var index = _pattern.IndexOf(',', startIndex, endIndex - startIndex);
             if (index < 0)
             {
                 index = endIndex;
             }
 
             int min, max;
-            var slice = _pattern.AsSpan(i + 1, index - (i + 1));
+            var slice = _pattern.AsSpan(startIndex, index - startIndex);
             if (!int.TryParse(slice.ToParsable(), NumberStyles.None, CultureInfo.InvariantCulture, out min))
             {
                 if (slice.Length == 0 || slice.FindIndex(ch => !ch.IsDecimalDigit()) >= 0)
@@ -912,7 +914,8 @@ public partial class Tokenizer
             }
             else
             {
-                slice = _pattern.AsSpan(index + 1, endIndex - (index + 1));
+                index++;
+                slice = _pattern.AsSpan(index, endIndex - index);
                 if (!int.TryParse(slice.ToParsable(), NumberStyles.None, CultureInfo.InvariantCulture, out max))
                 {
                     if (slice.FindIndex(ch => !ch.IsDecimalDigit()) >= 0)
@@ -1033,12 +1036,8 @@ public partial class Tokenizer
                         return;
                 }
 
-                if ((flagsToRemove & flag) != 0) // duplicate
-                {
-                    ReportSyntaxError(i, RegExpRepeatedFlag);
-                }
-
-                if ((flagsToAdd & flag) != 0)  // same in add and remove group
+                if ((flagsToRemove & flag) != 0 // duplicate
+                    || (flagsToAdd & flag) != 0) // same in add and remove group
                 {
                     ReportSyntaxError(i, RegExpRepeatedFlag);
                 }
@@ -1055,7 +1054,7 @@ public partial class Tokenizer
                 var endIndex = _pattern.IndexOf('>', startIndex);
                 if (endIndex >= 0)
                 {
-                    var cp = _pattern.CodePointAt(i += 2, endIndex);
+                    var cp = _pattern.CodePointAt(i = startIndex, endIndex);
                     var allowAstral = (_flags & RegExpFlags.Unicode) != 0 || _tokenizer._options.EcmaVersion >= EcmaVersion.ES11;
                     if (IsIdentifierStart(cp, allowAstral) || cp == '\\')
                     {
@@ -1312,12 +1311,12 @@ public partial class Tokenizer
                 }
                 else
                 {
-                    ReportSyntaxError(startIndex, RegExpInvalidNamedCaptureReference);
+                    ReportSyntaxError(startIndex + 3, RegExpInvalidNamedCaptureReference);
                 }
             }
             else
             {
-                ReportSyntaxError(startIndex + 2, RegExpInvalidNamedReference);
+                ReportSyntaxError(startIndex, RegExpInvalidNamedReference);
             }
         }
 

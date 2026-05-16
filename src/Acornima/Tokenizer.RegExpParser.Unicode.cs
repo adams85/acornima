@@ -875,24 +875,26 @@ public partial class Tokenizer
                     case 'p' or 'P':
                         if (parser._tokenizer._options._ecmaVersion >= EcmaVersion.ES9)
                         {
-                            if (pattern.CharCodeAt(i + 1) == '{')
+                            var nameStartIndex = i + 1;
+                            if (pattern.CharCodeAt(nameStartIndex) == '{')
                             {
                                 CodePointRange[]? codePointRanges = null;
                                 ReadOnlyMemory<char> expression;
 
-                                endIndex = pattern.IndexOf('}', i + 2);
+                                nameStartIndex++;
+                                endIndex = pattern.IndexOf('}', nameStartIndex);
 
                                 if (endIndex < 0
-                                    || !ValidateUnicodeProperty(expression = pattern.AsMemory(i + 2, endIndex - (i + 2)), translateToRanges: sb is not null, parser, out codePointRanges)
+                                    || !ValidateUnicodeProperty(expression = pattern.AsMemory(nameStartIndex, endIndex - nameStartIndex), translateToRanges: sb is not null, parser, out codePointRanges)
                                         && (!allowStringProperties || ch == 'P' || !UnicodeProperties.IsAllowedBinaryOfStringsValue(expression, parser._tokenizer._options._ecmaVersion)))
                                 {
                                     if (!parser.WithinSet)
                                     {
-                                        parser.ReportSyntaxError(startIndex, RegExpInvalidPropertyName);
+                                        parser.ReportSyntaxError(nameStartIndex, RegExpInvalidPropertyName);
                                     }
                                     else
                                     {
-                                        parser.ReportSyntaxError(startIndex, RegExpInvalidClassPropertyName);
+                                        parser.ReportSyntaxError(nameStartIndex, RegExpInvalidClassPropertyName);
                                     }
                                 }
 
@@ -954,11 +956,11 @@ public partial class Tokenizer
                             {
                                 if (!parser.WithinSet)
                                 {
-                                    parser.ReportSyntaxError(startIndex, RegExpInvalidPropertyName);
+                                    parser.ReportSyntaxError(nameStartIndex, RegExpInvalidPropertyName);
                                 }
                                 else
                                 {
-                                    parser.ReportSyntaxError(startIndex, RegExpInvalidClassPropertyName);
+                                    parser.ReportSyntaxError(nameStartIndex, RegExpInvalidClassPropertyName);
                                 }
                             }
                         }

@@ -567,12 +567,14 @@ public partial class Tokenizer
                         return CharSetOk;
 
                     case 'p' or 'P':
-                        if (pattern.CharCodeAt(i + 1) == '{')
+                        var nameStartIndex = i + 1;
+                        if (pattern.CharCodeAt(nameStartIndex) == '{')
                         {
-                            endIndex = pattern.IndexOf('}', i + 2);
+                            nameStartIndex++;
+                            endIndex = pattern.IndexOf('}', nameStartIndex);
                             if (endIndex >= 0)
                             {
-                                var expression = pattern.AsMemory(i + 2, endIndex - (i + 2));
+                                var expression = pattern.AsMemory(nameStartIndex, endIndex - nameStartIndex);
 
                                 // First check if it's a valid unicode property (non-string).
                                 if (UnicodeMode.ValidateUnicodeProperty(expression, translateToRanges: false, parser, out _))
@@ -586,7 +588,7 @@ public partial class Tokenizer
                                 {
                                     if (ch == 'P')
                                     {
-                                        parser.ReportSyntaxError(startIndex, RegExpInvalidClassPropertyName);
+                                        parser.ReportSyntaxError(nameStartIndex, RegExpInvalidClassPropertyName);
                                     }
 
                                     i = endIndex;
@@ -595,7 +597,7 @@ public partial class Tokenizer
                             }
                         }
 
-                        parser.ReportSyntaxError(startIndex, RegExpInvalidClassPropertyName);
+                        parser.ReportSyntaxError(nameStartIndex, RegExpInvalidClassPropertyName);
                         break;
                 }
 
