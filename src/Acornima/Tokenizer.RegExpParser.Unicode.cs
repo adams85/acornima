@@ -79,18 +79,15 @@ public partial class Tokenizer
 
             private static void AppendLoneSurrogate(StringBuilder sb, char ch)
             {
-                if (sb is not null)
-                {
-                    // Lone surrogates must not match parts of surrogate pairs
-                    // (see https://exploringjs.com/es6/ch_regexp.html#_consequence-lone-surrogates-in-the-regular-expression-only-match-lone-surrogates).
-                    // We can simulate this using negative lookbehind/lookahead.
+                // Lone surrogates must not match parts of surrogate pairs
+                // (see https://exploringjs.com/es6/ch_regexp.html#_consequence-lone-surrogates-in-the-regular-expression-only-match-lone-surrogates).
+                // We can simulate this using negative lookbehind/lookahead.
 
-                    sb.Append("(?:");
-                    _ = ch.IsHighSurrogate()
-                        ? sb.Append(ch).Append("(?![\uDC00-\uDFFF])")
-                        : sb.Append("(?<![\uD800-\uDBFF])").Append(ch);
-                    sb.Append(')');
-                }
+                sb.Append("(?:");
+                _ = ch.IsHighSurrogate()
+                    ? sb.Append(ch).Append("(?![\uDC00-\uDFFF])")
+                    : sb.Append("(?<![\uD800-\uDBFF])").Append(ch);
+                sb.Append(')');
             }
 
             public void ProcessSetSpecialChar(char ch, RegExpParser parser) { }

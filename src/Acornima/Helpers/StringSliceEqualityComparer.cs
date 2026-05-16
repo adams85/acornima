@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Acornima.Helpers;
 
-internal class StringSliceEqualityComparer : IEqualityComparer<ReadOnlyMemory<char>>
+internal sealed class StringSliceEqualityComparer : IEqualityComparer<ReadOnlyMemory<char>>
 {
     public static readonly StringSliceEqualityComparer Instance = new();
 

@@ -707,7 +707,6 @@ public partial class Tokenizer
         private bool ParseSetDefault<TMode>(TMode mode, out RegExpConversionError? conversionError)
             where TMode : IMode
         {
-            var sb = _stringBuilder;
             ref var i = ref _index;
 
             _setStartIndex = i;
