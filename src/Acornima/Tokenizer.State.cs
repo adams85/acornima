@@ -65,6 +65,8 @@ public partial class Tokenizer
 
     internal StringPool _stringPool;
 
+    internal CodePointRange.Cache? _codePointRangeCache;
+
     public void Reset(string input, SourceType sourceType = SourceType.Script, string? sourceFile = null)
         => Reset(input, start: 0, sourceType, sourceFile);
 

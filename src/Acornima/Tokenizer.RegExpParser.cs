@@ -1333,7 +1333,7 @@ public partial class Tokenizer
 
         private CodePointRange.Cache GetCodePointRangeCache()
         {
-            return _codePointRangeCache ??= new CodePointRange.Cache();
+            return _tokenizer._codePointRangeCache ??= new CodePointRange.Cache();
         }
 
         #region Context for ParsePattern
@@ -1397,8 +1397,6 @@ public partial class Tokenizer
         // * Lone surrogates need special care too.
         // We use the following list to build the adjusted character set.
         private ArrayList<CodePointRange> _unicodeSet;
-
-        private CodePointRange.Cache? _codePointRangeCache;
 
         private bool _canCompile;
 
@@ -1467,8 +1465,6 @@ public partial class Tokenizer
             {
                 _unicodeSet.Capacity = 64;
             }
-
-            _codePointRangeCache = null;
         }
 
         #endregion

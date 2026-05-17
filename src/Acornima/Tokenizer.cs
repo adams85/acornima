@@ -2029,6 +2029,7 @@ public sealed partial class Tokenizer : ITokenizer
         }
         finally
         {
+            tokenizer._codePointRangeCache = null; // don't keep the cache around indefinitely
             tokenizer.ReleaseLargeBuffersForRegExpParser();
             Volatile.Write(ref s_cachedInstanceForRegExpParsing, tokenizer);
         }
