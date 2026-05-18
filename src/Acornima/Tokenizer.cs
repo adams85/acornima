@@ -738,72 +738,66 @@ public sealed partial class Tokenizer : ITokenizer
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readRegexp = function`
 
-        var escaped = false;
         var inClass = false;
         var start = _position;
         var startPosition = CurrentPosition;
 
         for (int ch; (ch = CharCodeAtPosition()) >= 0; _position++)
         {
-            if (IsNewLine((char)ch))
+            switch (ch)
             {
-                goto Unterminated;
-            }
+                case '[':
+                    inClass = true;
+                    break;
+                case ']' when inClass:
+                    inClass = false;
+                    break;
+                case '\\':
+                    _position++;
+                    ch = CharCodeAtPosition();
+                    if (ch < 0 || IsNewLine((char)ch))
+                    {
+                        goto Unterminated;
+                    }
+                    break;
+                case '/' when !inClass:
+                    var pattern = _input.SliceBetween(start, _position);
+                    var flagsStart = ++_position;
+                    var flags = ReadWord1();
+                    if (_containsEscape)
+                    {
+                        // Unexpected(flagsStart); // original acornjs error reporting
+                        RaiseRecoverable(flagsStart, InvalidRegExpFlags);
+                    }
 
-            if (!escaped)
-            {
-                switch (ch)
-                {
-                    case '[':
-                        inClass = true;
-                        break;
-                    case ']' when inClass:
-                        inClass = false;
-                        break;
-                    case '\\':
-                        escaped = true;
-                        break;
-                    case '/' when !inClass:
-                        var pattern = _input.SliceBetween(start, _position);
-                        var flagsStart = ++_position;
-                        var flags = ReadWord1();
-                        if (_containsEscape)
-                        {
-                            // Unexpected(flagsStart); // original acornjs error reporting
-                            RaiseRecoverable(flagsStart, InvalidRegExpFlags);
-                        }
+                    var patternCached = DeduplicateString(pattern, ref _stringPool, NonIdentifierDeduplicationThreshold);
+                    var flagsCached = DeduplicateString(flags, ref _stringPool);
 
-                        var patternCached = DeduplicateString(pattern, ref _stringPool, NonIdentifierDeduplicationThreshold);
-                        var flagsCached = DeduplicateString(flags, ref _stringPool);
-
-                        RegExpParseResult parseResult;
-                        if (_options._onRegExp is { } onRegExp)
-                        {
-                            (_regExpParser ??= new RegExpParser(this)).Reset(patternCached, start, flagsCached, flagsStart);
-                            parseResult = onRegExp(new RegExpParsingContext(_regExpParser,
-                                new Range(start - 1, _position),
-                                new SourceLocation(new Position(startPosition.Line, startPosition.Column - 1), CurrentPosition, _sourceFile)));
-                        }
+                    RegExpParseResult parseResult;
+                    if (_options._onRegExp is { } onRegExp)
+                    {
+                        (_regExpParser ??= new RegExpParser(this)).Reset(patternCached, start, flagsCached, flagsStart);
+                        parseResult = onRegExp(new RegExpParsingContext(_regExpParser,
+                            new Range(start - 1, _position),
+                            new SourceLocation(new Position(startPosition.Line, startPosition.Column - 1), CurrentPosition, _sourceFile)));
+                    }
 #pragma warning disable CS0618 // Type or member is obsolete
-                        else if (_options._regExpParseMode != RegExpParseMode.Skip)
+                    else if (_options._regExpParseMode != RegExpParseMode.Skip)
 #pragma warning restore CS0618 // Type or member is obsolete
-                        {
-                            (_regExpParser ??= new RegExpParser(this)).Reset(patternCached, start, flagsCached, flagsStart);
-                            parseResult = _regExpParser.Parse();
-                        }
-                        else
-                        {
-                            parseResult = default;
-                        }
+                    {
+                        (_regExpParser ??= new RegExpParser(this)).Reset(patternCached, start, flagsCached, flagsStart);
+                        parseResult = _regExpParser.Parse();
+                    }
+                    else
+                    {
+                        parseResult = default;
+                    }
 
-                        var regExpValue = new RegExpValue(patternCached, flagsCached);
+                    var regExpValue = new RegExpValue(patternCached, flagsCached);
 
-                        return FinishToken(TokenType.RegExp, Tuple.Create(regExpValue, parseResult));
-                }
-            }
-            else
-            {
-                escaped = false;
+                    return FinishToken(TokenType.RegExp, Tuple.Create(regExpValue, parseResult));
+                case '\n' or '\r' or '\u2028' or '\u2029':
+                    goto Unterminated;
             }
         }
 

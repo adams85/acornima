@@ -74,12 +74,16 @@ public abstract class JsxName : JsxNode
 
         // 2. Allocate buffer and build the name.
 
-#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
         return string.Create(length, this, s_buildQualifiedName);
 #else
-        var chars = new char[length];
-        s_buildQualifiedName(chars.AsSpan(), this);
-        return new string(chars);
+        var chars = ArrayPool<char>.Shared.Rent(length);
+        try
+        {
+            s_buildQualifiedName(chars.AsSpan(0, length), this);
+            return new string(chars, 0, length);
+        }
+        finally { ArrayPool<char>.Shared.Return(chars); }
 #endif
     }
 
