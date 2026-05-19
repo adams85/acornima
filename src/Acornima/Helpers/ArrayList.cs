@@ -387,7 +387,7 @@ internal partial struct ArrayList<T> : IList<T>, IReadOnlyList<T>
     /// <remarks>
     /// WARNING: Items should not be added or removed from the <see cref="ArrayList{T}"/> while the returned reference is in use.
     /// </remarks>
-    public ref T PushRef()
+    internal ref T PushRef()
     {
         AssertUnchanged();
 
@@ -426,7 +426,7 @@ internal partial struct ArrayList<T> : IList<T>, IReadOnlyList<T>
     /// Also note that this operation doesn't actually remove the item from the underlying data structure, so objects referenced by
     /// the item will not be eligible for garbage collection.
     /// </remarks>
-    public ref T PopRef()
+    internal ref T PopRef()
     {
         AssertUnchanged();
 
