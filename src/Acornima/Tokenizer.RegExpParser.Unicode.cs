@@ -46,12 +46,12 @@ public partial class Tokenizer
                 {
                     if (sb is not null)
                     {
-                        AppendLoneSurrogate(sb, ch);
+                        AppendLoneSurrogate(sb, ch, ref parser._canCompile);
                     }
                 }
             }
 
-            private static void AppendCodePointSafe(StringBuilder sb, int cp)
+            private static void AppendCodePointSafe(StringBuilder sb, int cp, ref bool canCompile)
             {
                 if (cp > char.MaxValue)
                 {
@@ -61,11 +61,11 @@ public partial class Tokenizer
                 else
                 {
                     Debug.Assert(cp >= 0, "Invalid code point.");
-                    AppendUnicodeCharSafe(sb, (char)cp);
+                    AppendUnicodeCharSafe(sb, (char)cp, ref canCompile);
                 }
             }
 
-            private static void AppendUnicodeCharSafe(StringBuilder sb, char ch)
+            private static void AppendUnicodeCharSafe(StringBuilder sb, char ch, ref bool canCompile)
             {
                 if (!ch.IsSurrogate())
                 {
@@ -73,11 +73,11 @@ public partial class Tokenizer
                 }
                 else
                 {
-                    AppendLoneSurrogate(sb, ch);
+                    AppendLoneSurrogate(sb, ch, ref canCompile);
                 }
             }
 
-            private static void AppendLoneSurrogate(StringBuilder sb, char ch)
+            private static void AppendLoneSurrogate(StringBuilder sb, char ch, ref bool canCompile)
             {
                 // Lone surrogates must not match parts of surrogate pairs
                 // (see https://exploringjs.com/es6/ch_regexp.html#_consequence-lone-surrogates-in-the-regular-expression-only-match-lone-surrogates).
@@ -88,6 +88,11 @@ public partial class Tokenizer
                     ? sb.Append(ch).Append("(?![\uDC00-\uDFFF])")
                     : sb.Append("(?<![\uD800-\uDBFF])").Append(ch);
                 sb.Append(')');
+
+                if (!s_canCompileNegativeLookaroundAssertions)
+                {
+                    canCompile = false;
+                }
             }
 
             public void ProcessSetSpecialChar(char ch, RegExpParser parser) { }
@@ -164,7 +169,7 @@ public partial class Tokenizer
 
                     CodePointRange.NormalizeRanges(ref parser._unicodeSet);
 
-                    AppendSet(sb, parser._unicodeSet.AsReadOnlySpan(), isInverted: pattern.CharCodeAt(parser._setStartIndex + 1) == '^');
+                    AppendSet(sb, parser._unicodeSet.AsReadOnlySpan(), isInverted: pattern.CharCodeAt(parser._setStartIndex + 1) == '^', ref parser._canCompile);
 
                     parser._unicodeSet.Clear();
                 }
@@ -172,7 +177,7 @@ public partial class Tokenizer
                 return true;
             }
 
-            private static void AppendSet(StringBuilder sb, ReadOnlySpan<CodePointRange> normalizedSet, bool isInverted)
+            private static void AppendSet(StringBuilder sb, ReadOnlySpan<CodePointRange> normalizedSet, bool isInverted, ref bool canCompile)
             {
                 // 0. Handle edge cases
 
@@ -189,6 +194,11 @@ public partial class Tokenizer
                             .Append('|').Append(MatchLoneSurrogateRegex)
                             .Append('|').Append(MatchAnyButSurrogateRegex)
                             .Append(')');
+
+                        if (!s_canCompileNegativeLookaroundAssertions)
+                        {
+                            canCompile = false;
+                        }
                         return;
                 }
 
@@ -398,6 +408,11 @@ public partial class Tokenizer
                     }
 
                     sb.Append(']').Append("(?![\uDC00-\uDFFF])");
+
+                    if (!s_canCompileNegativeLookaroundAssertions)
+                    {
+                        canCompile = false;
+                    }
                 }
 
                 if (loneLowSurrogateRanges.Count > 0)
@@ -414,6 +429,11 @@ public partial class Tokenizer
                     }
 
                     sb.Append(']');
+
+                    if (!s_canCompileNegativeLookaroundAssertions)
+                    {
+                        canCompile = false;
+                    }
                 }
 
                 if (bmpRanges.Count > 0)
@@ -602,6 +622,11 @@ public partial class Tokenizer
                         ? sb.Append(MatchAnyButSurrogateRegex)
                         : sb.Append(MatchAnyButNewLineAndSurrogateRegex))
                         .Append(')');
+
+                    if (!s_canCompileNegativeLookaroundAssertions)
+                    {
+                        parser._canCompile = false;
+                    }
                 }
             }
 
@@ -659,7 +684,7 @@ public partial class Tokenizer
                         {
                             if (sb is not null)
                             {
-                                AppendCodePointSafe(sb, cp);
+                                AppendCodePointSafe(sb, cp, ref parser._canCompile);
                             }
 
                             parser.ClearFollowingQuantifierError();
@@ -686,7 +711,7 @@ public partial class Tokenizer
                                     {
                                         if (sb is not null)
                                         {
-                                            AppendCodePointSafe(sb, cp);
+                                            AppendCodePointSafe(sb, cp, ref parser._canCompile);
                                         }
 
                                         parser.ClearFollowingQuantifierError();
@@ -705,7 +730,7 @@ public partial class Tokenizer
                             {
                                 if (sb is not null)
                                 {
-                                    AppendUnicodeCharSafe(sb, (char)charCode);
+                                    AppendUnicodeCharSafe(sb, (char)charCode, ref parser._canCompile);
                                 }
 
                                 parser.ClearFollowingQuantifierError();
@@ -846,6 +871,11 @@ public partial class Tokenizer
                                         .Append('|').Append(MatchLoneSurrogateRegex)
                                         .Append('|').Append('[').Append(ch switch { 'D' => invertedDigitPattern, 'S' => invertedWhiteSpacePattern, _ => invertedWordCharPattern }).Append(']')
                                         .Append(')');
+
+                                    if (!s_canCompileNegativeLookaroundAssertions)
+                                    {
+                                        parser._canCompile = false;
+                                    }
                                 }
                             }
 
@@ -927,7 +957,7 @@ public partial class Tokenizer
                                 {
                                     if (sb is not null)
                                     {
-                                        AppendSet(sb, codePointRangeSpan, isInverted: false);
+                                        AppendSet(sb, codePointRangeSpan, isInverted: false, ref parser._canCompile);
                                     }
 
                                     parser.ClearFollowingQuantifierError();

@@ -185,7 +185,7 @@ public class CharMaskGenerator
                 Assert.Equal(actual(ch), expectedBmp((char)ch));
             }
 
-            for (var cp = char.MaxValue + 1; cp < UnicodeHelper.LastCodePoint; cp++)
+            for (var cp = char.MaxValue + 1; cp <= UnicodeHelper.LastCodePoint; cp++)
             {
                 Assert.Equal(actual(cp), expectedAstral(cp));
             }
