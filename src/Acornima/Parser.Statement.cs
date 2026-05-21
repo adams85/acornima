@@ -1288,7 +1288,7 @@ public partial class Parser
         }
 
         var parameters = ParseFunctionParams();
-        var scope = ParseFunctionBody(id, parameters, isArrowFunction: false, isMethod: false, context, out _, out var body);
+        var scope = ParseFunctionBody(id, parameters, isArrowFunction: false, isMethod: false, context, out var body);
 
         _yieldPosition = oldYieldPos;
         _awaitPosition = oldAwaitPos;

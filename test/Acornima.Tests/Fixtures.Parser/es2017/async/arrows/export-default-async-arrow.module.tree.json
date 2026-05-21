@@ -81,7 +81,6 @@
           }
         },
         "generator": false,
-        "expression": true,
         "async": true,
         "range": [
           15,

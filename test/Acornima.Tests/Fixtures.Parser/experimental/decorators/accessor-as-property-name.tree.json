@@ -296,7 +296,6 @@
                 }
               },
               "generator": false,
-              "expression": false,
               "async": false,
               "range": [
                 106,
@@ -375,7 +374,6 @@
                 }
               },
               "generator": false,
-              "expression": false,
               "async": false,
               "range": [
                 124,
@@ -454,7 +452,6 @@
                 }
               },
               "generator": false,
-              "expression": false,
               "async": false,
               "range": [
                 142,
@@ -588,7 +585,6 @@
                 }
               },
               "generator": false,
-              "expression": false,
               "async": true,
               "range": [
                 186,
@@ -667,7 +663,6 @@
                 }
               },
               "generator": false,
-              "expression": false,
               "async": true,
               "range": [
                 210,
@@ -746,7 +741,6 @@
                 }
               },
               "generator": false,
-              "expression": false,
               "async": true,
               "range": [
                 234,

@@ -72,7 +72,6 @@
                   }
                 },
                 "generator": true,
-                "expression": false,
                 "async": true,
                 "range": [
                   14,
@@ -90,8 +89,8 @@
                 }
               },
               "kind": "init",
-              "method": true,
               "shorthand": false,
+              "method": true,
               "range": [
                 6,
                 19
