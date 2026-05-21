@@ -50,8 +50,8 @@
                   }
                 },
                 "kind": "init",
-                "method": false,
                 "shorthand": true,
+                "method": false,
                 "range": [
                   2,
                   3
@@ -142,8 +142,8 @@
                   }
                 },
                 "kind": "init",
-                "method": false,
                 "shorthand": true,
+                "method": false,
                 "range": [
                   4,
                   7
@@ -199,8 +199,8 @@
                   }
                 },
                 "kind": "init",
-                "method": false,
                 "shorthand": false,
+                "method": false,
                 "range": [
                   8,
                   11
@@ -275,8 +275,8 @@
                   }
                 },
                 "kind": "init",
-                "method": false,
                 "shorthand": false,
+                "method": false,
                 "range": [
                   12,
                   19
@@ -329,7 +329,6 @@
           }
         },
         "generator": false,
-        "expression": true,
         "async": false,
         "range": [
           0,
