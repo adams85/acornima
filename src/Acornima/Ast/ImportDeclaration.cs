@@ -22,12 +22,6 @@ public sealed partial class ImportDeclaration : ImportOrExportDeclaration
     public ImportDeclaration(
         in NodeList<ImportDeclarationSpecifier> specifiers,
         StringLiteral source,
-        in NodeList<ImportAttribute> attributes)
-        : this(specifiers, source, attributes, ImportPhase.None) { }
-
-    public ImportDeclaration(
-        in NodeList<ImportDeclarationSpecifier> specifiers,
-        StringLiteral source,
         in NodeList<ImportAttribute> attributes,
         ImportPhase phase)
         : base(NodeType.ImportDeclaration)

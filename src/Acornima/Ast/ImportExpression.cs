@@ -5,12 +5,6 @@ namespace Acornima.Ast;
 [VisitableNode(ChildProperties = new[] { nameof(Source), nameof(Options) })]
 public sealed partial class ImportExpression : Expression
 {
-    public ImportExpression(Expression source)
-        : this(source, null, ImportPhase.None) { }
-
-    public ImportExpression(Expression source, Expression? options)
-        : this(source, options, ImportPhase.None) { }
-
     public ImportExpression(Expression source, Expression? options, ImportPhase phase)
         : base(NodeType.ImportExpression)
     {
