@@ -12,8 +12,6 @@ namespace Acornima.Tests;
 
 using static HookType;
 
-#pragma warning disable CS0618 // Type or member is obsolete
-
 public partial class RegExpTests
 {
     private static SharedContextFixture s_fixture = null!;
