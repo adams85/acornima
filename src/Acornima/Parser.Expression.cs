@@ -1101,7 +1101,7 @@ public partial class Parser
         Expression? options = null;
         if (!Eat(TokenType.ParenRight))
         {
-            if (phase == ImportPhase.None && _tokenizerOptions.AllowImportAttributes()
+            if (phase == ImportPhase.None && _tokenizerOptions._ecmaVersion >= EcmaVersion.ES16
                 || phase == ImportPhase.Defer)
             {
                 Expect(TokenType.Comma);
