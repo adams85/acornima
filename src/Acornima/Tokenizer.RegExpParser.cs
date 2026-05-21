@@ -187,7 +187,7 @@ public partial class Tokenizer
                                 {
                                     _capturingGroupNames[groupName] = groupId = startIndex; // use the start index of the group as ID
 #endif
-                                    if (_tokenizer._options.AllowRegExpDuplicateNamedCapturingGroups())
+                                    if (_tokenizer._options._ecmaVersion >= EcmaVersion.ES16)
                                     {
 #if DEBUG
                                         Debug.Assert(TryAddNamedGroupId(groupId));
@@ -196,7 +196,7 @@ public partial class Tokenizer
 #endif
                                     }
                                 }
-                                else if (!_tokenizer._options.AllowRegExpDuplicateNamedCapturingGroups() || !TryAddNamedGroupId(groupId))
+                                else if (_tokenizer._options._ecmaVersion < EcmaVersion.ES16 || !TryAddNamedGroupId(groupId))
                                 {
                                     ReportSyntaxError(startIndex + 3, RegExpDuplicateCaptureGroupName);
                                 }
@@ -219,7 +219,7 @@ public partial class Tokenizer
                         continue;
 
                     case '|':
-                        if (_tokenizer._options.AllowRegExpDuplicateNamedCapturingGroups())
+                        if (_tokenizer._options._ecmaVersion >= EcmaVersion.ES16)
                         {
                             BeginAlternateInNamedGroupIds();
                         }
@@ -231,7 +231,7 @@ public partial class Tokenizer
                             ReportSyntaxError(startIndex, RegExpUnmatchedParen);
                         }
 
-                        if (_tokenizer._options.AllowRegExpDuplicateNamedCapturingGroups())
+                        if (_tokenizer._options._ecmaVersion >= EcmaVersion.ES16)
                         {
                             HoistNamedGroupIdsToParent();
                         }
@@ -700,7 +700,7 @@ public partial class Tokenizer
                     '!' => RegExpGroupType.NegativeLookbehindAssertion,
                     _ => RegExpGroupType.NamedCapturing,
                 },
-                'i' or 'm' or 's' or '-' when _tokenizer._options.AllowRegExpModifiers() => RegExpGroupType.Modifier,
+                'i' or 'm' or 's' or '-' when _tokenizer._options._ecmaVersion >= EcmaVersion.ES16 => RegExpGroupType.Modifier,
                 _ => RegExpGroupType.Unknown
             };
         }
