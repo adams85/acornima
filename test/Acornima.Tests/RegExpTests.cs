@@ -5,8 +5,6 @@ using Xunit;
 
 namespace Acornima.Tests;
 
-#pragma warning disable CS0618 // Type or member is obsolete
-
 public partial class RegExpTests
 {
     [Theory]
@@ -137,25 +135,9 @@ public partial class RegExpTests
     // Verify that modifier syntax is rejected when the feature is not enabled.
 
     [Fact]
-    public void ShouldRejectModifierSyntaxWhenFeatureDisabled()
+    public void ShouldRejectModifierSyntaxBeforeES2025()
     {
-        var parser = CreateRegExpParser("(?i:abc)", "", new TokenizerOptions
-        {
-            EcmaVersion = EcmaVersion.ES2024,
-            ExperimentalESFeatures = ExperimentalESFeatures.None,
-        });
-
-        Assert.Throws<SyntaxErrorException>(() => parser.Validate());
-    }
-
-    [Fact]
-    public void ShouldRejectModifierSyntaxWhenFeatureEnabledButTargetingPreES2018()
-    {
-        var parser = CreateRegExpParser("(?i:abc)", "", new TokenizerOptions
-        {
-            EcmaVersion = EcmaVersion.ES2017,
-            ExperimentalESFeatures = ExperimentalESFeatures.RegExpModifiers,
-        });
+        var parser = CreateRegExpParser("(?i:abc)", "", new TokenizerOptions { EcmaVersion = EcmaVersion.ES2024 });
 
         Assert.Throws<SyntaxErrorException>(() => parser.Validate());
     }
