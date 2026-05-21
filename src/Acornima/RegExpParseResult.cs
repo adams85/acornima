@@ -20,7 +20,7 @@ public readonly struct RegExpParseResult
             {
                 null => s_boxedDefaultResult,
                 ParseError => ThrowArgumentOutOfRangeException(nameof(conversionResult), typeof(ParseError), null),
-                _ => conversionResult
+                _ => conversionResult,
             },
             additionalData);
 

@@ -42,7 +42,6 @@
         }
       },
       "generator": true,
-      "expression": false,
       "async": true,
       "range": [
         0,

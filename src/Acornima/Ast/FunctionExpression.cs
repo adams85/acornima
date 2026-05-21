@@ -32,7 +32,6 @@ public sealed partial class FunctionExpression : Expression, IFunction
     StatementOrExpression IFunction.Body => Body;
 
     public bool Generator { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
-    bool IFunction.Expression => false;
     public bool Async { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
     private FunctionExpression Rewrite(Identifier? id, in NodeList<Node> @params, FunctionBody body)
