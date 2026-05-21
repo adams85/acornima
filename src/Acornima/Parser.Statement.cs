@@ -136,7 +136,7 @@ public partial class Parser
         SkipInit(out kind);
         bool isAwaitUsing;
 
-        if (!_tokenizerOptions.AllowExplicitResourceManagement() || !((isAwaitUsing = IsContextual("await")) || IsContextual("using")))
+        if (_tokenizerOptions._ecmaVersion < EcmaVersion.ES17 || !((isAwaitUsing = IsContextual("await")) || IsContextual("using")))
         {
             return false;
         }
@@ -1915,7 +1915,7 @@ public partial class Parser
                 }
 
                 source = ParseExprAtom(ref NullRef<DestructuringErrors>()).As<StringLiteral>();
-                attributes = _tokenizerOptions.AllowImportAttributes()
+                attributes = _tokenizerOptions._ecmaVersion >= EcmaVersion.ES16
                     ? ParseImportAttributes()
                     : default;
             }
@@ -2016,7 +2016,7 @@ public partial class Parser
         }
 
         var source = ParseExprAtom(ref NullRef<DestructuringErrors>()).As<StringLiteral>();
-        var attributes = _tokenizerOptions.AllowImportAttributes()
+        var attributes = _tokenizerOptions._ecmaVersion >= EcmaVersion.ES16
             ? ParseImportAttributes()
             : default;
 
@@ -2212,7 +2212,7 @@ public partial class Parser
 
     ParseSource:
         var source = ParseExprAtom(ref NullRef<DestructuringErrors>()).As<StringLiteral>();
-        var attributes = _tokenizerOptions.AllowImportAttributes()
+        var attributes = _tokenizerOptions._ecmaVersion >= EcmaVersion.ES16
             ? ParseImportAttributes()
             : default;
 
