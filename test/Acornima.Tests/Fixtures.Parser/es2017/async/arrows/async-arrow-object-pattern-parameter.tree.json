@@ -85,8 +85,8 @@
                   }
                 },
                 "kind": "init",
-                "method": false,
                 "shorthand": false,
+                "method": false,
                 "range": [
                   8,
                   16
@@ -138,7 +138,6 @@
           }
         },
         "generator": false,
-        "expression": true,
         "async": true,
         "range": [
           0,

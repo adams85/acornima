@@ -180,8 +180,8 @@
                     }
                   },
                   "kind": "init",
-                  "method": false,
                   "shorthand": false,
+                  "method": false,
                   "range": [
                     50,
                     58
@@ -214,7 +214,6 @@
               }
             },
             "generator": false,
-            "expression": true,
             "async": false,
             "range": [
               23,
