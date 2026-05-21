@@ -138,7 +138,6 @@
               }
             },
             "generator": false,
-            "expression": false,
             "async": true,
             "range": [
               5,

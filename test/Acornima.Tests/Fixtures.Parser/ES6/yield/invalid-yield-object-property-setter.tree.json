@@ -130,7 +130,6 @@
                       }
                     },
                     "generator": false,
-                    "expression": false,
                     "async": false,
                     "range": [
                       21,
@@ -148,8 +147,8 @@
                     }
                   },
                   "kind": "set",
-                  "method": false,
                   "shorthand": false,
+                  "method": false,
                   "range": [
                     16,
                     31
@@ -214,7 +213,6 @@
         }
       },
       "generator": true,
-      "expression": false,
       "async": false,
       "range": [
         0,
