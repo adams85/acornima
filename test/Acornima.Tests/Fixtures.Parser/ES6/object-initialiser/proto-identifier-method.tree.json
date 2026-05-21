@@ -47,8 +47,8 @@
               }
             },
             "kind": "init",
-            "method": false,
             "shorthand": false,
+            "method": false,
             "range": [
               3,
               18
@@ -109,7 +109,6 @@
                 }
               },
               "generator": false,
-              "expression": false,
               "async": false,
               "range": [
                 29,
@@ -127,8 +126,8 @@
               }
             },
             "kind": "init",
-            "method": true,
             "shorthand": false,
+            "method": true,
             "range": [
               20,
               33

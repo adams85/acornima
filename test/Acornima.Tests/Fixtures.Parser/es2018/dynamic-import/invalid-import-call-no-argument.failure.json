@@ -1,1 +1,1 @@
-{"index":7,"lineNumber":1,"column":7,"message":"Unexpected token ')' (1:8)","description":"Unexpected token ')'"}
+{"index":6,"lineNumber":1,"column":6,"message":"import requires a specifier (1:7)","description":"import requires a specifier"}

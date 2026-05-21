@@ -108,7 +108,6 @@
                   }
                 },
                 "generator": false,
-                "expression": false,
                 "async": false,
                 "range": [
                   15,
@@ -126,8 +125,8 @@
                 }
               },
               "kind": "get",
-              "method": false,
               "shorthand": false,
+              "method": false,
               "range": [
                 6,
                 36

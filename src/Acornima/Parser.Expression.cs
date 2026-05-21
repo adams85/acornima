@@ -1776,7 +1776,7 @@ public partial class Parser
 
         NodeList<Node> parameters = ParseBindingList(close: TokenType.ParenRight, allowEmptyElement: false, allowTrailingComma: _tokenizerOptions._ecmaVersion >= EcmaVersion.ES8)!;
         CheckYieldAwaitInDefaultParams();
-        var scope = ParseFunctionBody(id: null, parameters, isArrowFunction: false, isMethod: true, ExpressionContext.Default, out _, out var body);
+        var scope = ParseFunctionBody(id: null, parameters, isArrowFunction: false, isMethod: true, ExpressionContext.Default, out var body);
 
         _yieldPosition = oldYieldPos;
         _awaitPosition = oldAwaitPos;
@@ -1801,22 +1801,22 @@ public partial class Parser
         EnterScope(FunctionFlags(isAsync, generator: false) | ScopeFlags.Arrow);
 
         NodeList<Node> paramList = ToAssignableList(parameters!, isBinding: true)!;
-        var scope = ParseFunctionBody(id: null, paramList, isArrowFunction: true, isMethod: false, context, out var expression, out var body);
+        var scope = ParseFunctionBody(id: null, paramList, isArrowFunction: true, isMethod: false, context, out var body);
 
         _yieldPosition = oldYieldPos;
         _awaitPosition = oldAwaitPos;
         _awaitIdentifierPosition = oldAwaitIdentPos;
 
-        return FinishNode(startMarker, new ArrowFunctionExpression(paramList, body, expression, isAsync), scope);
+        return FinishNode(startMarker, new ArrowFunctionExpression(paramList, body, isAsync), scope);
     }
 
     // Parse function body and check parameters.
     private ReadOnlyRef<Scope> ParseFunctionBody(Identifier? id, in NodeList<Node> parameters, bool isArrowFunction, bool isMethod, ExpressionContext context,
-        out bool expression, out StatementOrExpression body)
+        out StatementOrExpression body)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/expression.js > `pp.parseFunctionBody = function`
 
-        expression = isArrowFunction && _tokenizer._type != TokenType.BraceLeft;
+        var expression = isArrowFunction && _tokenizer._type != TokenType.BraceLeft;
         if (expression)
         {
             CheckParams(parameters, allowDuplicates: false);

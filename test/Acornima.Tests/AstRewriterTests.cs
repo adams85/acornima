@@ -340,9 +340,7 @@ internal sealed class TestRewriter : JsxAstRewriter
     protected internal override object? VisitArrowFunctionExpression(ArrowFunctionExpression arrowFunctionExpression)
     {
         return ForceNewObjectByControlType((ArrowFunctionExpression)base.VisitArrowFunctionExpression(arrowFunctionExpression)!,
-#pragma warning disable CS0618 // Type or member is obsolete
-            node => new ArrowFunctionExpression(node.Params, node.Body, node.Expression, node.Async));
-#pragma warning restore CS0618 // Type or member is obsolete
+            node => new ArrowFunctionExpression(node.Params, node.Body, node.Async));
     }
 
     protected internal override object? VisitUnaryExpression(UnaryExpression unaryExpression)

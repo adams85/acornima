@@ -114,7 +114,7 @@ internal sealed class JsxToJavaScriptTranspiler : JsxAstRewriter
         else
         {
             var attributeValue = VisitAndConvert(node.Value);
-            attributeValueProvider = new ArrowFunctionExpression(NodeList.Empty<Node>(), attributeValue, expression: true, async: false);
+            attributeValueProvider = new ArrowFunctionExpression(NodeList.Empty<Node>(), attributeValue, async: false);
         }
 
         return new ObjectProperty(PropertyKind.Init, attributeName, attributeValueProvider, computed: false, shorthand: false, method: false);

@@ -11,7 +11,7 @@ public class ObtainNodeFromIntfBenchmark
     [GlobalSetup]
     public void Setup()
     {
-        _node = new ArrowFunctionExpression(default, new NullLiteral("null"), expression: true, async: false);
+        _node = new ArrowFunctionExpression(default, new NullLiteral("null"), async: false);
     }
 
     [Params(10, 10000)]
