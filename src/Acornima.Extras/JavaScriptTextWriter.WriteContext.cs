@@ -6,7 +6,7 @@ using Acornima.Helpers;
 
 namespace Acornima;
 
-using static Helpers.ExceptionHelper;
+using static ExceptionHelper;
 
 public delegate object? NodePropertyValueAccessor(Node node);
 
