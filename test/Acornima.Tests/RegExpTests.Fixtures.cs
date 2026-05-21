@@ -9,8 +9,6 @@ using Xunit;
 
 namespace Acornima.Tests;
 
-#pragma warning disable CS0618 // Type or member is obsolete
-
 public partial class RegExpTests : IClassFixture<RegExpTests.SharedContextFixture>
 {
     private readonly SharedContextFixture _fixture;
