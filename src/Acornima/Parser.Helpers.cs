@@ -32,7 +32,10 @@ public partial class Parser
 
         node._range = new Range(startMarker.Index, endMarker.Index);
         node._location = new SourceLocation(startMarker.Position, endMarker.Position, _tokenizer._sourceFile);
-        _options._onNode?.Invoke(node, new OnNodeContext(_tokenizer, scope, _scopeStack));
+        if (_options._onNode is { } onNode && !_suppressOnNode)
+        {
+            onNode(node, new OnNodeContext(_tokenizer, scope, _scopeStack));
+        }
         return node;
     }
 
@@ -43,7 +46,10 @@ public partial class Parser
 
         node._range = new Range(startMarker.Index, _tokenizer._lastTokenEnd);
         node._location = new SourceLocation(startMarker.Position, _tokenizer._lastTokenEndLocation, _tokenizer._sourceFile);
-        _options._onNode?.Invoke(node, new OnNodeContext(_tokenizer, scope, _scopeStack));
+        if (_options._onNode is { } onNode && !_suppressOnNode)
+        {
+            onNode(node, new OnNodeContext(_tokenizer, scope, _scopeStack));
+        }
         return node;
     }
 
@@ -53,6 +59,93 @@ public partial class Parser
         node._location = originalNode._location;
         _options._onNode?.Invoke(node, new OnNodeContext(_tokenizer, default, _scopeStack));
         return node;
+    }
+
+    // In some cases, it's not known beforehand whether an array or object literal-like construct
+    // will be an expression or a destructuring pattern. If it turns out to be the latter,
+    // the following expression types need to be converted to their pattern counterparts:
+    // - ArrayExpression -> ArrayPattern
+    // - AssignmentExpression -> AssignmentPattern
+    // - ObjectExpression -> ObjectPattern
+    // - ObjectProperty -> AssignmentProperty
+    // - SpreadElement -> RestElement
+    // Thus, for these expression types, OnNode needs to be deferred (by setting _suppressOnNode to false)
+    // until the final type becomes known to avoid reporting temporary nodes. For destructuring patterns,
+    // ToAssignable takes care of invoking OnNode. For expressions, this method needs to be called.
+    // (Luckily, none of the nodes listed above start a scope, so deferring OnNode for those won't
+    // mess up scope reporting.)
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void InvokeOnNodeIfDeferred(Node node, bool maybeDestructuring)
+    {
+        if (maybeDestructuring && _options._onNode is { } onNode)
+        {
+            InvokeDeferredOnNode(node, onNode);
+        }
+    }
+
+    private void InvokeDeferredOnNode(Node node, OnNodeHandler onNode)
+    {
+        if (node is ArrayExpression arrayExpression)
+        {
+            InvokeDeferredOnNode(arrayExpression.Elements.AsNodes().AsSpan(), onNode);
+        }
+        else if (node is ObjectExpression objectExpression)
+        {
+            foreach (var property in ((ObjectExpression)node).Properties)
+            {
+                if (property is SpreadElement spreadElement)
+                {
+                    InvokeDeferredOnNode(spreadElement.Argument, onNode);
+                }
+                else
+                {
+                    InvokeDeferredOnNode(((ObjectProperty)property).Value, onNode);
+                }
+
+                onNode(property, new OnNodeContext(_tokenizer, default, _scopeStack));
+            }
+        }
+        else
+        {
+            return;
+        }
+
+        onNode(node, new OnNodeContext(_tokenizer, default, _scopeStack));
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void InvokeOnNodeIfDeferred(ReadOnlySpan<Node?> nodeList, bool maybeDestructuring)
+    {
+        if (maybeDestructuring && _options._onNode is { } onNode)
+        {
+            InvokeDeferredOnNode(nodeList, onNode);
+        }
+    }
+
+    private void InvokeDeferredOnNode(ReadOnlySpan<Node?> nodeList, OnNodeHandler onNode)
+    {
+        foreach (var node in nodeList)
+        {
+            if (node is not null)
+            {
+                if (node is SpreadElement spreadElement)
+                {
+                    InvokeDeferredOnNode(spreadElement.Argument, onNode);
+                }
+                else if (node is AssignmentExpression assignmentExpression)
+                {
+                    InvokeDeferredOnNode(assignmentExpression.Right, onNode);
+                }
+                else
+                {
+                    InvokeDeferredOnNode(node, onNode);
+                    continue;
+                }
+
+                onNode(node, new OnNodeContext(_tokenizer, default, _scopeStack));
+            }
+        }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

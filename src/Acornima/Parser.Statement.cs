@@ -611,12 +611,15 @@ public partial class Parser
             var oldForInitPosition = _forInitPosition;
             _forInitPosition = _tokenizer._start;
 
+            Debug.Assert(!_suppressOnNode);
+
             init = awaitAt < 0
                 ? ParseExpression(ref destructuringErrors, ExpressionContext.ForInit)
                 : ParseExprSubscripts(ref destructuringErrors, ExpressionContext.AwaitForInit);
 
             Swap(ref _forInitPosition, ref oldForInitPosition);
 
+            Node initPattern;
             if (_tokenizer._type == TokenType.In)
             {
                 if (awaitAt >= 0) // this implies _ecmaVersion >= EcmaVersion.ES9
@@ -626,7 +629,7 @@ public partial class Parser
                     Unexpected(awaitAt, TokenType.Name, "await");
                 }
 
-                var initPattern = ToAssignable(init, ref destructuringErrors, isBinding: false,
+                initPattern = ToAssignable(init, ref destructuringErrors, isBinding: false,
                     isInPattern: destructuringErrors.IsInPattern, lhsKind: LeftHandSideKind.ForInOf);
 
                 CheckLValPattern(initPattern, isInPattern: destructuringErrors.IsInPattern, allowCall: true, lhsKind: LeftHandSideKind.ForInOf);
@@ -647,7 +650,7 @@ public partial class Parser
                     Raise(init.Start, ForOfLet);
                 }
 
-                var initPattern = ToAssignable(init, ref destructuringErrors, isBinding: false,
+                initPattern = ToAssignable(init, ref destructuringErrors, isBinding: false,
                     isInPattern: destructuringErrors.IsInPattern, lhsKind: LeftHandSideKind.ForInOf);
 
                 CheckLValPattern(initPattern, isInPattern: destructuringErrors.IsInPattern, allowCall: true, lhsKind: LeftHandSideKind.ForInOf);
@@ -656,6 +659,8 @@ public partial class Parser
             }
             else
             {
+                InvokeOnNodeIfDeferred(init, maybeDestructuring: true);
+
                 // We deviate a bit from the original acornjs implementation here to match the error reporting behavior of V8.
                 CheckExpressionErrors(ref destructuringErrors, andThrow: true);
 
@@ -1565,7 +1570,7 @@ public partial class Parser
         }
         else
         {
-            return ParsePropertyName(out computed);
+            return ParsePropertyName(isPattern: false, out computed);
         }
     }
 
@@ -2519,7 +2524,7 @@ public partial class Parser
         var startMarker = StartNode();
         var errorState = new TokenState(_tokenizer);
 
-        var key = ParsePropertyName(out var computed);
+        var key = ParsePropertyName(isPattern: false, out var computed);
         if (computed || key is not (Identifier or StringLiteral))
         {
             Unexpected(errorState);
