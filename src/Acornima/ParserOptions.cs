@@ -229,8 +229,10 @@ public record class ParserOptions
     ///     }
     /// };
     /// </code>
-    /// Please note that the callback is also executed on nodes which are reinterpreted
-    /// later during parsing, that is, on nodes which won't become a part of the final AST.
+    /// <para>
+    /// There is no guarantee that nodes are reported in a specific order (e.g., strict post-order),
+    /// only that once a node is reported, its subtree is fully parsed and accessible.
+    /// </para>
     /// </remarks>
     public OnNodeHandler? OnNode
     {

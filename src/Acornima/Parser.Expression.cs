@@ -164,6 +164,12 @@ public partial class Parser
 
         EnterRecursion();
 
+        Debug.Assert(!IsNullRef(ref destructuringErrors) || !_suppressOnNode);
+        var oldSuppressOnNode = _suppressOnNode;
+        _suppressOnNode = false;
+
+        Expression left;
+
         if (IsContextual("yield"))
         {
             if (InGenerator)
@@ -173,7 +179,9 @@ public partial class Parser
                 // this currently, so ensure the correct state.
                 _tokenizer._expressionAllowed = _tokenizer._trackRegExpContext;
 
-                return ExitRecursion(ParseYield(context));
+                left = ParseYield(context);
+                _suppressOnNode = oldSuppressOnNode;
+                return ExitRecursion(left);
             }
 
             // The tokenizer will assume an expression is allowed after
@@ -213,7 +221,7 @@ public partial class Parser
             _potentialArrowAt = _tokenizer._start;
         }
 
-        var left = ParseMaybeConditional(ref actualDestructuringErrors, context);
+        left = ParseMaybeConditional(ref actualDestructuringErrors, context);
 
         if (_tokenizer._type.IsAssignment)
         {
@@ -268,11 +276,17 @@ public partial class Parser
                 actualDestructuringErrors.DoubleProto = oldDoubleProto;
             }
 
+            _suppressOnNode = oldSuppressOnNode;
+
             return ExitRecursion(FinishNode(startMarker, new AssignmentExpression(op, leftNode, right)));
         }
 
+        _suppressOnNode = oldSuppressOnNode;
+
         if (ownsDestructuringErrors)
         {
+            InvokeOnNodeIfDeferred(left, maybeDestructuring: true);
+
             CheckExpressionErrors(ref actualDestructuringErrors, andThrow: true);
         }
         else
@@ -306,6 +320,8 @@ public partial class Parser
 
         if (_tokenizer._type == TokenType.Question && !(expr.Type == NodeType.ArrowFunctionExpression && expr._range.Start == startMarker.Index))
         {
+            InvokeOnNodeIfDeferred(expr, maybeDestructuring: !IsNullRef(ref destructuringErrors));
+
             Next();
 
             var consequent = ParseMaybeAssign(ref NullRef<DestructuringErrors>());
@@ -335,7 +351,7 @@ public partial class Parser
 
         return expr.Start == startMarker.Index && expr.Type == NodeType.ArrowFunctionExpression
             ? expr
-            : ParseBinaryOp(startMarker, expr, minPrec: -1, context);
+            : ParseBinaryOp(startMarker, expr, minPrec: -1, maybeDestructuring: !IsNullRef(ref destructuringErrors), context);
     }
 
     // Parse binary operators with the operator precedence parsing
@@ -344,7 +360,7 @@ public partial class Parser
     // defer further parser to one of its callers when it encounters an
     // operator that has a lower precedence than the set it is parsing.
     [MethodImpl((MethodImplOptions)512  /* AggressiveOptimization */)]
-    private Expression ParseBinaryOp(in Marker leftStartMarker, Expression left, int minPrec, ExpressionContext context)
+    private Expression ParseBinaryOp(in Marker leftStartMarker, Expression left, int minPrec, bool maybeDestructuring, ExpressionContext context)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/expression.js > `pp.parseExprOp = function`
 
@@ -352,6 +368,8 @@ public partial class Parser
         // NOTE: TokenType.Precedence defaults to -1 for non-binary operator tokens.
         while ((prec = _tokenizer._type.Precedence) > minPrec && ((context & ExpressionContext.ForInit) == 0 || _tokenizer._type != TokenType.In))
         {
+            InvokeOnNodeIfDeferred(left, maybeDestructuring);
+
             Operator op;
             bool coalesce;
             var logical = _tokenizer._type == TokenType.LogicalOr || _tokenizer._type == TokenType.LogicalAnd;
@@ -380,7 +398,8 @@ public partial class Parser
 
             var rightStartMarker = StartNode();
             // NOTE: We don't need stack overflow protection here because this recursion is known to be bounded (by the number of precedence levels).
-            var right = ParseBinaryOp(rightStartMarker, ParseMaybeUnary(sawUnary: false, incDec: false, ref NullRef<DestructuringErrors>(), context), prec, context);
+            var right = ParseBinaryOp(rightStartMarker, ParseMaybeUnary(sawUnary: false, incDec: false, ref NullRef<DestructuringErrors>(), context),
+                prec, maybeDestructuring: false, context);
             var node = BuildBinary(leftStartMarker, left, right, op, logical || coalesce);
 
             if (logical && _tokenizer._type == TokenType.Coalesce
@@ -392,6 +411,7 @@ public partial class Parser
 
             // NOTE: Original acornjs implementation does a recursive call here, but we can optimize that into a loop to keep the call stack shallow.
             left = node;
+            maybeDestructuring = false;
         }
 
         return left;
@@ -513,15 +533,21 @@ public partial class Parser
             //    return expr;
             //}
 
+            var maybeDestructuring = !IsNullRef(ref destructuringErrors);
+
             while (_tokenizer._type.Postfix && !CanInsertSemicolon())
             {
+                InvokeOnNodeIfDeferred(expr, maybeDestructuring);
+
                 op = UpdateExpression.OperatorFromString((string)_tokenizer._value.Value!);
                 CheckLValSimple(expr,
                     isInPattern: !IsNullRef(ref destructuringErrors) && destructuringErrors.IsInPattern,
                     allowCall: !_strict,
                     lhsKind: LeftHandSideKind.PostfixUpdate);
                 Next();
+
                 expr = FinishNode(startMarker, new UpdateExpression(op, expr, prefix: false));
+                maybeDestructuring = false;
             }
         }
 
@@ -625,7 +651,7 @@ public partial class Parser
             return expr;
         }
 
-        var result = ParseSubscripts(startMarker, expr, noCalls: false, context);
+        var result = ParseSubscripts(startMarker, expr, noCalls: false, maybeDestructuring: !IsNullRef(ref destructuringErrors), context);
 
         if (!IsNullRef(ref destructuringErrors) && result.Type == NodeType.MemberExpression)
         {
@@ -649,7 +675,7 @@ public partial class Parser
     }
 
     [MethodImpl((MethodImplOptions)512  /* AggressiveOptimization */)]
-    private Expression ParseSubscripts(in Marker startMarker, Expression baseExpr, bool noCalls, ExpressionContext context)
+    private Expression ParseSubscripts(in Marker startMarker, Expression baseExpr, bool noCalls, bool maybeDestructuring, ExpressionContext context)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/expression.js > `pp.parseSubscripts = function`
 
@@ -664,7 +690,7 @@ public partial class Parser
 
         for (; ; )
         {
-            var element = ParseSubscript(startMarker, baseExpr, noCalls, maybeAsyncArrow, ref optionalChainPos, ref hasCall, context);
+            var element = ParseSubscript(startMarker, baseExpr, noCalls, maybeDestructuring, maybeAsyncArrow, ref optionalChainPos, ref hasCall, context);
 
             if (ReferenceEquals(element, baseExpr) || element.Type == NodeType.ArrowFunctionExpression)
             {
@@ -677,11 +703,12 @@ public partial class Parser
             }
 
             baseExpr = element;
+            maybeDestructuring = false;
         }
     }
 
     [MethodImpl((MethodImplOptions)512  /* AggressiveOptimization */)]
-    private Expression ParseSubscript(in Marker startMarker, Expression baseExpr, bool noCalls, bool maybeAsyncArrow,
+    private Expression ParseSubscript(in Marker startMarker, Expression baseExpr, bool noCalls, bool maybeDestructuring, bool maybeAsyncArrow,
         ref int optionalChainPos, ref bool hasCall, ExpressionContext context)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/expression.js > `pp.parseSubscript = function`
@@ -711,6 +738,8 @@ public partial class Parser
             || (optional && _tokenizer._type != TokenType.ParenLeft && _tokenizer._type != TokenType.BackQuote)
             || Eat(TokenType.Dot))
         {
+            InvokeOnNodeIfDeferred(baseExpr, maybeDestructuring);
+
             Expression property;
             if (computed)
             {
@@ -738,20 +767,27 @@ public partial class Parser
         }
         else if (!noCalls && Eat(TokenType.ParenLeft))
         {
-            var destructuringErrors = new DestructuringErrors();
-            var oldYieldPos = _yieldPosition;
-            var oldAwaitPos = _awaitPosition;
-            var oldAwaitIdentPos = _awaitIdentifierPosition;
-            _yieldPosition = _awaitPosition = _awaitIdentifierPosition = 0;
+            InvokeOnNodeIfDeferred(baseExpr, maybeDestructuring);
 
             if (hasCall && (context & ExpressionContext.Decorator) != 0)
             {
                 Raise(_tokenizer._lastTokenStart, InvalidDecoratorMemberExpr);
             }
 
+            var destructuringErrors = new DestructuringErrors();
+            var oldYieldPos = _yieldPosition;
+            var oldAwaitPos = _awaitPosition;
+            var oldAwaitIdentPos = _awaitIdentifierPosition;
+            _yieldPosition = _awaitPosition = _awaitIdentifierPosition = 0;
+
+            Debug.Assert(!_suppressOnNode);
+            _suppressOnNode = true;
+
             NodeList<Expression> exprList = ParseExprList(close: TokenType.ParenRight,
                 allowTrailingComma: _tokenizerOptions._ecmaVersion >= EcmaVersion.ES8, allowEmptyItem: false,
                 ref destructuringErrors)!;
+
+            _suppressOnNode = false;
 
             if (maybeAsyncArrow && !optional && !CanInsertSemicolon() && Eat(TokenType.Arrow))
             {
@@ -768,6 +804,8 @@ public partial class Parser
                 _awaitIdentifierPosition = oldAwaitIdentPos;
                 return ParseArrowExpression(startMarker, exprList.AsNodes()!, isAsync: true, context);
             }
+
+            InvokeOnNodeIfDeferred(exprList.AsNodes().AsSpan(), maybeDestructuring: !IsNullRef(ref destructuringErrors));
 
             CheckExpressionErrors(ref destructuringErrors, andThrow: true);
 
@@ -788,6 +826,8 @@ public partial class Parser
         }
         else if (_tokenizer._type == TokenType.BackQuote)
         {
+            InvokeOnNodeIfDeferred(baseExpr, maybeDestructuring);
+
             if (optionalChainPos >= 0)
             {
                 // Raise(_tokenizer._start, "Optional chaining cannot appear in the tag of tagged template expressions"); // original acornjs error reporting
@@ -880,6 +920,9 @@ public partial class Parser
             case TokenKind.Identifier when _tokenizer._type == TokenType.Name:
                 canBeArrow = _potentialArrowAt == _tokenizer._start;
                 var containsEsc = _tokenizer._containsEscape;
+
+                // Even though ParseArrowExpression calls ToAssignable, identifiers are not reinterpreted,
+                // so we don't need to defer OnNode in this case.
                 var id = ParseIdentifier(liberal: false);
 
                 if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES8 && !containsEsc && id.Name == "async" && !CanInsertSemicolon() && Eat(TokenType.Function))
@@ -986,8 +1029,14 @@ public partial class Parser
                 var oldIsInPattern = isInPattern;
                 isInPattern = true;
 
+                Debug.Assert(!_suppressOnNode);
+                _suppressOnNode = !IsNullRef(ref destructuringErrors);
+
                 Next();
-                expr = FinishNode(startMarker, new ArrayExpression(ParseExprList(close: TokenType.BracketRight, allowTrailingComma: true, allowEmptyItem: true, ref destructuringErrors)));
+                var elements = ParseExprList(close: TokenType.BracketRight, allowTrailingComma: true, allowEmptyItem: true, ref destructuringErrors);
+                expr = FinishNode(startMarker, new ArrayExpression(elements));
+
+                _suppressOnNode = false;
 
                 isInPattern = oldIsInPattern;
                 return expr;
@@ -1002,8 +1051,13 @@ public partial class Parser
                 oldIsInPattern = isInPattern;
                 isInPattern = true;
 
+                Debug.Assert(!_suppressOnNode);
+                _suppressOnNode = !IsNullRef(ref destructuringErrors);
+
                 EnterRecursion();
                 expr = ExitRecursion((Expression)ParseObject(isPattern: false, ref destructuringErrors));
+
+                _suppressOnNode = false;
 
                 isInPattern = oldIsInPattern;
                 return expr;
@@ -1230,6 +1284,9 @@ public partial class Parser
             var allowTrailingComma = _tokenizerOptions._ecmaVersion >= EcmaVersion.ES8;
             var lastIsComma = false;
 
+            Debug.Assert(!_suppressOnNode);
+            _suppressOnNode = true;
+
             // NOTE: This loop is very similar to ParseExprList, reusing that here is something to consider.
             while (_tokenizer._type != TokenType.ParenRight)
             {
@@ -1284,6 +1341,8 @@ public partial class Parser
                 }
             }
 
+            _suppressOnNode = false;
+
             var innerEndMarker = new Marker(_tokenizer._lastTokenEnd, _tokenizer._lastTokenEndLocation);
 
             Expect(TokenType.ParenRight);
@@ -1304,10 +1363,13 @@ public partial class Parser
                 Unexpected(_tokenizer._lastTokenStart, TokenType.ParenRight, TokenType.ParenRight.Value);
             }
 
+            InvokeOnNodeIfDeferred(parameters.AsSpan(), maybeDestructuring: !IsNullRef(ref destructuringErrors));
+
             if (spreadStart >= 0)
             {
                 Unexpected(spreadStart, TokenType.Ellipsis, TokenType.Ellipsis.Value);
             }
+
             CheckExpressionErrors(ref destructuringErrors, andThrow: true);
 
             if (allowTrailingComma && lastIsComma)
@@ -1393,7 +1455,8 @@ public partial class Parser
         }
 
         var calleeStartMarker = StartNode();
-        var callee = ParseSubscripts(calleeStartMarker, ParseExprAtom(ref NullRef<DestructuringErrors>(), ExpressionContext.ForNew), noCalls: true, ExpressionContext.Default);
+        var callee = ParseSubscripts(calleeStartMarker, ParseExprAtom(ref NullRef<DestructuringErrors>(), ExpressionContext.ForNew),
+            noCalls: true, maybeDestructuring: false, ExpressionContext.Default);
 
         if (callee.Type == NodeType.Super)
         {
@@ -1524,6 +1587,7 @@ public partial class Parser
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/expression.js > `pp.parseProperty = function`
 
         var propertyStartMarker = StartNode();
+        bool oldSuppressOnNode;
 
         if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES9 && Eat(TokenType.Ellipsis))
         {
@@ -1546,7 +1610,10 @@ public partial class Parser
             else
             {
                 // Parse argument.
+                oldSuppressOnNode = _suppressOnNode;
+                _suppressOnNode = false;
                 var argument = ParseMaybeAssign(ref destructuringErrors, ExpressionContext.Default);
+                _suppressOnNode = oldSuppressOnNode;
 
                 // To disallow trailing comma via `ToAssignable()`.
                 if (_tokenizer._type == TokenType.Comma && !IsNullRef(ref destructuringErrors) && destructuringErrors.GetTrailingComma() < 0)
@@ -1580,37 +1647,50 @@ public partial class Parser
             isGenerator = false;
         }
 
-        bool containsEsc = _tokenizer._containsEscape, computed;
+        bool containsEsc = _tokenizer._containsEscape, computed, method, shorthand;
         Expression key;
+        Node value;
+        PropertyKind kind;
         if (isPattern)
         {
             var oldBindingPatternDepth = _bindingPatternDepth;
             _bindingPatternDepth = 0;
-            key = ParsePropertyName(out computed);
+            key = ParsePropertyName(isPattern, out computed);
             _bindingPatternDepth = oldBindingPatternDepth;
 
             isAsync = false;
+
+            value = ParsePropertyValue(ref key, ref computed, out kind, out method, out shorthand, isPattern: true, isGenerator, isAsync,
+                containsEsc, startMarker, ref destructuringErrors);
         }
         else
         {
-            key = ParsePropertyName(out computed);
+            oldSuppressOnNode = _suppressOnNode;
+            _suppressOnNode = false;
+            key = ParsePropertyName(isPattern, out computed);
+            _suppressOnNode = oldSuppressOnNode;
 
             if (!containsEsc && !isGenerator && _tokenizerOptions._ecmaVersion >= EcmaVersion.ES8 && IsAsyncProperty(key, computed))
             {
                 isAsync = true;
                 isGenerator = _tokenizerOptions._ecmaVersion >= EcmaVersion.ES9 && Eat(TokenType.Star);
-                key = ParsePropertyName(out computed);
+
+                oldSuppressOnNode = _suppressOnNode;
+                _suppressOnNode = false;
+                key = ParsePropertyName(isPattern, out computed);
+                _suppressOnNode = oldSuppressOnNode;
             }
             else
             {
                 isAsync = false;
             }
+
+            value = ParsePropertyValue(ref key, ref computed, out kind, out method, out shorthand, isPattern: false, isGenerator, isAsync,
+            containsEsc, startMarker, ref destructuringErrors);
         }
 
-        var value = ParsePropertyValue(ref key, ref computed, out var kind, out var method, out var shorthand, isPattern, isGenerator, isAsync,
-            containsEsc, startMarker, ref destructuringErrors);
-
         Debug.Assert(!isPattern || kind == PropertyKind.Init);
+
         return FinishNode<Property>(propertyStartMarker, isPattern
             ? new AssignmentProperty(key, value, computed, shorthand)
             : new ObjectProperty(kind, key, value, computed, shorthand, method));
@@ -1620,7 +1700,7 @@ public partial class Parser
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/expression.js > `pp.parseGetterSetter = function`
 
-        key = ParsePropertyName(out computed);
+        key = ParsePropertyName(isPattern: false, out computed);
         var value = ParseMethod(isGenerator: false);
 
         if (kind == PropertyKind.Get)
@@ -1660,6 +1740,7 @@ public partial class Parser
         }
 
         Node value;
+        bool oldSuppressOnNode;
 
         if (Eat(TokenType.Colon))
         {
@@ -1678,7 +1759,11 @@ public partial class Parser
             kind = PropertyKind.Init;
             method = true;
             shorthand = false;
+
+            oldSuppressOnNode = _suppressOnNode;
+            _suppressOnNode = false;
             value = ParseMethod(isGenerator, isAsync);
+            _suppressOnNode = oldSuppressOnNode;
         }
         else if (!isPattern && !containsEsc && !computed
             && _tokenizerOptions._ecmaVersion >= EcmaVersion.ES5 && key is Identifier { Name: "get" or "set" } identifier
@@ -1691,7 +1776,11 @@ public partial class Parser
 
             kind = identifier.Name[0] == 'g' ? PropertyKind.Get : PropertyKind.Set;
             method = shorthand = false;
+
+            oldSuppressOnNode = _suppressOnNode;
+            _suppressOnNode = false;
             value = ParseGetterSetter(ref key, ref computed, kind);
+            _suppressOnNode = oldSuppressOnNode;
         }
         else if (!computed && _tokenizerOptions._ecmaVersion >= EcmaVersion.ES6 && key is Identifier keyIdentifier)
         {
@@ -1724,7 +1813,11 @@ public partial class Parser
 
                 Next();
 
+                oldSuppressOnNode = _suppressOnNode;
+                _suppressOnNode = false;
                 var right = ParseMaybeAssign(ref NullRef<DestructuringErrors>());
+                _suppressOnNode = oldSuppressOnNode;
+
                 value = FinishNode(startMarker, new AssignmentPattern(key, right));
             }
             else
@@ -1746,7 +1839,7 @@ public partial class Parser
         return value;
     }
 
-    private Expression ParsePropertyName(out bool computed)
+    private Expression ParsePropertyName(bool isPattern, out bool computed)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/expression.js > `pp.parsePropertyName = function`
 
@@ -1945,6 +2038,7 @@ public partial class Parser
             else if (_tokenizer._type == TokenType.Ellipsis)
             {
                 element = ParseSpread(ref destructuringErrors);
+
                 if (!IsNullRef(ref destructuringErrors) && _tokenizer._type == TokenType.Comma && destructuringErrors.GetTrailingComma() < 0)
                 {
                     // As opposed to the original acornjs implementation, we report the position of the rest element.
