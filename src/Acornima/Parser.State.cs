@@ -13,6 +13,8 @@ public partial class Parser
     internal IsReservedWordDelegate _isReservedWord;
     internal IsReservedWordDelegate _isReservedWordBind;
 
+    private bool _suppressOnNode;
+
     private bool _inModule;
     private bool _strict;
 
@@ -52,6 +54,8 @@ public partial class Parser
     internal void Reset(string input, int start, int length, SourceType sourceType, string? sourceFile, bool strict)
     {
         _tokenizer.ResetInternal(input, start, length, sourceType, sourceFile, trackRegExpContext: _options.OnToken is not null);
+
+        _suppressOnNode = false;
 
         _inModule = _tokenizer._inModule;
         _strict = _tokenizer._strict || strict;

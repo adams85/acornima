@@ -85,6 +85,13 @@ public partial class Parser
 
                     convertedNode = ToAssignable(property.Value, ref NullRef<DestructuringErrors>(), isBinding, isInPattern: true);
 
+                    if (property.Value is AssignmentPattern assignmentPattern)
+                    {
+                        // Even though ParsePropertyValue creates AssignmentPattern for shorthand properties with a default value,
+                        // OnNode is deferred for consistency. Now is the time to invoke OnNode.
+                        _options._onNode?.Invoke(assignmentPattern, new OnNodeContext(_tokenizer, default, _scopeStack));
+                    }
+
                     node = ReinterpretNode(node, new AssignmentProperty(property.Key, value: convertedNode, computed: property.Computed, shorthand: property.Shorthand));
                     break;
 
@@ -252,7 +259,11 @@ public partial class Parser
         var startMarker = StartNode();
         Next();
 
+        var oldSuppressOnNode = _suppressOnNode;
+        _suppressOnNode = false;
         var argument = ParseMaybeAssign(ref destructuringErrors, ExpressionContext.Default);
+        _suppressOnNode = oldSuppressOnNode;
+
         return FinishNode(startMarker, new SpreadElement(argument));
     }
 
