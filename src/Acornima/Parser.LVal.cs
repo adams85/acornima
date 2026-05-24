@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Acornima.Ast;
@@ -17,11 +18,14 @@ public partial class Parser
     // Convert existing expression atom to assignable pattern
     // if possible.
     [return: NotNullIfNotNull(nameof(node))]
-    private Node? ToAssignable(Node? node, ref DestructuringErrors destructuringErrors, bool isBinding, bool isParam = false, LeftHandSideKind lhsKind = LeftHandSideKind.Unknown)
+    private Node? ToAssignable(Node node, ref DestructuringErrors destructuringErrors, bool isBinding,
+        bool isInPattern = false, bool allowCall = false, LeftHandSideKind lhsKind = LeftHandSideKind.Unknown)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/lval.js > `pp.toAssignable = function`
 
-        if (node is not null && _tokenizerOptions._ecmaVersion >= EcmaVersion.ES6)
+        Debug.Assert(!isBinding || !allowCall);
+
+        if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES6)
         {
             Node? parenthesizedExpression = null;
             Node convertedNode;
@@ -56,7 +60,8 @@ public partial class Parser
                 case NodeType.ObjectExpression:
                     if (!IsNullRef(ref destructuringErrors))
                     {
-                        CheckPatternErrors(ref destructuringErrors, isAssign: true);
+                        Debug.Assert(!isBinding);
+                        CheckPatternErrors(ref destructuringErrors, isAssign: true, isInPattern, lhsKind, node.Start);
                     }
 
                     convertedNodes = ToAssignableProperties(node.As<ObjectExpression>().Properties, isBinding)!;
@@ -73,12 +78,12 @@ public partial class Parser
                     //    Raise(property.Key.Start, "Object pattern can't contain getter or setter");
                     //}
 
-                    if (property.Kind != PropertyKind.Init || property.Value is FunctionExpression)
+                    if (property.Kind != PropertyKind.Init || property.Value.Type == NodeType.FunctionExpression)
                     {
                         Raise(property.Start, InvalidDestructuringTarget);
                     }
 
-                    convertedNode = ToAssignable(property.Value, ref NullRef<DestructuringErrors>(), isBinding);
+                    convertedNode = ToAssignable(property.Value, ref NullRef<DestructuringErrors>(), isBinding, isInPattern: true);
 
                     node = ReinterpretNode(node, new AssignmentProperty(property.Key, value: convertedNode, computed: property.Computed, shorthand: property.Shorthand));
                     break;
@@ -86,7 +91,8 @@ public partial class Parser
                 case NodeType.ArrayExpression:
                     if (!IsNullRef(ref destructuringErrors))
                     {
-                        CheckPatternErrors(ref destructuringErrors, isAssign: true);
+                        Debug.Assert(!isBinding);
+                        CheckPatternErrors(ref destructuringErrors, isAssign: true, isInPattern, lhsKind, node.Start);
                     }
 
                     convertedNodes = ToAssignableList(node.As<ArrayExpression>().Elements.AsNodes(), isBinding);
@@ -95,13 +101,16 @@ public partial class Parser
                     break;
 
                 case NodeType.SpreadElement:
+                    // - A rest element with a default value in an array pattern (isBinding: false, isInPattern: true),
+                    // - or a rest element in a parameter list (isBinding: true, isInPattern: true),
+
                     var argument = node.As<SpreadElement>().Argument;
 
-                    convertedNode = ToAssignable(argument, ref NullRef<DestructuringErrors>(), isBinding);
+                    convertedNode = ToAssignable(argument, ref NullRef<DestructuringErrors>(), isBinding, isInPattern: true);
                     if (convertedNode.Type == NodeType.AssignmentPattern)
                     {
                         // Raise(argument.Start, "Rest elements cannot have a default value"); // original acornjs error reporting
-                        if (isParam)
+                        if (isBinding)
                         {
                             Raise(argument.Start, RestDefaultInitializer);
                         }
@@ -115,15 +124,22 @@ public partial class Parser
                     break;
 
                 case NodeType.AssignmentExpression:
+                    // - An element with a default value in an array pattern (isBinding: false, isInPattern: true),
+                    // - a non-shorthand property with a default value in an object pattern (isBinding: false, isInPattern: true)
+                    //   (for a shorthand object property with a default value, AssignmentPattern is created in the first place),
+                    // - an assignment in a for in/of loop (isBinding: false, isInPattern: false),
+                    // - a parameter with a default value in an arrow function (isBinding: true, isInPattern: true).
+
                     var assignmentExpression = node.As<AssignmentExpression>();
 
                     if (assignmentExpression.Operator != Operator.Assignment)
                     {
                         // Raise(assignmentExpression.Left.End, "Only '=' operator can be used for specifying default value."); // original acornjs error reporting
-                        Raise(assignmentExpression.Left.Start, InvalidDestructuringTarget);
+                        node = assignmentExpression.Left;
+                        goto default;
                     }
 
-                    convertedNode = ToAssignable(assignmentExpression.Left, ref NullRef<DestructuringErrors>(), isBinding, lhsKind: lhsKind);
+                    convertedNode = ToAssignable(assignmentExpression.Left, ref NullRef<DestructuringErrors>(), isBinding, isInPattern, lhsKind: lhsKind);
 
                     node = ReinterpretNode(node, new AssignmentPattern(left: convertedNode, assignmentExpression.Right));
                     break;
@@ -139,14 +155,14 @@ public partial class Parser
                 //    RaiseRecoverable(node.Start, "Optional chaining cannot appear in left-hand side");
                 //    break;
 
-                case NodeType.CallExpression when !isBinding && !_strict:
+                case NodeType.CallExpression when allowCall && !isInPattern:
                     // Annex B.3.9: In non-strict mode, allow CallExpression as assignment target.
                     // The runtime should throw a ReferenceError instead.
                     break;
 
                 default:
                     // Raise(node.Start, "Assigning to rvalue"); // original acornjs error reporting
-                    HandleLeftHandSideError(node, isBinding, lhsKind);
+                    HandleLeftHandSideError(node.Start, isBinding, isInPattern, lhsKind);
                     break;
             }
 
@@ -157,7 +173,8 @@ public partial class Parser
         }
         else if (!IsNullRef(ref destructuringErrors))
         {
-            CheckPatternErrors(ref destructuringErrors, isAssign: true);
+            Debug.Assert(!isBinding && !isInPattern);
+            CheckPatternErrors(ref destructuringErrors, isAssign: true, isInPattern: false, lhsKind, node.Start);
         }
 
         return node;
@@ -174,7 +191,7 @@ public partial class Parser
 
         for (var i = 0; i < properties.Count; i++)
         {
-            var prop = ToAssignable(properties[i], ref NullRef<DestructuringErrors>(), isBinding);
+            var prop = ToAssignable(properties[i], ref NullRef<DestructuringErrors>(), isBinding, isInPattern: true);
 
             // Early error:
             //   AssignmentRestProperty[Yield, Await] :
@@ -195,7 +212,7 @@ public partial class Parser
     }
 
     // Convert list of expression atoms to binding list.
-    private NodeList<Node?> ToAssignableList(in NodeList<Node?> exprList, bool isBinding, bool isParams = false)
+    private NodeList<Node?> ToAssignableList(in NodeList<Node?> exprList, bool isBinding)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/lval.js > `pp.toAssignableList = function`
 
@@ -211,7 +228,7 @@ public partial class Parser
             Node? element = exprList[i];
             if (element is not null)
             {
-                element = ToAssignable(element, ref NullRef<DestructuringErrors>(), isBinding, isParams);
+                element = ToAssignable(element, ref NullRef<DestructuringErrors>(), isBinding, isInPattern: true);
             }
             bindingList[i] = element;
         }
@@ -438,11 +455,13 @@ public partial class Parser
     // duplicate argument names. checkClashes is ignored if the provided construct
     // is an assignment (i.e., bindingType is BIND_NONE).
 
-    private void CheckLValSimple(Node expr, BindingType bindingType = BindingType.None, HashSet<string>? checkClashes = null, LeftHandSideKind lhsKind = LeftHandSideKind.Unknown)
+    private void CheckLValSimple(Node expr, BindingType bindingType = BindingType.None, HashSet<string>? checkClashes = null,
+        bool isInPattern = false, bool allowCall = false, LeftHandSideKind lhsKind = LeftHandSideKind.Unknown)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/lval.js > `pp.checkLValSimple = function`
 
         var isBind = bindingType != BindingType.None;
+        Debug.Assert(!isBind || !allowCall);
 
     Reenter:
         switch (expr.Type)
@@ -509,7 +528,7 @@ public partial class Parser
                 expr = parenthesizedExpression.Expression;
                 goto Reenter;
 
-            case NodeType.CallExpression when !isBind && !_strict && lhsKind != LeftHandSideKind.LogicalAssignment:
+            case NodeType.CallExpression when allowCall && !isInPattern:
                 // Annex B.3.9: In non-strict mode, allow CallExpression as assignment target.
                 // The runtime should throw a ReferenceError instead.
                 // Does NOT apply to logical assignments (&&=, ||=, ??=), which require 'simple' target.
@@ -517,12 +536,13 @@ public partial class Parser
 
             default:
                 // Raise(expr.Start, $"{(isBind ? "Binding" : "Assigning to")} rvalue"); // original acornjs error reporting
-                HandleLeftHandSideError(expr, isBind, lhsKind);
+                HandleLeftHandSideError(expr.Start, isBind, isInPattern, lhsKind);
                 break;
         }
     }
 
-    private void CheckLValPattern(Node expr, BindingType bindingType = BindingType.None, HashSet<string>? checkClashes = null, LeftHandSideKind lhsKind = LeftHandSideKind.Unknown)
+    private void CheckLValPattern(Node expr, BindingType bindingType = BindingType.None, HashSet<string>? checkClashes = null,
+        bool isInPattern = false, bool allowCall = false, LeftHandSideKind lhsKind = LeftHandSideKind.Unknown)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/lval.js > `pp.checkLValPattern = function`
 
@@ -548,7 +568,7 @@ public partial class Parser
                 break;
 
             default:
-                CheckLValSimple(expr, bindingType, checkClashes, lhsKind);
+                CheckLValSimple(expr, bindingType, checkClashes, isInPattern, allowCall, lhsKind);
                 break;
         }
     }
@@ -564,15 +584,15 @@ public partial class Parser
                 break;
 
             case NodeType.AssignmentPattern:
-                CheckLValPattern(pattern.As<AssignmentPattern>().Left, bindingType, checkClashes);
+                CheckLValPattern(pattern.As<AssignmentPattern>().Left, bindingType, checkClashes, isInPattern: true);
                 break;
 
             case NodeType.RestElement:
-                CheckLValPattern(pattern.As<RestElement>().Argument, bindingType, checkClashes);
+                CheckLValPattern(pattern.As<RestElement>().Argument, bindingType, checkClashes, isInPattern: true);
                 break;
 
             default:
-                CheckLValPattern(pattern, bindingType, checkClashes);
+                CheckLValPattern(pattern, bindingType, checkClashes, isInPattern: true);
                 break;
         }
     }
@@ -583,11 +603,10 @@ public partial class Parser
 
         var redeclared = false;
         var name = id.Name;
-        ref var scope = ref NullRef<Scope>();
         switch (bindingType)
         {
             case BindingType.Lexical:
-                scope = ref CurrentScope;
+                ref var scope = ref CurrentScope;
                 redeclared = scope._lexical.Contains(name) || scope._functions.Contains(name) || scope._var.Contains(name);
                 scope._lexical.Add(id);
                 if (_inModule && (scope._flags & ScopeFlags.Top) != 0)
@@ -654,39 +673,37 @@ public partial class Parser
     }
 
     [DoesNotReturn]
-    private void HandleLeftHandSideError(Node node, bool isBinding, LeftHandSideKind lhsKind)
+    private void HandleLeftHandSideError(int position, bool isBinding, bool isInPattern, LeftHandSideKind lhsKind)
     {
-        if (!isBinding)
+        if (!isBinding && !isInPattern)
         {
             switch (lhsKind)
             {
                 case LeftHandSideKind.Assignment:
-                case LeftHandSideKind.LogicalAssignment:
-                    Raise(node.Start, InvalidLhsInAssignment);
+                    Raise(position, InvalidLhsInAssignment);
                     break;
 
                 case LeftHandSideKind.PrefixUpdate:
-                    Raise(node.Start, InvalidLhsInPrefixOp);
+                    Raise(position, InvalidLhsInPrefixOp);
                     break;
 
                 case LeftHandSideKind.PostfixUpdate:
-                    Raise(node.Start, InvalidLhsInPostfixOp);
+                    Raise(position, InvalidLhsInPostfixOp);
                     break;
 
                 case LeftHandSideKind.ForInOf:
-                    Raise(node.Start, InvalidLhsInFor);
+                    Raise(position, InvalidLhsInFor);
                     break;
             }
         }
 
-        Raise(node.Start, InvalidDestructuringTarget);
+        Raise(position, InvalidDestructuringTarget);
     }
 
     private enum LeftHandSideKind : byte
     {
         Unknown,
         Assignment,
-        LogicalAssignment,
         PrefixUpdate,
         PostfixUpdate,
         ForInOf,

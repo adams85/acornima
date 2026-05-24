@@ -655,8 +655,9 @@ public partial class Parser
                     Unexpected(awaitAt, TokenType.Name, "await");
                 }
 
-                var initPattern = ToAssignable(init, ref destructuringErrors, isBinding: false, lhsKind: LeftHandSideKind.ForInOf);
-                CheckLValPattern(initPattern, lhsKind: LeftHandSideKind.ForInOf);
+                var initPattern = ToAssignable(init, ref destructuringErrors, isBinding: false,
+                    isInPattern: destructuringErrors.IsInPattern, allowCall: !_strict, lhsKind: LeftHandSideKind.ForInOf);
+                CheckLValPattern(initPattern, isInPattern: destructuringErrors.IsInPattern, allowCall: !_strict, lhsKind: LeftHandSideKind.ForInOf);
 
                 return ParseForInOf(startMarker, isForIn: true, await: false, initPattern);
             }
@@ -674,8 +675,9 @@ public partial class Parser
                     Raise(init.Start, ForOfLet);
                 }
 
-                var initPattern = ToAssignable(init, ref destructuringErrors, isBinding: false, lhsKind: LeftHandSideKind.ForInOf);
-                CheckLValPattern(initPattern, lhsKind: LeftHandSideKind.ForInOf);
+                var initPattern = ToAssignable(init, ref destructuringErrors, isBinding: false,
+                    isInPattern: destructuringErrors.IsInPattern, allowCall: !_strict, lhsKind: LeftHandSideKind.ForInOf);
+                CheckLValPattern(initPattern, isInPattern: destructuringErrors.IsInPattern, allowCall: !_strict, lhsKind: LeftHandSideKind.ForInOf);
 
                 return ParseForInOf(startMarker, isForIn: false, await: awaitAt >= 0, initPattern);
             }

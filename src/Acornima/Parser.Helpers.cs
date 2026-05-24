@@ -402,6 +402,7 @@ public partial class Parser
         public int ParenthesizedAssign;
         public int ParenthesizedBind;
         public int DoubleProto;
+        public bool IsInPattern;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly int GetTrailingComma()

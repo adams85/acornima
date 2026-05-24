@@ -176,14 +176,30 @@ public partial class Parser
             _tokenizer._expressionAllowed = false;
         }
 
-        var ownsDestructuringErrors = IsNullRef(ref destructuringErrors);
-        var ownDestructuringErrors = new DestructuringErrors();
-        ref var actualDestructuringErrors = ref (ownsDestructuringErrors ? ref ownDestructuringErrors : ref destructuringErrors);
+        int oldParenAssign, oldTrailingComma, oldDoubleProto;
 
-        var oldParenAssign = actualDestructuringErrors.ParenthesizedAssign;
-        var oldTrailingComma = actualDestructuringErrors.TrailingComma;
-        var oldDoubleProto = actualDestructuringErrors.DoubleProto;
-        actualDestructuringErrors.ParenthesizedAssign = actualDestructuringErrors.TrailingComma = -1;
+        DestructuringErrors ownDestructuringErrors;
+        SkipInit(out ownDestructuringErrors);
+        ref var actualDestructuringErrors = ref ownDestructuringErrors;
+        var ownsDestructuringErrors = IsNullRef(ref destructuringErrors);
+        if (ownsDestructuringErrors)
+        {
+            actualDestructuringErrors = new DestructuringErrors();
+
+            SkipInit(out oldParenAssign);
+            SkipInit(out oldTrailingComma);
+            SkipInit(out oldDoubleProto);
+        }
+        else
+        {
+            actualDestructuringErrors = ref destructuringErrors;
+
+            oldParenAssign = actualDestructuringErrors.ParenthesizedAssign;
+            oldTrailingComma = actualDestructuringErrors.TrailingComma;
+            oldDoubleProto = actualDestructuringErrors.DoubleProto;
+
+            actualDestructuringErrors.ParenthesizedAssign = actualDestructuringErrors.TrailingComma = -1;
+        }
 
         var startMarker = StartNode();
 
@@ -200,7 +216,8 @@ public partial class Parser
             Debug.Assert(op != Operator.Unknown);
 
             var leftNode = _tokenizer._type == TokenType.Eq
-                ? ToAssignable(left, ref actualDestructuringErrors, isBinding: false, lhsKind: LeftHandSideKind.Assignment)
+                ? ToAssignable(left, ref actualDestructuringErrors, isBinding: false,
+                    isInPattern: actualDestructuringErrors.IsInPattern, allowCall: !_strict, lhsKind: LeftHandSideKind.Assignment)
                 : left;
 
             if (!ownsDestructuringErrors)
@@ -215,22 +232,23 @@ public partial class Parser
 
             if (_tokenizer._type == TokenType.Eq)
             {
-                CheckLValPattern(leftNode, lhsKind: LeftHandSideKind.Assignment);
+                CheckLValPattern(leftNode, isInPattern: actualDestructuringErrors.IsInPattern, allowCall: !_strict, lhsKind: LeftHandSideKind.Assignment);
             }
             else
             {
                 // Logical assignments (&&=, ||=, ??=) require 'simple' assignment target,
                 // not 'web-compat' (Annex B.3.9 does not apply to logical assignments).
-                CheckLValSimple(leftNode, lhsKind: op is Operator.LogicalAndAssignment or Operator.LogicalOrAssignment or Operator.NullishCoalescingAssignment
-                    ? LeftHandSideKind.LogicalAssignment
-                    : LeftHandSideKind.Assignment);
+                CheckLValSimple(leftNode,
+                    isInPattern: actualDestructuringErrors.IsInPattern,
+                    allowCall: !_strict && op is not (Operator.LogicalAndAssignment or Operator.LogicalOrAssignment or Operator.NullishCoalescingAssignment),
+                    lhsKind: LeftHandSideKind.Assignment);
             }
 
             Next();
 
             var right = ParseMaybeAssign(ref NullRef<DestructuringErrors>(), context);
 
-            if (oldDoubleProto >= 0)
+            if (!ownsDestructuringErrors && oldDoubleProto >= 0)
             {
                 actualDestructuringErrors.DoubleProto = oldDoubleProto;
             }
@@ -242,15 +260,17 @@ public partial class Parser
         {
             CheckExpressionErrors(ref actualDestructuringErrors, andThrow: true);
         }
-
-        if (oldParenAssign >= 0)
+        else
         {
-            actualDestructuringErrors.ParenthesizedAssign = oldParenAssign;
-        }
+            if (oldParenAssign >= 0)
+            {
+                actualDestructuringErrors.ParenthesizedAssign = oldParenAssign;
+            }
 
-        if (oldTrailingComma != -1)
-        {
-            actualDestructuringErrors.TrailingComma = oldTrailingComma;
+            if (oldTrailingComma != -1)
+            {
+                actualDestructuringErrors.TrailingComma = oldTrailingComma;
+            }
         }
 
         return ExitRecursion(left);
@@ -407,7 +427,10 @@ public partial class Parser
 
             if (update)
             {
-                CheckLValSimple(argument, lhsKind: LeftHandSideKind.PrefixUpdate);
+                CheckLValSimple(argument,
+                    isInPattern: !IsNullRef(ref destructuringErrors) && destructuringErrors.IsInPattern,
+                    allowCall: !_strict,
+                    lhsKind: LeftHandSideKind.PrefixUpdate);
             }
             else
             {
@@ -471,7 +494,10 @@ public partial class Parser
             while (_tokenizer._type.Postfix && !CanInsertSemicolon())
             {
                 op = UpdateExpression.OperatorFromString((string)_tokenizer._value.Value!);
-                CheckLValSimple(expr, lhsKind: LeftHandSideKind.PostfixUpdate);
+                CheckLValSimple(expr,
+                    isInPattern: !IsNullRef(ref destructuringErrors) && destructuringErrors.IsInPattern,
+                    allowCall: !_strict,
+                    lhsKind: LeftHandSideKind.PostfixUpdate);
                 Next();
                 expr = FinishNode(startMarker, new UpdateExpression(op, expr, prefix: false));
             }
@@ -929,14 +955,34 @@ public partial class Parser
                 return expr;
 
             case TokenKind.Punctuator when _tokenizer._type == TokenType.BracketLeft:
+                SkipInit(out canBeArrow); // used as a dummy storage in this case to avoid repeated branching
+                ref var isInPattern = ref (!IsNullRef(ref destructuringErrors) && _tokenizerOptions._ecmaVersion >= EcmaVersion.ES6
+                    ? ref destructuringErrors.IsInPattern
+                    : ref canBeArrow);
+                var oldIsInPattern = isInPattern;
+                isInPattern = true;
+
                 Next();
-                var elements = ParseExprList(close: TokenType.BracketRight, allowTrailingComma: true, allowEmptyItem: true, ref destructuringErrors);
-                return FinishNode(startMarker, new ArrayExpression(elements));
+                expr = FinishNode(startMarker, new ArrayExpression(ParseExprList(close: TokenType.BracketRight, allowTrailingComma: true, allowEmptyItem: true, ref destructuringErrors)));
+
+                isInPattern = oldIsInPattern;
+                return expr;
 
             case TokenKind.Punctuator when _tokenizer._type == TokenType.BraceLeft:
                 _tokenizer.OverrideContext(TokenContext.BracketsInExpression);
+
+                SkipInit(out canBeArrow); // used as a dummy storage in this case to avoid repeated branching
+                isInPattern = ref (!IsNullRef(ref destructuringErrors) && _tokenizerOptions._ecmaVersion >= EcmaVersion.ES6
+                    ? ref destructuringErrors.IsInPattern
+                    : ref canBeArrow);
+                oldIsInPattern = isInPattern;
+                isInPattern = true;
+
                 EnterRecursion();
-                return ExitRecursion((Expression)ParseObject(isPattern: false, ref destructuringErrors));
+                expr = ExitRecursion((Expression)ParseObject(isPattern: false, ref destructuringErrors));
+
+                isInPattern = oldIsInPattern;
+                return expr;
 
             case TokenKind.Punctuator when _tokenizer._type == TokenType.BackQuote:
                 return ParseTemplate(isTagged: false);
@@ -1652,7 +1698,10 @@ public partial class Parser
                     destructuringErrors.ShorthandAssign = _tokenizer._start;
                 }
 
-                value = ParseMaybeDefault(startMarker, key);
+                Next();
+
+                var right = ParseMaybeAssign(ref NullRef<DestructuringErrors>());
+                value = FinishNode(startMarker, new AssignmentPattern(key, right));
             }
             else
             {
@@ -1741,7 +1790,7 @@ public partial class Parser
 
         EnterScope(FunctionFlags(isAsync, generator: false) | ScopeFlags.Arrow);
 
-        NodeList<Node> paramList = ToAssignableList(parameters!, isBinding: true, isParams: true)!;
+        NodeList<Node> paramList = ToAssignableList(parameters!, isBinding: true)!;
         var scope = ParseFunctionBody(id: null, paramList, isArrowFunction: true, isMethod: false, context, out var expression, out var body);
 
         _yieldPosition = oldYieldPos;
@@ -1818,12 +1867,17 @@ public partial class Parser
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/expression.js > `pp.checkParams = function`
 
-        var nameHash = allowDuplicates ? null : new HashSet<string>();
-        for (var i = 0; i < parameters.Count; i++)
+        if (parameters.Count > 0)
         {
-            var param = parameters[i];
-            Debug.Assert(param is not null);
-            CheckLValInnerPattern(param!, BindingType.Var, checkClashes: nameHash);
+            var nameHash = allowDuplicates ? null : new HashSet<string>();
+            var i = 0;
+            do
+            {
+                var param = parameters[i];
+                Debug.Assert(param is not null);
+                CheckLValInnerPattern(param!, BindingType.Var, checkClashes: nameHash);
+            }
+            while (++i < parameters.Count);
         }
 
         ref var varList = ref CurrentScope._var;

@@ -247,7 +247,8 @@ public partial class Parser
         return RaiseRecoverable(pos, GetUnexpectedTokenMessage(tokenType, tokenValue, out var code), code);
     }
 
-    private void CheckPatternErrors(ref DestructuringErrors destructuringErrors, bool isAssign)
+    private void CheckPatternErrors(ref DestructuringErrors destructuringErrors, bool isAssign,
+        bool isInPattern = false, LeftHandSideKind lhsKind = LeftHandSideKind.Unknown, int nodeStart = -1)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/parseutil.js > `pp.checkPatternErrors = function`
 
@@ -275,9 +276,9 @@ public partial class Parser
         if (position >= 0)
         {
             // RaiseRecoverable(parens, isAssign ? "Assigning to rvalue" : "Parenthesized pattern"); // original acornjs error reporting
-            if (isAssign)
+            if (position < nodeStart)
             {
-                Raise(position, InvalidLhsInAssignment);
+                HandleLeftHandSideError(position, isBinding: false, isInPattern, lhsKind);
             }
             else
             {
