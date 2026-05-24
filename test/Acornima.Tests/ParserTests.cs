@@ -2448,6 +2448,16 @@ public partial class ParserTests
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ShouldPreserveParensInReinterpretedPattern(bool preserveParens)
+    {
+        var parser = new Parser(new ParserOptions { PreserveParens = preserveParens });
+        var ast = parser.ParseScript("((x)) = 0");
+        Assert.Equal(preserveParens ? 2 : 0, ast.DescendantNodes().OfType<ParenthesizedExpression>().Count());
+    }
+
+    [Theory]
     [InlineData("script", "fn() = 0", null)]
     [InlineData("script", "'use strict'; fn() = 0", "Invalid left-hand side in assignment")]
     [InlineData("module", "fn() = 0", "Invalid left-hand side in assignment")]

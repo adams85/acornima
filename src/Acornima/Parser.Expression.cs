@@ -311,57 +311,53 @@ public partial class Parser
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/expression.js > `pp.parseExprOp = function`
 
-        for (; ; )
+        int prec;
+        // NOTE: TokenType.Precedence defaults to -1 for non-binary operator tokens.
+        while ((prec = _tokenizer._type.Precedence) > minPrec && ((context & ExpressionContext.ForInit) == 0 || _tokenizer._type != TokenType.In))
         {
-            var prec = _tokenizer._type.Precedence;
-            // NOTE: TokenType.Precedence defaults to -1 for non-binary operator tokens.
-            if (prec > minPrec && ((context & ExpressionContext.ForInit) == 0 || _tokenizer._type != TokenType.In))
+            Operator op;
+            bool coalesce;
+            var logical = _tokenizer._type == TokenType.LogicalOr || _tokenizer._type == TokenType.LogicalAnd;
+            if (logical)
             {
-                Operator op;
-                bool coalesce;
-                var logical = _tokenizer._type == TokenType.LogicalOr || _tokenizer._type == TokenType.LogicalAnd;
-                if (logical)
-                {
-                    coalesce = false;
-                    op = _tokenizer._type == TokenType.LogicalOr ? Operator.LogicalOr : Operator.LogicalAnd;
-                }
-                else if (_tokenizer._type == TokenType.Coalesce)
-                {
-                    coalesce = true;
-                    op = Operator.NullishCoalescing;
+                coalesce = false;
+                op = _tokenizer._type == TokenType.LogicalOr ? Operator.LogicalOr : Operator.LogicalAnd;
+            }
+            else if (_tokenizer._type == TokenType.Coalesce)
+            {
+                coalesce = true;
+                op = Operator.NullishCoalescing;
 
-                    // Handle the precedence of `TokenType.Coalesce` as equal to the range of logical expressions.
-                    // In other words, `BinaryExpession.Right` shouldn't contain logical expressions in order to check the mixed error.
-                    prec = TokenType.LogicalAnd.Precedence;
-                }
-                else
-                {
-                    coalesce = false;
-                    op = NonLogicalBinaryExpression.OperatorFromString((string)_tokenizer._value.Value!);
-                    Debug.Assert(op != Operator.Unknown);
-                }
-
-                Next();
-
-                var rightStartMarker = StartNode();
-                // NOTE: We don't need stack overflow protection here because this recursion is known to be bounded (by the number of precedence levels).
-                var right = ParseBinaryOp(rightStartMarker, ParseMaybeUnary(sawUnary: false, incDec: false, ref NullRef<DestructuringErrors>(), context), prec, context);
-                var node = BuildBinary(leftStartMarker, left, right, op, logical || coalesce);
-
-                if (logical && _tokenizer._type == TokenType.Coalesce
-                    || coalesce && (_tokenizer._type == TokenType.LogicalOr || _tokenizer._type == TokenType.LogicalAnd))
-                {
-                    // RaiseRecoverable(_tokenizer._start, "Logical expressions and coalesce expressions cannot be mixed. Wrap either by parentheses"); // original acornjs error reporting
-                    RaiseRecoverable(_tokenizer._start, _tokenizer._type, _tokenizer._value.Value);
-                }
-
-                // NOTE: Original acornjs implementation does a recursive call here, but we can optimize that into a loop to keep the call stack shallow.
-                left = node;
-                continue;
+                // Handle the precedence of `TokenType.Coalesce` as equal to the range of logical expressions.
+                // In other words, `BinaryExpession.Right` shouldn't contain logical expressions in order to check the mixed error.
+                prec = TokenType.LogicalAnd.Precedence;
+            }
+            else
+            {
+                coalesce = false;
+                op = NonLogicalBinaryExpression.OperatorFromString((string)_tokenizer._value.Value!);
+                Debug.Assert(op != Operator.Unknown);
             }
 
-            return left;
+            Next();
+
+            var rightStartMarker = StartNode();
+            // NOTE: We don't need stack overflow protection here because this recursion is known to be bounded (by the number of precedence levels).
+            var right = ParseBinaryOp(rightStartMarker, ParseMaybeUnary(sawUnary: false, incDec: false, ref NullRef<DestructuringErrors>(), context), prec, context);
+            var node = BuildBinary(leftStartMarker, left, right, op, logical || coalesce);
+
+            if (logical && _tokenizer._type == TokenType.Coalesce
+                || coalesce && (_tokenizer._type == TokenType.LogicalOr || _tokenizer._type == TokenType.LogicalAnd))
+            {
+                // RaiseRecoverable(_tokenizer._start, "Logical expressions and coalesce expressions cannot be mixed. Wrap either by parentheses"); // original acornjs error reporting
+                RaiseRecoverable(_tokenizer._start, _tokenizer._type, _tokenizer._value.Value);
+            }
+
+            // NOTE: Original acornjs implementation does a recursive call here, but we can optimize that into a loop to keep the call stack shallow.
+            left = node;
         }
+
+        return left;
     }
 
     private BinaryExpression BuildBinary(in Marker startMarker, Expression left, Expression right, Operator op, bool logical)
@@ -501,6 +497,8 @@ public partial class Parser
 
     private static bool IsLocalVariableAccess(Expression expr, [NotNullWhen(true)] out Expression? identifier)
     {
+        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/expression.js > `function isLocalVariableAccess`
+
         for (; ; )
         {
             switch (expr)

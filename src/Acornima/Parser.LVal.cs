@@ -23,6 +23,7 @@ public partial class Parser
 
         if (node is not null && _tokenizerOptions._ecmaVersion >= EcmaVersion.ES6)
         {
+            Node? parenthesizedExpression = null;
             Node convertedNode;
             NodeList<Node?> convertedNodes;
 
@@ -129,6 +130,7 @@ public partial class Parser
 
                 case NodeType.ParenthesizedExpression:
                     // NOTE: Original acornjs implementation does a recursive call here, but we can optimize that into a loop to keep the call stack shallow.
+                    parenthesizedExpression ??= node;
                     node = node.As<ParenthesizedExpression>().Expression;
                     goto Reenter;
 
@@ -146,6 +148,11 @@ public partial class Parser
                     // Raise(node.Start, "Assigning to rvalue"); // original acornjs error reporting
                     HandleLeftHandSideError(node, isBinding, lhsKind);
                     break;
+            }
+
+            if (parenthesizedExpression is not null)
+            {
+                node = parenthesizedExpression;
             }
         }
         else if (!IsNullRef(ref destructuringErrors))
