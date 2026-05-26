@@ -215,34 +215,44 @@ public partial class Parser
             var op = AssignmentExpression.OperatorFromString((string)_tokenizer._value.Value!);
             Debug.Assert(op != Operator.Unknown);
 
-            var leftNode = _tokenizer._type == TokenType.Eq
-                ? ToAssignable(left, ref actualDestructuringErrors, isBinding: false,
-                    isInPattern: actualDestructuringErrors.IsInPattern, allowCall: !_strict, lhsKind: LeftHandSideKind.Assignment)
-                : left;
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            Node ReinterpretAssignmentTarget(ref DestructuringErrors destructuringErrors, Expression left, Operator op)
+            {
+                // This piece of code was extracted into a non-inlined method to increase maximum possible stack depth.
 
-            if (!ownsDestructuringErrors)
-            {
-                actualDestructuringErrors.ParenthesizedAssign = actualDestructuringErrors.TrailingComma = actualDestructuringErrors.DoubleProto = -1;
+                var leftNode = _tokenizer._type == TokenType.Eq
+                    ? ToAssignable(left, ref destructuringErrors, isBinding: false,
+                        isInPattern: destructuringErrors.IsInPattern, allowCall: !_strict, lhsKind: LeftHandSideKind.Assignment)
+                    : left;
+
+                if (!IsNullRef(ref destructuringErrors))
+                {
+                    destructuringErrors.ParenthesizedAssign = destructuringErrors.TrailingComma = destructuringErrors.DoubleProto = -1;
+                }
+
+                if (destructuringErrors.ShorthandAssign >= leftNode.Start)
+                {
+                    destructuringErrors.ShorthandAssign = -1; // reset because shorthand default was used correctly
+                }
+
+                if (_tokenizer._type == TokenType.Eq)
+                {
+                    CheckLValPattern(leftNode, isInPattern: destructuringErrors.IsInPattern, allowCall: !_strict, lhsKind: LeftHandSideKind.Assignment);
+                }
+                else
+                {
+                    // Logical assignments (&&=, ||=, ??=) require 'simple' assignment target,
+                    // not 'web-compat' (Annex B.3.9 does not apply to logical assignments).
+                    CheckLValSimple(leftNode,
+                        isInPattern: destructuringErrors.IsInPattern,
+                        allowCall: !_strict && op is not (Operator.LogicalAndAssignment or Operator.LogicalOrAssignment or Operator.NullishCoalescingAssignment),
+                        lhsKind: LeftHandSideKind.Assignment);
+                }
+
+                return leftNode;
             }
 
-            if (actualDestructuringErrors.ShorthandAssign >= leftNode.Start)
-            {
-                actualDestructuringErrors.ShorthandAssign = -1; // reset because shorthand default was used correctly
-            }
-
-            if (_tokenizer._type == TokenType.Eq)
-            {
-                CheckLValPattern(leftNode, isInPattern: actualDestructuringErrors.IsInPattern, allowCall: !_strict, lhsKind: LeftHandSideKind.Assignment);
-            }
-            else
-            {
-                // Logical assignments (&&=, ||=, ??=) require 'simple' assignment target,
-                // not 'web-compat' (Annex B.3.9 does not apply to logical assignments).
-                CheckLValSimple(leftNode,
-                    isInPattern: actualDestructuringErrors.IsInPattern,
-                    allowCall: !_strict && op is not (Operator.LogicalAndAssignment or Operator.LogicalOrAssignment or Operator.NullishCoalescingAssignment),
-                    lhsKind: LeftHandSideKind.Assignment);
-            }
+            Node leftNode = ReinterpretAssignmentTarget(ref actualDestructuringErrors, left, op);
 
             Next();
 
