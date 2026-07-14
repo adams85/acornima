@@ -3,6 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+#if NET8_0_OR_GREATER
+using System.Runtime.InteropServices;
+#endif
 
 namespace Acornima.Helpers;
 
@@ -214,12 +217,30 @@ internal partial struct ArrayList<T> : IList<T>, IReadOnlyList<T>
             // Following trick can reduce the range check by one
             if ((uint)index < (uint)_count)
             {
-                _items![index] = value;
+                // Assigning through GetItemRefUnchecked avoids the array covariance check of a direct element store.
+                GetItemRefUnchecked(_items!, index) = value;
                 return;
             }
 
             ThrowIndexOutOfRangeException<T>();
         }
+    }
+
+    /// <summary>
+    /// Returns a reference to the specified element of <paramref name="items"/> like <c>ref items[index]</c> but,
+    /// on runtimes where that's possible, without the array covariance check which the JIT must emit for interior refs
+    /// into arrays of reference types. (The backing array is always exactly of type <typeparamref name="T"/>[],
+    /// so the covariance check is redundant. Bounds are still checked.)
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static ref T GetItemRefUnchecked(T[] items, int index)
+    {
+#if NET8_0_OR_GREATER
+        Debug.Assert((uint)index < (uint)items.Length);
+        return ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(items), (uint)index);
+#else
+        return ref items[index];
+#endif
     }
 
     /// <remarks>
@@ -399,7 +420,7 @@ internal partial struct ArrayList<T> : IList<T>, IReadOnlyList<T>
         }
 
         Debug.Assert(_items is not null);
-        ref var item = ref _items![_count++];
+        ref var item = ref GetItemRefUnchecked(_items!, _count++);
 
         OnChanged();
 
@@ -419,7 +440,12 @@ internal partial struct ArrayList<T> : IList<T>, IReadOnlyList<T>
     internal readonly ref T PeekRef() => ref GetItemRef(_count - 1);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public readonly T Peek() => PeekRef();
+    public readonly T Peek()
+    {
+        // NOTE: Reading the item directly instead of through PeekRef because, in contrast to interior refs (ldelema),
+        // plain reads of array elements (ldelem) don't need an array covariance check.
+        return this[_count - 1];
+    }
 
     /// <remarks>
     /// WARNING: Items should not be added or removed from the <see cref="ArrayList{T}"/> while the returned reference is in use.<br/>
@@ -442,9 +468,17 @@ internal partial struct ArrayList<T> : IList<T>, IReadOnlyList<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public T Pop()
     {
-        ref var lastRef = ref PopRef();
-        var last = lastRef;
-        lastRef = default;
+        AssertUnchanged();
+
+        // NOTE: Accessing the item directly instead of through PopRef because, in contrast to interior refs (ldelema),
+        // plain reads of array elements (ldelem) and stores of null don't need an array covariance check.
+        var lastIndex = _count - 1;
+        var last = this[lastIndex];
+        _items![lastIndex] = default!;
+        _count = lastIndex;
+
+        OnChanged();
+
         return last;
     }
 
