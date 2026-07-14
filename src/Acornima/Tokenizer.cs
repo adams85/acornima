@@ -1541,11 +1541,40 @@ public sealed partial class Tokenizer : ITokenizer
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readWord1 = function`
 
         _containsEscape = false;
+
+        // Fast path: consume a run of BMP identifier chars using plain character table lookups,
+        // which avoids the per-char surrogate decoding and the string builder acquisition of the general path.
+        // (Surrogates have no flags set in the character table, so astral chars fall through to the general path.)
+
+        var wordStart = _position;
+        var span = _input.AsSpan(0, _endPosition);
+        var position = _position;
+        while ((uint)position < (uint)span.Length && (GetCharFlags(span[position]) & CharFlags.IdentifierPart) != 0)
+        {
+            position++;
+        }
+        _position = position;
+
+        char ch;
+        if ((uint)position >= (uint)span.Length || (ch = span[position]) != '\\' && !ch.IsHighSurrogate())
+        {
+            return _input.SliceBetween(wordStart, position);
+        }
+
+        return ReadWord1Extended(wordStart);
+    }
+
+    /// <summary>
+    /// Handles the rare cases of <see cref="ReadWord1"/>: identifiers containing Unicode escape sequences or astral chars.
+    /// (<paramref name="chunkStart"/> is the start index of the word, of which the chars up to <see cref="_position"/>
+    /// have already been validated by the caller.)
+    /// </summary>
+    private ReadOnlySpan<char> ReadWord1Extended(int chunkStart)
+    {
         AcquireStringBuilder(out var sb);
         try
         {
-            var first = true;
-            var chunkStart = _position;
+            var first = _position == chunkStart;
             var astral = _options._ecmaVersion >= EcmaVersion.ES6;
 
             for (int cp; (cp = FullCharCodeAtPosition()) >= 0;)
