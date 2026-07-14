@@ -1548,78 +1548,82 @@ public sealed partial class Tokenizer : ITokenizer
 
         var wordStart = _position;
         var span = _input.AsSpan(0, _endPosition);
-        var position = _position;
-        while ((uint)position < (uint)span.Length && (GetCharFlags(span[position]) & CharFlags.IdentifierPart) != 0)
+        int position;
+        for (position = _position; (uint)position < (uint)span.Length; position++)
         {
-            position++;
-        }
-        _position = position;
-
-        char ch;
-        if ((uint)position >= (uint)span.Length || (ch = span[position]) != '\\' && !ch.IsHighSurrogate())
-        {
-            return _input.SliceBetween(wordStart, position);
-        }
-
-        return ReadWord1Extended(wordStart);
-    }
-
-    /// <summary>
-    /// Handles the rare cases of <see cref="ReadWord1"/>: identifiers containing Unicode escape sequences or astral chars.
-    /// (<paramref name="chunkStart"/> is the start index of the word, of which the chars up to <see cref="_position"/>
-    /// have already been validated by the caller.)
-    /// </summary>
-    private ReadOnlySpan<char> ReadWord1Extended(int chunkStart)
-    {
-        AcquireStringBuilder(out var sb);
-        try
-        {
-            var first = _position == chunkStart;
-            var astral = _options._ecmaVersion >= EcmaVersion.ES6;
-
-            for (int cp; (cp = FullCharCodeAtPosition()) >= 0;)
+            var ch = span[position];
+            if ((GetCharFlags(span[position]) & CharFlags.IdentifierPart) != 0)
             {
-                if (IsIdentifierChar(cp, astral))
-                {
-                    _position += UnicodeHelper.GetCodePointLength((uint)cp);
-                }
-                else if (cp == '\\')
-                {
-                    _containsEscape = true;
-                    sb.Append(_input, chunkStart, _position - chunkStart);
-                    ++_position;
-                    if (CharCodeAtPosition() != 'u')
-                    {
-                        // InvalidStringToken(_position, "Expecting Unicode escape sequence \\uXXXX"); // original acornjs error reporting
-                        Unexpected();
-                    }
-
-                    ++_position;
-                    var esc = ReadCodePoint();
-                    if (first
-                        ? !IsIdentifierStart(esc, astral)
-                        : !IsIdentifierChar(esc, astral))
-                    {
-                        // InvalidStringToken(escStart, "Invalid Unicode escape"); // original acornjs error reporting
-                        Unexpected();
-                    }
-
-                    sb.AppendCodePoint(esc);
-                    chunkStart = _position;
-                }
-                else
-                {
-                    break;
-                }
-
-                first = false;
+                continue;
             }
-
-            return !_containsEscape
-                ? _input.SliceBetween(chunkStart, _position)
-                : sb.Append(_input, chunkStart, _position - chunkStart).ToString().AsSpan();
+            else if (ch != '\\' && !ch.IsHighSurrogate())
+            {
+                break;
+            }
+            else
+            {
+                _position = position;
+                return ReadWordGeneral(wordStart);
+            }
         }
-        finally { ReleaseStringBuilder(ref sb); }
+
+        _position = position;
+        return _input.SliceBetween(wordStart, position);
+
+        // Rare cases: identifiers containing Unicode escape sequences or astral code points.
+
+        ReadOnlySpan<char> ReadWordGeneral(int chunkStart)
+        {
+            AcquireStringBuilder(out var sb);
+            try
+            {
+                var first = _position == chunkStart;
+                var astral = _options._ecmaVersion >= EcmaVersion.ES6;
+
+                for (int cp; (cp = FullCharCodeAtPosition()) >= 0;)
+                {
+                    if (IsIdentifierChar(cp, astral))
+                    {
+                        _position += UnicodeHelper.GetCodePointLength((uint)cp);
+                    }
+                    else if (cp == '\\')
+                    {
+                        _containsEscape = true;
+                        sb.Append(_input, chunkStart, _position - chunkStart);
+                        ++_position;
+                        if (CharCodeAtPosition() != 'u')
+                        {
+                            // InvalidStringToken(_position, "Expecting Unicode escape sequence \\uXXXX"); // original acornjs error reporting
+                            Unexpected();
+                        }
+
+                        ++_position;
+                        var esc = ReadCodePoint();
+                        if (first
+                            ? !IsIdentifierStart(esc, astral)
+                            : !IsIdentifierChar(esc, astral))
+                        {
+                            // InvalidStringToken(escStart, "Invalid Unicode escape"); // original acornjs error reporting
+                            Unexpected();
+                        }
+
+                        sb.AppendCodePoint(esc);
+                        chunkStart = _position;
+                    }
+                    else
+                    {
+                        break;
+                    }
+
+                    first = false;
+                }
+
+                return !_containsEscape
+                    ? _input.SliceBetween(chunkStart, _position)
+                    : sb.Append(_input, chunkStart, _position - chunkStart).ToString().AsSpan();
+            }
+            finally { ReleaseStringBuilder(ref sb); }
+        }
     }
 
     // Read an identifier or keyword token. Will check for reserved
