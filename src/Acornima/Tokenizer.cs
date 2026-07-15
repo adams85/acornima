@@ -1552,7 +1552,7 @@ public sealed partial class Tokenizer : ITokenizer
         for (position = _position; (uint)position < (uint)span.Length; position++)
         {
             var ch = span[position];
-            if ((GetCharFlags(span[position]) & CharFlags.IdentifierPart) != 0)
+            if ((GetCharFlags(ch) & CharFlags.IdentifierPart) != 0)
             {
                 continue;
             }
