@@ -73,6 +73,32 @@ internal struct StringPool
         return ref buckets[(uint)hashCode % (uint)buckets.Length];
     }
 
+    /// <summary>
+    /// Removes all strings from the <see cref="StringPool"/> object but keeps the backing arrays for reuse,
+    /// unless their capacity exceeds <paramref name="maxRetainedCapacity"/>, in which case they are dropped.
+    /// </summary>
+    public void Clear(int maxRetainedCapacity)
+    {
+        var entries = _entries;
+        if (entries is null)
+        {
+            return;
+        }
+
+        if (entries.Length > maxRetainedCapacity)
+        {
+            this = default;
+            return;
+        }
+
+        if (_count > 0)
+        {
+            Array.Clear(entries, 0, _count);
+            Array.Clear(_buckets!, 0, _buckets!.Length);
+            _count = 0;
+        }
+    }
+
     /// <summary>Adds the specified string to the <see cref="StringPool"/> object if it's not already contained.</summary>
     /// <param name="value">The string to add.</param>
     /// <returns>The stored string instance.</returns>

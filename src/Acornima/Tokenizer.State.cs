@@ -13,6 +13,11 @@ using static ExceptionHelper;
 
 public partial class Tokenizer
 {
+    // Clearing the string pool instead of dropping it makes its backing arrays reusable across parses,
+    // which eliminates the repeated regrowing of the pool. The cap keeps the retained memory bounded
+    // (at most ~160 KB on 64-bit with the current entry layout).
+    private const int StringPoolMaxRetainedCapacity = 8192;
+
     internal string _input;
     internal int _startPosition, _endPosition;
     private SourceType _sourceType;
@@ -120,7 +125,7 @@ public partial class Tokenizer
         _inModule = _strict = sourceType == SourceType.Module;
 
         _sb = _sb is not null ? _sb.Clear() : new StringBuilder();
-        _stringPool = default;
+        _stringPool.Clear(StringPoolMaxRetainedCapacity);
 
         _options._errorHandler.Reset();
     }
@@ -133,7 +138,7 @@ public partial class Tokenizer
             _sb.Capacity = 1024;
         }
 
-        _stringPool = default;
+        _stringPool.Clear(StringPoolMaxRetainedCapacity);
 
         _regExpParser?.ReleaseReferencesAndLargeBuffers();
     }
