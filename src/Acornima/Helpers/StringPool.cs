@@ -19,6 +19,8 @@ internal struct StringPool
     private Entry[]? _entries;
     private int _count;
 
+    public readonly int Capacity { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _entries?.Length ?? 0; }
+
     public readonly int Count { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _count; }
 
     /// <summary>
@@ -74,26 +76,13 @@ internal struct StringPool
     }
 
     /// <summary>
-    /// Removes all strings from the <see cref="StringPool"/> object but keeps the backing arrays for reuse,
-    /// unless their capacity exceeds <paramref name="maxRetainedCapacity"/>, in which case they are dropped.
+    /// Removes all strings from the <see cref="StringPool"/> object but keeps the backing arrays for reuse.
     /// </summary>
-    public void Clear(int maxRetainedCapacity)
+    public void Clear()
     {
-        var entries = _entries;
-        if (entries is null)
+        if (_count != 0)
         {
-            return;
-        }
-
-        if (entries.Length > maxRetainedCapacity)
-        {
-            this = default;
-            return;
-        }
-
-        if (_count > 0)
-        {
-            Array.Clear(entries, 0, _count);
+            Array.Clear(_entries!, 0, _count);
             Array.Clear(_buckets!, 0, _buckets!.Length);
             _count = 0;
         }
