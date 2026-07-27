@@ -19,6 +19,8 @@ internal struct StringPool
     private Entry[]? _entries;
     private int _count;
 
+    public readonly int Capacity { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _entries?.Length ?? 0; }
+
     public readonly int Count { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _count; }
 
     /// <summary>
@@ -71,6 +73,19 @@ internal struct StringPool
     {
         int[] buckets = _buckets!;
         return ref buckets[(uint)hashCode % (uint)buckets.Length];
+    }
+
+    /// <summary>
+    /// Removes all strings from the <see cref="StringPool"/> object but keeps the backing arrays for reuse.
+    /// </summary>
+    public void Clear()
+    {
+        if (_count != 0)
+        {
+            Array.Clear(_entries!, 0, _count);
+            Array.Clear(_buckets!, 0, _buckets!.Length);
+            _count = 0;
+        }
     }
 
     /// <summary>Adds the specified string to the <see cref="StringPool"/> object if it's not already contained.</summary>

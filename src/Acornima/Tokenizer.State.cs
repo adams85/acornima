@@ -120,7 +120,7 @@ public partial class Tokenizer
         _inModule = _strict = sourceType == SourceType.Module;
 
         _sb = _sb is not null ? _sb.Clear() : new StringBuilder();
-        _stringPool = default;
+        _stringPool.Clear();
 
         _options._errorHandler.Reset();
     }
@@ -133,7 +133,17 @@ public partial class Tokenizer
             _sb.Capacity = 1024;
         }
 
-        _stringPool = default;
+        // Clearing the string pool instead of dropping it makes its backing arrays reusable across parse operations,
+        // which eliminates the repeated regrowing of the pool. The cap keeps the retained memory bounded (at most
+        // ~192 KB on 64-bit with the current entry layout).
+        if (_stringPool.Capacity > 8192)
+        {
+            _stringPool = default;
+        }
+        else
+        {
+            _stringPool.Clear();
+        }
 
         _regExpParser?.ReleaseReferencesAndLargeBuffers();
     }
