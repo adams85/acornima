@@ -93,7 +93,7 @@ public sealed class TokenizeCommand
         public abstract string Type { get; }
     }
 
-    private sealed record class TokenData(string Kind, object? Value, string RawValue, Range Range, in SourceLocation Location) : SyntaxElementData
+    private sealed record class TokenData(string Kind, object? Value, string RawValue, Range Range, SourceLocation Location) : SyntaxElementData
     {
         public static TokenData From(in Token token, string code)
         {
@@ -104,7 +104,7 @@ public sealed class TokenizeCommand
         public override string Type => "Token";
     }
 
-    private sealed record class CommentData(CommentKind Kind, string Content, Range Range, in SourceLocation Location) : SyntaxElementData
+    private sealed record class CommentData(CommentKind Kind, string Content, Range Range, SourceLocation Location) : SyntaxElementData
     {
         public static CommentData From(in Comment comment, string code)
         {

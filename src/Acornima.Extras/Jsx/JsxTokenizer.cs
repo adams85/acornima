@@ -77,7 +77,7 @@ public sealed class JsxTokenizer : ITokenizer, IExtension
 
         if (currentContext == JsxTokenContext.InOpeningTag || currentContext == JsxTokenContext.InClosingTag)
         {
-            if (Tokenizer.IsIdentifierStart(cp))
+            if (IsIdentifierStart(cp))
             {
                 return ReadWord();
             }
@@ -138,7 +138,7 @@ public sealed class JsxTokenizer : ITokenizer, IExtension
                         var @out = chunkStart == start
                             ? input.SliceBetween(chunkStart, position)
                             : sb.Append(input, chunkStart, position - chunkStart).ToString().AsSpan();
-                        return _tokenizer.FinishToken(JsxTokenType.Text, JsxToken.TextValue(Tokenizer.DeduplicateString(@out, ref _tokenizer._stringPool, Tokenizer.NonIdentifierDeduplicationThreshold)));
+                        return _tokenizer.FinishToken(JsxTokenType.Text, JsxToken.TextValue(DeduplicateString(@out, ref _tokenizer._stringPool, NonIdentifierDeduplicationThreshold)));
 
                     case '&':
                         sb.Append(input, chunkStart, position - chunkStart);
@@ -191,7 +191,7 @@ public sealed class JsxTokenizer : ITokenizer, IExtension
                         : sb.Append(input, chunkStart, position - chunkStart).ToString().AsSpan();
 
                     ++position;
-                    return _tokenizer.FinishToken(TokenType.String, Tokenizer.DeduplicateString(value, ref _tokenizer._stringPool, Tokenizer.NonIdentifierDeduplicationThreshold));
+                    return _tokenizer.FinishToken(TokenType.String, DeduplicateString(value, ref _tokenizer._stringPool, NonIdentifierDeduplicationThreshold));
                 }
 
                 switch (ch)
@@ -233,12 +233,12 @@ public sealed class JsxTokenizer : ITokenizer, IExtension
 
         ref var position = ref _tokenizer._position;
         var start = position++;
-        for (int ch; Tokenizer.IsIdentifierChar(ch = _tokenizer.CharCodeAtPosition()) || ch == '-';)
+        for (int ch; IsIdentifierChar(ch = _tokenizer.CharCodeAtPosition()) || ch == '-';)
         {
             ++position;
         }
         var word = _tokenizer._input.AsSpan(start, position - start);
-        return _tokenizer.FinishToken(JsxTokenType.Name, JsxToken.IdentifierValue(Tokenizer.DeduplicateString(word, ref _tokenizer._stringPool)));
+        return _tokenizer.FinishToken(JsxTokenType.Name, JsxToken.IdentifierValue(DeduplicateString(word, ref _tokenizer._stringPool)));
     }
 
     private void ReadEntity(StringBuilder sb, int ch)

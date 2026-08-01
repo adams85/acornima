@@ -1542,6 +1542,10 @@ public sealed partial class Tokenizer : ITokenizer
 
         _containsEscape = false;
 
+        // NOTE: This implementation is correct only as long as IdentiferStart is a subset of IdentifierChar.
+        // We have a test case (IsIdentifierStartIsASubsetOfIsIdentifierChar) in place to ensure this assumption holds.
+        // If this ever stops being true in the future, we'll need to revisit this logic.
+
         // Fast path: consume a run of BMP identifier chars using plain character table lookups,
         // which avoids the per-char surrogate decoding and the string builder acquisition of the general path.
         // (Surrogates have no flags set in the character table, so astral chars fall through to the general path.)
@@ -1873,11 +1877,11 @@ public sealed partial class Tokenizer : ITokenizer
             var @out = tokenizer._contextStack.Pop();
             if (@out == TokenContext.FunctionInExpression)
             {
-                tokenizer._contextStack.Push(TokenContext.GeneratorFunctionInExpression);
+                tokenizer._contextStack.Push(TokenContext.GeneratorInExpression);
             }
             else
             {
-                tokenizer._contextStack.Push(TokenContext.GeneratorFunctionInStatement);
+                tokenizer._contextStack.Push(TokenContext.GeneratorInStatement);
             }
         }
 

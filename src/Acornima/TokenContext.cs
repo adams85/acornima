@@ -20,8 +20,8 @@ internal sealed class TokenContext
     public static readonly TokenContext QuoteInTemplate = new(TokenContextKind.BackQuote, isExpression: true, preserveSpace: true);
     public static readonly TokenContext FunctionInStatement = new(TokenContextKind.Function, isExpression: false);
     public static readonly TokenContext FunctionInExpression = new(TokenContextKind.Function, isExpression: true);
-    public static readonly TokenContext GeneratorFunctionInStatement = new(TokenContextKind.Function, isExpression: false, generator: true);
-    public static readonly TokenContext GeneratorFunctionInExpression = new(TokenContextKind.Function, isExpression: true, generator: true);
+    public static readonly TokenContext GeneratorInStatement = new(TokenContextKind.Function, isExpression: false, generator: true);
+    public static readonly TokenContext GeneratorInExpression = new(TokenContextKind.Function, isExpression: true, generator: true);
 
     public TokenContext(TokenContextKind kind, bool isExpression, bool preserveSpace = false, bool generator = false)
     {
