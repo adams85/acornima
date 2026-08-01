@@ -144,21 +144,24 @@ public struct Scope
         public void Add(Identifier item)
         {
             var capacity = _items?.Length ?? 0;
+            var oldCount = _count;
 
-            if (_count == capacity)
+            if (oldCount == capacity)
             {
                 Array.Resize(ref _items, Math.Max(checked((int)ArrayList<Identifier>.GrowCapacity(capacity)), ArrayList<Identifier>.MinAllocatedCount));
             }
 
             Debug.Assert(_items is not null);
-            _items![_count++] = item;
+            _items![oldCount] = item;
+            _count = oldCount + 1;
         }
 
         public void Reset()
         {
-            if (_count != 0)
+            var oldCount = _count;
+            if (oldCount != 0)
             {
-                Array.Clear(_items!, 0, _count);
+                Array.Clear(_items!, 0, oldCount);
                 _count = 0;
             }
             ParamCount = 0;
@@ -166,7 +169,8 @@ public struct Scope
 
         public readonly bool Contains(string name)
         {
-            for (var i = 0; i < _count; i++)
+            var count = _count;
+            for (var i = 0; i < count; i++)
             {
                 if (_items![i].Name == name)
                 {

@@ -4,6 +4,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
+#if NET5_0_OR_GREATER
+using System.Runtime.InteropServices;
+#endif
+
 namespace Acornima.Helpers;
 
 using static ExceptionHelper;
@@ -106,6 +110,8 @@ internal partial struct ArrayList<T> : IList<T>, IReadOnlyList<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal ArrayList(T[] items)
     {
+        Debug.Assert(items.GetType() == typeof(T[]), "Covariance for backing array is not supported.");
+
         _items = items;
         _count = items.Length;
 
@@ -152,20 +158,21 @@ internal partial struct ArrayList<T> : IList<T>, IReadOnlyList<T>
         {
             AssertUnchanged();
 
-            if (value < _count)
+            var count = _count;
+            if (value < count)
             {
                 ThrowArgumentOutOfRangeException(nameof(value), value, null);
             }
-            else if (value == (_items?.Length ?? 0))
+            else if (value == Capacity)
             {
                 return;
             }
             else if (value > 0)
             {
                 var array = new T[value];
-                if (_count > 0)
+                if (count > 0)
                 {
-                    Array.Copy(_items!, 0, array, 0, _count);
+                    Array.Copy(_items!, 0, array, 0, count);
                 }
                 _items = array;
             }
@@ -197,7 +204,7 @@ internal partial struct ArrayList<T> : IList<T>, IReadOnlyList<T>
         {
             AssertUnchanged();
 
-            // Following trick can reduce the range check by one
+            // NOTE: Following trick can reduce the range check by one.
             if ((uint)index >= (uint)_count)
             {
                 return ThrowIndexOutOfRangeException<T>();
@@ -211,14 +218,14 @@ internal partial struct ArrayList<T> : IList<T>, IReadOnlyList<T>
         {
             AssertUnchanged();
 
-            // Following trick can reduce the range check by one
-            if ((uint)index < (uint)_count)
+            // NOTE: Following trick can reduce the range check by one.
+            if ((uint)index >= (uint)_count)
             {
-                _items![index] = value;
-                return;
+                ThrowIndexOutOfRangeException<T>();
             }
 
-            ThrowIndexOutOfRangeException<T>();
+            // NOTE: Assigning through GetItemRef avoids the array covariance check of a direct element store.
+            GetItemRef(index) = value;
         }
     }
 
@@ -229,7 +236,23 @@ internal partial struct ArrayList<T> : IList<T>, IReadOnlyList<T>
     internal readonly ref T GetItemRef(int index)
     {
         AssertUnchanged();
+
+#if NET5_0_OR_GREATER
+        var items = _items!;
+
+        if ((uint)index < (uint)items.Length)
+        {
+            // Skip the array covariance check which the JIT must emit for mutable interior refs into arrays of reference types.
+            // (The backing array is always exactly of type T[], so the covariance check is redundant.)
+            return ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(items), (uint)index);
+        }
+        else
+        {
+            return ref ThrowIndexOutOfRangeException<T>();
+        }
+#else
         return ref _items![index];
+#endif
     }
 
     /// <remarks>
@@ -286,9 +309,10 @@ internal partial struct ArrayList<T> : IList<T>, IReadOnlyList<T>
     {
         AssertUnchanged();
 
-        if (_count != 0)
+        var oldCount = _count;
+        if (oldCount != 0)
         {
-            Array.Clear(_items!, 0, _count);
+            Array.Clear(_items!, 0, oldCount);
             _count = 0;
         }
 
@@ -303,29 +327,33 @@ internal partial struct ArrayList<T> : IList<T>, IReadOnlyList<T>
     public readonly int IndexOf(T item)
     {
         AssertUnchanged();
-        return _count != 0 ? Array.IndexOf(_items!, item, 0, _count) : -1;
+
+        var count = _count;
+        return count != 0 ? Array.IndexOf(_items!, item, 0, count) : -1;
     }
 
     public void Insert(int index, T item)
     {
         AssertUnchanged();
 
-        if ((uint)index > (uint)_count)
+        var oldCount = _count;
+
+        if ((uint)index > (uint)oldCount)
         {
             ThrowIndexOutOfRangeException<T>();
         }
 
         var capacity = Capacity;
 
-        if (_count == capacity)
+        if (oldCount == capacity)
         {
             Array.Resize(ref _items, Math.Max(checked((int)GrowCapacity(capacity)), MinAllocatedCount));
         }
 
         Debug.Assert(_items is not null);
-        Array.Copy(_items, index, _items, index + 1, Count - index);
+        Array.Copy(_items, index, _items, index + 1, oldCount - index);
         _items![index] = item;
-        _count++;
+        _count = oldCount + 1;
 
         OnChanged();
     }
@@ -345,19 +373,22 @@ internal partial struct ArrayList<T> : IList<T>, IReadOnlyList<T>
     {
         AssertUnchanged();
 
-        if ((uint)index >= (uint)_count)
+        var oldCount = _count;
+
+        if ((uint)index >= (uint)oldCount)
         {
             ThrowIndexOutOfRangeException<T>();
         }
 
-        _count--;
+        var newCount = oldCount - 1;
 
-        if (index < _count)
+        if (index < newCount)
         {
-            Array.Copy(_items!, index + 1, _items!, index, Count - index);
+            Array.Copy(_items!, index + 1, _items!, index, newCount - index);
         }
 
-        _items![_count] = default!;
+        _items![newCount] = default!;
+        _count = newCount;
 
         OnChanged();
     }
@@ -366,9 +397,10 @@ internal partial struct ArrayList<T> : IList<T>, IReadOnlyList<T>
     {
         AssertUnchanged();
 
-        if (_count > 1)
+        var count = _count;
+        if (count > 1)
         {
-            Array.Sort(_items!, 0, _count, comparer);
+            Array.Sort(_items!, 0, count, comparer);
         }
 
         OnChanged();
@@ -378,9 +410,10 @@ internal partial struct ArrayList<T> : IList<T>, IReadOnlyList<T>
     {
         AssertUnchanged();
 
-        if (Capacity - _count > threshold)
+        var count = _count;
+        if (Capacity - count > threshold)
         {
-            Capacity = _count;
+            Capacity = count;
         }
     }
 
@@ -392,14 +425,16 @@ internal partial struct ArrayList<T> : IList<T>, IReadOnlyList<T>
         AssertUnchanged();
 
         var capacity = Capacity;
+        var oldCount = _count;
 
-        if (_count == capacity)
+        if (oldCount == capacity)
         {
             Array.Resize(ref _items, Math.Max(checked((int)GrowCapacity(capacity)), MinAllocatedCount));
         }
 
         Debug.Assert(_items is not null);
-        ref var item = ref _items![_count++];
+        ref var item = ref GetItemRef(oldCount);
+        _count = oldCount + 1;
 
         OnChanged();
 
@@ -409,6 +444,7 @@ internal partial struct ArrayList<T> : IList<T>, IReadOnlyList<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Push(T item)
     {
+        // NOTE: Assigning through PushRef avoids the array covariance check of a direct element store.
         PushRef() = item;
     }
 
@@ -419,7 +455,12 @@ internal partial struct ArrayList<T> : IList<T>, IReadOnlyList<T>
     internal readonly ref T PeekRef() => ref GetItemRef(_count - 1);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public readonly T Peek() => PeekRef();
+    public readonly T Peek()
+    {
+        // NOTE: Reading the item directly instead of through PeekRef because, in contrast to interior refs (ldelema),
+        // plain reads of array elements (ldelem) don't need an array covariance check.
+        return this[_count - 1];
+    }
 
     /// <remarks>
     /// WARNING: Items should not be added or removed from the <see cref="ArrayList{T}"/> while the returned reference is in use.<br/>
@@ -430,9 +471,9 @@ internal partial struct ArrayList<T> : IList<T>, IReadOnlyList<T>
     {
         AssertUnchanged();
 
-        var lastIndex = _count - 1;
-        ref var last = ref _items![lastIndex];
-        _count = lastIndex;
+        var newCount = _count - 1;
+        ref var last = ref GetItemRef(newCount);
+        _count = newCount;
 
         OnChanged();
 
@@ -442,9 +483,17 @@ internal partial struct ArrayList<T> : IList<T>, IReadOnlyList<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public T Pop()
     {
-        ref var lastRef = ref PopRef();
-        var last = lastRef;
-        lastRef = default;
+        AssertUnchanged();
+
+        // NOTE: Accessing the item directly instead of through PopRef because, in contrast to interior refs (ldelema),
+        // plain reads of array elements (ldelem) and stores of null don't need an array covariance check.
+        var newCount = _count - 1;
+        var last = this[newCount];
+        _items![newCount] = default!;
+        _count = newCount;
+
+        OnChanged();
+
         return last;
     }
 
@@ -481,13 +530,14 @@ internal partial struct ArrayList<T> : IList<T>, IReadOnlyList<T>
     {
         AssertUnchanged();
 
-        if (_count == 0)
+        var count = _count;
+        if (count == 0)
         {
             return Array.Empty<T>();
         }
 
-        var array = new T[_count];
-        Array.Copy(_items!, 0, array, 0, _count);
+        var array = new T[count];
+        Array.Copy(_items!, 0, array, 0, count);
         return array;
     }
 
