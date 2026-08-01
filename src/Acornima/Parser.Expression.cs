@@ -513,7 +513,7 @@ public partial class Parser
             }
         }
 
-        if (!incDec && Eat(TokenType.StarStar))
+        if (!incDec && !(expr.Type == NodeType.ArrowFunctionExpression && expr._range.Start == startMarker.Index) && Eat(TokenType.StarStar))
         {
             if (sawUnary)
             {
