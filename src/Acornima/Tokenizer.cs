@@ -21,7 +21,7 @@ public sealed partial class Tokenizer : ITokenizer
     internal const string UnknownError = nameof(UnknownError);
 
     private readonly TokenizerOptions _options;
-    private readonly IExtension? _extension;
+    internal readonly IExtension? _extension;
     internal StackGuard.IRecursionDepthProvider? _recursionDepthProvider;
     internal RegExpParser? _regExpParser;
 

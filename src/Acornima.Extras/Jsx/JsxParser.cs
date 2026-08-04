@@ -45,6 +45,7 @@ public sealed class JsxParser : IParser, IExtension
 
         Marker startMarker;
         ref readonly var tokenizer = ref _parser._tokenizer;
+
         if (tokenizer._type == JsxTokenType.Text)
         {
             startMarker = _parser.StartNode();
@@ -52,14 +53,26 @@ public sealed class JsxParser : IParser, IExtension
         }
         else if (tokenizer._type == JsxTokenType.TagStart)
         {
-            startMarker = _parser.StartNode();
-            _parser.Next();
-            return ParseElement(startMarker);
+            goto ParseElement;
         }
-        else
+        else if (tokenizer._type == TokenType.Relational && "<".Equals(tokenizer._value.Value) && tokenizer.CharCodeAtPosition() != '!')
         {
-            return _parser.Unexpected<Expression>();
+            tokenizer._position -= 1;
+            tokenizer._expressionAllowed = true;
+            tokenizer._extension!.ReadToken(tokenizer.CurrentContext);
+
+            if (tokenizer._type == JsxTokenType.TagStart)
+            {
+                goto ParseElement;
+            }
         }
+
+        return _parser.Unexpected<Expression>();
+
+    ParseElement:
+        startMarker = _parser.StartNode();
+        _parser.Next();
+        return ParseElement(startMarker);
     }
 
     // Parse JSX text

@@ -15,7 +15,7 @@ public sealed partial class Parser : IParser, StackGuard.IRecursionDepthProvider
     private readonly ParserOptions _options;
     private readonly TokenizerOptions _tokenizerOptions;
     internal Tokenizer _tokenizer;
-    private readonly IExtension? _extension;
+    internal readonly IExtension? _extension;
 
     public Parser() : this(ParserOptions.Default) { }
 
