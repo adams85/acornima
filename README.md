@@ -292,6 +292,14 @@ IterationCount=15  LaunchCount=2  WarmupCount=10
 
 ### Known issues and limitations
 
+#### Standalone tokenization
+
+Due to the ambiguities of the JavaScript grammar (division operator vs. regular expression literals), it is impossible to tokenize certain constructs without context, which is available only during actual parsing.
+
+For standalone usage, the tokenizer implements context tracking that can handle some problematic cases, but this approach is inherently limited. It still [falls short for certain ES6+ constructs](https://github.com/acornjs/acorn/pull/1443).
+
+That is, when used directly, the tokenizer can reliably handle ES5 code only. To get tokens for ES6+ code, use the parser with the `OnToken` option instead.
+
 #### Regular expressions
 
 The parser can be configured to convert JS regular expression literals to .NET `Regex` instances (see `ParserOptions.RegExpParseMode`).

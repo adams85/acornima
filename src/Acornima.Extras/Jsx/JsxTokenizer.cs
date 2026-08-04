@@ -15,10 +15,10 @@ public sealed class JsxTokenizer : ITokenizer, IExtension
     private readonly JsxTokenizerOptions _options;
     internal readonly Tokenizer _tokenizer;
 
-    internal JsxTokenizer(JsxTokenizerOptions options)
+    internal JsxTokenizer(JsxTokenizerOptions options, bool standaloneMode = false)
     {
         _options = options;
-        _tokenizer = new Tokenizer(options, extension: this);
+        _tokenizer = new Tokenizer(options, extension: this, standaloneMode);
     }
 
     public JsxTokenizer(string input)
@@ -31,12 +31,12 @@ public sealed class JsxTokenizer : ITokenizer, IExtension
         : this(input ?? throw new ArgumentNullException(nameof(input)), 0, input.Length, sourceType, sourceFile, options) { }
 
     public JsxTokenizer(string input, int start, int length, SourceType sourceType, string? sourceFile, JsxTokenizerOptions options)
-        : this(options)
+        : this(options, standaloneMode: true)
     {
-        _tokenizer.ResetInternal(input, start, length, sourceType, sourceFile, trackRegExpContext: true);
+        _tokenizer.ResetInternal(input, start, length, sourceType, sourceFile);
     }
 
-    bool IExtension.SupportsMinimalContextTracking => false;
+    bool IExtension.RequiresRegExpContextTracking => true;
 
     public string Input => _tokenizer.Input;
     public Range Range => _tokenizer.Range;

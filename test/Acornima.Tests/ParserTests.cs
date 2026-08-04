@@ -2956,4 +2956,89 @@ public partial class ParserTests
 
         Assert.Equal(expectedTrailingCommaPosition, actualTrailingCommaPosition);
     }
+
+    [Theory]
+    [InlineData("", new TokenKind[0])]
+    [InlineData(
+        " /x/ ",
+        new[] { TokenKind.RegExpLiteral },
+        1, 1, 4)]
+    [InlineData(
+        "(/x/)",
+        new[] { TokenKind.Punctuator, TokenKind.RegExpLiteral, TokenKind.Punctuator },
+        1, 1, 4)]
+    [InlineData(
+        """
+        let a
+        /x/
+        """,
+        new[] { TokenKind.Identifier, TokenKind.Identifier, TokenKind.RegExpLiteral },
+        2, 0, 3)]
+    [InlineData(
+        """
+        let a<!--
+        --> /x/
+        /x/
+        """,
+        new[] { TokenKind.Identifier, TokenKind.Identifier, TokenKind.RegExpLiteral },
+        3, 0, 3)]
+    [InlineData(
+        """
+        let a<!-- /x/
+        /x/
+        -->
+        """,
+        new[] { TokenKind.Identifier, TokenKind.Identifier, TokenKind.RegExpLiteral },
+        2, 0, 3)]
+    [InlineData(
+        "({ *m() { yield /x/ } })",
+        new[]
+        {
+            TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Identifier, TokenKind.Punctuator, TokenKind.Punctuator,
+            TokenKind.Punctuator, TokenKind.Identifier, TokenKind.RegExpLiteral, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator,
+        })]
+    [InlineData(
+        "async function f() { await /x/ }",
+        new[]
+        {
+            TokenKind.Identifier, TokenKind.Keyword, TokenKind.Identifier, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator,
+            TokenKind.Identifier, TokenKind.RegExpLiteral, TokenKind.Punctuator,
+        })]
+    [InlineData(
+        "yield /x/ 2",
+        new[]
+        {
+            TokenKind.Identifier, TokenKind.Punctuator, TokenKind.Identifier, TokenKind.Punctuator, TokenKind.NumericLiteral,
+        })]
+    [InlineData(
+        "await /x/ 2",
+        new[]
+        {
+            TokenKind.Identifier, TokenKind.Punctuator, TokenKind.Identifier, TokenKind.Punctuator, TokenKind.NumericLiteral,
+        })]
+    public void ShouldDeferOnTokenToCorrectlyEmitRegExpLiteralTokens(string input, TokenKind[] expectedTokens,
+        int expectedRegExpLine = 0, int expectedRegExpStartColumn = 0, int expectedRegExpEndColumn = 0)
+    {
+        var actualTokens = new List<Token>();
+        OnTokenHandler onToken = (in token) => actualTokens.Add(token);
+
+        var parser = new Parser(new ParserOptions { OnToken = onToken });
+        var ast = parser.ParseScript(input);
+
+        Assert.Equal(expectedTokens.Concat(new[] { TokenKind.EOF }), actualTokens.Select(token => token.Kind));
+
+        var eof = actualTokens[actualTokens.Count - 1];
+        Assert.Equal(input.Length, eof.Start);
+        Assert.Equal(input.Length, eof.End);
+
+        if (expectedRegExpLine > 0)
+        {
+            var token = actualTokens.First(token => token.Kind == TokenKind.RegExpLiteral);
+
+            Assert.Equal(expectedRegExpLine, token.Location.Start.Line);
+            Assert.Equal(expectedRegExpStartColumn, token.Location.Start.Column);
+            Assert.Equal(expectedRegExpLine, token.Location.End.Line);
+            Assert.Equal(expectedRegExpEndColumn, token.Location.End.Column);
+        }
+    }
 }

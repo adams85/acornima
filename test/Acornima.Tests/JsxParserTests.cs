@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Acornima.Ast;
 using Acornima.Jsx;
@@ -67,5 +68,83 @@ public partial class JsxParserTests
         Assert.IsType<JsxText>(jsxElement.Children[0]);
         Assert.IsType<JsxElement>(jsxElement.Children[1]);
         Assert.IsType<JsxText>(jsxElement.Children[2]);
+    }
+
+    [Theory]
+    [InlineData("", new TokenKind[0])]
+    [InlineData(
+        " <></> ",
+        new[] { TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator },
+        1, 1, 6)]
+    [InlineData(
+        "(<></>)",
+        new[] { TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator },
+        1, 1, 6)]
+    [InlineData(
+        """
+        let a
+        <></>
+        """,
+        new[] { TokenKind.Identifier, TokenKind.Identifier, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator },
+        2, 0, 5)]
+    [InlineData(
+        """
+        let a<!--
+        --> <></>
+        <></>
+        """,
+        new[] { TokenKind.Identifier, TokenKind.Identifier, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator },
+        3, 0, 5)]
+    [InlineData(
+        """
+        let a<!-- <></>
+        <></>
+        -->
+        """,
+        new[] { TokenKind.Identifier, TokenKind.Identifier, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator },
+        2, 0, 5)]
+    [InlineData(
+        "({ *m() { yield <></> } })",
+        new[]
+        {
+            TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Identifier, TokenKind.Punctuator, TokenKind.Punctuator,
+            TokenKind.Punctuator, TokenKind.Identifier, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator,
+        })]
+    [InlineData(
+        "async function f() { await <></> }",
+        new[]
+        {
+            TokenKind.Identifier, TokenKind.Keyword, TokenKind.Identifier, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator,
+            TokenKind.Identifier, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator,
+        })]
+    public void ShouldDeferOnTokenToCorrectlyEmitJsxTokens(string input, TokenKind[] expectedTokens,
+        int expectedElementStartLine = 0, int expectedElementStartColumn = 0, int expectedElementEndColumn = 0)
+    {
+        var actualTokens = new List<Token>();
+        OnTokenHandler onToken = (in token) => actualTokens.Add(token);
+
+        var parser = new JsxParser(new JsxParserOptions { OnToken = onToken });
+        var ast = parser.ParseScript(input);
+
+        Assert.Equal(expectedTokens.Concat(new[] { TokenKind.EOF }), actualTokens.Select(token => token.Kind));
+
+        var eof = actualTokens[actualTokens.Count - 1];
+        Assert.Equal(input.Length, eof.Start);
+        Assert.Equal(input.Length, eof.End);
+
+        if (expectedElementStartLine > 0)
+        {
+            var startTagToken = actualTokens.First(token => token.Kind == TokenKind.Punctuator && token.StringValue == "<");
+
+            var endTagToken = actualTokens
+                .Where(token => token.Kind == TokenKind.Punctuator && token.StringValue == ">")
+                .Skip(1)
+                .First();
+
+            Assert.Equal(expectedElementStartLine, startTagToken.Location.Start.Line);
+            Assert.Equal(expectedElementStartColumn, startTagToken.Location.Start.Column);
+            Assert.Equal(expectedElementStartLine, endTagToken.Location.End.Line);
+            Assert.Equal(expectedElementEndColumn, endTagToken.Location.End.Column);
+        }
     }
 }

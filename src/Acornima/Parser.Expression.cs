@@ -169,8 +169,8 @@ public partial class Parser
             if (InGenerator)
             {
                 // Tokenizer's context tracking doesn't handle yield expressions in all cases. It's impossible to do that reliably
-                // (see also https://github.com/acornjs/acorn/pull/1443#issuecomment-5170294599). However, among others,
-                // JSX parsing relies on this currently, so ensure the correct state.
+                // (see also https://github.com/acornjs/acorn/pull/1443#issuecomment-5170294599). However, JSX parsing relies on
+                // this currently, so ensure the correct state.
                 _tokenizer._expressionAllowed = _tokenizer._trackRegExpContext;
 
                 return ExitRecursion(ParseYield(context));
@@ -423,8 +423,8 @@ public partial class Parser
         if (IsContextual("await") && CanAwait)
         {
             // Tokenizer's context tracking doesn't handle await expressions at all. It's impossible to do that reliably
-            // (see also https://github.com/acornjs/acorn/pull/1443#issuecomment-5170294599). However, among others,
-            // JSX parsing relies on this currently, so ensure the correct state.
+            // (see also https://github.com/acornjs/acorn/pull/1443#issuecomment-5170294599). However, JSX parsing relies on
+            // this currently, so ensure the correct state.
             _tokenizer._expressionAllowed = _tokenizer._trackRegExpContext;
 
             EnterRecursion();

@@ -24,13 +24,17 @@ public sealed partial class Tokenizer : ITokenizer
     internal readonly IExtension? _extension;
     internal StackGuard.IRecursionDepthProvider? _recursionDepthProvider;
     internal RegExpParser? _regExpParser;
+    internal readonly bool _trackRegExpContext;
+    private readonly bool _standaloneMode;
 
-    internal Tokenizer(TokenizerOptions options, IExtension? extension)
+    internal Tokenizer(TokenizerOptions options, IExtension? extension, bool standaloneMode = false)
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _extension = extension;
         _input = null!;
         _type = null!;
+        _trackRegExpContext = standaloneMode || _extension is not null && _extension.RequiresRegExpContextTracking;
+        _standaloneMode = standaloneMode;
     }
 
     public Tokenizer(string input)
@@ -43,9 +47,9 @@ public sealed partial class Tokenizer : ITokenizer
         : this(input ?? throw new ArgumentNullException(nameof(input)), 0, input.Length, sourceType, sourceFile, options) { }
 
     public Tokenizer(string input, int start, int length, SourceType sourceType, string? sourceFile, TokenizerOptions options)
-        : this(options, extension: null)
+        : this(options, extension: null, standaloneMode: true)
     {
-        ResetInternal(input, start, length, sourceType, sourceFile, trackRegExpContext: true);
+        ResetInternal(input, start, length, sourceType, sourceFile);
     }
 
     public string Input => _input;
@@ -82,16 +86,38 @@ public sealed partial class Tokenizer : ITokenizer
 
         _strict = _inModule || context.Strict;
         _requireValidEscapeSequenceInTemplate = context.RequireValidEscapeSequenceInTemplate;
-        _lastTokenEnd = _end;
-        _lastTokenStart = _start;
-        _lastTokenEndLocation = _endLocation;
-        _lastTokenStartLocation = _startLocation;
-
-        NextToken();
 
         // NOTE: Originally, in acornjs this callback fires with an EOF before the first actual token.
         // This behavior doesn't seem useful, so we change it.
-        _options._onToken?.Invoke(Current);
+
+        if (_options._onToken is not { } onToken)
+        {
+            _lastTokenEnd = _end;
+            _lastTokenStart = _start;
+            _lastTokenEndLocation = _endLocation;
+            _lastTokenStartLocation = _startLocation;
+
+            NextToken();
+        }
+        else
+        {
+            if (!_standaloneMode && _type != TokenType.EOF)
+            {
+                onToken(Current);
+            }
+
+            _lastTokenEnd = _end;
+            _lastTokenStart = _start;
+            _lastTokenEndLocation = _endLocation;
+            _lastTokenStartLocation = _startLocation;
+
+            NextToken();
+
+            if (_standaloneMode && _type != TokenType.EOF)
+            {
+                onToken(Current);
+            }
+        }
     }
 
     // Read a single token, updating the token-related properties.
@@ -112,7 +138,11 @@ public sealed partial class Tokenizer : ITokenizer
 
         if (_position >= _endPosition)
         {
-            try { FinishToken(TokenType.EOF, TokenValue.EOF); }
+            try
+            {
+                FinishToken(TokenType.EOF, TokenValue.EOF);
+                _options._onToken?.Invoke(Current);
+            }
             finally { ReleaseLargeBuffers(); }
             return;
         }
@@ -460,7 +490,7 @@ public sealed partial class Tokenizer : ITokenizer
         }
         else if (_type.Kind == TokenKind.Punctuator)
         {
-            Debug.Assert(_extension is null || _extension.SupportsMinimalContextTracking);
+            Debug.Assert(_extension is null || !_extension.RequiresRegExpContextTracking);
 
             UpdateContextMinimal(prevType);
         }
@@ -2068,7 +2098,7 @@ public sealed partial class Tokenizer : ITokenizer
 
     internal interface IExtension
     {
-        bool SupportsMinimalContextTracking { get; }
+        bool RequiresRegExpContextTracking { get; }
 
         void ReadToken(TokenContext currentContext);
         void UpdateContext(TokenType previousType);

@@ -40,15 +40,15 @@ public class TokenizerTests
             }
             while (token.Kind != TokenKind.EOF);
 
-            Assert.Equal(new string[] { "var", "foo", "=", "1", ";", "" }, tokens.Select(t => t.GetRawValue(code).ToString()).ToArray());
+            Assert.Equal(new string[] { "var", "foo", "=", "1", ";", "" }, tokens.Select(t => t.GetRawValue(code).ToString()));
             Assert.Equal(tokens, tokensDirect);
 
-            Assert.Equal(new string[] { "/* c1 */", "// c2" }, comments.Select(c => c.GetRawValue(code).ToString()).ToArray());
+            Assert.Equal(new string[] { "/* c1 */", "// c2" }, comments.Select(c => c.GetRawValue(code).ToString()));
         }
     }
 
     [Fact]
-    public void CanResetScannerToCustomPosition()
+    public void CanResetTokenizerToCustomPosition()
     {
         var comments = new List<Comment>();
         var tokens = new List<Token>();
@@ -76,10 +76,10 @@ public class TokenizerTests
         }
         while (token.Kind != TokenKind.EOF);
 
-        Assert.Equal(new string[] { "foo", "=", "1", ";", "" }, tokens.Select(t => t.GetRawValue(code).ToString()).ToArray());
+        Assert.Equal(new string[] { "foo", "=", "1", ";", "" }, tokens.Select(t => t.GetRawValue(code).ToString()));
         Assert.Equal(tokens, tokensDirect);
 
-        Assert.Equal(new string[] { "/* c1 */", "// c2" }, comments.Select(c => c.GetRawValue(code).ToString()).ToArray());
+        Assert.Equal(new string[] { "/* c1 */", "// c2" }, comments.Select(c => c.GetRawValue(code).ToString()));
     }
 
     [Fact]

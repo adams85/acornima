@@ -53,7 +53,6 @@ public partial class Tokenizer
     // given position.
     internal ArrayList<TokenContext> _contextStack;
     internal bool _expressionAllowed;
-    internal bool _trackRegExpContext;
 
     internal bool _inModule;
     internal bool _strict;
@@ -74,9 +73,9 @@ public partial class Tokenizer
         => Reset(input ?? ThrowArgumentNullException<string>(nameof(input)), start, input.Length - start, sourceType, sourceFile);
 
     public void Reset(string input, int start, int length, SourceType sourceType = SourceType.Script, string? sourceFile = null)
-        => ResetInternal(input, start, length, sourceType, sourceFile, _trackRegExpContext);
+        => ResetInternal(input, start, length, sourceType, sourceFile);
 
-    internal void ResetInternal(string input, int start, int length, SourceType sourceType, string? sourceFile, bool trackRegExpContext)
+    internal void ResetInternal(string input, int start, int length, SourceType sourceType, string? sourceFile)
     {
         _input = input ?? throw new ArgumentNullException(nameof(input));
         _startPosition = (uint)start <= (uint)input.Length
@@ -115,7 +114,7 @@ public partial class Tokenizer
         _contextStack.Clear();
         _contextStack.Push(TokenContext.BracketsInStatement);
 
-        _expressionAllowed = _trackRegExpContext = trackRegExpContext || _extension is not null && !_extension.SupportsMinimalContextTracking;
+        _expressionAllowed = _trackRegExpContext;
 
         _inModule = _strict = sourceType == SourceType.Module;
 
