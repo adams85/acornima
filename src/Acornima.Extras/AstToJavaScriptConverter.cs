@@ -359,7 +359,7 @@ public partial class AstToJavaScriptConverter : AstVisitor
             if (
                 // The operand of unary operators cannot be an exponentiation without grouping.
                 // E.g. -1 ** 2 is syntactically unambiguous but the language requires (-1) ** 2 instead.
-                node.Operator == Operator.Exponentiation && node.Left.Type == NodeType.UnaryExpression ||
+                node.Operator == Operator.Exponentiation && node.Left.Type is NodeType.UnaryExpression or NodeType.AwaitExpression ||
                 // Logical expressions which mix nullish coalescing and logical AND/OR operators (e.g. (a ?? b) || c or (a && b) ?? c)
                 // needs to be parenthesized despite the operator of the parenthesized sub-expression having the same or higher precedence.
                 node.Operator == Operator.NullishCoalescing && node.Left is LogicalExpression { Operator: Operator.LogicalAnd or Operator.LogicalOr } ||
