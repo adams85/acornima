@@ -304,8 +304,10 @@ public partial class Parser
             return expr;
         }
 
-        if (!(expr.Type == NodeType.ArrowFunctionExpression && expr._range.Start == startMarker.Index) && Eat(TokenType.Question))
+        if (_tokenizer._type == TokenType.Question && !(expr.Type == NodeType.ArrowFunctionExpression && expr._range.Start == startMarker.Index))
         {
+            Next();
+
             var consequent = ParseMaybeAssign(ref NullRef<DestructuringErrors>());
 
             Expect(TokenType.Colon);
@@ -523,8 +525,10 @@ public partial class Parser
             }
         }
 
-        if (!incDec && !(expr.Type == NodeType.ArrowFunctionExpression && expr._range.Start == startMarker.Index) && Eat(TokenType.StarStar))
+        if (_tokenizer._type == TokenType.StarStar && !incDec && !(expr.Type == NodeType.ArrowFunctionExpression && expr._range.Start == startMarker.Index))
         {
+            Next();
+
             if (sawUnary)
             {
                 // Unexpected(_tokenizer._lastTokenStart); // original acornjs error reporting
