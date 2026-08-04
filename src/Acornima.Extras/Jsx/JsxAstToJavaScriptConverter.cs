@@ -200,6 +200,7 @@ public class JsxAstToJavaScriptConverter : AstToJavaScriptConverter, IJsxAstVisi
             switch (jsxNode.Type)
             {
                 case JsxNodeType.Element:
+                case JsxNodeType.Fragment:
                     associativity = undefinedAssociativity;
                     return int.MaxValue;
                 case JsxNodeType.SpreadAttribute:
