@@ -1818,7 +1818,7 @@ public sealed partial class Tokenizer : ITokenizer
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokencontext.js > `tt.incDec.updateContext = function`
 
-        // tokExprAllowed stays unchanged
+        // _expressionAllowed stays unchanged
     }
 
     internal static void UpdateContext_FunctionOrClass(Tokenizer tokenizer, TokenType previousType)
