@@ -75,7 +75,7 @@ public class StringMatcherGenerator : IIncrementalGenerator
             && param.Type is INamedTypeSymbol { ContainingType: null } namedType
             && namedType.TypeArguments.Length == 1
             && namedType.TypeArguments[0].SpecialType == SpecialType.System_Char
-            && namedType.Name == nameof(ReadOnlySpan<char>)
+            && namedType.Name == nameof(ReadOnlySpan<>)
             && namedType.ContainingNamespace.ToString() == typeof(ReadOnlySpan<char>).Namespace)
         {
             paramType = StringMatcherParamType.ReadOnlySpanOfChar;

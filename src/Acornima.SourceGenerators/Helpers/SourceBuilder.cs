@@ -192,7 +192,6 @@ internal sealed class SourceBuilder
                     }
                 }
             }
-
         }
 
         public void AppendFormatted(string? value, int alignment = 0, string? format = null) => AppendFormatted<string?>(value, alignment, format);
