@@ -40,6 +40,7 @@ public record class ParserOptions
         _allowAwaitOutsideFunction = original._allowAwaitOutsideFunction;
         _allowNewTargetOutsideFunction = original._allowNewTargetOutsideFunction;
         _allowSuperOutsideMethod = original._allowSuperOutsideMethod;
+        _allowDirectSuperOutsideMethod = original._allowDirectSuperOutsideMethod;
         _checkPrivateFields = original._checkPrivateFields;
         _onInsertedSemicolon = original._onInsertedSemicolon;
         _onTrailingComma = original._onTrailingComma;
@@ -127,6 +128,20 @@ public record class ParserOptions
     /// Defaults to <see langword="false"/>.
     /// </summary>
     public bool AllowSuperOutsideMethod { get => _allowSuperOutsideMethod; init => _allowSuperOutsideMethod = value; }
+
+    internal readonly bool _allowDirectSuperOutsideMethod;
+    /// <summary>
+    /// Gets or sets whether to allow super calls to appear outside the constructor of a derived class.
+    /// Defaults to <see langword="false"/>.
+    /// </summary>
+    /// <remarks>
+    /// This option is intended for parsing code which is evaluated in the context of the constructor of a derived class
+    /// (see <see href="https://tc39.es/ecma262/#sec-performeval">PerformEval</see> and its <c>inDerivedConstructor</c> parameter).
+    /// Enabling it means that direct super calls (as well as super property accesses) are permitted at the top level
+    /// of the parsed unit, that is, in the same places where <c>this</c> refers to the top level's this binding.
+    /// (E.g. they are allowed in arrow functions declared at the top level but not in ordinary functions.)
+    /// </remarks>
+    public bool AllowDirectSuperOutsideMethod { get => _allowDirectSuperOutsideMethod; init => _allowDirectSuperOutsideMethod = value; }
 
     internal readonly bool _allowTopLevelUsing;
     /// <summary>

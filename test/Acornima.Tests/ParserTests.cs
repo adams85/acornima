@@ -984,6 +984,95 @@ public partial class ParserTests
     }
 
     [Theory]
+    // Direct super calls are not allowed at the top level unless AllowDirectSuperOutsideMethod is enabled.
+    // (AllowSuperOutsideMethod alone doesn't enable them.)
+    [InlineData("script", "super()", false, false, "'super' keyword unexpected here")]
+    [InlineData("script", "super()", true, false, "'super' keyword unexpected here")]
+    [InlineData("script", "super()", false, true, null)]
+    [InlineData("script", "super()", true, true, null)]
+    [InlineData("module", "super()", false, false, "'super' keyword unexpected here")]
+    [InlineData("module", "super()", false, true, null)]
+    [InlineData("expression", "super()", false, false, "'super' keyword unexpected here")]
+    [InlineData("expression", "super()", false, true, null)]
+
+    // Arrow functions inherit the this binding of the top level, so direct super calls are allowed in them as well.
+    [InlineData("script", "(() => super())()", false, false, "'super' keyword unexpected here")]
+    [InlineData("script", "(() => super())()", false, true, null)]
+    [InlineData("script", "() => () => super()", false, true, null)]
+    [InlineData("script", "async () => super()", false, true, null)]
+    // (The argument of the nested eval call is just a string literal to the parser. When the host parses that string,
+    // the top level cases above apply to it.)
+    [InlineData("script", "(() => eval('super()'))()", false, false, null)]
+    [InlineData("script", "(() => eval('super()'))()", false, true, null)]
+
+    // Ordinary functions introduce a this binding of their own, so direct super calls remain disallowed in them.
+    [InlineData("script", "function f() { super() }", false, true, "'super' keyword unexpected here")]
+    [InlineData("script", "function f() { super() }", true, true, "'super' keyword unexpected here")]
+    [InlineData("script", "(function () { super() })", false, true, "'super' keyword unexpected here")]
+    [InlineData("script", "() => function () { super() }", false, true, "'super' keyword unexpected here")]
+    [InlineData("script", "({ m() { super() } })", false, true, "'super' keyword unexpected here")]
+
+    // Super property accesses are allowed wherever direct super calls are.
+    [InlineData("script", "super.x", false, false, "'super' keyword unexpected here")]
+    [InlineData("script", "super.x", true, false, null)]
+    [InlineData("script", "super.x", false, true, null)]
+    [InlineData("script", "(() => super.x)()", false, true, null)]
+    [InlineData("script", "function f() { super.x }", false, true, "'super' keyword unexpected here")]
+    // (AllowSuperOutsideMethod is unaffected by AllowDirectSuperOutsideMethod, including that it allows
+    // super property accesses in nested functions as well.)
+    [InlineData("script", "function f() { super.x }", true, false, null)]
+    [InlineData("script", "function f() { super.x }", true, true, null)]
+
+    // Classes are unaffected: the constructor of a derived class remains the only place where direct super calls are allowed.
+    [InlineData("script", "class A extends B { constructor() { super() } }", false, false, null)]
+    [InlineData("script", "class A extends B { constructor() { super() } }", false, true, null)]
+    [InlineData("script", "class A { constructor() { super() } }", false, false, "'super' keyword unexpected here")]
+    [InlineData("script", "class A { constructor() { super() } }", false, true, "'super' keyword unexpected here")]
+    [InlineData("script", "class A extends B { m() { super() } }", false, true, "'super' keyword unexpected here")]
+    [InlineData("script", "class A extends B { constructor() { function f() { super() } } }", false, true, "'super' keyword unexpected here")]
+    [InlineData("script", "class C { x = super.y }", false, false, null)]
+    [InlineData("script", "class C { x = super.y }", false, true, null)]
+    // (Class field initializers don't introduce a this binding of their own. This is why a direct super call is accepted
+    // in a field initializer of a class declared in the constructor of a derived class - and, with the option enabled,
+    // in a field initializer of a class declared at the top level as well.)
+    [InlineData("script", "class A extends B { constructor() { class C { x = super() } } }", false, false, null)]
+    [InlineData("script", "class C { x = super() }", false, false, "'super' keyword unexpected here")]
+    [InlineData("script", "class C { x = super() }", false, true, null)]
+    public void ShouldHandleDirectSuperOutsideMethod(string sourceType, string input, bool allowSuperOutsideMethod, bool allowDirectSuperOutsideMethod, string? expectedError)
+    {
+        var parser = new Parser(new ParserOptions
+        {
+            AllowSuperOutsideMethod = allowSuperOutsideMethod,
+            AllowDirectSuperOutsideMethod = allowDirectSuperOutsideMethod,
+        });
+        var parseAction = GetParseActionFor(sourceType);
+
+        if (expectedError is null)
+        {
+            Assert.NotNull(parseAction(parser, input));
+        }
+        else
+        {
+            var ex = Assert.Throws<SyntaxErrorException>(() => parseAction(parser, input));
+            Assert.Equal(expectedError, ex.Description);
+        }
+    }
+
+    [Fact]
+    public void AllowDirectSuperOutsideMethodShouldDefaultToFalse()
+    {
+        Assert.False(new ParserOptions().AllowDirectSuperOutsideMethod);
+        Assert.False(ParserOptions.Default.AllowDirectSuperOutsideMethod);
+
+        var options = ParserOptions.Default with { AllowDirectSuperOutsideMethod = true };
+        Assert.True(options.AllowDirectSuperOutsideMethod);
+        Assert.False(ParserOptions.Default.AllowDirectSuperOutsideMethod);
+
+        // The option must survive further copies of the options object.
+        Assert.True((options with { EcmaVersion = EcmaVersion.ES2022 }).AllowDirectSuperOutsideMethod);
+    }
+
+    [Theory]
     [InlineData("script", "(class { x = await })", EcmaVersion.Latest, null)]
     [InlineData("module", "(class { x = await })", EcmaVersion.Latest, "Unexpected reserved word")]
     [InlineData("script", "(class { x = await 1 })", EcmaVersion.Latest, "await is only valid in async functions and the top level bodies of modules")]
