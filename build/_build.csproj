@@ -15,6 +15,21 @@
 
   <ItemGroup>
     <PackageReference Include="Nuke.Components" Version="10.1.0" />
+
+    <!--
+      NUKE evaluates project files in-process (ITest asks each test project whether it references
+      GitHubActionsTestLogger), which runs the installed SDK's own targets inside this process. Those
+      targets bind NuGet.Frameworks by strong name, and .NET SDK 10.0.400 wants 7.9.0.0 where
+      Nuke.Components resolves 6.12.1 transitively through NuGet.Packaging. App-local assemblies win
+      over the resolver MSBuildLocator installs, so the older one shadows the SDK's copy and
+      [MSBuild]::GetTargetFrameworkIdentifier(net10.0) throws InvalidProjectFileException — a build
+      that compiles fine but cannot run a single test.
+
+      Pinning forward is safe in both directions: the runtime binds a higher assembly version than the
+      one requested, so an SDK still asking for 6.12.1 is satisfied too. Remove once NUKE ships a
+      NuGet.Packaging new enough to bring 7.9.0 in on its own.
+    -->
+    <PackageReference Include="NuGet.Frameworks" Version="7.9.0" />
   </ItemGroup>
 
 </Project>
