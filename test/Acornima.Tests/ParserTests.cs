@@ -839,10 +839,20 @@ public partial class ParserTests
     }
 
     [Theory]
+    [InlineData("script", "class C { x = () => new.target }", EcmaVersion.Latest, null)]
     [InlineData("script", "(class { x = () => new.target })", EcmaVersion.Latest, null)]
     [InlineData("script", "() => { (class { x = () => new.target }) }", EcmaVersion.Latest, null)]
     [InlineData("script", "() => class { x = () => { new.target } }", EcmaVersion.Latest, null)]
     [InlineData("script", "() => class { x = function() { new.target } }", EcmaVersion.Latest, null)]
+
+    [InlineData("script", "class C { [new.target]() { } }", EcmaVersion.Latest, "new.target expression is not allowed here")]
+    [InlineData("script", "() => class C { [new.target]() { } }", EcmaVersion.Latest, "new.target expression is not allowed here")]
+    [InlineData("script", "() => { return class C { [new.target]() { } } }", EcmaVersion.Latest, "new.target expression is not allowed here")]
+    [InlineData("script", "function f() { return class C { [new.target]() { } } }", EcmaVersion.Latest, null)]
+    [InlineData("script", "(function() { return class C { [new.target]() { } } })", EcmaVersion.Latest, null)]
+
+    [InlineData("script", "class C { m(a = new.target) { } }", EcmaVersion.Latest, null)]
+    [InlineData("script", "class C { m({ [new.target]: a }) { } }", EcmaVersion.Latest, null)]
     public void ShouldHandleNewTargetEdgeCases(string sourceType, string input, EcmaVersion ecmaVersion, string? expectedError)
     {
         var parser = new Parser(new ParserOptions { EcmaVersion = ecmaVersion });
@@ -866,6 +876,21 @@ public partial class ParserTests
     [InlineData("script", "() => class { x = function() { super.y } }", EcmaVersion.Latest, "'super' keyword unexpected here")]
     [InlineData("script", "class C { x = class extends super.constructor { [super.constructor.name] = super.constructor } }", EcmaVersion.Latest, null)]
     [InlineData("script", "() => class { x = class extends super.constructor { [super.constructor.name] = super.constructor } }", EcmaVersion.Latest, null)]
+
+    [InlineData("script", "class C extends Object { constructor() { class X { p = super() } } }", EcmaVersion.Latest, "'super' keyword unexpected here")]
+    [InlineData("script", "class C extends Object { constructor() { class X { [super()]() {} } } }", EcmaVersion.Latest, null)]
+    [InlineData("script", "class C extends Object { constructor() { class X { m(a = super()) {} } } }", EcmaVersion.Latest, "'super' keyword unexpected here")]
+    [InlineData("script", "class C extends Object { constructor() { class X { m({[super()]: a }) {} } } }", EcmaVersion.Latest, "'super' keyword unexpected here")]
+
+    [InlineData("script", "class C { m() { return class X { p = super.toString() } } }", EcmaVersion.Latest, null)]
+    [InlineData("script", "class C { m() { return class X { [super.toString()]() {} } } }", EcmaVersion.Latest, null)]
+    [InlineData("script", "class C { m() { return class X { m(a = super.toString()) {} } } }", EcmaVersion.Latest, null)]
+    [InlineData("script", "class C { m() { return class X { m({[super.toString()]: a }) {} } } }", EcmaVersion.Latest, null)]
+
+    [InlineData("script", "class C { m = () => class X { p = super.toString() } }", EcmaVersion.Latest, null)]
+    [InlineData("script", "class C { m = () => class X { [super.toString()]() {} } }", EcmaVersion.Latest, null)]
+    [InlineData("script", "class C { m = () => class X { m(a = super.toString()) {} } }", EcmaVersion.Latest, null)]
+    [InlineData("script", "class C { m = () => class X { m({[super.toString()]: a }) {} } }", EcmaVersion.Latest, null)]
     public void ShouldHandleSuperKeywordEdgeCases(string sourceType, string input, EcmaVersion ecmaVersion, string? expectedError)
     {
         var parser = new Parser(new ParserOptions { EcmaVersion = ecmaVersion });

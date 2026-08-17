@@ -1770,12 +1770,13 @@ public partial class Parser
     }
 
     // Parse object or class method.
-    private FunctionExpression ParseMethod(bool isGenerator, bool isAsync = false, bool allowDirectSuper = false)
+    private FunctionExpression ParseMethod(bool isGenerator, bool isAsync = false, ScopeFlags superFlags = ScopeFlags.Super)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/expression.js > `pp.parseMethod = function`
 
         Debug.Assert(!isGenerator || _tokenizerOptions._ecmaVersion >= EcmaVersion.ES6);
         Debug.Assert(!isAsync || _tokenizerOptions._ecmaVersion >= EcmaVersion.ES8);
+        Debug.Assert((superFlags & ~(ScopeFlags.Super | ScopeFlags.DirectSuper)) == 0);
 
         var startMarker = StartNode();
 
@@ -1784,7 +1785,7 @@ public partial class Parser
         var oldAwaitIdentPos = _awaitIdentifierPosition;
         _yieldPosition = _awaitPosition = _awaitIdentifierPosition = 0;
 
-        EnterScope(FunctionFlags(isAsync, isGenerator) | (allowDirectSuper ? ScopeFlags.Super | ScopeFlags.DirectSuper : ScopeFlags.Super));
+        EnterScope(FunctionFlags(isAsync, isGenerator) | superFlags);
 
         Expect(TokenType.ParenLeft);
 

@@ -1545,7 +1545,7 @@ public partial class Parser
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseClassMethod = function`
 
         var isConstructor = !isStatic && CheckKeyName(key, computed, "constructor");
-        var allowsDirectSuper = isConstructor && constructorAllowsSuper;
+        ScopeFlags superFlags;
 
         // Check key and flags
         if (isConstructor)
@@ -1567,15 +1567,21 @@ public partial class Parser
             }
 
             kind = PropertyKind.Constructor;
+            superFlags = constructorAllowsSuper ? ScopeFlags.Super | ScopeFlags.DirectSuper : ScopeFlags.Super;
         }
-        else if (isStatic && CheckKeyName(key, computed, "prototype"))
+        else
         {
-            // Raise(key.Start, "Classes may not have a static property named prototype"); // original acornjs error reporting
-            Raise(key.Start, StaticPrototype);
+            if (isStatic && CheckKeyName(key, computed, "prototype"))
+            {
+                // Raise(key.Start, "Classes may not have a static property named prototype"); // original acornjs error reporting
+                Raise(key.Start, StaticPrototype);
+            }
+
+            superFlags = ScopeFlags.Super;
         }
 
         // Parse value
-        var value = ParseMethod(isGenerator, isAsync, allowsDirectSuper);
+        var value = ParseMethod(isGenerator, isAsync, superFlags);
 
         // Check value
         if (kind == PropertyKind.Get)
@@ -1631,7 +1637,7 @@ public partial class Parser
 
             var oldThisScopeFlags = thisScopeFlags;
             var oldVarScopeFlags = varScopeFlags;
-            thisScopeFlags |= ScopeFlags.InClassFieldInit;
+            thisScopeFlags = (thisScopeFlags | ScopeFlags.InClassFieldInit) & ~ScopeFlags.DirectSuper;
             varScopeFlags |= ScopeFlags.InClassFieldInit;
 
             value = ParseMaybeAssign(ref NullRef<DestructuringErrors>());
