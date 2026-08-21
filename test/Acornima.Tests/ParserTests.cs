@@ -1553,8 +1553,8 @@ public partial class ParserTests
     [InlineData("module", "async function f() { ++{await} }", EcmaVersion.Latest, "Unexpected reserved word")]
     [InlineData("script", "async function f() { ++{x: await} }", EcmaVersion.Latest, "Unexpected token '}'")]
     [InlineData("module", "async function f() { ++{x: await} }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("script", "async function f() { ++{x = await} }", EcmaVersion.Latest, "Unexpected token '='")] // V8 reports "Unexpected token '}'"
-    [InlineData("module", "async function f() { ++{x = await} }", EcmaVersion.Latest, "Unexpected token '='")] // V8 reports "Unexpected token '}'"
+    [InlineData("script", "async function f() { ++{x = await} }", EcmaVersion.Latest, "Invalid shorthand property initializer")] // V8 reports "Unexpected token '}'"
+    [InlineData("module", "async function f() { ++{x = await} }", EcmaVersion.Latest, "Invalid shorthand property initializer")] // V8 reports "Unexpected token '}'"
     [InlineData("script", "async function f() { ++{...await} }", EcmaVersion.Latest, "Unexpected token '}'")]
     [InlineData("module", "async function f() { ++{...await} }", EcmaVersion.Latest, "Unexpected token '}'")]
 
@@ -1673,8 +1673,8 @@ public partial class ParserTests
     [InlineData("module", "function* g() { ++{yield} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
     [InlineData("script", "function* g() { ++{x: yield} }", EcmaVersion.Latest, "Invalid left-hand side expression in prefix operation")]
     [InlineData("module", "function* g() { ++{x: yield} }", EcmaVersion.Latest, "Invalid left-hand side expression in prefix operation")]
-    [InlineData("script", "function* g() { ++{x = yield} }", EcmaVersion.Latest, "Unexpected token '='")] // V8 reports "Invalid left-hand side expression in prefix operation"
-    [InlineData("module", "function* g() { ++{x = yield} }", EcmaVersion.Latest, "Unexpected token '='")] // V8 reports "Invalid left-hand side expression in prefix operation"
+    [InlineData("script", "function* g() { ++{x = yield} }", EcmaVersion.Latest, "Invalid shorthand property initializer")] // V8 reports "Invalid left-hand side expression in prefix operation"
+    [InlineData("module", "function* g() { ++{x = yield} }", EcmaVersion.Latest, "Invalid shorthand property initializer")] // V8 reports "Invalid left-hand side expression in prefix operation"
     [InlineData("script", "function* g() { ++{...yield} }", EcmaVersion.Latest, "Invalid left-hand side expression in prefix operation")]
     [InlineData("module", "function* g() { ++{...yield} }", EcmaVersion.Latest, "Invalid left-hand side expression in prefix operation")]
 
@@ -1692,8 +1692,8 @@ public partial class ParserTests
     [InlineData("module", "function* g() { ({yield}++) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
     [InlineData("script", "function* g() { ({x: yield}++) }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
     [InlineData("module", "function* g() { ({x: yield}++) }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
-    [InlineData("script", "function* g() { ({x = yield}++) }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
-    [InlineData("module", "function* g() { ({x = yield}++) }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
+    [InlineData("script", "function* g() { ({x = yield}++) }", EcmaVersion.Latest, "Invalid shorthand property initializer")] // V8 reports "Invalid left-hand side expression in postfix operation"
+    [InlineData("module", "function* g() { ({x = yield}++) }", EcmaVersion.Latest, "Invalid shorthand property initializer")] // V8 reports "Invalid left-hand side expression in postfix operation"
     [InlineData("script", "function* g() { ({x = yield}\n++) }", EcmaVersion.Latest, "Invalid shorthand property initializer")]
     [InlineData("module", "function* g() { ({x = yield}\n++) }", EcmaVersion.Latest, "Invalid shorthand property initializer")]
     [InlineData("script", "function* g() { ({...yield}++) }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
