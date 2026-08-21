@@ -81,9 +81,13 @@ public partial class Parser
                         // RaiseRecoverable(key.Start, "Redefinition of __proto__ property"); // original acornjs error reporting
                         Raise(key.Start, DuplicateProto);
                     }
-                    else if (destructuringErrors.DoubleProto < 0)
+                    else
                     {
-                        destructuringErrors.DoubleProto = key.Start;
+                        _lastDoubleProto = key.Start;
+                        if (destructuringErrors.DoubleProto < 0)
+                        {
+                            destructuringErrors.DoubleProto = _lastDoubleProto;
+                        }
                     }
                 }
                 else
@@ -181,7 +185,7 @@ public partial class Parser
             _tokenizer._expressionAllowed = false;
         }
 
-        int oldParenAssign, oldTrailingComma, oldDoubleProto;
+        int oldParenAssign, oldTrailingComma;
 
         DestructuringErrors ownDestructuringErrors;
         SkipInit(out ownDestructuringErrors);
@@ -193,7 +197,6 @@ public partial class Parser
 
             SkipInit(out oldParenAssign);
             SkipInit(out oldTrailingComma);
-            SkipInit(out oldDoubleProto);
         }
         else
         {
@@ -201,7 +204,6 @@ public partial class Parser
 
             oldParenAssign = actualDestructuringErrors.ParenthesizedAssign;
             oldTrailingComma = actualDestructuringErrors.TrailingComma;
-            oldDoubleProto = actualDestructuringErrors.DoubleProto;
 
             actualDestructuringErrors.ParenthesizedAssign = actualDestructuringErrors.TrailingComma = -1;
         }
@@ -233,12 +235,17 @@ public partial class Parser
 
                 if (!ownsDestructuringErrors)
                 {
-                    destructuringErrors.ParenthesizedAssign = destructuringErrors.TrailingComma = destructuringErrors.DoubleProto = -1;
-                }
+                    destructuringErrors.ParenthesizedAssign = destructuringErrors.TrailingComma = -1;
 
-                if (destructuringErrors.ShorthandAssign >= leftNode.Start)
-                {
-                    destructuringErrors.ShorthandAssign = -1; // reset because shorthand default was used correctly
+                    if (destructuringErrors.DoubleProto >= leftNode.Start)
+                    {
+                        destructuringErrors.DoubleProto = -1;
+                    }
+
+                    if (destructuringErrors.ShorthandAssign >= leftNode.Start)
+                    {
+                        destructuringErrors.ShorthandAssign = -1; // reset because shorthand default was used correctly
+                    }
                 }
 
                 if (_tokenizer._type == TokenType.Eq)
@@ -263,12 +270,6 @@ public partial class Parser
             Next();
 
             var right = ParseMaybeAssign(ref NullRef<DestructuringErrors>(), context);
-
-            if (!ownsDestructuringErrors && oldDoubleProto >= 0)
-            {
-                actualDestructuringErrors.DoubleProto = oldDoubleProto;
-            }
-
             return ExitRecursion(FinishNode(startMarker, new AssignmentExpression(op, leftNode, right)));
         }
 
@@ -604,6 +605,8 @@ public partial class Parser
 
         var startMarker = StartNode();
 
+        _lastDoubleProto = _lastShorthandAssign = -1;
+
         Expression expr;
         if ((context & ExpressionContext.Decorator) == 0)
         {
@@ -619,8 +622,8 @@ public partial class Parser
             expr = ParseExprAtom(ref destructuringErrors, context & ~ExpressionContext.Decorator);
         }
 
-        if (expr.Type == NodeType.ArrowFunctionExpression
-            && _tokenizer._input.SliceBetween(_tokenizer._lastTokenStart, _tokenizer._lastTokenEnd) is not ")")
+        if (expr.Type == NodeType.ObjectExpression ? _lastDoubleProto >= expr.Start || _lastShorthandAssign >= expr.Start
+            : expr.Type == NodeType.ArrowFunctionExpression && _tokenizer._input.SliceBetween(_tokenizer._lastTokenStart, _tokenizer._lastTokenEnd) is not ")")
         {
             return expr;
         }
@@ -1665,6 +1668,7 @@ public partial class Parser
         }
 
         Node value;
+        int oldLastDoubleProto, oldLastShorthandAssign;
 
         if (Eat(TokenType.Colon))
         {
@@ -1683,7 +1687,14 @@ public partial class Parser
             kind = PropertyKind.Init;
             method = true;
             shorthand = false;
+
+            oldLastDoubleProto = _lastDoubleProto;
+            oldLastShorthandAssign = _lastShorthandAssign;
+
             value = ParseMethod(isGenerator, isAsync);
+
+            _lastDoubleProto = oldLastDoubleProto;
+            _lastShorthandAssign = oldLastShorthandAssign;
         }
         else if (!isPattern && !containsEsc && !computed
             && _tokenizerOptions._ecmaVersion >= EcmaVersion.ES5 && key is Identifier { Name: "get" or "set" } identifier
@@ -1696,7 +1707,14 @@ public partial class Parser
 
             kind = identifier.Name[0] == 'g' ? PropertyKind.Get : PropertyKind.Set;
             method = shorthand = false;
+
+            oldLastDoubleProto = _lastDoubleProto;
+            oldLastShorthandAssign = _lastShorthandAssign;
+
             value = ParseGetterSetter(ref key, ref computed, kind);
+
+            _lastDoubleProto = oldLastDoubleProto;
+            _lastShorthandAssign = oldLastShorthandAssign;
         }
         else if (!computed && _tokenizerOptions._ecmaVersion >= EcmaVersion.ES6 && key is Identifier keyIdentifier)
         {
@@ -1729,14 +1747,22 @@ public partial class Parser
                     Raise(_tokenizer._start, InvalidCoverInitializedName);
                 }
 
+                _lastShorthandAssign = _tokenizer._start;
                 if (destructuringErrors.ShorthandAssign < 0)
                 {
-                    destructuringErrors.ShorthandAssign = _tokenizer._start;
+                    destructuringErrors.ShorthandAssign = _lastShorthandAssign;
                 }
 
                 Next();
 
+                oldLastDoubleProto = _lastDoubleProto;
+                oldLastShorthandAssign = _lastShorthandAssign;
+
                 var right = ParseMaybeAssign(ref NullRef<DestructuringErrors>());
+
+                _lastDoubleProto = oldLastDoubleProto;
+                _lastShorthandAssign = oldLastShorthandAssign;
+
                 value = FinishNode(startMarker, new AssignmentPattern(key, right));
             }
             else
@@ -1766,9 +1792,15 @@ public partial class Parser
 
         if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES6 && Eat(TokenType.BracketLeft))
         {
+            var oldLastDoubleProto = _lastDoubleProto;
+            var oldLastShorthandAssign = _lastShorthandAssign;
+
             computed = true;
             key = ParseMaybeAssign(ref NullRef<DestructuringErrors>());
             Expect(TokenType.BracketRight);
+
+            _lastDoubleProto = oldLastDoubleProto;
+            _lastShorthandAssign = oldLastShorthandAssign;
         }
         else
         {

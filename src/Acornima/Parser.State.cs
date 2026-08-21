@@ -47,6 +47,7 @@ public partial class Parser
 
     private ArrayList<Decorator> _decorators;
 
+    private int _lastDoubleProto, _lastShorthandAssign;
     private int _bindingPatternDepth, _recursionDepth;
 
     internal void Reset(string input, int start, int length, SourceType sourceType, string? sourceFile, bool strict)
@@ -111,6 +112,7 @@ public partial class Parser
 
         _decorators.Clear();
 
+        _lastDoubleProto = _lastShorthandAssign = -1;
         _recursionDepth = _bindingPatternDepth = 0;
     }
 
