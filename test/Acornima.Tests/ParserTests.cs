@@ -1703,11 +1703,63 @@ public partial class ParserTests
     [InlineData("script", "[...x,]=a", EcmaVersion.Latest, "Rest element must be last element")]
     [InlineData("script", "{...x,}=a", EcmaVersion.Latest, "Unexpected token '...'")] // V8 reports "Rest parameter must be last formal parameter"
     [InlineData("script", "({...x,}=a)", EcmaVersion.Latest, "Rest element must be last element")]
-
+    [InlineData("script", "++{__proto__: x, __proto__: y}", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")] // V8 reports "Invalid left-hand side expression in prefix operation"
+    [InlineData("module", "++{__proto__: x, __proto__: y}", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")] // V8 reports "Invalid left-hand side expression in prefix operation"
     [InlineData("script", "({__proto__: x, __proto__: y}++)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")] // V8 reports "Invalid left-hand side expression in postfix operation"
     [InlineData("module", "({__proto__: x, __proto__: y}++)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")] // V8 reports "Invalid left-hand side expression in postfix operation"
     [InlineData("script", "({__proto__: x, __proto__: y}\n++)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
     [InlineData("module", "({__proto__: x, __proto__: y}\n++)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+
+    [InlineData("script", "({__proto__: x, __proto__: y}.x = 0)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [InlineData("script", "({__proto__: x, __proto__: y}.x += 0)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [InlineData("script", "++{__proto__: x, __proto__: y}.x", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [InlineData("script", "({__proto__: x, __proto__: y}.x++)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [InlineData("script", "for ({__proto__: x, __proto__: y}.x = 0;;) { }", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [InlineData("script", "for ({__proto__: x, __proto__: y}.x in {}) { }", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [InlineData("script", "for ({__proto__: x, __proto__: y}.x of []) { }", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [InlineData("script", "async () => { for await ({__proto__: x, __proto__: y}.x of []) { } }", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+
+    [InlineData("script", "({__proto__: x, __proto__: y}[x] = 0)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [InlineData("script", "({__proto__: x, __proto__: y}() = 0)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [InlineData("script", "({__proto__: x, __proto__: y}`` = 0)", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
+    [InlineData("script", "async () => { for await ({__proto__: x, __proto__: y}[x] of []) { } }", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [InlineData("script", "async () => { for await ({__proto__: x, __proto__: y}() of []) { } }", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")] // V8 incorrectly accepts this! (Chrome 151)
+    [InlineData("script", "async () => { for await ({__proto__: x, __proto__: y}`` of []) { } }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")]
+
+    [InlineData("script", "({ [{__proto__: x, __proto__: y}]: x } = 0)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [InlineData("script", "({ [{__proto__: x, __proto__: y} = 0]: x } = 0)", EcmaVersion.Latest, null)]
+
+    [InlineData("script", "({a = 0})", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("script", "[{a = 0}, {b = 0}.x]", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("script", "f({a = 0})", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("script", "[{a = 0}.x]", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("script", "({a: {b = 0}.x})", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("script", "({...{b = 0}.x})", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+
+    [InlineData("script", "({a = 0}.x = 0)", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("script", "({a = 0}.x += 0)", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("script", "({a = 0}.x++)", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("script", "(++{a = 0}.x)", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("script", "[{a = 0}][0] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("script", "[{a = 0}.x] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("script", "[...{a = 0}.x] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("script", "({a: {b = 0}.x} = {})", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("script", "({...{b = 0}.x} = {})", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("script", "[{a = 0}[0]] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("script", "[{a = 0}, {b = 0}.x] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("script", "for ([{a = 0}.x];;) { }", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("script", "for ([{a = 0}.x] in []) { }", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("script", "for ([{a = 0}.x] of []) { }", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("script", "async () => { for await ([{a = 0}.x] of []) { } }", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+
+    [InlineData("script", "[{a = 0}] = []", EcmaVersion.Latest, null)]
+    [InlineData("script", "({a: {b = 0}} = {})", EcmaVersion.Latest, null)]
+    [InlineData("script", "[{a: 0}.x] = []", EcmaVersion.Latest, null)]
+
+    [InlineData("script", "[{__proto__: a, __proto__: a, x = 0}, {__proto__: a, __proto__: a}.x] = []", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [InlineData("script", "[{__proto__: a, x = 0, __proto__: a}, {__proto__: a, __proto__: a}.x] = []", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")] // V8 reports "Invalid shorthand property initializer"
+    [InlineData("script", "[{__proto__: a, __proto__: a, x = 0}, {x = 0}.x] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")]  // V8 reports "Duplicate __proto__ fields are not allowed in object literals"
+    [InlineData("script", "[{__proto__: a, x = 0, __proto__: a}, {x = 0}.x] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")]
     public void ShouldHandleVariableAssignmentEdgeCases(string sourceType, string input, EcmaVersion ecmaVersion, string? expectedError)
     {
         var parser = new Parser(new ParserOptions { EcmaVersion = ecmaVersion });
