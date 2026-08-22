@@ -235,10 +235,10 @@ public partial class Parser
                     destructuringErrors.ParenthesizedAssign = destructuringErrors.TrailingComma = destructuringErrors.DoubleProto = -1;
                 }
 
-                if (destructuringErrors.ShorthandAssign >= leftNode.Start)
-                {
-                    destructuringErrors.ShorthandAssign = -1; // reset because shorthand default was used correctly
-                }
+                // NOTE: The recorded shorthand property assignment error can only be discarded when the shorthand default was
+                // actually used correctly, that is, when the conversion refined the object literal containing it into an
+                // object pattern (see also ConsumeCoverInitializedNameError).
+                var coverInitializedNamePosition = ConsumeCoverInitializedNameError(ref destructuringErrors, leftNode);
 
                 if (_tokenizer._type == TokenType.Eq)
                 {
@@ -252,6 +252,12 @@ public partial class Parser
                         isInPattern: destructuringErrors.IsInPattern,
                         allowCall: !_strict && op is not (Operator.LogicalAndAssignment or Operator.LogicalOrAssignment or Operator.NullishCoalescingAssignment),
                         lhsKind: LeftHandSideKind.Assignment);
+                }
+
+                // NOTE: An invalid left-hand side is reported first (as V8 does so in most of the cases as well).
+                if (coverInitializedNamePosition >= 0)
+                {
+                    Raise(coverInitializedNamePosition, InvalidCoverInitializedName);
                 }
 
                 return leftNode;

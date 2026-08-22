@@ -657,7 +657,17 @@ public partial class Parser
 
                 var initPattern = ToAssignable(init, ref destructuringErrors, isBinding: false,
                     isInPattern: destructuringErrors.IsInPattern, allowCall: !_strict, lhsKind: LeftHandSideKind.ForInOf);
+
+                // NOTE: The recorded shorthand property assignment error can only be discarded when the conversion refined
+                // the object literal containing it into an object pattern (see also ConsumeCoverInitializedNameError).
+                var coverInitializedNamePosition = ConsumeCoverInitializedNameError(ref destructuringErrors, initPattern);
+
                 CheckLValPattern(initPattern, isInPattern: destructuringErrors.IsInPattern, allowCall: !_strict, lhsKind: LeftHandSideKind.ForInOf);
+
+                if (coverInitializedNamePosition >= 0)
+                {
+                    Raise(coverInitializedNamePosition, InvalidCoverInitializedName);
+                }
 
                 return ParseForInOf(startMarker, isForIn: true, await: false, initPattern);
             }
@@ -677,7 +687,17 @@ public partial class Parser
 
                 var initPattern = ToAssignable(init, ref destructuringErrors, isBinding: false,
                     isInPattern: destructuringErrors.IsInPattern, allowCall: !_strict, lhsKind: LeftHandSideKind.ForInOf);
+
+                // NOTE: The recorded shorthand property assignment error can only be discarded when the conversion refined
+                // the object literal containing it into an object pattern (see also ConsumeCoverInitializedNameError).
+                var coverInitializedNamePosition = ConsumeCoverInitializedNameError(ref destructuringErrors, initPattern);
+
                 CheckLValPattern(initPattern, isInPattern: destructuringErrors.IsInPattern, allowCall: !_strict, lhsKind: LeftHandSideKind.ForInOf);
+
+                if (coverInitializedNamePosition >= 0)
+                {
+                    Raise(coverInitializedNamePosition, InvalidCoverInitializedName);
+                }
 
                 return ParseForInOf(startMarker, isForIn: false, await: awaitAt >= 0, initPattern);
             }

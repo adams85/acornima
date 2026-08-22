@@ -1,7 +1,9 @@
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Acornima.Ast;
+using Acornima.Helpers;
 
 namespace Acornima;
 
@@ -315,6 +317,78 @@ public partial class Parser
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// Discards the recorded CoverInitializedName error (if there is one within <paramref name="convertedNode"/>) and returns
+    /// the position to report it at when it turns out that the conversion of <paramref name="convertedNode"/> to an assignment
+    /// target didn't resolve it (otherwise returns <c>-1</c>).
+    /// </summary>
+    /// <remarks>
+    /// A shorthand property assignment (CoverInitializedName, e.g. <c>{a = 0}</c>) is only valid when the object literal
+    /// containing it is refined into an object assignment pattern
+    /// (see https://tc39.es/ecma262/#sec-object-initializer-static-semantics-early-errors, Note 2).
+    /// Converting a left-hand side expression to an assignment target doesn't necessarily refine such an object literal:
+    /// e.g. in <c>[{a = 0}.x] = []</c> the destructuring assignment target is the member expression <c>{a = 0}.x</c>, which
+    /// is a valid assignment target on its own, so <c>{a = 0}</c> remains an actual object literal, for which the early error
+    /// applies. (The original acornjs implementation discards the recorded error based on its position only, which makes it
+    /// miss all such cases. See also https://github.com/adams85/acornima/issues/46)
+    /// </remarks>
+    private static int ConsumeCoverInitializedNameError(ref DestructuringErrors destructuringErrors, Node convertedNode)
+    {
+        Debug.Assert(!Unsafe.IsNullRef(ref destructuringErrors));
+
+        // As shorthand property assignments are recorded in source order and only the first one is kept, a recorded
+        // position which is not before the start of the converted node is necessarily within it.
+        if (destructuringErrors.ShorthandAssign < convertedNode.Start)
+        {
+            return -1;
+        }
+
+        // NOTE: The reported position is the position of the first shorthand property assignment, which, in the rare case
+        // of multiple ones (e.g. `[{a = 0}, {b = 0}.x] = []`), is not necessarily the position of the one which remained
+        // unrefined. (V8 reports the position of the first one in such cases as well.)
+        var position = destructuringErrors.ShorthandAssign;
+        destructuringErrors.ShorthandAssign = -1;
+
+        return ContainsCoverInitializedName(convertedNode) ? position : -1;
+    }
+
+    private static bool ContainsCoverInitializedName(Node node)
+    {
+        // NOTE: This search is only done when a CoverInitializedName error is recorded within the converted node, that is,
+        // on a code path which either reports an error or parses a destructuring assignment which makes use of the rarely
+        // used shorthand property assignment syntax. So it doesn't add any cost to the common code paths.
+
+        var stack = new ArrayList<Node>();
+
+        for (; ; )
+        {
+            if (node.Type == NodeType.ObjectExpression)
+            {
+                foreach (var property in node.As<ObjectExpression>().Properties)
+                {
+                    // In an object literal, a shorthand property whose value is an assignment pattern can only originate from
+                    // a CoverInitializedName. (In object patterns, properties are represented by AssignmentProperty nodes.)
+                    if (property is ObjectProperty { Shorthand: true, Value.Type: NodeType.AssignmentPattern })
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            foreach (var childNode in node.ChildNodes)
+            {
+                stack.Push(childNode);
+            }
+
+            if (stack.Count == 0)
+            {
+                return false;
+            }
+
+            node = stack.Pop();
+        }
     }
 
     private void CheckYieldAwaitInDefaultParams()

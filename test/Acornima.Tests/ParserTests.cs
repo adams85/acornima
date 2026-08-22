@@ -2729,6 +2729,130 @@ public partial class ParserTests
         }
     }
 
+    // https://github.com/adams85/acornima/issues/46
+    // A shorthand property assignment (CoverInitializedName, e.g. `{a = 0}`) is only allowed when the object literal
+    // containing it is refined into an object assignment pattern. (See also
+    // https://tc39.es/ecma262/#sec-object-initializer-static-semantics-early-errors, Note 2.)
+    [Theory]
+    // The object literal is not refined because the destructuring assignment target is the member expression which
+    // contains it - a valid assignment target on its own.
+    [InlineData("script", "({a = 0}.x = 0);", "Invalid shorthand property initializer")]
+    [InlineData("module", "({a = 0}.x = 0);", "Invalid shorthand property initializer")]
+    [InlineData("script", "({a = 0}.x += 0);", "Invalid shorthand property initializer")]
+    [InlineData("module", "({a = 0}.x += 0);", "Invalid shorthand property initializer")]
+    [InlineData("script", "({a = 0}.x ??= 0);", "Invalid shorthand property initializer")]
+    [InlineData("module", "({a = 0}.x ??= 0);", "Invalid shorthand property initializer")]
+    [InlineData("script", "[{a = 0}.x] = [];", "Invalid shorthand property initializer")]
+    [InlineData("module", "[{a = 0}.x] = [];", "Invalid shorthand property initializer")]
+    [InlineData("script", "[...{a = 0}.x] = [];", "Invalid shorthand property initializer")]
+    [InlineData("module", "[...{a = 0}.x] = [];", "Invalid shorthand property initializer")]
+    [InlineData("script", "({a: {b = 0}.x} = {});", "Invalid shorthand property initializer")]
+    [InlineData("module", "({a: {b = 0}.x} = {});", "Invalid shorthand property initializer")]
+    [InlineData("script", "({...{b = 0}.x} = {});", "Invalid shorthand property initializer")]
+    [InlineData("module", "({...{b = 0}.x} = {});", "Invalid shorthand property initializer")]
+    [InlineData("script", "[{a = 0}[0]] = [];", "Invalid shorthand property initializer")]
+    [InlineData("module", "[{a = 0}[0]] = [];", "Invalid shorthand property initializer")]
+    [InlineData("script", "[{a = 0}].x = 0;", "Invalid shorthand property initializer")]
+    [InlineData("module", "[{a = 0}].x = 0;", "Invalid shorthand property initializer")]
+    [InlineData("script", "[[{a = 0}.x]] = [];", "Invalid shorthand property initializer")]
+    [InlineData("module", "[[{a = 0}.x]] = [];", "Invalid shorthand property initializer")]
+    [InlineData("script", "({a: [{b = 0}.x]} = {});", "Invalid shorthand property initializer")]
+    [InlineData("module", "({a: [{b = 0}.x]} = {});", "Invalid shorthand property initializer")]
+    [InlineData("script", "([{a = 0}.x] = []);", "Invalid shorthand property initializer")]
+    [InlineData("module", "([{a = 0}.x] = []);", "Invalid shorthand property initializer")]
+    [InlineData("script", "[{a = 0}] = [{b = 0}.x] = [];", "Invalid shorthand property initializer")]
+    [InlineData("module", "[{a = 0}] = [{b = 0}.x] = [];", "Invalid shorthand property initializer")]
+    [InlineData("script", "[{a = 0}.x = 1] = [];", "Invalid shorthand property initializer")]
+    [InlineData("module", "[{a = 0}.x = 1] = [];", "Invalid shorthand property initializer")]
+
+    // Only some of the object literals are refined. (The reported position is that of the first shorthand property
+    // assignment, which may not be the one which remained unrefined - just like in the case of V8.)
+    [InlineData("script", "[{a = 0}, {b = 0}.x] = [];", "Invalid shorthand property initializer")]
+    [InlineData("module", "[{a = 0}, {b = 0}.x] = [];", "Invalid shorthand property initializer")]
+    [InlineData("script", "[{a = 0}.x, {b = 0}] = [];", "Invalid shorthand property initializer")]
+    [InlineData("module", "[{a = 0}.x, {b = 0}] = [];", "Invalid shorthand property initializer")]
+
+    // The head of a for-in/of statement is refined the same way as the left-hand side of an assignment.
+    [InlineData("script", "for ([{a = 0}.x] of []) ;", "Invalid shorthand property initializer")]
+    [InlineData("module", "for ([{a = 0}.x] of []) ;", "Invalid shorthand property initializer")]
+    [InlineData("script", "for ({a = 0}.x of []) ;", "Invalid shorthand property initializer")]
+    [InlineData("module", "for ({a = 0}.x of []) ;", "Invalid shorthand property initializer")]
+    [InlineData("script", "for ([{a = 0}.x] in {}) ;", "Invalid shorthand property initializer")]
+    [InlineData("module", "for ([{a = 0}.x] in {}) ;", "Invalid shorthand property initializer")]
+    [InlineData("script", "for ([{a = 0}.x] = [] ;;) ;", "Invalid shorthand property initializer")]
+    [InlineData("module", "for ([{a = 0}.x] = [] ;;) ;", "Invalid shorthand property initializer")]
+
+    // There is no assignment at all, so the object literal cannot be refined.
+    [InlineData("script", "({a = 0});", "Invalid shorthand property initializer")]
+    [InlineData("module", "({a = 0});", "Invalid shorthand property initializer")]
+    [InlineData("script", "f({a = 0});", "Invalid shorthand property initializer")]
+    [InlineData("module", "f({a = 0});", "Invalid shorthand property initializer")]
+    [InlineData("script", "[{a = 0}.x];", "Invalid shorthand property initializer")]
+    [InlineData("module", "[{a = 0}.x];", "Invalid shorthand property initializer")]
+    [InlineData("script", "({a: {b = 0}.x});", "Invalid shorthand property initializer")]
+    [InlineData("module", "({a: {b = 0}.x});", "Invalid shorthand property initializer")]
+    [InlineData("script", "({...{b = 0}.x});", "Invalid shorthand property initializer")]
+    [InlineData("module", "({...{b = 0}.x});", "Invalid shorthand property initializer")]
+    [InlineData("script", "[({a = 0})] = [];", "Invalid shorthand property initializer")]
+    [InlineData("module", "[({a = 0})] = [];", "Invalid shorthand property initializer")]
+    [InlineData("script", "({a = 0}) = {};", "Invalid shorthand property initializer")]
+    [InlineData("module", "({a = 0}) = {};", "Invalid shorthand property initializer")]
+    [InlineData("script", "f({a = 0}) = 0;", "Invalid shorthand property initializer")]
+    [InlineData("module", "f({a = 0}) = 0;", "Invalid shorthand property initializer")]
+
+    // The left-hand side is reported as invalid before the shorthand property assignment is.
+    [InlineData("script", "({a = 0} += 1);", "Invalid left-hand side in assignment")]
+    [InlineData("module", "({a = 0} += 1);", "Invalid left-hand side in assignment")]
+    [InlineData("script", "[{a = 0}.x] += 1;", "Invalid left-hand side in assignment")] // V8 reports "Invalid shorthand property initializer"
+    [InlineData("module", "[{a = 0}.x] += 1;", "Invalid left-hand side in assignment")] // V8 reports "Invalid shorthand property initializer"
+    [InlineData("script", "({a = 0}?.x = 0);", "Invalid left-hand side in assignment")]
+    [InlineData("module", "({a = 0}?.x = 0);", "Invalid left-hand side in assignment")]
+    [InlineData("script", "({a = 0}.x) => 0;", "Illegal property in declaration context")] // V8 reports "Invalid destructuring assignment target"
+    [InlineData("module", "({a = 0}.x) => 0;", "Illegal property in declaration context")] // V8 reports "Invalid destructuring assignment target"
+
+    // The object literal is refined, so the shorthand property assignment is legal.
+    [InlineData("script", "({a = 0} = {});", null)]
+    [InlineData("module", "({a = 0} = {});", null)]
+    [InlineData("script", "[{a = 0}] = [];", null)]
+    [InlineData("module", "[{a = 0}] = [];", null)]
+    [InlineData("script", "[{a = 0}, {b = 0}] = [];", null)]
+    [InlineData("module", "[{a = 0}, {b = 0}] = [];", null)]
+    [InlineData("script", "({a: {b = 0}} = {});", null)]
+    [InlineData("module", "({a: {b = 0}} = {});", null)]
+    [InlineData("script", "[{a = 0} = 1] = [];", null)]
+    [InlineData("module", "[{a = 0} = 1] = [];", null)]
+    [InlineData("script", "[...{a = 0}] = [];", null)]
+    [InlineData("module", "[...{a = 0}] = [];", null)]
+    [InlineData("script", "for ([{a = 0}] of []) ;", null)]
+    [InlineData("module", "for ([{a = 0}] of []) ;", null)]
+    [InlineData("script", "for ({a = 0} of [{}]) ;", null)]
+    [InlineData("module", "for ({a = 0} of [{}]) ;", null)]
+    [InlineData("script", "for ([{a = 0}] = [] ;;) ;", null)]
+    [InlineData("module", "for ([{a = 0}] = [] ;;) ;", null)]
+    [InlineData("script", "({a = 0}) => 0;", null)]
+    [InlineData("module", "({a = 0}) => 0;", null)]
+    [InlineData("script", "async ({a = 0}) => 0;", null)]
+    [InlineData("module", "async ({a = 0}) => 0;", null)]
+
+    // There is no shorthand property assignment at all.
+    [InlineData("script", "[{a: 0}.x] = [];", null)]
+    [InlineData("module", "[{a: 0}.x] = [];", null)]
+    public void ShouldHandleCoverInitializedNameEdgeCases(string sourceType, string input, string? expectedError)
+    {
+        var parser = new Parser();
+        var parseAction = GetParseActionFor(sourceType);
+
+        if (expectedError is null)
+        {
+            Assert.NotNull(parseAction(parser, input));
+        }
+        else
+        {
+            var ex = Assert.Throws<SyntaxErrorException>(() => parseAction(parser, input));
+            Assert.Equal(expectedError, ex.Description);
+        }
+    }
+
     [Theory]
     [InlineData("as")]
     [InlineData("do")]
