@@ -1093,13 +1093,17 @@ public partial class Parser
             EnterScope(ScopeFlags.None);
         }
 
-        while (!Eat(TokenType.BraceRight))
+        while (_tokenizer._type != TokenType.BraceRight)
         {
             var statement = ParseStatement(StatementContext.Default);
             body.Add(statement);
         }
 
+        // NOTE: Strict mode must be exited before the closing brace is consumed because consuming it also reads the token
+        // which follows the block, and that token already belongs to the enclosing code, which may well be non-strict.
+        // (This is why the consumption of the closing brace is not folded into the loop condition, unlike elsewhere.)
         _strict = _strict && !exitStrict;
+        Next();
 
         return createNewLexicalScope ? ExitScope() : default;
     }

@@ -727,6 +727,45 @@ public partial class ParserTests
         Assert.True(q.Body.Strict);
     }
 
+    [Fact]
+    public void CodeFollowingStrictFunctionShouldNotBeStrict()
+    {
+        // The legacy octal literal is valid as it's not part of the strict function's code,
+        // not even when it immediately follows the closing brace of the function body.
+        // See https://github.com/adams85/acornima/issues/50
+
+        var parser = new Parser();
+        var program = parser.ParseScript("function p() {'use strict'; } 0755");
+
+        var p = program.Body.First().As<FunctionDeclaration>();
+        Assert.True(p.Body.Strict);
+
+        var literal = program.Body.Skip(1).First().As<ExpressionStatement>().Expression.As<NumericLiteral>();
+        Assert.Equal(493d, literal.Value); // 0755
+
+        Assert.False(program.Strict);
+    }
+
+    [Theory]
+    // In tolerant mode no error may be recorded for the token which follows the closing brace of a strict function body
+    // when the enclosing code is not strict, and exactly one must be recorded when it is.
+    // See https://github.com/adams85/acornima/issues/50
+    [InlineData("function f() { 'use strict' } 0755", false, 0)]
+    [InlineData("function f() { 'use strict'; } '\\222'", false, 0)]
+    [InlineData("function f() { 'use strict' } 0755\nfunction g() { 'use strict' } 0644", false, 0)]
+    [InlineData("function f() { 'use strict'; 0755 }", false, 1)]
+    [InlineData("'use strict'; function f() {} 0755", false, 1)]
+    [InlineData("function f() { 'use strict'; function g() {} 0755 }", false, 1)]
+    [InlineData("function f() { 'use strict' } 0755", true, 1)]
+    public void ShouldReportLegacyOctalFollowingStrictFunctionBodyOnlyInStrictCode(string input, bool strict, int expectedErrorCount)
+    {
+        var errorCollector = new ParseErrorCollector();
+        var parser = new Parser(new ParserOptions { Tolerant = true, ErrorHandler = errorCollector });
+        parser.ParseScript(input, strict: strict);
+
+        Assert.Equal(expectedErrorCount, errorCollector.Errors.Count);
+    }
+
     [Theory]
     [InlineData("'use strict'; 0", false, EcmaVersion.ES3, null)]
     [InlineData("'use strict'; 0", false, EcmaVersion.ES5, null)]
@@ -781,6 +820,43 @@ public partial class ParserTests
     [InlineData("(x = 0) => {'use strict'; 0 }; 00", false, EcmaVersion.ES6, null)]
     [InlineData("'use strict'; (x = 0) => {'use strict'; 0 }; 00", false, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
     [InlineData("(x = 0) => {'use strict'; 0 }; 00", true, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
+
+    // Strict mode must be turned off before the token which follows the closing brace of a strict function body is read,
+    // as that token already belongs to the enclosing code. See https://github.com/adams85/acornima/issues/50
+    [InlineData("function f() { 'use strict' } 0755", false, EcmaVersion.ES5, null)]
+    [InlineData("function f() { 'use strict'; } 0755", false, EcmaVersion.ES5, null)]
+    [InlineData("function f() { 'use strict' } 00", false, EcmaVersion.ES5, null)]
+    [InlineData("function f() { 'use strict'; } 08", false, EcmaVersion.ES5, null)]
+    [InlineData("function f() { 'use strict'; } 09", false, EcmaVersion.ES5, null)]
+    [InlineData("function f() { 'use strict'; } '\\222'", false, EcmaVersion.ES5, null)]
+    [InlineData("function f() { 'use strict'; } '\\8'", false, EcmaVersion.ES5, null)]
+    [InlineData("function f() { 'use strict'; } '\\9'", false, EcmaVersion.ES5, null)]
+    [InlineData("function f() { 'use strict' } 0755", false, EcmaVersion.ES3, null)]
+    [InlineData("x = function() { 'use strict' }\n0755", false, EcmaVersion.ES5, null)]
+    [InlineData("async function f() { 'use strict' } 0755", false, EcmaVersion.ES8, null)]
+    [InlineData("function* g() { 'use strict' } 0755", false, EcmaVersion.ES6, null)]
+    [InlineData("async function* g() { 'use strict' } 0755", false, EcmaVersion.ES9, null)]
+    [InlineData("x = () => { 'use strict' }\n0755", false, EcmaVersion.ES6, null)]
+    [InlineData("x = () => { 'use strict' }\n'\\222'", false, EcmaVersion.ES6, null)]
+    [InlineData("x = async () => { 'use strict' }\n0755", false, EcmaVersion.ES8, null)]
+    [InlineData("({ m() { 'use strict' }, n: 0755 })", false, EcmaVersion.ES6, null)]
+    [InlineData("({ get m() { 'use strict' }, n: 0755 })", false, EcmaVersion.ES6, null)]
+    [InlineData("({ set m(v) { 'use strict' }, n: 0755 })", false, EcmaVersion.ES6, null)]
+    [InlineData("class C { m() { 'use strict' } } 0755", false, EcmaVersion.ES6, null)]
+
+    // ...but only when the enclosing code isn't strict for a reason of its own, in which case strict mode must be kept.
+    [InlineData("'use strict'; function f() {} 0755", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
+    [InlineData("'use strict'; function f() { 'use strict' } 0755", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
+    [InlineData("function f() { 'use strict' } 0755", true, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
+    [InlineData("function f() { 'use strict'; function g() {} 0755 }", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
+    [InlineData("function f() { 'use strict'; function g() { 'use strict' } 0755 }", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
+    [InlineData("function f() { 'use strict'; function g() { 'use strict'; } '\\222' }", false, EcmaVersion.ES5, "Octal escape sequences are not allowed in strict mode")]
+    [InlineData("'use strict'; { } 0755", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
+    [InlineData("function f() { 'use strict'; { } 0755 }", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
+    [InlineData("function f() { 'use strict'; if (x) { } 0755 }", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
+    [InlineData("function f() { 'use strict'; try { } finally { } 0755 }", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
+    [InlineData("function f() { 'use strict'; with (x) {} } 0755", false, EcmaVersion.ES5, "Strict mode code may not include a with statement")]
+    [InlineData("class C { static { 0755 } }", false, EcmaVersion.ES13, "Octal literals are not allowed in strict mode")]
 
     [InlineData("'use strict';\r\nfunction f(arguments){}", false, EcmaVersion.ES3, null)]
     [InlineData("'use strict';\r\nfunction f(arguments){}", false, EcmaVersion.ES5, "Unexpected eval or arguments in strict mode")]
