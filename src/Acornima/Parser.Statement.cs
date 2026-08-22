@@ -652,6 +652,7 @@ public partial class Parser
             {
                 if (awaitAt >= 0) // this implies _ecmaVersion >= EcmaVersion.ES9
                 {
+                    CheckExpressionErrors(ref destructuringErrors, andThrow: true);
                     Unexpected(awaitAt, TokenType.Name, "await");
                 }
 
@@ -687,12 +688,15 @@ public partial class Parser
 
                 return ParseForInOf(startMarker, isForIn: false, await: awaitAt >= 0, initPattern);
             }
-            else if (awaitAt >= 0)
+            else
             {
-                Unexpected();
-            }
+                CheckExpressionErrors(ref destructuringErrors, andThrow: true);
 
-            CheckExpressionErrors(ref destructuringErrors, andThrow: true);
+                if (awaitAt >= 0)
+                {
+                    Unexpected();
+                }
+            }
         }
 
         if (awaitAt >= 0)
