@@ -1008,6 +1008,10 @@ public sealed partial class Tokenizer : ITokenizer
                     // Raise(start, "Invalid number"); // original acornjs error reporting
                     RaiseRecoverable(start, StrictOctalLiteral);
                 }
+                else
+                {
+                    RecordLegacyOctal(start, LegacyOctalKind.OctalLiteral);
+                }
 
                 if (!overflow)
                 {
@@ -1088,9 +1092,16 @@ public sealed partial class Tokenizer : ITokenizer
             hasSeparator = hasSeparator || hasSeparator2;
         }
 
-        if (startsWithZero && _strict && numDigits > 1)
+        if (startsWithZero && numDigits > 1)
         {
-            RaiseRecoverable(start, StrictDecimalWithLeadingZero);
+            if (_strict)
+            {
+                RaiseRecoverable(start, StrictDecimalWithLeadingZero);
+            }
+            else
+            {
+                RecordLegacyOctal(start, LegacyOctalKind.DecimalWithLeadingZero);
+            }
         }
 
         if (!overflow && _position - integerPartEnd <= 1) // no need to reparse literals like 10.
@@ -1118,7 +1129,6 @@ public sealed partial class Tokenizer : ITokenizer
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readString = function`
 
         Unsafe.SkipInit(out bool normalizeRaw);
-        _legacyOctalPosition = -1;
         AcquireStringBuilder(out var sb);
         try
         {
@@ -1256,7 +1266,6 @@ public sealed partial class Tokenizer : ITokenizer
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readTmplToken = function`
 
         invalidTemplate = false;
-        _legacyOctalPosition = -1;
         AcquireStringBuilder(out var sb);
         try
         {
@@ -1497,10 +1506,7 @@ public sealed partial class Tokenizer : ITokenizer
                         RaiseRecoverable(start - 1, StrictOctalEscape);
                     }
 
-                    if (_legacyOctalPosition < 0)
-                    {
-                        _legacyOctalPosition = start - 1;
-                    }
+                    RecordLegacyOctal(start - 1, LegacyOctalKind.OctalEscape);
                 }
 
                 return sb.Append((char)octal);
@@ -1524,10 +1530,7 @@ public sealed partial class Tokenizer : ITokenizer
                     RaiseRecoverable(_position - 2, Strict8Or9Escape);
                 }
 
-                if (_legacyOctalPosition < 0)
-                {
-                    _legacyOctalPosition = _position - 2;
-                }
+                RecordLegacyOctal(_position - 2, LegacyOctalKind.EightOrNineEscape);
 
                 goto default;
 

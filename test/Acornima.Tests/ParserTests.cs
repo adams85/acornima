@@ -788,6 +788,68 @@ public partial class ParserTests
     [InlineData("'use strict'\r\nfunction f(eval){}", false, EcmaVersion.ES3, null)]
     [InlineData("'use strict'\r\nfunction f(eval){}", false, EcmaVersion.ES5, "Unexpected eval or arguments in strict mode")]
     [InlineData("'use strict'\r\n(eval)=>{}", false, EcmaVersion.ES6, "Unexpected token '=>'")] // due to implementation differences V8 reports 'Malformed arrow function parameter list'
+
+    // A "use strict" directive which is terminated by automatic semicolon insertion must put the parser into strict mode
+    // before the token following the directive is checked, even though that token is necessarily scanned earlier
+    // (it is the very token which the ASI decision is based on). See https://github.com/adams85/acornima/issues/47
+    [InlineData("'use strict'\n0755", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
+    [InlineData("'use strict'\n0755", true, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
+    [InlineData("'use strict'\r\n0755", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
+    [InlineData("'use strict'\n00", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
+    [InlineData("'use strict'\n08", false, EcmaVersion.ES5, "Decimals with leading zeros are not allowed in strict mode")]
+    [InlineData("'use strict'\n09", false, EcmaVersion.ES5, "Decimals with leading zeros are not allowed in strict mode")]
+    [InlineData("'use strict'\n08.5", false, EcmaVersion.ES5, "Decimals with leading zeros are not allowed in strict mode")]
+    [InlineData("'use strict'\n'\\222'", false, EcmaVersion.ES5, "Octal escape sequences are not allowed in strict mode")]
+    [InlineData("'use strict'\n'\\8'", false, EcmaVersion.ES5, "\\8 and \\9 are not allowed in strict mode")]
+    [InlineData("'use strict'\n'\\9'", false, EcmaVersion.ES5, "\\8 and \\9 are not allowed in strict mode")]
+    [InlineData("'use strict'\n/*c*/ 0755", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
+    [InlineData("'use strict'\n//c\n0755", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
+    [InlineData("'use strict'\n0755 + 0644", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
+    [InlineData("'use strict'\n'\\222' + '\\222'", false, EcmaVersion.ES5, "Octal escape sequences are not allowed in strict mode")]
+    [InlineData("'use strict'\n0755\n0644", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
+    [InlineData("'use strict'\nvar z;\n0755", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
+    [InlineData("'x'\n'use strict'\n0755", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
+    [InlineData("'\\222'\n'use strict'\n0755", false, EcmaVersion.ES5, "Octal escape sequences are not allowed in strict mode")]
+    [InlineData("'use strict'\n'use strict'\n0755", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
+    [InlineData("function f() { 'use strict'\n0755 }", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
+    [InlineData("function f() { 'use strict'\n'\\222' }", false, EcmaVersion.ES5, "Octal escape sequences are not allowed in strict mode")]
+    [InlineData("function f() { 'use strict'\n'\\8' }", false, EcmaVersion.ES5, "\\8 and \\9 are not allowed in strict mode")]
+    [InlineData("function f() { 'use strict'\n0755 }", true, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
+    [InlineData("(function() { 'use strict'\n0755 })", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
+    [InlineData("() => { 'use strict'\n0755 }", false, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
+    [InlineData("({ m() { 'use strict'\n0755 } })", false, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
+    [InlineData("class C { m() { 'use strict'\n0755 } }", false, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
+    [InlineData("async function f() { 'use strict'\n0755 }", false, EcmaVersion.ES8, "Octal literals are not allowed in strict mode")]
+    [InlineData("function* g() { 'use strict'\n0755 }", false, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
+    [InlineData("({ get m() { 'use strict'\n0755 } })", false, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
+    [InlineData("({ set m(v) { 'use strict'\n0755 } })", false, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
+    [InlineData("0755", true, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
+
+    // ...but only when the string literal is actually a directive, that is, when automatic semicolon insertion does apply,
+    // and only when the directive is a "use strict" directive.
+    [InlineData("'use strict'\n0", false, EcmaVersion.ES5, null)]
+    [InlineData("'use strict'\n0.5", false, EcmaVersion.ES5, null)]
+    [InlineData("'use strict'\n0x1F", false, EcmaVersion.ES5, null)]
+    [InlineData("'use strict'\n0e755", false, EcmaVersion.ES5, null)]
+    [InlineData("'use strict'\n+0755", false, EcmaVersion.ES5, "<no directive>")]
+    [InlineData("'use strict'\n.length; 0755", false, EcmaVersion.ES5, "<no directive>")]
+    [InlineData("'use strict'\ninstanceof String; 0755", false, EcmaVersion.ES5, "<no directive>")]
+    [InlineData("'use strict'\nin {}; 0755", false, EcmaVersion.ES6, "<no directive>")]
+    [InlineData("'use strict'\n`\\222`", false, EcmaVersion.ES9, "<no directive>")] // a tagged template, so no ASI and hence no directive at all (invalid escapes in tagged templates are allowed since ES2018)
+    [InlineData("'x'\n0755", false, EcmaVersion.ES5, null)]
+    [InlineData("'\\222'\n0755", false, EcmaVersion.ES5, null)]
+    [InlineData("'\\8'\n0755", false, EcmaVersion.ES5, null)]
+    [InlineData("0755\n'use strict'", false, EcmaVersion.ES5, "<no directive>")]
+    [InlineData("0755", false, EcmaVersion.ES5, "<no directive>")]
+    [InlineData("function f() { 0755 }", false, EcmaVersion.ES5, "<no directive>")]
+    [InlineData("function f() { 0755; 'use strict'; }", false, EcmaVersion.ES5, "<no directive>")]
+    [InlineData("function f() { 'use strict'\nvar x }", false, EcmaVersion.ES5, null)]
+    [InlineData("'use strict'\n0755", false, EcmaVersion.ES3, "<no directive>")]
+
+    // The retroactive check of the directive prologue's own string literals must keep working.
+    [InlineData("function f() { '\\222'; 'use strict'; }", false, EcmaVersion.ES5, "Octal escape sequences are not allowed in strict mode")]
+    [InlineData("function f() { '\\8'; 'use strict'; }", false, EcmaVersion.ES5, "\\8 and \\9 are not allowed in strict mode")]
+    [InlineData("function f() { '\\222'\n'use strict'\n}", false, EcmaVersion.ES5, "Octal escape sequences are not allowed in strict mode")]
     public void ShouldHandleStrictModeDetectionEdgeCases(string input, bool isModule, EcmaVersion ecmaVersion, string? expectedError)
     {
         var parser = new Parser(new ParserOptions { EcmaVersion = ecmaVersion });
@@ -815,6 +877,70 @@ public partial class ParserTests
             var ex = Assert.Throws<SyntaxErrorException>(() => isModule ? parser.ParseModule(input) : parser.ParseScript(input));
             Assert.Equal(expectedError, ex.Description);
         }
+    }
+
+    [Theory]
+    // The error must be reported for the offending construct itself, not for the directive,
+    // and the source order of errors must be preserved. See https://github.com/adams85/acornima/issues/47
+    [InlineData("'use strict'\n0755", "StrictOctalLiteral", 13, 2, 0)]
+    [InlineData("'use strict'\r\n0755", "StrictOctalLiteral", 14, 2, 0)]
+    [InlineData("'use strict'\n00", "StrictOctalLiteral", 13, 2, 0)]
+    [InlineData("'use strict'\n08", "StrictDecimalWithLeadingZero", 13, 2, 0)]
+    [InlineData("'use strict'\n09", "StrictDecimalWithLeadingZero", 13, 2, 0)]
+    [InlineData("'use strict'\n'\\222'", "StrictOctalEscape", 14, 2, 1)]
+    [InlineData("'use strict'\n'\\8'", "Strict8Or9Escape", 14, 2, 1)]
+    [InlineData("'use strict'\n'\\9'", "Strict8Or9Escape", 14, 2, 1)]
+    [InlineData("'use strict'\n/*c*/ 0755", "StrictOctalLiteral", 19, 2, 6)]
+    [InlineData("'use strict'\n0755 + 0644", "StrictOctalLiteral", 13, 2, 0)]
+    [InlineData("'use strict'\n'\\222' + '\\222'", "StrictOctalEscape", 14, 2, 1)]
+    [InlineData("function f() { 'use strict'\n0755 }", "StrictOctalLiteral", 28, 2, 0)]
+    [InlineData("'\\222'\n'use strict'\n0755", "StrictOctalEscape", 1, 1, 1)]
+    public void ShouldReportPositionOfLegacyOctalFollowingAsiTerminatedUseStrictDirective(
+        string input, string expectedErrorCode, int expectedIndex, int expectedLineNumber, int expectedColumn)
+    {
+        var parser = new Parser();
+
+        var ex = Assert.Throws<SyntaxErrorException>(() => parser.ParseScript(input));
+        Assert.Equal(expectedErrorCode, ex.Error.Code);
+        Assert.Equal(expectedIndex, ex.Error.Index);
+        Assert.Equal(expectedLineNumber, ex.LineNumber);
+        Assert.Equal(expectedColumn, ex.Column);
+    }
+
+    [Theory]
+    // In tolerant mode the retroactive check must report each offending construct exactly once,
+    // that is, it must not report the same construct which the tokenizer has already reported
+    // (and vice versa). See https://github.com/adams85/acornima/issues/47
+    [InlineData("'use strict'\n0755", 1)]
+    [InlineData("'use strict'\n'\\222'", 1)]
+    [InlineData("'use strict'\n0755\n0644", 2)]
+    [InlineData("'\\222'\n'use strict'\n0755", 2)]
+    [InlineData("'use strict'\n0", 0)]
+    [InlineData("'x'\n0755", 0)]
+    public void ShouldReportLegacyOctalFollowingAsiTerminatedUseStrictDirectiveExactlyOnce(string input, int expectedErrorCount)
+    {
+        var errorCollector = new ParseErrorCollector();
+        var parser = new Parser(new ParserOptions { Tolerant = true, ErrorHandler = errorCollector });
+        parser.ParseScript(input);
+
+        Assert.Equal(expectedErrorCount, errorCollector.Errors.Count);
+    }
+
+    [Theory]
+    // When strict mode is turned on by the parser option, it already applies to the very first token,
+    // so nothing needs to be (and nothing may be) reported retroactively.
+    [InlineData("0755", "StrictOctalLiteral")]
+    [InlineData("08", "StrictDecimalWithLeadingZero")]
+    [InlineData("'\\222'", "StrictOctalEscape")]
+    [InlineData("'\\8'", "Strict8Or9Escape")]
+    [InlineData("'use strict'\n0755", "StrictOctalLiteral")]
+    [InlineData("'use strict'\n'\\222'", "StrictOctalEscape")]
+    public void ShouldReportLegacyOctalWhenStrictModeIsTurnedOnByOption(string input, string expectedErrorCode)
+    {
+        var parser = new Parser();
+
+        var ex = Assert.Throws<SyntaxErrorException>(() => parser.ParseScript(input, strict: true));
+        Assert.Equal(expectedErrorCode, ex.Error.Code);
     }
 
     [Theory]

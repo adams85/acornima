@@ -23,10 +23,50 @@ public partial class Tokenizer
     // escape sequences must not be interpreted as keywords.
     internal bool _containsEscape;
 
-    // Used to signal to callers of `ReadString` whether the string literal
-    // contained any legacy octal escape sequences and, if so, at what position.
-    // This information is needed for detecting invalid directives in strict mode.
-    internal int _legacyOctalPosition;
+    // Used to signal to the parser whether a token contains a legacy octal construct, that is, a syntactic form
+    // which the specification allows in non-strict mode only, and if so, at what position and of what kind.
+    // This information is needed for reporting such constructs retroactively, that is, in the case when strict
+    // mode is turned on only after the token has been read (see also `Parser.ParseDirectivePrologue`).
+    // These fields are only ever recorded into, never cleared when a token containing no such construct is read,
+    // so they must always be accessed via `GetCurrentTokenLegacyOctal`, which tells a record which belongs to
+    // the current token apart from the leftovers of an earlier one.
+    private int _legacyOctalPosition;
+    private LegacyOctalKind _legacyOctalKind;
+
+    /// <summary>
+    /// Gets the position of the first legacy octal construct contained by the token which was read last,
+    /// or a negative value if that token contains no such construct.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal int GetCurrentTokenLegacyOctal(out LegacyOctalKind kind)
+    {
+        // As positions never decrease within a single tokenization, a recorded position which precedes the start
+        // of the current token can only be the leftover of an earlier token.
+        if (_legacyOctalPosition >= _start)
+        {
+            kind = _legacyOctalKind;
+            return _legacyOctalPosition;
+        }
+
+        kind = LegacyOctalKind.None;
+        return -1;
+    }
+
+    /// <summary>
+    /// Records that the token currently being read contains a legacy octal construct.
+    /// Only the first such construct of a token is recorded.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void RecordLegacyOctal(int position, LegacyOctalKind kind)
+    {
+        Debug.Assert(position >= _start, "Position must be within the token currently being read.");
+
+        if (_legacyOctalPosition < _start)
+        {
+            _legacyOctalPosition = position;
+            _legacyOctalKind = kind;
+        }
+    }
 
     // The current position of the tokenizer in the input.
     internal int _position;
