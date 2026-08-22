@@ -181,7 +181,7 @@ public partial class Parser
             _tokenizer._expressionAllowed = false;
         }
 
-        int oldParenAssign, oldTrailingComma, oldDoubleProto;
+        int oldParenAssign, oldTrailingComma;
 
         DestructuringErrors ownDestructuringErrors;
         SkipInit(out ownDestructuringErrors);
@@ -193,7 +193,6 @@ public partial class Parser
 
             SkipInit(out oldParenAssign);
             SkipInit(out oldTrailingComma);
-            SkipInit(out oldDoubleProto);
         }
         else
         {
@@ -201,7 +200,6 @@ public partial class Parser
 
             oldParenAssign = actualDestructuringErrors.ParenthesizedAssign;
             oldTrailingComma = actualDestructuringErrors.TrailingComma;
-            oldDoubleProto = actualDestructuringErrors.DoubleProto;
 
             actualDestructuringErrors.ParenthesizedAssign = actualDestructuringErrors.TrailingComma = -1;
         }
@@ -232,13 +230,8 @@ public partial class Parser
 
                 if (!IsNullRef(ref destructuringErrors))
                 {
-                    destructuringErrors.ParenthesizedAssign = destructuringErrors.TrailingComma = destructuringErrors.DoubleProto = -1;
+                    destructuringErrors.ParenthesizedAssign = destructuringErrors.TrailingComma = -1;
                 }
-
-                // NOTE: The recorded shorthand property assignment error can only be discarded when the shorthand default was
-                // actually used correctly, that is, when the conversion refined the object literal containing it into an
-                // object pattern (see also ConsumeCoverInitializedNameError).
-                var coverInitializedNamePosition = ConsumeCoverInitializedNameError(ref destructuringErrors, leftNode);
 
                 if (_tokenizer._type == TokenType.Eq)
                 {
@@ -254,11 +247,7 @@ public partial class Parser
                         lhsKind: LeftHandSideKind.Assignment);
                 }
 
-                // NOTE: An invalid left-hand side is reported first (as V8 does so in most of the cases as well).
-                if (coverInitializedNamePosition >= 0)
-                {
-                    Raise(coverInitializedNamePosition, InvalidCoverInitializedName);
-                }
+                CheckAssignmentLhsErrors(leftNode, ref destructuringErrors);
 
                 return leftNode;
             }
@@ -268,11 +257,6 @@ public partial class Parser
             Next();
 
             var right = ParseMaybeAssign(ref NullRef<DestructuringErrors>(), context);
-
-            if (!ownsDestructuringErrors && oldDoubleProto >= 0)
-            {
-                actualDestructuringErrors.DoubleProto = oldDoubleProto;
-            }
 
             return ExitRecursion(FinishNode(startMarker, new AssignmentExpression(op, leftNode, right)));
         }

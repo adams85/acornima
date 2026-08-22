@@ -658,16 +658,9 @@ public partial class Parser
                 var initPattern = ToAssignable(init, ref destructuringErrors, isBinding: false,
                     isInPattern: destructuringErrors.IsInPattern, allowCall: !_strict, lhsKind: LeftHandSideKind.ForInOf);
 
-                // NOTE: The recorded shorthand property assignment error can only be discarded when the conversion refined
-                // the object literal containing it into an object pattern (see also ConsumeCoverInitializedNameError).
-                var coverInitializedNamePosition = ConsumeCoverInitializedNameError(ref destructuringErrors, initPattern);
-
                 CheckLValPattern(initPattern, isInPattern: destructuringErrors.IsInPattern, allowCall: !_strict, lhsKind: LeftHandSideKind.ForInOf);
 
-                if (coverInitializedNamePosition >= 0)
-                {
-                    Raise(coverInitializedNamePosition, InvalidCoverInitializedName);
-                }
+                CheckAssignmentLhsErrors(initPattern, ref destructuringErrors);
 
                 return ParseForInOf(startMarker, isForIn: true, await: false, initPattern);
             }
@@ -688,16 +681,9 @@ public partial class Parser
                 var initPattern = ToAssignable(init, ref destructuringErrors, isBinding: false,
                     isInPattern: destructuringErrors.IsInPattern, allowCall: !_strict, lhsKind: LeftHandSideKind.ForInOf);
 
-                // NOTE: The recorded shorthand property assignment error can only be discarded when the conversion refined
-                // the object literal containing it into an object pattern (see also ConsumeCoverInitializedNameError).
-                var coverInitializedNamePosition = ConsumeCoverInitializedNameError(ref destructuringErrors, initPattern);
-
                 CheckLValPattern(initPattern, isInPattern: destructuringErrors.IsInPattern, allowCall: !_strict, lhsKind: LeftHandSideKind.ForInOf);
 
-                if (coverInitializedNamePosition >= 0)
-                {
-                    Raise(coverInitializedNamePosition, InvalidCoverInitializedName);
-                }
+                CheckAssignmentLhsErrors(initPattern, ref destructuringErrors);
 
                 return ParseForInOf(startMarker, isForIn: false, await: awaitAt >= 0, initPattern);
             }
@@ -1826,8 +1812,8 @@ public partial class Parser
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `function checkKeyName`
 
         return !computed
-            && (key is Identifier identifier && identifier.Name == name
-                || key is StringLiteral literal && name.Equals(literal.Value));
+            && (key is Identifier identifier ? identifier.Name == name
+                : key is StringLiteral literal && literal.Value == name);
     }
 
     // Parses module export declaration.
