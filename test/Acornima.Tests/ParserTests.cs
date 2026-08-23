@@ -984,7 +984,7 @@ public partial class ParserTests
     }
 
     [Theory]
-    // Direct super calls are not allowed at the top level unless AllowDirectSuperOutsideMethod is enabled.
+    // Direct super calls are not allowed at the top level unless AllowSuperCallOutsideConstructor is enabled.
     // (AllowSuperOutsideMethod alone doesn't enable them.)
     [InlineData("script", "super()", false, false, "'super' keyword unexpected here")]
     [InlineData("script", "super()", true, false, "'super' keyword unexpected here")]
@@ -1047,12 +1047,12 @@ public partial class ParserTests
     // whatever that scope allows.)
     [InlineData("script", "class C { [super()]() { } }", false, false, "'super' keyword unexpected here")]
     [InlineData("script", "class C { [super()]() { } }", false, true, null)]
-    public void ShouldHandleDirectSuperOutsideMethod(string sourceType, string input, bool allowSuperOutsideMethod, bool allowDirectSuperOutsideMethod, string? expectedError)
+    public void ShouldHandleSuperCallOutsideConstructor(string sourceType, string input, bool allowSuperOutsideMethod, bool allowSuperCallOutsideConstructor, string? expectedError)
     {
         var parser = new Parser(new ParserOptions
         {
             AllowSuperOutsideMethod = allowSuperOutsideMethod,
-            AllowSuperCallOutsideConstructor = allowDirectSuperOutsideMethod,
+            AllowSuperCallOutsideConstructor = allowSuperCallOutsideConstructor,
         });
         var parseAction = GetParseActionFor(sourceType);
 
@@ -1068,7 +1068,7 @@ public partial class ParserTests
     }
 
     [Fact]
-    public void AllowDirectSuperOutsideMethodShouldDefaultToFalse()
+    public void AllowSuperCallOutsideConstructorShouldDefaultToFalse()
     {
         Assert.False(new ParserOptions().AllowSuperCallOutsideConstructor);
         Assert.False(ParserOptions.Default.AllowSuperCallOutsideConstructor);
