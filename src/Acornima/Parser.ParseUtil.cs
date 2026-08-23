@@ -1,7 +1,9 @@
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Acornima.Ast;
+using Acornima.Helpers;
 
 namespace Acornima;
 
@@ -297,29 +299,46 @@ public partial class Parser
             return false;
         }
 
+        var hasError = destructuringErrors.ShorthandAssign >= 0 || destructuringErrors.DoubleProto >= 0;
+
         if (!andThrow)
         {
-            return destructuringErrors.ShorthandAssign >= 0 || destructuringErrors.DoubleProto >= 0;
+            return hasError;
         }
 
-        var hasShorthandAssign = destructuringErrors.ShorthandAssign >= 0;
-        var hasDoubleProto = destructuringErrors.DoubleProto >= 0;
-
-        if (hasShorthandAssign || hasDoubleProto)
+        if (hasError)
         {
-            if (hasShorthandAssign && (!hasDoubleProto || destructuringErrors.ShorthandAssign < destructuringErrors.DoubleProto))
-            {
-                // Raise(destructuringErrors.ShorthandAssign, "Shorthand property assignments are valid only in destructuring patterns"); // original acornjs error reporting
-                Raise(destructuringErrors.ShorthandAssign, InvalidCoverInitializedName);
-            }
-            else
-            {
-                // RaiseRecoverable(destructuringErrors.DoubleProto, "Redefinition of __proto__ property"); // original acornjs error reporting
-                Raise(destructuringErrors.DoubleProto, DuplicateProto);
-            }
+            // We deviate a bit from the original acornjs implementation here to match the error reporting behavior of V8.
+
+            //if (destructuringErrors.ShorthandAssign >= 0)
+            //{
+            //    Raise(destructuringErrors.ShorthandAssign, "Shorthand property assignments are valid only in destructuring patterns");
+            //}
+
+            //if (destructuringErrors.DoubleProto >= 0)
+            //{
+            //    RaiseRecoverable(destructuringErrors.DoubleProto, "Redefinition of __proto__ property");
+            //}
+
+            ThrowExpressionError(destructuringErrors.ShorthandAssign, destructuringErrors.DoubleProto);
         }
 
         return false;
+    }
+
+    [DoesNotReturn]
+    private void ThrowExpressionError(int shorthandAssign, int doubleProto)
+    {
+        Debug.Assert(shorthandAssign >= 0 || doubleProto >= 0);
+
+        if (shorthandAssign >= 0 && (doubleProto < 0 || shorthandAssign < doubleProto))
+        {
+            Raise(shorthandAssign, InvalidCoverInitializedName);
+        }
+        else
+        {
+            Raise(doubleProto, DuplicateProto);
+        }
     }
 
     private void CheckAssignmentLhsErrors(Node convertedNode, ref DestructuringErrors destructuringErrors)
@@ -340,57 +359,71 @@ public partial class Parser
         // which, in the rare case of multiple ones (e.g. `[{a = 0}, {b = 0}.x] = []`), is not necessarily the position of the
         // one which remained unrefined. (V8 reports the position of the first one in such cases as well.)
 
-        var hasShorthandAssign = destructuringErrors.ShorthandAssign >= convertedNode.Start;
-        var hasDoubleProto = destructuringErrors.DoubleProto >= convertedNode.Start;
-
-        if (hasShorthandAssign || hasDoubleProto)
+        if (destructuringErrors.ShorthandAssign >= convertedNode.Start || destructuringErrors.DoubleProto >= convertedNode.Start)
         {
             // The recorded error(s) can only be discarded when the duplicate __proto__ and/or shorthand property assignment were
             // actually used correctly, that is, when the conversion refined the object literal containing them into an object pattern.
 
-            CheckForErrors(convertedNode, hasShorthandAssign, hasDoubleProto);
+            int shorthandAssign, doubleProto;
 
-            if (hasShorthandAssign)
+            if (destructuringErrors.ShorthandAssign >= convertedNode.Start)
             {
+                shorthandAssign = destructuringErrors.ShorthandAssign;
                 destructuringErrors.ShorthandAssign = -1;
             }
-
-            if (hasDoubleProto)
+            else
             {
+                shorthandAssign = -1;
+            }
+
+            if (destructuringErrors.DoubleProto >= convertedNode.Start)
+            {
+                doubleProto = destructuringErrors.DoubleProto;
                 destructuringErrors.DoubleProto = -1;
             }
+            else
+            {
+                doubleProto = -1;
+            }
+
+            CheckForErrors(convertedNode, shorthandAssign, doubleProto);
         }
 
-        void CheckForErrors(Node node, bool hasShorthandAssign, bool hasDoubleProto)
+        void CheckForErrors(Node node, int shorthandAssign, int doubleProto)
         {
+            _recursionDepth++;
+            StackGuard.EnsureSufficientExecutionStack(_recursionDepth);
+
             var sawProto = false;
 
             foreach (var child in node.ChildNodes)
             {
                 if (child.Type == NodeType.Property && child is ObjectProperty property)
                 {
-                    if (hasShorthandAssign
+                    if (shorthandAssign >= 0
                         && property is { Shorthand: true, Value.Type: NodeType.AssignmentPattern })
                     {
-                        _tokenizer.RaiseAtNext(property.Value.As<AssignmentPattern>().Left.End, InvalidCoverInitializedName);
+                        ThrowExpressionError(shorthandAssign, doubleProto);
                     }
 
-                    if (hasDoubleProto
+                    if (doubleProto >= 0
                         // These conditions must be in sync with CheckPropertyClash.
                         && property is { Kind: PropertyKind.Init, Computed: false, Method: false, Shorthand: false }
                         && CheckKeyName(property.Key, computed: false, "__proto__"))
                     {
                         if (sawProto)
                         {
-                            Raise(property.Start, DuplicateProto);
+                            ThrowExpressionError(shorthandAssign, doubleProto);
                         }
 
                         sawProto = true;
                     }
                 }
 
-                CheckForErrors(child, hasShorthandAssign, hasDoubleProto);
+                CheckForErrors(child, shorthandAssign, doubleProto);
             }
+
+            _recursionDepth--;
         }
     }
 

@@ -1714,6 +1714,8 @@ public partial class Parser
             {
                 // We deviate a bit from the original acornjs implementation here to bring error reporting behavior closer to V8.
 
+                var assignPosition = _tokenizer._start;
+
                 Next();
 
                 var right = ParseMaybeAssign(ref NullRef<DestructuringErrors>());
@@ -1725,7 +1727,7 @@ public partial class Parser
 
                 if (destructuringErrors.ShorthandAssign < 0)
                 {
-                    destructuringErrors.ShorthandAssign = _tokenizer._start;
+                    destructuringErrors.ShorthandAssign = assignPosition;
                 }
 
                 value = FinishNode(startMarker, new AssignmentPattern(key, right));

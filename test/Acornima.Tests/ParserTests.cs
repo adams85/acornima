@@ -1756,10 +1756,13 @@ public partial class ParserTests
     [InlineData("script", "({a: {b = 0}} = {})", EcmaVersion.Latest, null)]
     [InlineData("script", "[{a: 0}.x] = []", EcmaVersion.Latest, null)]
 
+    [InlineData("script", "[{__proto__: a, __proto__: a}, {x = 0}.x] = []", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [InlineData("script", "[{x = 0}, {__proto__: a, __proto__: a}.x] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")]
     [InlineData("script", "[{__proto__: a, __proto__: a, x = 0}, {__proto__: a, __proto__: a}.x] = []", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
-    [InlineData("script", "[{__proto__: a, x = 0, __proto__: a}, {__proto__: a, __proto__: a}.x] = []", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")] // V8 reports "Invalid shorthand property initializer"
-    [InlineData("script", "[{__proto__: a, __proto__: a, x = 0}, {x = 0}.x] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")]  // V8 reports "Duplicate __proto__ fields are not allowed in object literals"
+    [InlineData("script", "[{__proto__: a, x = 0, __proto__: a}, {__proto__: a, __proto__: a}.x] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("script", "[{__proto__: a, __proto__: a, x = 0}, {x = 0}.x] = []", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
     [InlineData("script", "[{__proto__: a, x = 0, __proto__: a}, {x = 0}.x] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("script", "[[{a = 0}], {b = 0} = {}, {c: [{__proto__: a, __proto__: a}]}.x] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")]
     public void ShouldHandleVariableAssignmentEdgeCases(string sourceType, string input, EcmaVersion ecmaVersion, string? expectedError)
     {
         var parser = new Parser(new ParserOptions { EcmaVersion = ecmaVersion });

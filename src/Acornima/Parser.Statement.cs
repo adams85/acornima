@@ -652,6 +652,7 @@ public partial class Parser
             {
                 if (awaitAt >= 0) // this implies _ecmaVersion >= EcmaVersion.ES9
                 {
+                    // We deviate a bit from the original acornjs implementation here to match the error reporting behavior of V8.
                     CheckExpressionErrors(ref destructuringErrors, andThrow: true);
                     Unexpected(awaitAt, TokenType.Name, "await");
                 }
@@ -690,6 +691,7 @@ public partial class Parser
             }
             else
             {
+                // We deviate a bit from the original acornjs implementation here to match the error reporting behavior of V8.
                 CheckExpressionErrors(ref destructuringErrors, andThrow: true);
 
                 if (awaitAt >= 0)

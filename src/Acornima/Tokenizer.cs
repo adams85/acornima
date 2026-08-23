@@ -1995,32 +1995,6 @@ public sealed partial class Tokenizer : ITokenizer
         return _options._errorHandler.TolerateError(error, _options._tolerant);
     }
 
-    internal void RaiseAtNext(int pos, string message, ParseError.Factory? errorFactory = null,
-        [CallerArgumentExpression(nameof(message))] string code = UnknownError)
-    {
-        var oldOnComment = _options._onComment;
-        var oldOnToken = _options._onToken;
-        var oldOnRegExp = _options._onRegExp;
-
-        _options._onComment = null;
-        _options._onToken = null;
-        _options._onRegExp = null;
-
-        try
-        {
-            ResetInternal(_input, pos, _endPosition - pos, _sourceType, _sourceFile);
-            NextToken();
-        }
-        finally
-        {
-            _options._onComment = oldOnComment;
-            _options._onToken = oldOnToken;
-            _options._onRegExp = oldOnRegExp;
-        }
-
-        Raise(_start, message, errorFactory, code);
-    }
-
     /// <summary>
     /// Checks whether an ECMAScript regular expression is syntactically correct.
     /// </summary>
