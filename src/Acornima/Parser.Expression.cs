@@ -38,7 +38,8 @@ public partial class Parser
     // Object/class getters and setters are not allowed to clash —
     // either with each other or with an init property — and in
     // strict mode, init properties are also not allowed to be repeated.
-    private void CheckPropertyClash(Node property, ref bool hasProto, ref Dictionary<string, int>? propHash, ref DestructuringErrors destructuringErrors)
+    private void CheckPropertyClash(Node property, ref bool hasProto, ref Dictionary<string, int>? propHash,
+        int objectStartIndex, ref DestructuringErrors destructuringErrors)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/expression.js > `pp.checkPropClash = function`
 
@@ -81,7 +82,7 @@ public partial class Parser
                         // RaiseRecoverable(key.Start, "Redefinition of __proto__ property"); // original acornjs error reporting
                         Raise(key.Start, DuplicateProto);
                     }
-                    else if (destructuringErrors.DoubleProto < 0)
+                    else if (destructuringErrors.DoubleProto < objectStartIndex)
                     {
                         destructuringErrors.DoubleProto = key.Start;
                     }
@@ -232,6 +233,16 @@ public partial class Parser
                 if (!ownsDestructuringErrors)
                 {
                     destructuringErrors.ParenthesizedAssign = destructuringErrors.TrailingComma = -1;
+
+                    if (destructuringErrors.ShorthandAssign >= left.Start)
+                    {
+                        destructuringErrors.ShorthandAssign = -1;
+                    }
+
+                    if (destructuringErrors.DoubleProto >= left.Start)
+                    {
+                        destructuringErrors.DoubleProto = -1;
+                    }
                 }
 
                 if (_tokenizer._type == TokenType.Eq)
@@ -247,8 +258,6 @@ public partial class Parser
                         allowCall: !_strict && op is not (Operator.LogicalAndAssignment or Operator.LogicalOrAssignment or Operator.NullishCoalescingAssignment),
                         lhsKind: LeftHandSideKind.Assignment);
                 }
-
-                CheckAssignmentLhsErrors(leftNode, ref destructuringErrors);
 
                 return leftNode;
             }
@@ -594,6 +603,18 @@ public partial class Parser
 
         var startMarker = StartNode();
 
+        int oldShorthandAssign, oldDoubleProto;
+        if (!IsNullRef(ref destructuringErrors))
+        {
+            oldShorthandAssign = destructuringErrors.ShorthandAssign;
+            oldDoubleProto = destructuringErrors.DoubleProto;
+        }
+        else
+        {
+            SkipInit(out oldShorthandAssign);
+            SkipInit(out oldDoubleProto);
+        }
+
         Expression expr;
         if ((context & ExpressionContext.Decorator) == 0)
         {
@@ -607,6 +628,32 @@ public partial class Parser
             }
 
             expr = ParseExprAtom(ref destructuringErrors, context & ~ExpressionContext.Decorator);
+        }
+
+        if (!IsNullRef(ref destructuringErrors))
+        {
+            if (oldShorthandAssign >= 0)
+            {
+                Swap(ref destructuringErrors.ShorthandAssign, ref oldShorthandAssign);
+            }
+            else
+            {
+                oldShorthandAssign = destructuringErrors.ShorthandAssign;
+            }
+
+            if (oldDoubleProto >= 0)
+            {
+                Swap(ref destructuringErrors.DoubleProto, ref oldDoubleProto);
+            }
+            else
+            {
+                oldDoubleProto = destructuringErrors.DoubleProto;
+            }
+
+            if (oldShorthandAssign >= expr.Start || oldDoubleProto >= expr.Start)
+            {
+                return expr;
+            }
         }
 
         if (expr.Type == NodeType.ArrowFunctionExpression
@@ -1498,11 +1545,11 @@ public partial class Parser
                 first = false;
             }
 
-            var property = ParseProperty(isPattern, ref destructuringErrors);
+            var property = ParseProperty(isPattern, startMarker.Index, ref destructuringErrors);
             if (!isPattern)
             {
                 propHash ??= new Dictionary<string, int>();
-                CheckPropertyClash(property, ref hasProto, ref propHash, ref destructuringErrors);
+                CheckPropertyClash(property, ref hasProto, ref propHash, startMarker.Index, ref destructuringErrors);
             }
 
             properties.Add(property);
@@ -1514,7 +1561,7 @@ public partial class Parser
     }
 
     [MethodImpl((MethodImplOptions)512  /* AggressiveOptimization */)]
-    private Node ParseProperty(bool isPattern, ref DestructuringErrors destructuringErrors)
+    private Node ParseProperty(bool isPattern, int objectStartIndex, ref DestructuringErrors destructuringErrors)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/expression.js > `pp.parseProperty = function`
 
@@ -1603,7 +1650,7 @@ public partial class Parser
         }
 
         var value = ParsePropertyValue(ref key, ref computed, out var kind, out var method, out var shorthand, isPattern, isGenerator, isAsync,
-            containsEsc, startMarker, ref destructuringErrors);
+            containsEsc, objectStartIndex, startMarker, ref destructuringErrors);
 
         Debug.Assert(!isPattern || kind == PropertyKind.Init);
         return FinishNode<Property>(propertyStartMarker, isPattern
@@ -1645,7 +1692,7 @@ public partial class Parser
 
     [MethodImpl((MethodImplOptions)512  /* AggressiveOptimization */)]
     private Node ParsePropertyValue(ref Expression key, ref bool computed, out PropertyKind kind, out bool method, out bool shorthand, bool isPattern, bool isGenerator, bool isAsync,
-        bool containsEsc, in Marker startMarker, ref DestructuringErrors destructuringErrors)
+        bool containsEsc, int objectStartIndex, in Marker startMarker, ref DestructuringErrors destructuringErrors)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/expression.js > `pp.parsePropertyValue = function`
 
@@ -1725,7 +1772,7 @@ public partial class Parser
                     Raise(_tokenizer._start, InvalidCoverInitializedName);
                 }
 
-                if (destructuringErrors.ShorthandAssign < 0)
+                if (destructuringErrors.ShorthandAssign < objectStartIndex)
                 {
                     destructuringErrors.ShorthandAssign = assignPosition;
                 }

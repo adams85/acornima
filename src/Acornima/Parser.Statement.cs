@@ -643,10 +643,7 @@ public partial class Parser
                 ? ParseExpression(ref destructuringErrors, ExpressionContext.ForInit)
                 : ParseExprSubscripts(ref destructuringErrors, ExpressionContext.AwaitForInit);
 
-            // Swap variables using XOR
-            _forInitPosition ^= oldForInitPosition;
-            oldForInitPosition ^= _forInitPosition;
-            _forInitPosition ^= oldForInitPosition;
+            Swap(ref _forInitPosition, ref oldForInitPosition);
 
             if (_tokenizer._type == TokenType.In)
             {
@@ -661,8 +658,6 @@ public partial class Parser
                     isInPattern: destructuringErrors.IsInPattern, allowCall: !_strict, lhsKind: LeftHandSideKind.ForInOf);
 
                 CheckLValPattern(initPattern, isInPattern: destructuringErrors.IsInPattern, allowCall: !_strict, lhsKind: LeftHandSideKind.ForInOf);
-
-                CheckAssignmentLhsErrors(initPattern, ref destructuringErrors);
 
                 return ParseForInOf(startMarker, isForIn: true, await: false, initPattern);
             }
@@ -684,8 +679,6 @@ public partial class Parser
                     isInPattern: destructuringErrors.IsInPattern, allowCall: !_strict, lhsKind: LeftHandSideKind.ForInOf);
 
                 CheckLValPattern(initPattern, isInPattern: destructuringErrors.IsInPattern, allowCall: !_strict, lhsKind: LeftHandSideKind.ForInOf);
-
-                CheckAssignmentLhsErrors(initPattern, ref destructuringErrors);
 
                 return ParseForInOf(startMarker, isForIn: false, await: awaitAt >= 0, initPattern);
             }

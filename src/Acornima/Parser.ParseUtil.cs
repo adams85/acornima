@@ -1,9 +1,7 @@
 using System;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Acornima.Ast;
-using Acornima.Helpers;
 
 namespace Acornima;
 
@@ -320,111 +318,18 @@ public partial class Parser
             //    RaiseRecoverable(destructuringErrors.DoubleProto, "Redefinition of __proto__ property");
             //}
 
-            ThrowExpressionError(destructuringErrors.ShorthandAssign, destructuringErrors.DoubleProto);
+            if (destructuringErrors.ShorthandAssign >= 0
+                && (destructuringErrors.DoubleProto < 0 || destructuringErrors.ShorthandAssign < destructuringErrors.DoubleProto))
+            {
+                Raise(destructuringErrors.ShorthandAssign, InvalidCoverInitializedName);
+            }
+            else
+            {
+                Raise(destructuringErrors.DoubleProto, DuplicateProto);
+            }
         }
 
         return false;
-    }
-
-    [DoesNotReturn]
-    private void ThrowExpressionError(int shorthandAssign, int doubleProto)
-    {
-        Debug.Assert(shorthandAssign >= 0 || doubleProto >= 0);
-
-        if (shorthandAssign >= 0 && (doubleProto < 0 || shorthandAssign < doubleProto))
-        {
-            Raise(shorthandAssign, InvalidCoverInitializedName);
-        }
-        else
-        {
-            Raise(doubleProto, DuplicateProto);
-        }
-    }
-
-    private void CheckAssignmentLhsErrors(Node convertedNode, ref DestructuringErrors destructuringErrors)
-    {
-        // Duplicate __proto__ properties (e.g. `{__proto__: x, __proto__: x}`) or shorthand property assignment (e.g. `{a = 0}`)
-        // are only valid when the object literal containing it is refined into an object assignment pattern
-        // (see https://tc39.es/ecma262/#sec-object-initializer-static-semantics-early-errors, Note 2).
-        // Converting a left-hand side expression to an assignment target doesn't necessarily refine such an object literal:
-        // e.g. in `[{a = 0}.x] = []` the destructuring assignment target is the member expression `{a = 0}.x`, which
-        // is a valid assignment target on its own, so `{a = 0}` remains an actual object literal, for which the early error
-        // applies. (The original acornjs implementation discards the recorded error based on its position only, which makes it
-        // miss all such cases. See also https://github.com/adams85/acornima/issues/46)
-
-        // As duplicate __proto__ and shorthand property assignments are recorded in source order and only the first occurrence
-        // of each is kept, a recorded position which is not before the start of the converted node is necessarily within it.
-
-        // NOTE: The reported position is the position of the first duplicate __proto__ or shorthand property assignment,
-        // which, in the rare case of multiple ones (e.g. `[{a = 0}, {b = 0}.x] = []`), is not necessarily the position of the
-        // one which remained unrefined. (V8 reports the position of the first one in such cases as well.)
-
-        if (destructuringErrors.ShorthandAssign >= convertedNode.Start || destructuringErrors.DoubleProto >= convertedNode.Start)
-        {
-            // The recorded error(s) can only be discarded when the duplicate __proto__ and/or shorthand property assignment were
-            // actually used correctly, that is, when the conversion refined the object literal containing them into an object pattern.
-
-            int shorthandAssign, doubleProto;
-
-            if (destructuringErrors.ShorthandAssign >= convertedNode.Start)
-            {
-                shorthandAssign = destructuringErrors.ShorthandAssign;
-                destructuringErrors.ShorthandAssign = -1;
-            }
-            else
-            {
-                shorthandAssign = -1;
-            }
-
-            if (destructuringErrors.DoubleProto >= convertedNode.Start)
-            {
-                doubleProto = destructuringErrors.DoubleProto;
-                destructuringErrors.DoubleProto = -1;
-            }
-            else
-            {
-                doubleProto = -1;
-            }
-
-            CheckForErrors(convertedNode, shorthandAssign, doubleProto);
-        }
-
-        void CheckForErrors(Node node, int shorthandAssign, int doubleProto)
-        {
-            _recursionDepth++;
-            StackGuard.EnsureSufficientExecutionStack(_recursionDepth);
-
-            var sawProto = false;
-
-            foreach (var child in node.ChildNodes)
-            {
-                if (child.Type == NodeType.Property && child is ObjectProperty property)
-                {
-                    if (shorthandAssign >= 0
-                        && property is { Shorthand: true, Value.Type: NodeType.AssignmentPattern })
-                    {
-                        ThrowExpressionError(shorthandAssign, doubleProto);
-                    }
-
-                    if (doubleProto >= 0
-                        // These conditions must be in sync with CheckPropertyClash.
-                        && property is { Kind: PropertyKind.Init, Computed: false, Method: false, Shorthand: false }
-                        && CheckKeyName(property.Key, computed: false, "__proto__"))
-                    {
-                        if (sawProto)
-                        {
-                            ThrowExpressionError(shorthandAssign, doubleProto);
-                        }
-
-                        sawProto = true;
-                    }
-                }
-
-                CheckForErrors(child, shorthandAssign, doubleProto);
-            }
-
-            _recursionDepth--;
-        }
     }
 
     private void CheckYieldAwaitInDefaultParams()
@@ -459,6 +364,15 @@ public partial class Parser
 
             return expr.Type is NodeType.Identifier or NodeType.MemberExpression;
         }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void Swap(ref int x, ref int y)
+    {
+        // Swap variables using XOR
+        x ^= y;
+        y ^= x;
+        x ^= y;
     }
 
     internal readonly struct TokenState

@@ -1721,10 +1721,10 @@ public partial class ParserTests
 
     [InlineData("script", "({__proto__: x, __proto__: y}[x] = 0)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
     [InlineData("script", "({__proto__: x, __proto__: y}() = 0)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
-    [InlineData("script", "({__proto__: x, __proto__: y}`` = 0)", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
+    [InlineData("script", "({__proto__: x, __proto__: y}`` = 0)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")] // V8 reports "Invalid left-hand side expression in prefix operation"
     [InlineData("script", "async () => { for await ({__proto__: x, __proto__: y}[x] of []) { } }", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
     [InlineData("script", "async () => { for await ({__proto__: x, __proto__: y}() of []) { } }", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")] // V8 incorrectly accepts this! (Chrome 151)
-    [InlineData("script", "async () => { for await ({__proto__: x, __proto__: y}`` of []) { } }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")]
+    [InlineData("script", "async () => { for await ({__proto__: x, __proto__: y}`` of []) { } }", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")] // V8 reports "Invalid left-hand side expression in prefix operation"
 
     [InlineData("script", "({ [{__proto__: x, __proto__: y}]: x } = 0)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
     [InlineData("script", "({ [{__proto__: x, __proto__: y} = 0]: x } = 0)", EcmaVersion.Latest, null)]
@@ -2858,12 +2858,12 @@ public partial class ParserTests
     // The left-hand side is reported as invalid before the shorthand property assignment is.
     [InlineData("script", "({a = 0} += 1);", "Invalid left-hand side in assignment")]
     [InlineData("module", "({a = 0} += 1);", "Invalid left-hand side in assignment")]
-    [InlineData("script", "[{a = 0}.x] += 1;", "Invalid left-hand side in assignment")] // V8 reports "Invalid shorthand property initializer"
-    [InlineData("module", "[{a = 0}.x] += 1;", "Invalid left-hand side in assignment")] // V8 reports "Invalid shorthand property initializer"
-    [InlineData("script", "({a = 0}?.x = 0);", "Invalid left-hand side in assignment")]
-    [InlineData("module", "({a = 0}?.x = 0);", "Invalid left-hand side in assignment")]
-    [InlineData("script", "({a = 0}.x) => 0;", "Illegal property in declaration context")] // V8 reports "Invalid destructuring assignment target"
-    [InlineData("module", "({a = 0}.x) => 0;", "Illegal property in declaration context")] // V8 reports "Invalid destructuring assignment target"
+    [InlineData("script", "[{a = 0}.x] += 1;", "Invalid shorthand property initializer")]
+    [InlineData("module", "[{a = 0}.x] += 1;", "Invalid shorthand property initializer")]
+    [InlineData("script", "({a = 0}?.x = 0);", "Invalid shorthand property initializer")] // V8 reports "Invalid left-hand side in assignment"
+    [InlineData("module", "({a = 0}?.x = 0);", "Invalid shorthand property initializer")] // V8 reports "Invalid left-hand side in assignment"
+    [InlineData("script", "({a = 0}.x) => 0;", "Invalid shorthand property initializer")] // V8 reports "Invalid destructuring assignment target"
+    [InlineData("module", "({a = 0}.x) => 0;", "Invalid shorthand property initializer")] // V8 reports "Invalid destructuring assignment target"
 
     // The object literal is refined, so the shorthand property assignment is legal.
     [InlineData("script", "({a = 0} = {});", null)]
