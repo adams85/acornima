@@ -105,7 +105,16 @@ public partial class Parser
 
         _scopeId = 0;
         _scopeStack.Clear();
-        EnterScope(ScopeFlags.Top);
+
+        // NOTE: Seeding the root scope with the super flags (as opposed to just short-circuiting the `AllowSuper`/`AllowDirectSuper` getters)
+        // makes both options follow the this binding: as `EnterScope` propagates the current this scope through arrow function scopes
+        // but not through ordinary function scopes, super is allowed exactly where the top level's this binding is in effect.
+        var superFlags =
+            _options._allowSuperCallOutsideConstructor ? ScopeFlags.Super | ScopeFlags.DirectSuper
+            : _options._allowSuperOutsideMethod ? ScopeFlags.Super
+            : ScopeFlags.None;
+
+        EnterScope(ScopeFlags.Top | superFlags);
 
         _privateNameStack.Clear();
 
@@ -285,7 +294,7 @@ public partial class Parser
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/state.js > `get allowSuper`
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _options._allowSuperOutsideMethod || (CurrentThisScope._flags & (ScopeFlags.Super | ScopeFlags.InClassFieldInit)) != 0;
+        get => (CurrentThisScope._flags & (ScopeFlags.Super | ScopeFlags.InClassFieldInit)) != 0;
     }
 
     private bool AllowDirectSuper
