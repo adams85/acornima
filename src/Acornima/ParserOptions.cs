@@ -124,9 +124,17 @@ public record class ParserOptions
 
     internal readonly bool _allowSuperOutsideMethod;
     /// <summary>
-    /// Gets or sets whether to allow super identifiers to appear outside methods.
+    /// Gets or sets whether to allow super property accesses to appear outside methods.
     /// Defaults to <see langword="false"/>.
     /// </summary>
+    /// <remarks>
+    /// This option is intended for parsing code which is evaluated in the context of a method
+    /// (see <see href="https://tc39.es/ecma262/#sec-performeval">PerformEval</see> and its <c>inMethod</c> parameter).
+    /// Enabling it means that super property accesses are permitted at the top level of the parsed unit, that is,
+    /// in the same places where <c>this</c> refers to the top level's this binding.
+    /// (E.g. they are allowed in arrow functions declared at the top level but not in ordinary functions.)
+    /// Direct super calls remain disallowed; see <see cref="AllowDirectSuperOutsideMethod"/> for those.
+    /// </remarks>
     public bool AllowSuperOutsideMethod { get => _allowSuperOutsideMethod; init => _allowSuperOutsideMethod = value; }
 
     internal readonly bool _allowDirectSuperOutsideMethod;
@@ -140,6 +148,7 @@ public record class ParserOptions
     /// Enabling it means that direct super calls (as well as super property accesses) are permitted at the top level
     /// of the parsed unit, that is, in the same places where <c>this</c> refers to the top level's this binding.
     /// (E.g. they are allowed in arrow functions declared at the top level but not in ordinary functions.)
+    /// This option implies <see cref="AllowSuperOutsideMethod"/>.
     /// </remarks>
     public bool AllowDirectSuperOutsideMethod { get => _allowDirectSuperOutsideMethod; init => _allowDirectSuperOutsideMethod = value; }
 

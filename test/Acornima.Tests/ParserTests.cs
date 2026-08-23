@@ -1012,16 +1012,20 @@ public partial class ParserTests
     [InlineData("script", "() => function () { super() }", false, true, "'super' keyword unexpected here")]
     [InlineData("script", "({ m() { super() } })", false, true, "'super' keyword unexpected here")]
 
-    // Super property accesses are allowed wherever direct super calls are.
+    // Super property accesses are allowed wherever direct super calls are, and AllowSuperOutsideMethod allows
+    // exactly those, without allowing direct super calls.
     [InlineData("script", "super.x", false, false, "'super' keyword unexpected here")]
     [InlineData("script", "super.x", true, false, null)]
     [InlineData("script", "super.x", false, true, null)]
     [InlineData("script", "(() => super.x)()", false, true, null)]
+    [InlineData("script", "(() => super.x)()", true, false, null)]
+    // (Both options follow the top level's this binding, so neither of them reaches into an ordinary function.)
     [InlineData("script", "function f() { super.x }", false, true, "'super' keyword unexpected here")]
-    // (AllowSuperOutsideMethod is unaffected by AllowDirectSuperOutsideMethod, including that it allows
-    // super property accesses in nested functions as well.)
-    [InlineData("script", "function f() { super.x }", true, false, null)]
-    [InlineData("script", "function f() { super.x }", true, true, null)]
+    [InlineData("script", "function f() { super.x }", true, false, "'super' keyword unexpected here")]
+    [InlineData("script", "function f() { super.x }", true, true, "'super' keyword unexpected here")]
+    // (Methods bring a home object of their own, so they are unaffected by either option.)
+    [InlineData("script", "({ m() { super.x } })", false, false, null)]
+    [InlineData("script", "({ m() { super.x } })", true, false, null)]
 
     // Classes are unaffected: the constructor of a derived class remains the only place where direct super calls are allowed.
     [InlineData("script", "class A extends B { constructor() { super() } }", false, false, null)]
@@ -1032,12 +1036,17 @@ public partial class ParserTests
     [InlineData("script", "class A extends B { constructor() { function f() { super() } } }", false, true, "'super' keyword unexpected here")]
     [InlineData("script", "class C { x = super.y }", false, false, null)]
     [InlineData("script", "class C { x = super.y }", false, true, null)]
-    // (Class field initializers don't introduce a this binding of their own. This is why a direct super call is accepted
-    // in a field initializer of a class declared in the constructor of a derived class - and, with the option enabled,
-    // in a field initializer of a class declared at the top level as well.)
-    [InlineData("script", "class A extends B { constructor() { class C { x = super() } } }", false, false, null)]
+    // (Class field initializers don't introduce a this binding of their own, but they are never a place for a direct
+    // super call either: https://tc39.es/ecma262/#sec-class-definitions-static-semantics-early-errors makes it a
+    // Syntax Error if the Initializer Contains SuperCall. So neither the constructor of a derived class nor the
+    // option enables one there.)
+    [InlineData("script", "class A extends B { constructor() { class C { x = super() } } }", false, false, "'super' keyword unexpected here")]
     [InlineData("script", "class C { x = super() }", false, false, "'super' keyword unexpected here")]
-    [InlineData("script", "class C { x = super() }", false, true, null)]
+    [InlineData("script", "class C { x = super() }", false, true, "'super' keyword unexpected here")]
+    // (A computed class element name, on the other hand, is evaluated in the enclosing scope, so it inherits
+    // whatever that scope allows.)
+    [InlineData("script", "class C { [super()]() { } }", false, false, "'super' keyword unexpected here")]
+    [InlineData("script", "class C { [super()]() { } }", false, true, null)]
     public void ShouldHandleDirectSuperOutsideMethod(string sourceType, string input, bool allowSuperOutsideMethod, bool allowDirectSuperOutsideMethod, string? expectedError)
     {
         var parser = new Parser(new ParserOptions
