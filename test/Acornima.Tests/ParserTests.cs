@@ -1052,7 +1052,7 @@ public partial class ParserTests
         var parser = new Parser(new ParserOptions
         {
             AllowSuperOutsideMethod = allowSuperOutsideMethod,
-            AllowDirectSuperOutsideMethod = allowDirectSuperOutsideMethod,
+            AllowSuperCallOutsideConstructor = allowDirectSuperOutsideMethod,
         });
         var parseAction = GetParseActionFor(sourceType);
 
@@ -1070,15 +1070,15 @@ public partial class ParserTests
     [Fact]
     public void AllowDirectSuperOutsideMethodShouldDefaultToFalse()
     {
-        Assert.False(new ParserOptions().AllowDirectSuperOutsideMethod);
-        Assert.False(ParserOptions.Default.AllowDirectSuperOutsideMethod);
+        Assert.False(new ParserOptions().AllowSuperCallOutsideConstructor);
+        Assert.False(ParserOptions.Default.AllowSuperCallOutsideConstructor);
 
-        var options = ParserOptions.Default with { AllowDirectSuperOutsideMethod = true };
-        Assert.True(options.AllowDirectSuperOutsideMethod);
-        Assert.False(ParserOptions.Default.AllowDirectSuperOutsideMethod);
+        var options = ParserOptions.Default with { AllowSuperCallOutsideConstructor = true };
+        Assert.True(options.AllowSuperCallOutsideConstructor);
+        Assert.False(ParserOptions.Default.AllowSuperCallOutsideConstructor);
 
         // The option must survive further copies of the options object.
-        Assert.True((options with { EcmaVersion = EcmaVersion.ES2022 }).AllowDirectSuperOutsideMethod);
+        Assert.True((options with { EcmaVersion = EcmaVersion.ES2022 }).AllowSuperCallOutsideConstructor);
     }
 
     [Theory]

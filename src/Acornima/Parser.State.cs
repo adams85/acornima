@@ -105,18 +105,15 @@ public partial class Parser
 
         _scopeId = 0;
         _scopeStack.Clear();
+
         // NOTE: Seeding the root scope with the super flags (as opposed to just short-circuiting the `AllowSuper`/`AllowDirectSuper` getters)
         // makes both options follow the this binding: as `EnterScope` propagates the current this scope through arrow function scopes
         // but not through ordinary function scopes, super is allowed exactly where the top level's this binding is in effect.
-        var superFlags = ScopeFlags.None;
-        if (_options._allowDirectSuperOutsideMethod)
-        {
-            superFlags = ScopeFlags.Super | ScopeFlags.DirectSuper;
-        }
-        else if (_options._allowSuperOutsideMethod)
-        {
-            superFlags = ScopeFlags.Super;
-        }
+        var superFlags =
+            _options._allowSuperCallOutsideConstructor ? ScopeFlags.Super | ScopeFlags.DirectSuper
+            : _options._allowSuperOutsideMethod ? ScopeFlags.Super
+            : ScopeFlags.None;
+
         EnterScope(ScopeFlags.Top | superFlags);
 
         _privateNameStack.Clear();
