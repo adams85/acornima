@@ -2361,7 +2361,7 @@ public partial class Parser
         {
             if (firstRestrictedPos < 0)
             {
-                firstRestrictedPos = _tokenizer.GetCurrentTokenLegacyOctal(out firstRestrictedKind);
+                firstRestrictedPos = _tokenizer.GetCurrentLegacyOctal(out firstRestrictedKind);
             }
 
             var startMarker = StartNode();
@@ -2370,9 +2370,10 @@ public partial class Parser
             if (expr is StringLiteral literal)
             {
                 var directive = Tokenizer.DeduplicateString(literal.Raw.SliceBetween(1, literal.Raw.Length - 1), ref _tokenizer._stringPool);
-                var turnedStrict = false;
                 if (!sawStrict && directive == "use strict")
                 {
+                    sawStrict = true;
+
                     if (!allowStrictDirective)
                     {
                         RaiseRecoverable(startMarker.Index, IllegalLanguageModeDirective, new object[] { directive });
@@ -2387,28 +2388,28 @@ public partial class Parser
                             RaiseLegacyOctal(firstRestrictedPos, firstRestrictedKind);
                         }
 
-                        _strict = turnedStrict = true;
-                    }
+                        _strict = true;
 
-                    sawStrict = true;
+                        Semicolon();
+
+                        // The same goes for the token which follows the directive: when the directive is terminated by
+                        // automatic semicolon insertion, that token is inevitably read before strict mode can be turned on,
+                        // as the ASI decision can only be made by looking at it. (When the directive is terminated by an
+                        // explicit semicolon, the token which follows it is read by the `Semicolon` call above, that is,
+                        // already in strict mode, so in that case the tokenizer reports the problem as usual.)
+                        var legacyOctalPos = _tokenizer.GetCurrentLegacyOctal(out var legacyOctalKind);
+                        if (legacyOctalPos >= 0)
+                        {
+                            RaiseLegacyOctal(legacyOctalPos, legacyOctalKind);
+                        }
+
+                        goto FinishDirective;
+                    }
                 }
 
                 Semicolon();
 
-                if (turnedStrict)
-                {
-                    // The same goes for the token which follows the directive: when the directive is terminated by
-                    // automatic semicolon insertion, that token is inevitably read before strict mode can be turned on,
-                    // as the ASI decision can only be made by looking at it. (When the directive is terminated by an
-                    // explicit semicolon, the token which follows it is read by the `Semicolon` call above, that is,
-                    // already in strict mode, so in that case the tokenizer reports the problem as usual.)
-                    var legacyOctalPos = _tokenizer.GetCurrentTokenLegacyOctal(out var legacyOctalKind);
-                    if (legacyOctalPos >= 0)
-                    {
-                        RaiseLegacyOctal(legacyOctalPos, legacyOctalKind);
-                    }
-                }
-
+            FinishDirective:
                 body.Add(FinishNode(startMarker, new Directive(expr, directive)));
             }
             else
@@ -2420,28 +2421,6 @@ public partial class Parser
         }
 
         return body;
-    }
-
-    private void RaiseLegacyOctal(int position, LegacyOctalKind kind)
-    {
-        switch (kind)
-        {
-            case LegacyOctalKind.OctalEscape:
-                RaiseRecoverable(position, StrictOctalEscape);
-                break;
-            case LegacyOctalKind.EightOrNineEscape:
-                RaiseRecoverable(position, Strict8Or9Escape);
-                break;
-            case LegacyOctalKind.OctalLiteral:
-                RaiseRecoverable(position, StrictOctalLiteral);
-                break;
-            case LegacyOctalKind.DecimalWithLeadingZero:
-                RaiseRecoverable(position, StrictDecimalWithLeadingZero);
-                break;
-            default:
-                Debug.Fail($"Unexpected {nameof(LegacyOctalKind)} value: {kind}");
-                break;
-        }
     }
 
     private ClassDeclaration ParseDecoratedClassStatement(in Marker startMarker, FunctionOrClassFlags flags = FunctionOrClassFlags.Statement)

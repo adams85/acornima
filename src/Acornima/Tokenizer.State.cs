@@ -33,41 +33,6 @@ public partial class Tokenizer
     private int _legacyOctalPosition;
     private LegacyOctalKind _legacyOctalKind;
 
-    /// <summary>
-    /// Gets the position of the first legacy octal construct contained by the token which was read last,
-    /// or a negative value if that token contains no such construct.
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal int GetCurrentTokenLegacyOctal(out LegacyOctalKind kind)
-    {
-        // As positions never decrease within a single tokenization, a recorded position which precedes the start
-        // of the current token can only be the leftover of an earlier token.
-        if (_legacyOctalPosition >= _start)
-        {
-            kind = _legacyOctalKind;
-            return _legacyOctalPosition;
-        }
-
-        kind = LegacyOctalKind.None;
-        return -1;
-    }
-
-    /// <summary>
-    /// Records that the token currently being read contains a legacy octal construct.
-    /// Only the first such construct of a token is recorded.
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void RecordLegacyOctal(int position, LegacyOctalKind kind)
-    {
-        Debug.Assert(position >= _start, "Position must be within the token currently being read.");
-
-        if (_legacyOctalPosition < _start)
-        {
-            _legacyOctalPosition = position;
-            _legacyOctalKind = kind;
-        }
-    }
-
     // The current position of the tokenizer in the input.
     internal int _position;
     internal int _lineStart;
@@ -215,6 +180,33 @@ public partial class Tokenizer
     private Position CurrentPosition { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => new Position(_currentLine, _position - _lineStart); }
 
     internal TokenContext CurrentContext { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _contextStack.Peek(); }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal int GetCurrentLegacyOctal(out LegacyOctalKind kind)
+    {
+        // As positions never decrease within a single tokenization, a recorded position which precedes the start
+        // of the current token can only be the leftover of an earlier token.
+        if (_legacyOctalPosition >= _start)
+        {
+            kind = _legacyOctalKind;
+            return _legacyOctalPosition;
+        }
+
+        kind = LegacyOctalKind.None;
+        return -1;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void RecordLegacyOctal(int position, LegacyOctalKind kind)
+    {
+        Debug.Assert(position >= _start, "Position must be within the token currently being read.");
+
+        if (_legacyOctalPosition < _start)
+        {
+            _legacyOctalPosition = position;
+            _legacyOctalKind = kind;
+        }
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void AcquireStringBuilder([NotNull] out StringBuilder? sb)

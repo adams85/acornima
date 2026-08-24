@@ -787,7 +787,7 @@ public partial class ParserTests
     [InlineData("'use strict';\r\n(arguments)=>{}", false, EcmaVersion.ES6, "Unexpected eval or arguments in strict mode")]
     [InlineData("'use strict'\r\nfunction f(eval){}", false, EcmaVersion.ES3, null)]
     [InlineData("'use strict'\r\nfunction f(eval){}", false, EcmaVersion.ES5, "Unexpected eval or arguments in strict mode")]
-    [InlineData("'use strict'\r\n(eval)=>{}", false, EcmaVersion.ES6, "Unexpected token '=>'")] // due to implementation differences V8 reports 'Malformed arrow function parameter list'
+    [InlineData("'use strict'\r\n(eval)=>{}", false, EcmaVersion.ES6, "Unexpected token '=>'")] // V8 reports "Malformed arrow function parameter list"
 
     // A "use strict" directive which is terminated by automatic semicolon insertion must put the parser into strict mode
     // before the token following the directive is checked, even though that token is necessarily scanned earlier
@@ -850,6 +850,13 @@ public partial class ParserTests
     [InlineData("function f() { '\\222'; 'use strict'; }", false, EcmaVersion.ES5, "Octal escape sequences are not allowed in strict mode")]
     [InlineData("function f() { '\\8'; 'use strict'; }", false, EcmaVersion.ES5, "\\8 and \\9 are not allowed in strict mode")]
     [InlineData("function f() { '\\222'\n'use strict'\n}", false, EcmaVersion.ES5, "Octal escape sequences are not allowed in strict mode")]
+
+    [InlineData("function f() { '\\077'; 'use strict'; await x }", false, EcmaVersion.ES8, "Octal escape sequences are not allowed in strict mode")]
+    [InlineData("function f() { '\\077'; 'use strict' await x }", false, EcmaVersion.ES8, "Octal escape sequences are not allowed in strict mode")]
+    [InlineData("function f() { '\\077'; 'use strict' \n await x }", false, EcmaVersion.ES8, "Octal escape sequences are not allowed in strict mode")]
+    [InlineData("function f() { 'use strict'; await '\\077' }", false, EcmaVersion.ES8, "Octal escape sequences are not allowed in strict mode")] // V8 reports "await is only valid in async functions and the top level bodies of modules"
+    [InlineData("function f() { 'use strict' await '\\077' }", false, EcmaVersion.ES8, "Unexpected identifier 'await'")]  // V8 reports "Unexpected reserved word"
+    [InlineData("function f() { 'use strict' \n await '\\077' }", false, EcmaVersion.ES8, "Octal escape sequences are not allowed in strict mode")] // V8 reports "await is only valid in async functions and the top level bodies of modules"
     public void ShouldHandleStrictModeDetectionEdgeCases(string input, bool isModule, EcmaVersion ecmaVersion, string? expectedError)
     {
         var parser = new Parser(new ParserOptions { EcmaVersion = ecmaVersion });

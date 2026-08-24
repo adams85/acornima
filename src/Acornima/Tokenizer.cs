@@ -1505,8 +1505,10 @@ public sealed partial class Tokenizer : ITokenizer
                     {
                         RaiseRecoverable(start - 1, StrictOctalEscape);
                     }
-
-                    RecordLegacyOctal(start - 1, LegacyOctalKind.OctalEscape);
+                    else
+                    {
+                        RecordLegacyOctal(start - 1, LegacyOctalKind.OctalEscape);
+                    }
                 }
 
                 return sb.Append((char)octal);
@@ -1529,8 +1531,10 @@ public sealed partial class Tokenizer : ITokenizer
                 {
                     RaiseRecoverable(_position - 2, Strict8Or9Escape);
                 }
-
-                RecordLegacyOctal(_position - 2, LegacyOctalKind.EightOrNineEscape);
+                else
+                {
+                    RecordLegacyOctal(_position - 2, LegacyOctalKind.EightOrNineEscape);
+                }
 
                 goto default;
 
