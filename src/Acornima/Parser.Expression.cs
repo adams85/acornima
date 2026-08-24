@@ -1722,7 +1722,7 @@ public partial class Parser
 
                 if (IsNullRef(ref destructuringErrors))
                 {
-                    Raise(_tokenizer._start, InvalidCoverInitializedName);
+                    Raise(assignPosition, InvalidCoverInitializedName);
                 }
 
                 if (destructuringErrors.ShorthandAssign < 0)
