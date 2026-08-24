@@ -369,10 +369,9 @@ public partial class Parser
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void Swap(ref int x, ref int y)
     {
-        // Swap variables using XOR
-        x ^= y;
-        y ^= x;
-        x ^= y;
+        var tmp = x;
+        x = y;
+        y = tmp;
     }
 
     internal readonly struct TokenState
