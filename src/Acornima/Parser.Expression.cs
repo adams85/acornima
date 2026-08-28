@@ -664,7 +664,7 @@ public partial class Parser
 
         var result = ParseSubscripts(startMarker, expr, noCalls: false, context);
 
-        if (!IsNullRef(ref destructuringErrors) && result.Type == NodeType.MemberExpression)
+        if (!IsNullRef(ref destructuringErrors) && !ReferenceEquals(result, expr))
         {
             if (destructuringErrors.ParenthesizedAssign >= result.Start)
             {
