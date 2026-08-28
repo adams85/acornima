@@ -15,7 +15,6 @@
 
   <ItemGroup>
     <PackageReference Include="Nuke.Components" Version="10.1.0" />
-
     <!--
       NUKE evaluates project files in-process (ITest asks each test project whether it references
       GitHubActionsTestLogger), which runs the installed SDK's own targets inside this process. Those
@@ -30,6 +29,10 @@
       NuGet.Packaging new enough to bring 7.9.0 in on its own.
     -->
     <PackageReference Include="NuGet.Frameworks" Version="7.9.0" />
+    <!-- Pin version to fix https://github.com/advisories/GHSA-g4vj-cjjj-v7hg -->
+    <PackageReference Include="NuGet.Packaging" Version="6.12.5" />
+    <!-- Pin version to fix https://github.com/advisories/GHSA-mmjf-rqrv-855v -->
+    <PackageReference Include="System.Security.Cryptography.Xml" Version="9.0.19" />
   </ItemGroup>
 
 </Project>
