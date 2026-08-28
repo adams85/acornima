@@ -643,20 +643,20 @@ public partial class Parser
                 ? ParseExpression(ref destructuringErrors, ExpressionContext.ForInit)
                 : ParseExprSubscripts(ref destructuringErrors, ExpressionContext.AwaitForInit);
 
-            // Swap variables using XOR
-            _forInitPosition ^= oldForInitPosition;
-            oldForInitPosition ^= _forInitPosition;
-            _forInitPosition ^= oldForInitPosition;
+            Swap(ref _forInitPosition, ref oldForInitPosition);
 
             if (_tokenizer._type == TokenType.In)
             {
                 if (awaitAt >= 0) // this implies _ecmaVersion >= EcmaVersion.ES9
                 {
+                    // We deviate a bit from the original acornjs implementation here to match the error reporting behavior of V8.
+                    CheckExpressionErrors(ref destructuringErrors, andThrow: true);
                     Unexpected(awaitAt, TokenType.Name, "await");
                 }
 
                 var initPattern = ToAssignable(init, ref destructuringErrors, isBinding: false,
                     isInPattern: destructuringErrors.IsInPattern, allowCall: !_strict, lhsKind: LeftHandSideKind.ForInOf);
+
                 CheckLValPattern(initPattern, isInPattern: destructuringErrors.IsInPattern, allowCall: !_strict, lhsKind: LeftHandSideKind.ForInOf);
 
                 return ParseForInOf(startMarker, isForIn: true, await: false, initPattern);
@@ -677,16 +677,21 @@ public partial class Parser
 
                 var initPattern = ToAssignable(init, ref destructuringErrors, isBinding: false,
                     isInPattern: destructuringErrors.IsInPattern, allowCall: !_strict, lhsKind: LeftHandSideKind.ForInOf);
+
                 CheckLValPattern(initPattern, isInPattern: destructuringErrors.IsInPattern, allowCall: !_strict, lhsKind: LeftHandSideKind.ForInOf);
 
                 return ParseForInOf(startMarker, isForIn: false, await: awaitAt >= 0, initPattern);
             }
-            else if (awaitAt >= 0)
+            else
             {
-                Unexpected();
-            }
+                // We deviate a bit from the original acornjs implementation here to match the error reporting behavior of V8.
+                CheckExpressionErrors(ref destructuringErrors, andThrow: true);
 
-            CheckExpressionErrors(ref destructuringErrors, andThrow: true);
+                if (awaitAt >= 0)
+                {
+                    Unexpected();
+                }
+            }
         }
 
         if (awaitAt >= 0)
@@ -1810,8 +1815,8 @@ public partial class Parser
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `function checkKeyName`
 
         return !computed
-            && (key is Identifier identifier && identifier.Name == name
-                || key is StringLiteral literal && name.Equals(literal.Value));
+            && (key is Identifier identifier ? identifier.Name == name
+                : key is StringLiteral literal && literal.Value == name);
     }
 
     // Parses module export declaration.

@@ -91,7 +91,7 @@ public partial class ParserTests
 #if DEBUG
         const int depth = 360;
 #else
-        const int depth = 845;
+        const int depth = 980;
 #endif
         var input = $"if ({new string('(', depth)}true{new string(')', depth)}) {{ }}";
         parser.ParseScript(input);
@@ -1860,8 +1860,8 @@ public partial class ParserTests
     [InlineData("module", "async function f() { ++{await} }", EcmaVersion.Latest, "Unexpected reserved word")]
     [InlineData("script", "async function f() { ++{x: await} }", EcmaVersion.Latest, "Unexpected token '}'")]
     [InlineData("module", "async function f() { ++{x: await} }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("script", "async function f() { ++{x = await} }", EcmaVersion.Latest, "Unexpected token '='")] // V8 reports "Unexpected token '}'"
-    [InlineData("module", "async function f() { ++{x = await} }", EcmaVersion.Latest, "Unexpected token '='")] // V8 reports "Unexpected token '}'"
+    [InlineData("script", "async function f() { ++{x = await} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [InlineData("module", "async function f() { ++{x = await} }", EcmaVersion.Latest, "Unexpected token '}'")]
     [InlineData("script", "async function f() { ++{...await} }", EcmaVersion.Latest, "Unexpected token '}'")]
     [InlineData("module", "async function f() { ++{...await} }", EcmaVersion.Latest, "Unexpected token '}'")]
 
@@ -1980,8 +1980,8 @@ public partial class ParserTests
     [InlineData("module", "function* g() { ++{yield} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
     [InlineData("script", "function* g() { ++{x: yield} }", EcmaVersion.Latest, "Invalid left-hand side expression in prefix operation")]
     [InlineData("module", "function* g() { ++{x: yield} }", EcmaVersion.Latest, "Invalid left-hand side expression in prefix operation")]
-    [InlineData("script", "function* g() { ++{x = yield} }", EcmaVersion.Latest, "Unexpected token '='")] // V8 reports "Invalid left-hand side expression in prefix operation"
-    [InlineData("module", "function* g() { ++{x = yield} }", EcmaVersion.Latest, "Unexpected token '='")] // V8 reports "Invalid left-hand side expression in prefix operation"
+    [InlineData("script", "function* g() { ++{x = yield} }", EcmaVersion.Latest, "Invalid shorthand property initializer")] // V8 reports "Invalid left-hand side expression in prefix operation"
+    [InlineData("module", "function* g() { ++{x = yield} }", EcmaVersion.Latest, "Invalid shorthand property initializer")] // V8 reports "Invalid left-hand side expression in prefix operation"
     [InlineData("script", "function* g() { ++{...yield} }", EcmaVersion.Latest, "Invalid left-hand side expression in prefix operation")]
     [InlineData("module", "function* g() { ++{...yield} }", EcmaVersion.Latest, "Invalid left-hand side expression in prefix operation")]
 
@@ -1999,8 +1999,8 @@ public partial class ParserTests
     [InlineData("module", "function* g() { ({yield}++) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
     [InlineData("script", "function* g() { ({x: yield}++) }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
     [InlineData("module", "function* g() { ({x: yield}++) }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
-    [InlineData("script", "function* g() { ({x = yield}++) }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
-    [InlineData("module", "function* g() { ({x = yield}++) }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
+    [InlineData("script", "function* g() { ({x = yield}++) }", EcmaVersion.Latest, "Invalid shorthand property initializer")] // V8 reports "Invalid left-hand side expression in postfix operation"
+    [InlineData("module", "function* g() { ({x = yield}++) }", EcmaVersion.Latest, "Invalid shorthand property initializer")] // V8 reports "Invalid left-hand side expression in postfix operation"
     [InlineData("script", "function* g() { ({x = yield}\n++) }", EcmaVersion.Latest, "Invalid shorthand property initializer")]
     [InlineData("module", "function* g() { ({x = yield}\n++) }", EcmaVersion.Latest, "Invalid shorthand property initializer")]
     [InlineData("script", "function* g() { ({...yield}++) }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
@@ -2010,11 +2010,66 @@ public partial class ParserTests
     [InlineData("script", "[...x,]=a", EcmaVersion.Latest, "Rest element must be last element")]
     [InlineData("script", "{...x,}=a", EcmaVersion.Latest, "Unexpected token '...'")] // V8 reports "Rest parameter must be last formal parameter"
     [InlineData("script", "({...x,}=a)", EcmaVersion.Latest, "Rest element must be last element")]
-
-    [InlineData("script", "({__proto__: x, __proto__: y}++)", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
-    [InlineData("module", "({__proto__: x, __proto__: y}++)", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
+    [InlineData("script", "++{__proto__: x, __proto__: y}", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")] // V8 reports "Invalid left-hand side expression in prefix operation"
+    [InlineData("module", "++{__proto__: x, __proto__: y}", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")] // V8 reports "Invalid left-hand side expression in prefix operation"
+    [InlineData("script", "({__proto__: x, __proto__: y}++)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")] // V8 reports "Invalid left-hand side expression in postfix operation"
+    [InlineData("module", "({__proto__: x, __proto__: y}++)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")] // V8 reports "Invalid left-hand side expression in postfix operation"
     [InlineData("script", "({__proto__: x, __proto__: y}\n++)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
     [InlineData("module", "({__proto__: x, __proto__: y}\n++)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+
+    [InlineData("script", "({__proto__: x, __proto__: y}.x = 0)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [InlineData("script", "({__proto__: x, __proto__: y}.x += 0)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [InlineData("script", "++{__proto__: x, __proto__: y}.x", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [InlineData("script", "({__proto__: x, __proto__: y}.x++)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [InlineData("script", "for ({__proto__: x, __proto__: y}.x = 0;;) { }", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [InlineData("script", "for ({__proto__: x, __proto__: y}.x in {}) { }", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [InlineData("script", "for ({__proto__: x, __proto__: y}.x of []) { }", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [InlineData("script", "async () => { for await ({__proto__: x, __proto__: y}.x of []) { } }", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+
+    [InlineData("script", "({__proto__: x, __proto__: y}[x] = 0)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [InlineData("script", "({__proto__: x, __proto__: y}() = 0)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [InlineData("script", "({__proto__: x, __proto__: y}`` = 0)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")] // V8 reports "Invalid left-hand side expression in prefix operation"
+    [InlineData("script", "async () => { for await ({__proto__: x, __proto__: y}[x] of []) { } }", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [InlineData("script", "async () => { for await ({__proto__: x, __proto__: y}() of []) { } }", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")] // V8 incorrectly accepts this! (Chrome 151)
+    [InlineData("script", "async () => { for await ({__proto__: x, __proto__: y}`` of []) { } }", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")] // V8 reports "Invalid left-hand side expression in prefix operation"
+
+    [InlineData("script", "({ [{__proto__: x, __proto__: y}]: x } = 0)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [InlineData("script", "({ [{__proto__: x, __proto__: y} = 0]: x } = 0)", EcmaVersion.Latest, null)]
+
+    [InlineData("script", "({a = 0})", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("script", "[{a = 0}, {b = 0}.x]", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("script", "f({a = 0})", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("script", "[{a = 0}.x]", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("script", "({a: {b = 0}.x})", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("script", "({...{b = 0}.x})", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+
+    [InlineData("script", "({a = 0}.x = 0)", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("script", "({a = 0}.x += 0)", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("script", "({a = 0}.x++)", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("script", "(++{a = 0}.x)", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("script", "[{a = 0}][0] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("script", "[{a = 0}.x] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("script", "[...{a = 0}.x] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("script", "({a: {b = 0}.x} = {})", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("script", "({...{b = 0}.x} = {})", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("script", "[{a = 0}[0]] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("script", "[{a = 0}, {b = 0}.x] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("script", "for ([{a = 0}.x];;) { }", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("script", "for ([{a = 0}.x] in []) { }", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("script", "for ([{a = 0}.x] of []) { }", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("script", "async () => { for await ([{a = 0}.x] of []) { } }", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+
+    [InlineData("script", "[{a = 0}] = []", EcmaVersion.Latest, null)]
+    [InlineData("script", "({a: {b = 0}} = {})", EcmaVersion.Latest, null)]
+    [InlineData("script", "[{a: 0}.x] = []", EcmaVersion.Latest, null)]
+
+    [InlineData("script", "[{__proto__: a, __proto__: a}, {x = 0}.x] = []", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [InlineData("script", "[{x = 0}, {__proto__: a, __proto__: a}.x] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("script", "[{__proto__: a, __proto__: a, x = 0}, {__proto__: a, __proto__: a}.x] = []", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [InlineData("script", "[{__proto__: a, x = 0, __proto__: a}, {__proto__: a, __proto__: a}.x] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("script", "[{__proto__: a, __proto__: a, x = 0}, {x = 0}.x] = []", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [InlineData("script", "[{__proto__: a, x = 0, __proto__: a}, {x = 0}.x] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [InlineData("script", "[[{a = 0}], {b = 0} = {}, {c: [{__proto__: a, __proto__: a}]}.x] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")]
     public void ShouldHandleVariableAssignmentEdgeCases(string sourceType, string input, EcmaVersion ecmaVersion, string? expectedError)
     {
         var parser = new Parser(new ParserOptions { EcmaVersion = ecmaVersion });
@@ -3021,6 +3076,130 @@ public partial class ParserTests
     [InlineData("script", "async ({...fn()}) => {}", "Invalid destructuring assignment target")]
     [InlineData("module", "async ({...fn()}) => {}", "Invalid destructuring assignment target")]
     public void ShouldAllowFunctionCallAssignmentTargets(string sourceType, string input, string? expectedError)
+    {
+        var parser = new Parser();
+        var parseAction = GetParseActionFor(sourceType);
+
+        if (expectedError is null)
+        {
+            Assert.NotNull(parseAction(parser, input));
+        }
+        else
+        {
+            var ex = Assert.Throws<SyntaxErrorException>(() => parseAction(parser, input));
+            Assert.Equal(expectedError, ex.Description);
+        }
+    }
+
+    // https://github.com/adams85/acornima/issues/46
+    // A shorthand property assignment (CoverInitializedName, e.g. `{a = 0}`) is only allowed when the object literal
+    // containing it is refined into an object assignment pattern. (See also
+    // https://tc39.es/ecma262/#sec-object-initializer-static-semantics-early-errors, Note 2.)
+    [Theory]
+    // The object literal is not refined because the destructuring assignment target is the member expression which
+    // contains it - a valid assignment target on its own.
+    [InlineData("script", "({a = 0}.x = 0);", "Invalid shorthand property initializer")]
+    [InlineData("module", "({a = 0}.x = 0);", "Invalid shorthand property initializer")]
+    [InlineData("script", "({a = 0}.x += 0);", "Invalid shorthand property initializer")]
+    [InlineData("module", "({a = 0}.x += 0);", "Invalid shorthand property initializer")]
+    [InlineData("script", "({a = 0}.x ??= 0);", "Invalid shorthand property initializer")]
+    [InlineData("module", "({a = 0}.x ??= 0);", "Invalid shorthand property initializer")]
+    [InlineData("script", "[{a = 0}.x] = [];", "Invalid shorthand property initializer")]
+    [InlineData("module", "[{a = 0}.x] = [];", "Invalid shorthand property initializer")]
+    [InlineData("script", "[...{a = 0}.x] = [];", "Invalid shorthand property initializer")]
+    [InlineData("module", "[...{a = 0}.x] = [];", "Invalid shorthand property initializer")]
+    [InlineData("script", "({a: {b = 0}.x} = {});", "Invalid shorthand property initializer")]
+    [InlineData("module", "({a: {b = 0}.x} = {});", "Invalid shorthand property initializer")]
+    [InlineData("script", "({...{b = 0}.x} = {});", "Invalid shorthand property initializer")]
+    [InlineData("module", "({...{b = 0}.x} = {});", "Invalid shorthand property initializer")]
+    [InlineData("script", "[{a = 0}[0]] = [];", "Invalid shorthand property initializer")]
+    [InlineData("module", "[{a = 0}[0]] = [];", "Invalid shorthand property initializer")]
+    [InlineData("script", "[{a = 0}].x = 0;", "Invalid shorthand property initializer")]
+    [InlineData("module", "[{a = 0}].x = 0;", "Invalid shorthand property initializer")]
+    [InlineData("script", "[[{a = 0}.x]] = [];", "Invalid shorthand property initializer")]
+    [InlineData("module", "[[{a = 0}.x]] = [];", "Invalid shorthand property initializer")]
+    [InlineData("script", "({a: [{b = 0}.x]} = {});", "Invalid shorthand property initializer")]
+    [InlineData("module", "({a: [{b = 0}.x]} = {});", "Invalid shorthand property initializer")]
+    [InlineData("script", "([{a = 0}.x] = []);", "Invalid shorthand property initializer")]
+    [InlineData("module", "([{a = 0}.x] = []);", "Invalid shorthand property initializer")]
+    [InlineData("script", "[{a = 0}] = [{b = 0}.x] = [];", "Invalid shorthand property initializer")]
+    [InlineData("module", "[{a = 0}] = [{b = 0}.x] = [];", "Invalid shorthand property initializer")]
+    [InlineData("script", "[{a = 0}.x = 1] = [];", "Invalid shorthand property initializer")]
+    [InlineData("module", "[{a = 0}.x = 1] = [];", "Invalid shorthand property initializer")]
+
+    // Only some of the object literals are refined. (The reported position is that of the first shorthand property
+    // assignment, which may not be the one which remained unrefined - just like in the case of V8.)
+    [InlineData("script", "[{a = 0}, {b = 0}.x] = [];", "Invalid shorthand property initializer")]
+    [InlineData("module", "[{a = 0}, {b = 0}.x] = [];", "Invalid shorthand property initializer")]
+    [InlineData("script", "[{a = 0}.x, {b = 0}] = [];", "Invalid shorthand property initializer")]
+    [InlineData("module", "[{a = 0}.x, {b = 0}] = [];", "Invalid shorthand property initializer")]
+
+    // The head of a for-in/of statement is refined the same way as the left-hand side of an assignment.
+    [InlineData("script", "for ([{a = 0}.x] of []) ;", "Invalid shorthand property initializer")]
+    [InlineData("module", "for ([{a = 0}.x] of []) ;", "Invalid shorthand property initializer")]
+    [InlineData("script", "for ({a = 0}.x of []) ;", "Invalid shorthand property initializer")]
+    [InlineData("module", "for ({a = 0}.x of []) ;", "Invalid shorthand property initializer")]
+    [InlineData("script", "for ([{a = 0}.x] in {}) ;", "Invalid shorthand property initializer")]
+    [InlineData("module", "for ([{a = 0}.x] in {}) ;", "Invalid shorthand property initializer")]
+    [InlineData("script", "for ([{a = 0}.x] = [] ;;) ;", "Invalid shorthand property initializer")]
+    [InlineData("module", "for ([{a = 0}.x] = [] ;;) ;", "Invalid shorthand property initializer")]
+
+    // There is no assignment at all, so the object literal cannot be refined.
+    [InlineData("script", "({a = 0});", "Invalid shorthand property initializer")]
+    [InlineData("module", "({a = 0});", "Invalid shorthand property initializer")]
+    [InlineData("script", "f({a = 0});", "Invalid shorthand property initializer")]
+    [InlineData("module", "f({a = 0});", "Invalid shorthand property initializer")]
+    [InlineData("script", "[{a = 0}.x];", "Invalid shorthand property initializer")]
+    [InlineData("module", "[{a = 0}.x];", "Invalid shorthand property initializer")]
+    [InlineData("script", "({a: {b = 0}.x});", "Invalid shorthand property initializer")]
+    [InlineData("module", "({a: {b = 0}.x});", "Invalid shorthand property initializer")]
+    [InlineData("script", "({...{b = 0}.x});", "Invalid shorthand property initializer")]
+    [InlineData("module", "({...{b = 0}.x});", "Invalid shorthand property initializer")]
+    [InlineData("script", "[({a = 0})] = [];", "Invalid shorthand property initializer")]
+    [InlineData("module", "[({a = 0})] = [];", "Invalid shorthand property initializer")]
+    [InlineData("script", "({a = 0}) = {};", "Invalid shorthand property initializer")]
+    [InlineData("module", "({a = 0}) = {};", "Invalid shorthand property initializer")]
+    [InlineData("script", "f({a = 0}) = 0;", "Invalid shorthand property initializer")]
+    [InlineData("module", "f({a = 0}) = 0;", "Invalid shorthand property initializer")]
+
+    // The left-hand side is reported as invalid before the shorthand property assignment is.
+    [InlineData("script", "({a = 0} += 1);", "Invalid left-hand side in assignment")]
+    [InlineData("module", "({a = 0} += 1);", "Invalid left-hand side in assignment")]
+    [InlineData("script", "[{a = 0}.x] += 1;", "Invalid shorthand property initializer")]
+    [InlineData("module", "[{a = 0}.x] += 1;", "Invalid shorthand property initializer")]
+    [InlineData("script", "({a = 0}?.x = 0);", "Invalid shorthand property initializer")] // V8 reports "Invalid left-hand side in assignment"
+    [InlineData("module", "({a = 0}?.x = 0);", "Invalid shorthand property initializer")] // V8 reports "Invalid left-hand side in assignment"
+    [InlineData("script", "({a = 0}.x) => 0;", "Invalid shorthand property initializer")] // V8 reports "Invalid destructuring assignment target"
+    [InlineData("module", "({a = 0}.x) => 0;", "Invalid shorthand property initializer")] // V8 reports "Invalid destructuring assignment target"
+
+    // The object literal is refined, so the shorthand property assignment is legal.
+    [InlineData("script", "({a = 0} = {});", null)]
+    [InlineData("module", "({a = 0} = {});", null)]
+    [InlineData("script", "[{a = 0}] = [];", null)]
+    [InlineData("module", "[{a = 0}] = [];", null)]
+    [InlineData("script", "[{a = 0}, {b = 0}] = [];", null)]
+    [InlineData("module", "[{a = 0}, {b = 0}] = [];", null)]
+    [InlineData("script", "({a: {b = 0}} = {});", null)]
+    [InlineData("module", "({a: {b = 0}} = {});", null)]
+    [InlineData("script", "[{a = 0} = 1] = [];", null)]
+    [InlineData("module", "[{a = 0} = 1] = [];", null)]
+    [InlineData("script", "[...{a = 0}] = [];", null)]
+    [InlineData("module", "[...{a = 0}] = [];", null)]
+    [InlineData("script", "for ([{a = 0}] of []) ;", null)]
+    [InlineData("module", "for ([{a = 0}] of []) ;", null)]
+    [InlineData("script", "for ({a = 0} of [{}]) ;", null)]
+    [InlineData("module", "for ({a = 0} of [{}]) ;", null)]
+    [InlineData("script", "for ([{a = 0}] = [] ;;) ;", null)]
+    [InlineData("module", "for ([{a = 0}] = [] ;;) ;", null)]
+    [InlineData("script", "({a = 0}) => 0;", null)]
+    [InlineData("module", "({a = 0}) => 0;", null)]
+    [InlineData("script", "async ({a = 0}) => 0;", null)]
+    [InlineData("module", "async ({a = 0}) => 0;", null)]
+
+    // There is no shorthand property assignment at all.
+    [InlineData("script", "[{a: 0}.x] = [];", null)]
+    [InlineData("module", "[{a: 0}.x] = [];", null)]
+    public void ShouldHandleCoverInitializedNameEdgeCases(string sourceType, string input, string? expectedError)
     {
         var parser = new Parser();
         var parseAction = GetParseActionFor(sourceType);

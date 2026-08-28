@@ -320,21 +320,36 @@ public partial class Parser
             return false;
         }
 
+        var hasError = destructuringErrors.ShorthandAssign >= 0 || destructuringErrors.DoubleProto >= 0;
+
         if (!andThrow)
         {
-            return destructuringErrors.ShorthandAssign >= 0 || destructuringErrors.DoubleProto >= 0;
+            return hasError;
         }
 
-        if (destructuringErrors.ShorthandAssign >= 0)
+        if (hasError)
         {
-            // Raise(destructuringErrors.ShorthandAssign, "Shorthand property assignments are valid only in destructuring patterns"); // original acornjs error reporting
-            Raise(destructuringErrors.ShorthandAssign, InvalidCoverInitializedName);
-        }
+            // We deviate a bit from the original acornjs implementation here to match the error reporting behavior of V8.
 
-        if (destructuringErrors.DoubleProto >= 0)
-        {
-            // RaiseRecoverable(destructuringErrors.DoubleProto, "Redefinition of __proto__ property"); // original acornjs error reporting
-            Raise(destructuringErrors.DoubleProto, DuplicateProto);
+            //if (destructuringErrors.ShorthandAssign >= 0)
+            //{
+            //    Raise(destructuringErrors.ShorthandAssign, "Shorthand property assignments are valid only in destructuring patterns");
+            //}
+
+            //if (destructuringErrors.DoubleProto >= 0)
+            //{
+            //    RaiseRecoverable(destructuringErrors.DoubleProto, "Redefinition of __proto__ property");
+            //}
+
+            if (destructuringErrors.ShorthandAssign >= 0
+                && (destructuringErrors.DoubleProto < 0 || destructuringErrors.ShorthandAssign < destructuringErrors.DoubleProto))
+            {
+                Raise(destructuringErrors.ShorthandAssign, InvalidCoverInitializedName);
+            }
+            else
+            {
+                Raise(destructuringErrors.DoubleProto, DuplicateProto);
+            }
         }
 
         return false;
@@ -372,6 +387,14 @@ public partial class Parser
 
             return expr.Type is NodeType.Identifier or NodeType.MemberExpression;
         }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void Swap(ref int x, ref int y)
+    {
+        var tmp = x;
+        x = y;
+        y = tmp;
     }
 
     internal readonly struct TokenState
