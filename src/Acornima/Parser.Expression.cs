@@ -234,12 +234,12 @@ public partial class Parser
                 {
                     destructuringErrors.ParenthesizedAssign = destructuringErrors.TrailingComma = -1;
 
-                    if (destructuringErrors.ShorthandAssign >= left.Start)
+                    if (destructuringErrors.ShorthandAssign >= leftNode.Start)
                     {
                         destructuringErrors.ShorthandAssign = -1;
                     }
 
-                    if (destructuringErrors.DoubleProto >= left.Start)
+                    if (destructuringErrors.DoubleProto >= leftNode.Start)
                     {
                         destructuringErrors.DoubleProto = -1;
                     }
