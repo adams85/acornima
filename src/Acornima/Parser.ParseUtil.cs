@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Acornima.Ast;
@@ -245,6 +246,28 @@ public partial class Parser
     internal ParseError RaiseRecoverable(int pos, TokenType tokenType, object? tokenValue)
     {
         return RaiseRecoverable(pos, GetUnexpectedTokenMessage(tokenType, tokenValue, out var code), code);
+    }
+
+    private void RaiseLegacyOctal(int pos, LegacyOctalKind kind)
+    {
+        switch (kind)
+        {
+            case LegacyOctalKind.OctalEscape:
+                RaiseRecoverable(pos, StrictOctalEscape);
+                break;
+            case LegacyOctalKind.EightOrNineEscape:
+                RaiseRecoverable(pos, Strict8Or9Escape);
+                break;
+            case LegacyOctalKind.OctalLiteral:
+                RaiseRecoverable(pos, StrictOctalLiteral);
+                break;
+            case LegacyOctalKind.DecimalWithLeadingZero:
+                RaiseRecoverable(pos, StrictDecimalWithLeadingZero);
+                break;
+            default:
+                Debug.Fail($"Unexpected {nameof(LegacyOctalKind)} value: {kind}");
+                break;
+        }
     }
 
     private void CheckPatternErrors(ref DestructuringErrors destructuringErrors, bool isAssign,

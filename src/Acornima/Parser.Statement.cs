@@ -2354,15 +2354,18 @@ public partial class Parser
             return new ArrayList<Statement>();
         }
 
+        // Position and kind of the first legacy octal construct contained by the string literals of the directive
+        // prologue which precede the "use strict" directive (if there is such a directive at all).
         var firstRestrictedPos = -1;
+        var firstRestrictedKind = LegacyOctalKind.None;
 
         var body = new ArrayList<Statement>();
         var sawStrict = false;
         while (_tokenizer._type == TokenType.String)
         {
-            if (firstRestrictedPos < 0 && _tokenizer._legacyOctalPosition >= 0)
+            if (firstRestrictedPos < 0)
             {
-                firstRestrictedPos = _tokenizer._legacyOctalPosition;
+                firstRestrictedPos = _tokenizer.GetCurrentLegacyOctal(out firstRestrictedKind);
             }
 
             var startMarker = StartNode();
@@ -2373,6 +2376,8 @@ public partial class Parser
                 var directive = Tokenizer.DeduplicateString(literal.Raw.SliceBetween(1, literal.Raw.Length - 1), ref _tokenizer._stringPool);
                 if (!sawStrict && directive == "use strict")
                 {
+                    sawStrict = true;
+
                     if (!allowStrictDirective)
                     {
                         RaiseRecoverable(startMarker.Index, IllegalLanguageModeDirective, new object[] { directive });
@@ -2380,25 +2385,35 @@ public partial class Parser
 
                     if (!_strict)
                     {
+                        // The legacy octal constructs contained by the preceding string literals of the directive
+                        // prologue were tolerated by the tokenizer because it was not yet known that the code is strict.
                         if (firstRestrictedPos >= 0)
                         {
-                            if (_tokenizer._input[firstRestrictedPos + 1] is '8' or '9')
-                            {
-                                RaiseRecoverable(firstRestrictedPos, Strict8Or9Escape);
-                            }
-                            else
-                            {
-                                RaiseRecoverable(firstRestrictedPos, StrictOctalEscape);
-                            }
+                            RaiseLegacyOctal(firstRestrictedPos, firstRestrictedKind);
                         }
 
                         _strict = true;
-                    }
 
-                    sawStrict = true;
+                        Semicolon();
+
+                        // The same goes for the token which follows the directive: when the directive is terminated by
+                        // automatic semicolon insertion, that token is inevitably read before strict mode can be turned on,
+                        // as the ASI decision can only be made by looking at it. (When the directive is terminated by an
+                        // explicit semicolon, the token which follows it is read by the `Semicolon` call above, that is,
+                        // already in strict mode, so in that case the tokenizer reports the problem as usual.)
+                        var legacyOctalPos = _tokenizer.GetCurrentLegacyOctal(out var legacyOctalKind);
+                        if (legacyOctalPos >= 0)
+                        {
+                            RaiseLegacyOctal(legacyOctalPos, legacyOctalKind);
+                        }
+
+                        goto FinishDirective;
+                    }
                 }
 
                 Semicolon();
+
+            FinishDirective:
                 body.Add(FinishNode(startMarker, new Directive(expr, directive)));
             }
             else
