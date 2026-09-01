@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics;
-using System.Globalization;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using Acornima.Helpers;
@@ -212,65 +211,5 @@ public partial class Tokenizer
         Debug.Assert(i == slice.Length, $"Invalid number: {slice.ToString()}");
 
         return value;
-    }
-
-    private static double ParseIntToDouble(ReadOnlySpan<char> slice, byte radix)
-    {
-        double value = 0;
-        var modulo = 1.0;
-        int i;
-        for (i = slice.Length; i > 0;)
-        {
-            var ch = slice[--i];
-            if (ch == '_')
-            {
-                continue;
-            }
-
-            var digitValue = GetDigitValue(ch);
-            Debug.Assert(digitValue < radix, $"Invalid digit in number: U+{(ushort)ch:X4}");
-
-            value += modulo * digitValue;
-            modulo *= radix;
-        }
-
-        Debug.Assert(i == 0, $"Invalid number: {slice.ToString()}");
-
-        return value;
-    }
-
-    private static double ParseFloatToDouble(ReadOnlySpan<char> slice, bool hasSeparator, Tokenizer tokenizer)
-    {
-        if (hasSeparator)
-        {
-            tokenizer.AcquireStringBuilder(out var sb);
-            try
-            {
-                if (sb.Capacity < slice.Length)
-                {
-                    sb.Capacity = slice.Length;
-                }
-
-                for (var i = 0; i < slice.Length; i++)
-                {
-                    var ch = slice[i];
-                    if (ch != '_')
-                    {
-                        sb.Append(ch);
-                    }
-                }
-
-                slice = sb.ToString().AsSpan();
-            }
-            finally { tokenizer.ReleaseStringBuilder(ref sb); }
-        }
-
-        try { return double.Parse(slice.ToParsable(), NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent, CultureInfo.InvariantCulture); }
-        catch (OverflowException)
-        {
-            // In older runtimes, double.Parse throws OverflowException ("Value was either too large or too small for a Double")
-            // when we feed a too big number to it. However, big numbers should be converted into double.PositiveInfinity.
-            return double.PositiveInfinity;
-        }
     }
 }

@@ -949,7 +949,7 @@ public sealed partial class Tokenizer : ITokenizer
 
             if (!overflow)
             {
-                val = (double)intValue;
+                val = UInt64ToDouble(intValue);
             }
             else
             {
@@ -971,20 +971,20 @@ public sealed partial class Tokenizer : ITokenizer
 
         int numDigits, nextCh;
         ulong intValue;
-        bool overflow, hasSeparator, allowSeparators = _options._ecmaVersion >= EcmaVersion.ES12;
+        bool overflow, allowSeparators = _options._ecmaVersion >= EcmaVersion.ES12;
         TokenValue val;
         ReadOnlySpan<char> slice;
 
         if (startsWithZero)
         {
-            numDigits = ReadInt(out intValue, out overflow, out hasSeparator, radix: 8, allowSeparators, startsWithZero: true);
+            numDigits = ReadInt(out intValue, out overflow, out _, radix: 8, allowSeparators, startsWithZero: true);
             Debug.Assert(numDigits > 0);
 
             nextCh = CharCodeAtPosition();
             if (nextCh is '8' or '9') // literals like 08 are valid in non-strict mode, so reparse them as a decimal number
             {
                 _position = start;
-                numDigits = ReadInt(out intValue, out overflow, out hasSeparator, radix: 10, allowSeparators, startsWithZero: true);
+                numDigits = ReadInt(out intValue, out overflow, out _, radix: 10, allowSeparators, startsWithZero: true);
                 Debug.Assert(numDigits > 0);
 
                 nextCh = CharCodeAtPosition();
@@ -1015,12 +1015,13 @@ public sealed partial class Tokenizer : ITokenizer
 
                 if (!overflow)
                 {
-                    val = (double)intValue;
+                    val = UInt64ToDouble(intValue);
                 }
                 else
                 {
+                    // NOTE: The digits were read in radix 8 above, so that is the radix they denote a value in.
                     slice = _input.SliceBetween(start, _position);
-                    val = ParseIntToDouble(slice, radix: 10);
+                    val = ParseIntToDouble(slice, radix: 8);
                 }
 
                 return FinishToken(TokenType.Number, val);
@@ -1030,14 +1031,14 @@ public sealed partial class Tokenizer : ITokenizer
         {
             numDigits = 0;
             intValue = 0;
-            overflow = hasSeparator = false;
+            overflow = false;
             nextCh = CharCodeAtPosition();
 
             goto ParseDecimal;
         }
         else
         {
-            numDigits = ReadInt(out intValue, out overflow, out hasSeparator, radix: 10, allowSeparators);
+            numDigits = ReadInt(out intValue, out overflow, out _, radix: 10, allowSeparators);
             Debug.Assert(numDigits > 0);
             nextCh = CharCodeAtPosition();
         }
@@ -1065,14 +1066,12 @@ public sealed partial class Tokenizer : ITokenizer
         }
 
     ParseDecimal:
-        bool hasSeparator2;
         var integerPartEnd = _position;
 
         if (nextCh == '.')
         {
             ++_position;
-            ReadInt(out _, out _, out hasSeparator2, radix: 10, allowSeparators);
-            hasSeparator = hasSeparator || hasSeparator2;
+            ReadInt(out _, out _, out _, radix: 10, allowSeparators);
             nextCh = CharCodeAtPosition();
         }
 
@@ -1084,12 +1083,11 @@ public sealed partial class Tokenizer : ITokenizer
             {
                 ++_position;
             }
-            if (!(ReadInt(out _, out _, out hasSeparator2, radix: 10, allowSeparators) > 0))
+            if (!(ReadInt(out _, out _, out _, radix: 10, allowSeparators) > 0))
             {
                 // Raise(start, "Invalid number"); // original acornjs error reporting
                 Unexpected(start);
             }
-            hasSeparator = hasSeparator || hasSeparator2;
         }
 
         if (startsWithZero && numDigits > 1)
@@ -1106,12 +1104,12 @@ public sealed partial class Tokenizer : ITokenizer
 
         if (!overflow && _position - integerPartEnd <= 1) // no need to reparse literals like 10.
         {
-            val = (double)intValue;
+            val = UInt64ToDouble(intValue);
         }
         else
         {
             slice = _input.SliceBetween(start, _position);
-            val = ParseFloatToDouble(slice, hasSeparator, this);
+            val = ParseFloatToDouble(slice);
         }
 
         if (IsIdentifierStart(FullCharCodeAtPosition()))
