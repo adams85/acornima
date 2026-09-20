@@ -18,8 +18,8 @@ public static class JavaScriptString
 
     public static string Decode(string value)
     {
-        return IsStringLiteral(value)
-            ? (string)ParseAsExpression(value).As<Literal>().Value!
+        return Tokenizer.TryParseString(value, strict: false, out var parsedValue)
+            ? parsedValue
             : throw new ArgumentException("Value is not a JavaScript string literal.", nameof(value));
     }
 

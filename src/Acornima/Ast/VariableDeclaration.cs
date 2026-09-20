@@ -8,19 +8,6 @@ using static ExceptionHelper;
 [VisitableNode(ChildProperties = new[] { nameof(Declarations) })]
 public sealed partial class VariableDeclaration : Declaration
 {
-    public static string GetVariableDeclarationKindToken(VariableDeclarationKind kind)
-    {
-        return kind switch
-        {
-            VariableDeclarationKind.Var => "var",
-            VariableDeclarationKind.Let => "let",
-            VariableDeclarationKind.Const => "const",
-            VariableDeclarationKind.Using => "using",
-            VariableDeclarationKind.AwaitUsing => "await using",
-            _ => ThrowArgumentOutOfRangeException(nameof(kind), kind.ToString(), null)
-        };
-    }
-
     private readonly NodeList<VariableDeclarator> _declarations;
 
     public VariableDeclaration(
@@ -39,4 +26,21 @@ public sealed partial class VariableDeclaration : Declaration
     {
         return new VariableDeclaration(Kind, declarations);
     }
+
+    #region Static helpers
+
+    public static string GetVariableDeclarationKindToken(VariableDeclarationKind kind)
+    {
+        return kind switch
+        {
+            VariableDeclarationKind.Var => "var",
+            VariableDeclarationKind.Let => "let",
+            VariableDeclarationKind.Const => "const",
+            VariableDeclarationKind.Using => "using",
+            VariableDeclarationKind.AwaitUsing => "await using",
+            _ => ThrowArgumentOutOfRangeException(nameof(kind), kind.ToString(), null)
+        };
+    }
+
+    #endregion
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using Acornima.Helpers;
 using Acornima.Tests.Acorn;
 using Xunit;
@@ -286,6 +287,13 @@ public partial class TokenizerTests
             : BigInteger.Parse(expectedValue, NumberStyles.AllowThousands, CultureInfo.InvariantCulture);
 
         Assert.Equal(expectedValueObj, token.Value);
+
+        Unsafe.SkipInit(out BigInteger parsedBigIntegerValue);
+        Unsafe.SkipInit(out double parsedDoubleValue);
+        Assert.True(isBigInt
+            ? Tokenizer.TryParseBigInt(input.SliceBetween(token.Start, token.End), allowSeparator: true, out parsedBigIntegerValue)
+            : Tokenizer.TryParseNumber(input.SliceBetween(token.Start, token.End), allowSeparator: true, strict: true, out parsedDoubleValue));
+        Assert.Equal(expectedValueObj, isBigInt ? (object)parsedBigIntegerValue : parsedDoubleValue);
     }
 
     [Theory]
@@ -439,11 +447,12 @@ public partial class TokenizerTests
         var tokenizer = new Tokenizer(input);
         var tokenizerContext = new TokenizerContext(strict);
 
+        var isBigInt = input.AsSpan().Last() == 'n';
+
         if (!(expectedValue.StartsWith("<", StringComparison.OrdinalIgnoreCase) && expectedValue.EndsWith(">", StringComparison.OrdinalIgnoreCase)))
         {
             var token = tokenizer.GetToken(tokenizerContext);
 
-            var isBigInt = input.AsSpan().Last() == 'n';
             Assert.Equal(isBigInt ? TokenKind.BigIntLiteral : TokenKind.NumericLiteral, token.Kind);
 
             expectedValue = expectedValue.Replace("_", "");
@@ -453,6 +462,13 @@ public partial class TokenizerTests
                 : BigInteger.Parse(expectedValue, NumberStyles.AllowThousands, CultureInfo.InvariantCulture);
 
             Assert.Equal(expectedValueObj, token.Value);
+
+            Unsafe.SkipInit(out BigInteger parsedBigIntegerValue);
+            Unsafe.SkipInit(out double parsedDoubleValue);
+            Assert.True(isBigInt
+                ? Tokenizer.TryParseBigInt(input.SliceBetween(token.Start, token.End), allowSeparator: true, out parsedBigIntegerValue)
+                : Tokenizer.TryParseNumber(input.SliceBetween(token.Start, token.End), allowSeparator: true, strict, out parsedDoubleValue));
+            Assert.Equal(expectedValueObj, isBigInt ? (object)parsedBigIntegerValue : parsedDoubleValue);
         }
         else
         {
@@ -460,6 +476,10 @@ public partial class TokenizerTests
 
             var expectedMessage = expectedValue.Substring(1, expectedValue.Length - 2);
             Assert.Equal(expectedMessage, ex.Error.Description);
+
+            Assert.False(isBigInt
+                ? Tokenizer.TryParseBigInt(input, allowSeparator: true, out _)
+                : Tokenizer.TryParseNumber(input, allowSeparator: true, strict: true, out _));
         }
     }
 
@@ -603,6 +623,9 @@ public partial class TokenizerTests
 
             Assert.Equal(TokenKind.StringLiteral, token.Kind);
             Assert.Equal(expectedValue, token.Value);
+
+            Assert.True(Tokenizer.TryParseString(input.SliceBetween(token.Start, token.End), strict, out var parsedStringValue));
+            Assert.Equal(expectedValue, parsedStringValue);
         }
         else
         {

@@ -12,6 +12,13 @@ public sealed partial class NonUpdateUnaryExpression : UnaryExpression
 
     private protected override bool GetPrefix() => true;
 
+    protected override UnaryExpression Rewrite(Expression argument)
+    {
+        return new NonUpdateUnaryExpression(Operator, argument);
+    }
+
+    #region Static helpers
+
     [StringMatcher(
         "!" /* => Operator.LogicalNot  */,
         "~" /* => Operator.BitwiseNot */,
@@ -39,8 +46,5 @@ public sealed partial class NonUpdateUnaryExpression : UnaryExpression
         };
     }
 
-    protected override UnaryExpression Rewrite(Expression argument)
-    {
-        return new NonUpdateUnaryExpression(Operator, argument);
-    }
+    #endregion
 }

@@ -16,6 +16,13 @@ public sealed partial class UpdateExpression : UnaryExpression
     public new bool Prefix { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     private protected override bool GetPrefix() => Prefix;
 
+    protected override UnaryExpression Rewrite(Expression argument)
+    {
+        return new UpdateExpression(Operator, argument, Prefix);
+    }
+
+    #region Static helpers
+
     [StringMatcher(
         "++" /* => Operator.Increment */,
         "--" /* => Operator.Decrement */
@@ -33,8 +40,5 @@ public sealed partial class UpdateExpression : UnaryExpression
         };
     }
 
-    protected override UnaryExpression Rewrite(Expression argument)
-    {
-        return new UpdateExpression(Operator, argument, Prefix);
-    }
+    #endregion
 }

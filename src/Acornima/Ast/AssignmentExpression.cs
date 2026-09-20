@@ -16,6 +16,21 @@ public sealed partial class AssignmentExpression : Expression
         Right = right;
     }
 
+    public Operator Operator { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
+
+    /// <remarks>
+    /// <see cref="Identifier"/> | <see cref="MemberExpression"/> | <see cref="ArrayPattern"/> | <see cref="ObjectPattern"/> | <see cref="ParenthesizedExpression"/> (only if <see cref="ParserOptions.PreserveParens"/> is enabled)
+    /// </remarks>
+    public Node Left { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
+    public Expression Right { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
+
+    private AssignmentExpression Rewrite(Node left, Expression right)
+    {
+        return new AssignmentExpression(Operator, left, right);
+    }
+
+    #region Static helpers
+
     [StringMatcher(
         "=" /* => Operator.Assignment */,
         "??=" /* => Operator.NullishCoalescingAssignment */,
@@ -61,16 +76,5 @@ public sealed partial class AssignmentExpression : Expression
         };
     }
 
-    public Operator Operator { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
-
-    /// <remarks>
-    /// <see cref="Identifier"/> | <see cref="MemberExpression"/> | <see cref="ArrayPattern"/> | <see cref="ObjectPattern"/> | <see cref="ParenthesizedExpression"/> (only if <see cref="ParserOptions.PreserveParens"/> is enabled)
-    /// </remarks>
-    public Node Left { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
-    public Expression Right { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
-
-    private AssignmentExpression Rewrite(Node left, Expression right)
-    {
-        return new AssignmentExpression(Operator, left, right);
-    }
+    #endregion
 }

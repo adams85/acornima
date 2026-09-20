@@ -10,6 +10,13 @@ public sealed partial class NonLogicalBinaryExpression : BinaryExpression
     public NonLogicalBinaryExpression(Operator op, Expression left, Expression right)
         : base(NodeType.BinaryExpression, op, left, right) { }
 
+    protected override BinaryExpression Rewrite(Expression left, Expression right)
+    {
+        return new NonLogicalBinaryExpression(Operator, left, right);
+    }
+
+    #region Static helpers
+
     [StringMatcher(
         "|" /* => Operator.BitwiseOr */,
         "^" /* => Operator.BitwiseXor */,
@@ -67,8 +74,5 @@ public sealed partial class NonLogicalBinaryExpression : BinaryExpression
         };
     }
 
-    protected override BinaryExpression Rewrite(Expression left, Expression right)
-    {
-        return new NonLogicalBinaryExpression(Operator, left, right);
-    }
+    #endregion
 }

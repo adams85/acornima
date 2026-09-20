@@ -16,6 +16,7 @@ using static SyntaxErrorMessages;
 
 public sealed partial class Tokenizer : ITokenizer
 {
+    private static Tokenizer? s_cachedInstanceForStringParsing;
     private static Tokenizer? s_cachedInstanceForRegExpParsing;
 
     internal const string UnknownError = nameof(UnknownError);
@@ -954,6 +955,8 @@ public sealed partial class Tokenizer : ITokenizer
 
         TokenType tokenType;
         TokenValue val;
+        int numDigits;
+
         if (_options._ecmaVersion >= EcmaVersion.ES11 && CharCodeAtPosition() == 'n')
         {
             if (!overflow)
@@ -963,7 +966,9 @@ public sealed partial class Tokenizer : ITokenizer
             else
             {
                 var slice = _input.SliceBetween(_start + 2, _position);
-                val = ParseRadixIntToBigInteger(slice, radix);
+                numDigits = ParseRadixIntToBigInteger(slice, radix, separator, out var bigIntegerValue);
+                Debug.Assert(numDigits == slice.Length, $"Invalid non-decimal big integer: {slice.ToString()}");
+                val = bigIntegerValue;
             }
             tokenType = TokenType.BigInt;
             ++_position;
@@ -983,7 +988,9 @@ public sealed partial class Tokenizer : ITokenizer
             else
             {
                 var slice = _input.SliceBetween(_start + 2, _position);
-                val = ParseRadixIntToDouble(slice, radix);
+                numDigits = ParseRadixIntToDouble(slice, radix, separator, out var doubleValue);
+                Debug.Assert(numDigits == slice.Length, $"Invalid non-decimal number: {slice.ToString()}");
+                val = doubleValue;
             }
             tokenType = TokenType.Number;
         }
@@ -997,6 +1004,8 @@ public sealed partial class Tokenizer : ITokenizer
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/tokenize.js > `pp.readNumber = function`
 
         var start = _position;
+        Debug.Assert(startsWithZero == (_input[start] == '0'));
+        Debug.Assert(startsWithDot == (_input[start] == '.'));
 
         int numDigits, nextCh;
         ulong intValue;
@@ -1050,7 +1059,9 @@ public sealed partial class Tokenizer : ITokenizer
                 else
                 {
                     slice = _input.SliceBetween(start, _position);
-                    val = ParseRadixIntToDouble(slice, radix: 8);
+                    numDigits = ParseRadixIntToDouble(slice, radix: 8, separator, out var doubleValue);
+                    Debug.Assert(numDigits == slice.Length, $"Invalid legacy octal number: {slice.ToString()}");
+                    val = doubleValue;
                 }
 
                 return FinishToken(TokenType.Number, val);
@@ -1081,7 +1092,9 @@ public sealed partial class Tokenizer : ITokenizer
             else
             {
                 slice = _input.SliceBetween(start, _position);
-                val = ParseIntToBigInteger(slice);
+                numDigits = ParseIntToBigInteger(slice, separator, startsWithZero, out var bigIntegerValue);
+                Debug.Assert(numDigits == slice.Length, $"Invalid decimal big integer: {slice.ToString()}");
+                val = bigIntegerValue;
             }
             ++_position;
 
@@ -1156,7 +1169,9 @@ public sealed partial class Tokenizer : ITokenizer
         else
         {
             slice = _input.SliceBetween(start, significandEnd);
-            val = ParseDecimalToDouble(slice, (long)exponent);
+            numDigits = ParseDecimalToDouble(slice, (long)exponent, separator, startsWithZero, out var doubleValue);
+            Debug.Assert(numDigits == slice.Length, $"Invalid decimal number: {slice.ToString()}");
+            val = doubleValue;
         }
 
         if (IsIdentifierStart(FullCharCodeAtPosition()))
@@ -2047,6 +2062,256 @@ public sealed partial class Tokenizer : ITokenizer
         return _options._errorHandler.TolerateError(error, _options._tolerant);
     }
 
+    #region Public static helpers
+
+    /// <summary>
+    /// Returns whether the specified string is an ECMAScript <see href="https://tc39.es/ecma262/#prod-NullLiteral">null literal</see>.
+    /// </summary>
+    /// <param name="s">The span of characters to check.</param>
+    /// <returns><see langword="true"/> if <paramref name="s"/> is the null literal; otherwise, <see langword="false"/>.</returns>
+    public static bool IsNull(ReadOnlySpan<char> s)
+    {
+        return s is "null";
+    }
+
+    /// <summary>
+    /// Tries to parse an ECMAScript <see href="https://tc39.es/ecma262/#prod-BooleanLiteral">boolean literal</see>
+    /// into its <see cref="bool"/> equivalent.
+    /// </summary>
+    /// <param name="s">The span of characters to parse.</param>
+    /// <param name="value">When this method returns, contains the result of successfully parsing <paramref name="s"/>, or an undefined value on failure.</param>
+    /// <returns><see langword="true"/> if <paramref name="s"/> was successfully parsed; otherwise, <see langword="false"/>.</returns>
+    public static bool TryParseBoolean(ReadOnlySpan<char> s, out bool value)
+    {
+        if (s is "false")
+        {
+            value = false;
+        }
+        else if (s is "true")
+        {
+            value = true;
+        }
+        else
+        {
+            value = default;
+            return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Tries to parse an ECMAScript <see href="https://tc39.es/ecma262/#prod-DecimalLiteral">decimal number literal</see>
+    /// into its <see cref="double"/> equivalent.
+    /// </summary>
+    /// <remarks>
+    /// For performance reasons, no check is performed to determine whether an integer part with a leading zero is an octal number.
+    /// (However, separator characters in an integer part with a leading zero are treated as invalid.)
+    /// </remarks>
+    /// <param name="s">The span of characters to parse.</param>
+    /// <param name="allowSeparator">Controls whether the '_' separator character is allowed.</param>
+    /// <param name="value">When this method returns, contains the result of successfully parsing <paramref name="s"/>, or an undefined value on failure.</param>
+    /// <returns><see langword="true"/> if <paramref name="s"/> was successfully parsed; otherwise, <see langword="false"/>.</returns>
+    public static bool TryParseDecimalNumber(ReadOnlySpan<char> s, bool allowSeparator, out double value)
+    {
+        if (s.IsEmpty)
+        {
+            value = default;
+            return false;
+        }
+
+        var separator = allowSeparator ? (byte)'_' : (byte)'0'; // '0' indicates that separators are not allowed
+        var startsWithZero = s[0] == '0';
+        return ParseDecimalToDouble(s, literalExponent: null, separator, startsWithZero, out value) == s.Length;
+    }
+
+    /// <summary>
+    /// Tries to parse an ECMAScript <see href="https://tc39.es/ecma262/#prod-NumericLiteral">numeric literal</see> (except for BigInt literals)
+    /// into its <see cref="double"/> equivalent.
+    /// </summary>
+    /// <param name="s">The span of characters to parse.</param>
+    /// <param name="allowSeparator">Controls whether the '_' separator character is allowed. (Ignored for legacy octal integer literals.)</param>
+    /// <param name="strict">Controls whether parsing follows strict mode rules. (If <see langword="true"/>, legacy octal integer literals are treated as invalid.)</param>
+    /// <param name="value">When this method returns, contains the result of successfully parsing <paramref name="s"/>, or an undefined value on failure.</param>
+    /// <returns><see langword="true"/> if <paramref name="s"/> was successfully parsed; otherwise, <see langword="false"/>.</returns>
+    public static bool TryParseNumber(ReadOnlySpan<char> s, bool allowSeparator, bool strict, out double value)
+    {
+        if (s.IsEmpty)
+        {
+            goto InvalidFormat;
+        }
+
+        byte separator;
+        var startsWithZero = s[0] == '0';
+
+        if (startsWithZero)
+        {
+            if (s.Length < 2 || s.Length == 2 && s[1] == '.')
+            {
+                value = 0;
+                return true;
+            }
+
+            if (RemovePrefix(ref s, s[1], out var radix))
+            {
+                if (s.IsEmpty)
+                {
+                    goto InvalidFormat;
+                }
+
+                separator = allowSeparator ? (byte)'_' : (byte)'0'; // '0' indicates that separators are not allowed
+                return ParseRadixIntToDouble(s, radix, separator, out value) == s.Length;
+            }
+            else if (!strict)
+            {
+                var numDigits = ParseRadixIntToDouble(s, radix: 8, separator: (byte)'0', out var tmp);
+                if (numDigits == s.Length)
+                {
+                    value = tmp;
+                    return true;
+                }
+
+                char ch;
+                numDigits = ~numDigits;
+                if ((uint)numDigits >= (uint)s.Length
+                    || (ch = s[numDigits]) is not ('8' or '9') && (numDigits > 1 || ch != '.'))
+                {
+                    goto InvalidFormat;
+                }
+            }
+            else if (s[1] != '.')
+            {
+                goto InvalidFormat;
+            }
+        }
+
+        separator = allowSeparator ? (byte)'_' : (byte)'0'; // '0' indicates that separators are not allowed
+        return ParseDecimalToDouble(s, literalExponent: null, separator, startsWithZero, out value) == s.Length;
+
+    InvalidFormat:
+        value = default;
+        return false;
+    }
+
+    /// <summary>
+    /// Tries to parse an ECMAScript <see href="https://tc39.es/ecma262/#prod-DecimalBigIntegerLiteral">decimal BigInt literal</see>
+    /// or <see href="https://tc39.es/ecma262/#prod-NonDecimalIntegerLiteral">non-decimal BigInt literal</see> into its <see cref="BigInteger"/> equivalent.
+    /// </summary>
+    /// <param name="s">The span of characters to parse.</param>
+    /// <param name="allowSeparator">Controls whether the '_' separator character is allowed.</param>
+    /// <param name="value">When this method returns, contains the result of successfully parsing <paramref name="s"/>, or an undefined value on failure.</param>
+    /// <returns><see langword="true"/> if <paramref name="s"/> was successfully parsed; otherwise, <see langword="false"/>.</returns>
+    public static bool TryParseBigInt(ReadOnlySpan<char> s, bool allowSeparator, out BigInteger value)
+    {
+        int endIndex;
+        if (s.Length < 2 || s[endIndex = s.Length - 1] != 'n')
+        {
+            goto InvalidFormat;
+        }
+
+        s = s.Slice(0, endIndex);
+
+        byte separator;
+        var startsWithZero = s[0] == '0';
+
+        if (startsWithZero)
+        {
+            if (s.Length < 2)
+            {
+                value = 0;
+                return true;
+            }
+
+            if (RemovePrefix(ref s, s[1], out var radix))
+            {
+                if (s.IsEmpty)
+                {
+                    goto InvalidFormat;
+                }
+
+                separator = allowSeparator ? (byte)'_' : (byte)'0'; // '0' indicates that separators are not allowed
+                return ParseRadixIntToBigInteger(s, radix, separator, out value) == s.Length;
+            }
+            else
+            {
+                goto InvalidFormat;
+            }
+        }
+
+        separator = allowSeparator ? (byte)'_' : (byte)'0'; // '0' indicates that separators are not allowed
+        return ParseIntToBigInteger(s, separator, startsWithZero, out value) == s.Length;
+
+    InvalidFormat:
+        value = default;
+        return false;
+    }
+
+    private static bool RemovePrefix(ref ReadOnlySpan<char> s, char ch, out byte radix)
+    {
+        switch (ch | 0x20)
+        {
+            case 'x':
+                radix = 16;
+                break;
+            case 'o':
+                radix = 8;
+                break;
+            case 'b':
+                radix = 2;
+                break;
+            default:
+                radix = 8;
+                return false;
+        }
+
+        s = s.Slice(2);
+        return true;
+    }
+
+    /// <summary>
+    /// Tries to parse an ECMAScript <see href="https://tc39.es/ecma262/#prod-StringLiteral">string literal</see> into its <see cref="string"/> equivalent.
+    /// </summary>
+    /// <param name="s">The span of characters to parse.</param>
+    /// <param name="strict">Controls whether parsing follows strict mode rules.</param>
+    /// <param name="value">When this method returns, contains the result of successfully parsing <paramref name="s"/>, or an undefined value on failure.</param>
+    /// <returns><see langword="true"/> if <paramref name="s"/> was successfully parsed; otherwise, <see langword="false"/>.</returns>
+    public static bool TryParseString(ReadOnlySpan<char> s, bool strict, [NotNullWhen(true)] out string? value)
+    {
+        char ch;
+        if (s.Length < 2 || (ch = s[0]) is not ('\'' or '"') || s[s.Length - 1] != ch)
+        {
+            goto InvalidFormat;
+        }
+
+        var tokenizer = Interlocked.Exchange(ref s_cachedInstanceForStringParsing, value: null) ?? new Tokenizer(string.Empty, new TokenizerOptions());
+        try
+        {
+            tokenizer.ResetInternal(s.ToString(), 0, s.Length, SourceType.Unknown, sourceFile: null);
+            tokenizer._strict = strict;
+
+            tokenizer.ReadString(ch);
+            Debug.Assert(tokenizer._value.Value is not null);
+            value = (string)tokenizer._value.Value!;
+        }
+        catch (ParseErrorException)
+        {
+            goto InvalidFormat;
+        }
+        finally
+        {
+            tokenizer._value = default;
+            tokenizer._stringPool = default;
+            tokenizer.ReleaseReferencesAndLargeBuffers();
+            Volatile.Write(ref s_cachedInstanceForStringParsing, tokenizer);
+        }
+
+        return true;
+
+    InvalidFormat:
+        value = default;
+        return false;
+    }
+
     /// <summary>
     /// Checks whether an ECMAScript regular expression is syntactically correct.
     /// </summary>
@@ -2147,6 +2412,8 @@ public sealed partial class Tokenizer : ITokenizer
             Volatile.Write(ref s_cachedInstanceForRegExpParsing, tokenizer);
         }
     }
+
+    #endregion
 
     internal interface IExtension
     {

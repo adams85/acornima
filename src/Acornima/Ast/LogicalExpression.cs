@@ -10,6 +10,13 @@ public sealed partial class LogicalExpression : BinaryExpression
     public LogicalExpression(Operator op, Expression left, Expression right)
         : base(NodeType.LogicalExpression, op, left, right) { }
 
+    protected override BinaryExpression Rewrite(Expression left, Expression right)
+    {
+        return new LogicalExpression(Operator, left, right);
+    }
+
+    #region Static helpers
+
     [StringMatcher(
         "??" /* => Operator.NullishCoalescing */,
         "||" /* => Operator.LogicalOr */,
@@ -29,8 +36,5 @@ public sealed partial class LogicalExpression : BinaryExpression
         };
     }
 
-    protected override BinaryExpression Rewrite(Expression left, Expression right)
-    {
-        return new LogicalExpression(Operator, left, right);
-    }
+    #endregion
 }

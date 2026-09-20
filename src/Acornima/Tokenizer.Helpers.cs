@@ -224,14 +224,15 @@ public partial class Tokenizer
 #endif
     }
 
-    private static BigInteger ParseIntToBigInteger(ReadOnlySpan<char> slice)
+    private static int ParseIntToBigInteger(ReadOnlySpan<char> slice, byte separator, bool startsWithZero, out BigInteger value)
     {
         // The maximum number of decimal digits that is guaranteed to fit in a ulong.
         const int maxAccumulatedDigitCount = 19; // Floor(Log10(Pow(2, sizeof(ulong) * 8)))
 
-        var value = BigInteger.Zero;
+        value = BigInteger.Zero;
         var chunk = 0UL;
         var chunkDigitCount = 0;
+        var hasReadSeparator = false;
 
         int i;
         for (i = 0; i < slice.Length; i++)
@@ -240,13 +241,21 @@ public partial class Tokenizer
             var digitValue = GetDigitValue(ch);
             if (digitValue >= 10)
             {
-                if (ch == '_')
+                if (ch == separator)
                 {
+                    if (hasReadSeparator || startsWithZero || i == 0)
+                    {
+                        goto InvalidFormat;
+                    }
+
+                    hasReadSeparator = true;
                     continue;
                 }
 
-                Debug.Fail($"Invalid digit in number: U+{(ushort)ch:X4}");
+                break;
             }
+
+            hasReadSeparator = false;
 
             chunk = chunk * 10 + digitValue;
             chunkDigitCount++;
@@ -258,17 +267,24 @@ public partial class Tokenizer
             }
         }
 
-        Debug.Assert(i == slice.Length, $"Invalid big integer: {slice.ToString()}");
+        if (hasReadSeparator || i != slice.Length)
+        {
+            goto InvalidFormat;
+        }
 
         if (chunkDigitCount > 0)
         {
             value = value * BigInteger.Pow(s_ten, chunkDigitCount) + chunk;
         }
 
-        return value;
+        return i;
+
+    InvalidFormat:
+        value = default;
+        return ~i;
     }
 
-    private static BigInteger ParseRadixIntToBigInteger(ReadOnlySpan<char> slice, byte radix)
+    private static int ParseRadixIntToBigInteger(ReadOnlySpan<char> slice, byte radix, byte separator, out BigInteger value)
     {
         Debug.Assert(radix is 2 or 8 or 16, $"Unexpected radix: {radix}");
 
@@ -295,9 +311,10 @@ public partial class Tokenizer
                 break;
         }
 
-        var value = BigInteger.Zero;
+        value = BigInteger.Zero;
         var chunk = 0UL;
         var chunkDigitCount = 0;
+        var hasReadSeparator = false;
 
         int i;
         for (i = 0; i < slice.Length; i++)
@@ -306,13 +323,21 @@ public partial class Tokenizer
             var digitValue = GetDigitValue(ch);
             if (digitValue >= radix)
             {
-                if (ch == '_')
+                if (ch == separator)
                 {
+                    if (hasReadSeparator || i == 0)
+                    {
+                        goto InvalidFormat;
+                    }
+
+                    hasReadSeparator = true;
                     continue;
                 }
 
-                Debug.Fail($"Invalid digit in number: U+{(ushort)ch:X4}");
+                break;
             }
+
+            hasReadSeparator = false;
 
             chunk = (chunk << bitsPerDigit) | digitValue;
             chunkDigitCount++;
@@ -325,18 +350,26 @@ public partial class Tokenizer
             }
         }
 
-        Debug.Assert(i == slice.Length, $"Invalid big integer: {slice.ToString()}");
+        if (hasReadSeparator || i != slice.Length)
+        {
+            goto InvalidFormat;
+        }
 
         if (chunkDigitCount > 0)
         {
             value = (value << (chunkDigitCount * bitsPerDigit)) | chunk;
         }
 
-        return value;
+        return i;
+
+    InvalidFormat:
+        value = default;
+        return ~i;
     }
 
-    private static double ParseRadixIntToDouble(ReadOnlySpan<char> slice, byte radix)
+    private static int ParseRadixIntToDouble(ReadOnlySpan<char> slice, byte radix, byte separator, out double value)
     {
+        Debug.Assert(!slice.IsEmpty);
         Debug.Assert(radix is 2 or 8 or 16, $"Unexpected radix: {radix}");
 
         // Every radix handled here is a power of two, so the digits map directly onto the bits of the value:
@@ -368,20 +401,30 @@ public partial class Tokenizer
         var significand = 0UL;
         var binaryExponent = 0L;
         var truncated = false;
+        var hasReadSeparator = false;
 
-        for (var i = 0; i < slice.Length; i++)
+        int i;
+        for (i = 0; i < slice.Length; i++)
         {
             var ch = slice[i];
             var digitValue = GetDigitValue(ch);
             if (digitValue >= radix)
             {
-                if (ch == '_')
+                if (ch == separator)
                 {
+                    if (hasReadSeparator || i == 0)
+                    {
+                        goto InvalidFormat;
+                    }
+
+                    hasReadSeparator = true;
                     continue;
                 }
 
-                Debug.Fail($"Invalid digit in number: U+{(ushort)ch:X4}");
+                break;
             }
+
+            hasReadSeparator = false;
 
             if (significand <= significandLimit)
             {
@@ -397,7 +440,17 @@ public partial class Tokenizer
             }
         }
 
-        return ScaleToDouble(significand, binaryExponent, truncated);
+        if (hasReadSeparator || i != slice.Length)
+        {
+            goto InvalidFormat;
+        }
+
+        value = ScaleToDouble(significand, binaryExponent, truncated);
+        return i;
+
+    InvalidFormat:
+        value = default;
+        return ~i;
 
         static double ScaleToDouble(ulong significand, long binaryExponent, bool truncated)
         {
@@ -465,7 +518,7 @@ public partial class Tokenizer
     private static readonly BigInteger s_twoPow52 = BigInteger.One << (DoubleSignificandBitCount - 1);
     private static readonly BigInteger s_twoPow53 = BigInteger.One << DoubleSignificandBitCount;
 
-    private static double ParseDecimalToDouble(ReadOnlySpan<char> slice, long literalExponent)
+    private static int ParseDecimalToDouble(ReadOnlySpan<char> slice, long? literalExponent, byte separator, bool startsWithZero, out double value)
     {
         // double.Parse doesn't exactly match the ECMAScript specification (https://tc39.es/ecma262/#sec-literals-numeric-literals).
         // Behavior differs across .NET versions, to varying degrees. On .NET Framework, it doesn't round half-to-even correctly.
@@ -475,10 +528,15 @@ public partial class Tokenizer
         // The maximum number of decimal digits that is guaranteed to fit in a ulong.
         const int maxAccumulatedDigitCount = 19; // Floor(Log10(Pow(2, sizeof(ulong) * 8)))
 
+        Debug.Assert(!slice.IsEmpty);
+        Debug.Assert(startsWithZero == (slice[0] == '0'));
+
         var significand = 0UL;
         var digitCount = 0;
         var exponent = 0L;
         var truncated = false;
+        var hasReadSeparator = false;
+        uint digitValue;
 
         int i, ch;
 
@@ -486,16 +544,24 @@ public partial class Tokenizer
         for (i = 0; i < slice.Length; i++)
         {
             ch = slice[i];
-            var digitValue = GetDigitValue(ch);
+            digitValue = GetDigitValue(ch);
             if (digitValue >= 10)
             {
-                if (ch == '_')
+                if (ch == separator)
                 {
+                    if (hasReadSeparator || startsWithZero || i == 0)
+                    {
+                        goto InvalidFormat;
+                    }
+
+                    hasReadSeparator = true;
                     continue;
                 }
 
                 break;
             }
+
+            hasReadSeparator = false;
 
             if (digitCount == 0 && digitValue == 0)
             {
@@ -513,22 +579,35 @@ public partial class Tokenizer
             }
         }
 
+        if (hasReadSeparator)
+        {
+            goto InvalidFormat;
+        }
+
         // Fractional part
         if ((uint)i < (uint)slice.Length && slice[i] == '.')
         {
             for (i++; i < slice.Length; i++)
             {
                 ch = slice[i];
-                var digitValue = GetDigitValue(ch);
+                digitValue = GetDigitValue(ch);
                 if (digitValue >= 10)
                 {
-                    if (ch == '_')
+                    if (ch == separator)
                     {
+                        if (hasReadSeparator || i == 0)
+                        {
+                            goto InvalidFormat;
+                        }
+
+                        hasReadSeparator = true;
                         continue;
                     }
 
                     break;
                 }
+
+                hasReadSeparator = false;
 
                 if (digitCount == 0 && digitValue == 0)
                 {
@@ -545,17 +624,105 @@ public partial class Tokenizer
                     truncated |= digitValue != 0;
                 }
             }
+
+            if (hasReadSeparator || i <= 1)
+            {
+                goto InvalidFormat;
+            }
         }
 
-        Debug.Assert(i == slice.Length, $"Invalid significand: {slice.ToString()}");
+        // Exponential part
+        if (literalExponent is not null)
+        {
+            // Exponent has already been parsed.
+
+            if (i != slice.Length)
+            {
+                goto InvalidFormat;
+            }
+        }
+        else if ((uint)i < (uint)slice.Length)
+        {
+            var significandEnd = i;
+
+            if (i == 0 || (slice[i] | 0x20) != 'e' || (uint)++i >= (uint)slice.Length)
+            {
+                goto InvalidFormat;
+            }
+
+            var isNegativeExponent = slice[i] == '-';
+            if (isNegativeExponent || slice[i] == '+')
+            {
+                i++;
+            }
+
+            ulong exponentValue = 0;
+            var overflow = false;
+            var startIndex = i;
+
+            for (; i < slice.Length; i++)
+            {
+                ch = slice[i];
+                digitValue = GetDigitValue(ch);
+                if (digitValue >= 10)
+                {
+                    if (ch == separator)
+                    {
+                        if (hasReadSeparator || i == 0)
+                        {
+                            goto InvalidFormat;
+                        }
+
+                        hasReadSeparator = true;
+                        continue;
+                    }
+
+                    break;
+                }
+
+                hasReadSeparator = false;
+
+                if (!overflow)
+                {
+                    try { exponentValue = checked(exponentValue * 10 + digitValue); }
+                    catch (OverflowException) { overflow = true; }
+                }
+            }
+
+            if (hasReadSeparator || i == startIndex || i != slice.Length)
+            {
+                goto InvalidFormat;
+            }
+
+            slice = slice.Slice(0, significandEnd);
+
+            if (isNegativeExponent)
+            {
+                literalExponent = exponentValue <= unchecked((ulong)long.MinValue) ? -(long)exponentValue : long.MinValue;
+            }
+            else
+            {
+                literalExponent = exponentValue <= long.MaxValue ? (long)exponentValue : long.MaxValue;
+            }
+        }
+        else
+        {
+            if (i != slice.Length)
+            {
+                goto InvalidFormat;
+            }
+
+            literalExponent = 0;
+        }
 
         if (significand == 0)
         {
             Debug.Assert(!truncated, "A zero significand cannot have dropped digits.");
-            return 0;
+            value = 0;
+            return i;
         }
 
-        try { exponent = checked(exponent + literalExponent); }
+        try { exponent = checked(exponent + literalExponent.Value); }
         catch (OverflowException) { exponent = literalExponent < 0 ? long.MinValue : long.MaxValue; }
 
         var magnitude =
@@ -570,21 +737,28 @@ public partial class Tokenizer
 
         if (magnitude > 309)
         {
-            return double.PositiveInfinity;
+            value = double.PositiveInfinity;
+            return i;
         }
 
         if (magnitude < -323)
         {
             // Below 10^-324, which is less than half the smallest positive double.
-            return 0;
+            value = 0;
+            return i;
         }
 
-        if (!truncated && TryScaleToDoubleFast(significand, exponent, out var value))
+        if (!truncated && TryScaleToDoubleFast(significand, exponent, out value))
         {
-            return value;
+            return i;
         }
 
-        return ParseSlow(slice, literalExponent);
+        value = ParseSlow(slice, literalExponent.Value);
+        return i;
+
+    InvalidFormat:
+        value = default;
+        return ~i;
 
         static bool TryScaleToDoubleFast(ulong significand, long exponent, out double value)
         {
