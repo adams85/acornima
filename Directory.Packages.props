@@ -28,7 +28,7 @@
   </ItemGroup>
   <ItemGroup>
     <!-- global private assets -->
-    <GlobalPackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
+    <GlobalPackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.401" />
     <GlobalPackageReference Include="PolySharp" Version="1.15.0" />
   </ItemGroup>
 </Project>

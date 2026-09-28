@@ -714,6 +714,7 @@ public partial class Parser
             }
 
             baseExpr = element;
+            maybeAsyncArrow = false;
         }
     }
 

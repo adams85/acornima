@@ -2796,6 +2796,17 @@ public partial class ParserTests
             parser.ParseScript(asyncToken + "() => ({} ? 1 : 0)").ToJavaScript());
     }
 
+    [Fact]
+    public void ShouldDisallowAdditionalSubscriptsBeforeArrowInAsyncArrowFunctions()
+    {
+        var parser = new Parser();
+        var ex = Assert.Throws<SyntaxErrorException>(() => parser.ParseScript("async(a)(b) => 1"));
+        Assert.Equal(12, ex.Error.Index);
+        Assert.Equal(1, ex.LineNumber);
+        Assert.Equal(12, ex.Column);
+        Assert.Equal(nameof(SyntaxErrorMessages.UnexpectedToken), ex.Error.Code);
+    }
+
     [Theory]
     [InlineData(false, false)]
     [InlineData(false, true)]
