@@ -262,7 +262,7 @@ public sealed class JsxTokenizer : ITokenizer, IExtension
                 ++position;
             }
 
-            if (_tokenizer.ReadInt(out var cp, out var overflow, out _, radix) > 0 && _tokenizer.CharCodeAtPosition() == ';')
+            if (_tokenizer.ReadInt(out var cp, out var overflow, radix) > 0 && _tokenizer.CharCodeAtPosition() == ';')
             {
                 if (overflow || cp > UnicodeHelper.LastCodePoint)
                 {
