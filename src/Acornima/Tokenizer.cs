@@ -416,6 +416,40 @@ public sealed partial class Tokenizer : ITokenizer
         }
     }
 
+    private void SkipSpaceAndAllComments(OnCommentHandler? onComment)
+    {
+        for (; ; )
+        {
+            SkipSpace(onComment);
+
+            if (_sourceType == SourceType.Script)
+            {
+                var ch = CharCodeAtPosition();
+                if (ch == '<')
+                {
+                    if (CharCodeAtPosition(1) == '!' && CharCodeAtPosition(2) == '-' && CharCodeAtPosition(3) == '-')
+                    {
+                        // `<!--`, an XML-style comment that should be interpreted as a line comment
+                        SkipLineComment(startSkip: 4, CommentKind.Line, onComment);
+                        continue;
+                    }
+                }
+                else if (ch == '-')
+                {
+                    if (CharCodeAtPosition(1) == '-' && CharCodeAtPosition(2) == '>'
+                        && (_end == 0 || _endLocation.Line != _currentLine))
+                    {
+                        // A `-->` line comment
+                        SkipLineComment(startSkip: 3, CommentKind.Line, onComment);
+                        continue;
+                    }
+                }
+            }
+
+            break;
+        }
+    }
+
     internal int NextTokenPosition(out int line, out int lineStart)
     {
         // Replacement for the usage of the `skipWhiteSpace` regex in the original acornjs implementation.
@@ -424,7 +458,7 @@ public sealed partial class Tokenizer : ITokenizer
         var originalLineNumber = _currentLine;
         var originalLineStart = _lineStart;
 
-        SkipSpace(onComment: null);
+        SkipSpaceAndAllComments(onComment: null);
 
         var position = _position;
         line = _currentLine;
@@ -449,7 +483,7 @@ public sealed partial class Tokenizer : ITokenizer
         _currentLine = line;
         _lineStart = lineStart;
 
-        SkipSpace(onComment: null);
+        SkipSpaceAndAllComments(onComment: null);
 
         position = _position;
         line = _currentLine;
