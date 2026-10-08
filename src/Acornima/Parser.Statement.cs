@@ -1699,6 +1699,11 @@ public partial class Parser
             {
                 CheckLValSimple(id, BindingType.Lexical);
             }
+            else
+            {
+                // RaiseRecoverable(id.Start, $"Binding ${id.Name} in strict mode"); // original acornjs error reporting
+                CheckReservedWordBind(id);
+            }
         }
         else
         {

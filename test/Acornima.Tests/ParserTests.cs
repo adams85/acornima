@@ -1027,6 +1027,40 @@ public partial class ParserTests
     }
 
     [Theory]
+    [InlineData("script", "class arguments {}", EcmaVersion.Latest, "Unexpected eval or arguments in strict mode")]
+    [InlineData("module", "class arguments {}", EcmaVersion.Latest, "Unexpected eval or arguments in strict mode")]
+    [InlineData("script", "class eval {}", EcmaVersion.Latest, "Unexpected eval or arguments in strict mode")]
+    [InlineData("module", "class eval {}", EcmaVersion.Latest, "Unexpected eval or arguments in strict mode")]
+    [InlineData("script", "class let {}", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("module", "class let {}", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "class enum {}", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("module", "class enum {}", EcmaVersion.Latest, "Unexpected reserved word")]
+
+    [InlineData("script", "(class arguments {})", EcmaVersion.Latest, "Unexpected eval or arguments in strict mode")]
+    [InlineData("module", "(class arguments {})", EcmaVersion.Latest, "Unexpected eval or arguments in strict mode")]
+    [InlineData("script", "(class eval {})", EcmaVersion.Latest, "Unexpected eval or arguments in strict mode")]
+    [InlineData("module", "(class eval {})", EcmaVersion.Latest, "Unexpected eval or arguments in strict mode")]
+    [InlineData("script", "(class let {})", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("module", "(class let {})", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [InlineData("script", "(class enum {})", EcmaVersion.Latest, "Unexpected reserved word")]
+    [InlineData("module", "(class enum {})", EcmaVersion.Latest, "Unexpected reserved word")]
+    public void ShouldHandleReservedWordEdgeCases(string sourceType, string input, EcmaVersion ecmaVersion, string? expectedError)
+    {
+        var parser = new Parser(new ParserOptions { EcmaVersion = ecmaVersion });
+        var parseAction = GetParseActionFor(sourceType);
+
+        if (expectedError is null)
+        {
+            Assert.NotNull(parseAction(parser, input));
+        }
+        else
+        {
+            var ex = Assert.Throws<SyntaxErrorException>(() => parseAction(parser, input));
+            Assert.Equal(expectedError, ex.Description);
+        }
+    }
+
+    [Theory]
     [InlineData("script", "(class { x = () => arguments })", EcmaVersion.Latest, "'arguments' is not allowed in class field initializer or static initialization block")]
     [InlineData("script", "() => { (class { x = () => arguments }) }", EcmaVersion.Latest, "'arguments' is not allowed in class field initializer or static initialization block")]
     [InlineData("script", "() => class { x = () => { arguments } }", EcmaVersion.Latest, "'arguments' is not allowed in class field initializer or static initialization block")]

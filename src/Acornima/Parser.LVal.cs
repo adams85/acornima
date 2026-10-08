@@ -391,6 +391,22 @@ public partial class Parser
         return FinishNode(startMarker, new AssignmentPattern(left, right));
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void CheckReservedWordBind(Identifier identifier)
+    {
+        if (_isReservedWordBind(identifier.Name.AsSpan(), _strict))
+        {
+            if (identifier.Name is "eval" or "arguments")
+            {
+                RaiseRecoverable(identifier.Start, StrictEvalArguments);
+            }
+            else
+            {
+                HandleReservedWordError(identifier);
+            }
+        }
+    }
+
     // The following three functions all verify that a node is an lvalue —
     // something that can be bound, or assigned to. In order to do so, they perform
     // a variety of checks:
@@ -469,18 +485,8 @@ public partial class Parser
             case NodeType.Identifier:
                 var identifier = expr.As<Identifier>();
 
-                if (_isReservedWordBind(identifier.Name.AsSpan(), _strict))
-                {
-                    // RaiseRecoverable(identifier.Start, $"{(isBind ? "Binding " : "Assigning to ")}{identifier.Name} in strict mode"); // original acornjs error reporting
-                    if (identifier.Name is "eval" or "arguments")
-                    {
-                        RaiseRecoverable(identifier.Start, StrictEvalArguments);
-                    }
-                    else
-                    {
-                        HandleReservedWordError(identifier);
-                    }
-                }
+                // RaiseRecoverable(identifier.Start, $"{(isBind ? "Binding " : "Assigning to ")}{identifier.Name} in strict mode"); // original acornjs error reporting
+                CheckReservedWordBind(identifier);
 
                 if (isBind)
                 {
