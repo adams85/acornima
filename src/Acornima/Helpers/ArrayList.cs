@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-#if NET5_0_OR_GREATER
+#pragma warning disable IDE0005 // Remove unnecessary import
 using System.Runtime.InteropServices;
-#endif
+#pragma warning restore IDE0005 // Remove unnecessary import
 
 namespace Acornima.Helpers;
 
