@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <EnableNUnitRunner>true</EnableNUnitRunner>
     <GenerateTestingPlatformEntryPoint>false</GenerateTestingPlatformEntryPoint>
     <GenerateProgramFile>false</GenerateProgramFile>
     <GeneratedTestSuiteDir>Generated</GeneratedTestSuiteDir>
@@ -18,22 +17,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NUnit" />
-    <PackageReference Include="NUnit3TestAdapter" />
     <PackageReference Include="Spectre.Console" />
     <PackageReference Include="Test262Harness" />
-    <!-- TODO: remove these once migrated to TUnit -->
-    <PackageReference Remove="TUnit.Engine" />
-    <PackageReference Remove="xunit.analyzers" />
-    <PackageReference Remove="xunit.v3.assert" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Acornima\Acornima.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Using Include="NUnit.Framework" />
   </ItemGroup>
 
   <ItemGroup>

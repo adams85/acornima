@@ -5,7 +5,7 @@ namespace Acornima.Tests.Test262;
 /// <summary>
 /// Handles initializing testing state.
 /// </summary>
-public partial class TestHarness
+public static partial class TestHarness
 {
     private static partial Task InitializeCustomState()
     {

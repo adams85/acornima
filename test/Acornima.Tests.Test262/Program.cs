@@ -16,9 +16,10 @@ public static class Program
 {
     private static readonly JsonSerializerOptions s_serializerOptions = new() { ReadCommentHandling = JsonCommentHandling.Skip };
 
+#pragma warning disable TUnit0034 // Do not declare a main method - we intentionally provide a custom entry point (default MTP runner + custom test262 runner)
     public static async Task<int> Main(string[] args)
     {
-        if (args.Length == 0 || args[0] != "use-custom-runner")
+        if (args.Length == 0 || args[0] != "test262")
         {
             var builder = await TestApplication.CreateBuilderAsync(args);
             SelfRegisteredExtensions.AddSelfRegisteredExtensions(builder, args);
@@ -121,6 +122,7 @@ public static class Program
 
         return summary.HasProblems ? 1 : 0;
     }
+#pragma warning restore TUnit0034
 
     private static void Report(TestExecutionSummary testExecutionSummary)
     {
@@ -207,7 +209,7 @@ public static class Program
         var fileContents = new[]
             {
                 "# to generate this file run:",
-                "# dotnet run -c Release -- --update-allow-list",
+                "# dotnet run -c Release -- test262 --update-allow-list",
                 ""
             }
             .Concat(failing)

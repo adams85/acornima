@@ -3,6 +3,7 @@
   //"SuiteDirectory": "//mnt/c/work/test262",
   "TargetPath": "./Generated",
   "Namespace": "Acornima.Tests.Test262",
+  "TestFramework": "TUnit",
   "Parallel": true,
   "ExcludedFeatures": [
   ],
