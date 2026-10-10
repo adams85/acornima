@@ -11,6 +11,7 @@ using Acornima.Jsx;
 using DiffEngine;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using TUnit.Core;
 using Xunit;
 
 namespace Acornima.Tests;
@@ -39,21 +40,21 @@ public partial class ParserTests
         return root ?? "";
     }
 
-    public static IEnumerable<object[]> Fixtures(string relativePath)
+    public static IEnumerable<string> Fixtures(string relativePath)
     {
         var fixturesPath = Path.GetFullPath(Path.Combine(GetFixturesPath(), relativePath));
 
         var files = Directory.GetFiles(fixturesPath, "*.js", SearchOption.AllDirectories);
 
         return files
-            .Select(x => new object[] { x.Substring(fixturesPath.Length + 1) })
+            .Select(x => x.Substring(fixturesPath.Length + 1))
             .ToList();
     }
 
     private static readonly Regex s_dummyRegex = new Regex("");
 
-    [Theory]
-    [MemberData(nameof(Fixtures), FixturesDirName)]
+    [Test]
+    [MethodDataSource(nameof(Fixtures), Arguments = [FixturesDirName])]
     public void ExecuteTestCase(string fixture)
     {
         static T CreateParserOptions<T>(bool tolerant, bool skipRegExp, EcmaVersion ecmaVersion, ExperimentalESFeatures experimentalESFeatures) where T : ParserOptions, new() => new T

@@ -1,12 +1,13 @@
 using System;
 using Acornima.Ast;
+using TUnit.Core;
 using Xunit;
 
 namespace Acornima.Tests;
 
 public class AstVisitorTests
 {
-    [Fact]
+    [Test]
     public void ThrowsCatchableExceptionOnTooDeepRecursion()
     {
         Expression expression = new Identifier("x");

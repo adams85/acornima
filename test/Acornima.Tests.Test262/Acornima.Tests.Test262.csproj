@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
+    <EnableNUnitRunner>true</EnableNUnitRunner>
+    <GenerateTestingPlatformEntryPoint>false</GenerateTestingPlatformEntryPoint>
     <GenerateProgramFile>false</GenerateProgramFile>
     <GeneratedTestSuiteDir>Generated</GeneratedTestSuiteDir>
     <_GeneratedDirPath>$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), $(GeneratedTestSuiteDir)))</_GeneratedDirPath>
@@ -16,12 +18,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="GitHubActionsTestLogger" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="NUnit" />
     <PackageReference Include="NUnit3TestAdapter" />
     <PackageReference Include="Spectre.Console" />
     <PackageReference Include="Test262Harness" />
+    <!-- TODO: remove these once migrated to TUnit -->
+    <PackageReference Remove="TUnit.Engine" />
+    <PackageReference Remove="xunit.analyzers" />
+    <PackageReference Remove="xunit.v3.assert" />
   </ItemGroup>
 
   <ItemGroup>

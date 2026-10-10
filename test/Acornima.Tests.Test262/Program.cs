@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.Testing.Platform.Builder;
 using Spectre.Console;
 using Test262Harness;
 
@@ -17,6 +18,16 @@ public static class Program
 
     public static async Task<int> Main(string[] args)
     {
+        if (args.Length == 0 || args[0] != "use-custom-runner")
+        {
+            var builder = await TestApplication.CreateBuilderAsync(args);
+            SelfRegisteredExtensions.AddSelfRegisteredExtensions(builder, args);
+            using var app = await builder.BuildAsync();
+            return await app.RunAsync();
+        }
+
+        args = args[1..];
+
         var rootDirectory = Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location) ?? string.Empty;
         var projectRoot = Path.Combine(rootDirectory, "../../..");
 

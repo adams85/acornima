@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Numerics;
 using System.Text;
+using TUnit.Core;
 using Xunit;
 
 namespace Acornima.Tests;
@@ -22,27 +23,27 @@ public partial class TokenizerTests
 
     #region The values mentioned in the issue
 
-    [Theory]
+    [Test]
     // All of these are 12345678901234567890, whose nearest double is 12345678901234567168.
-    [InlineData("12345678901234567890")]
-    [InlineData("0xAB54A98CEB1F0AD2")]
-    [InlineData("0o1255245230635307605322")]
-    [InlineData("0b1010101101010100101010011000110011101011000111110000101011010010")]
-    [InlineData("12_345_678_901_234_567_890")]
-    [InlineData("01255245230635307605322")]
-    [InlineData("12345678901234567890.0")]
+    [Arguments("12345678901234567890")]
+    [Arguments("0xAB54A98CEB1F0AD2")]
+    [Arguments("0o1255245230635307605322")]
+    [Arguments("0b1010101101010100101010011000110011101011000111110000101011010010")]
+    [Arguments("12_345_678_901_234_567_890")]
+    [Arguments("01255245230635307605322")]
+    [Arguments("12345678901234567890.0")]
     public void ScansEverySpellingOfTheSameIntegerAlike(string literal)
     {
         Assert.Equal(0x43E56A95319D63E1, BitConverter.DoubleToInt64Bits(Scan(literal)));
     }
 
-    [Theory]
+    [Test]
     // The smallest integer whose ulong -> double conversion is rounded twice before .NET 9. It sits 1025
     // above 2^63, where the doubles are 2048 apart, so it rounds up.
-    [InlineData("9223372036854776833", 9223372036854777856d)]
+    [Arguments("9223372036854776833", 9223372036854777856d)]
     // Past the ulong accumulator, so the digits used to be rebuilt one rounding at a time.
-    [InlineData("0x1F49E9EE4C1BCE961", 36073444770624368640d)]
-    [InlineData("0xffffffffffffffff", 18446744073709551616d)]
+    [Arguments("0x1F49E9EE4C1BCE961", 36073444770624368640d)]
+    [Arguments("0xffffffffffffffff", 18446744073709551616d)]
     public void ScansTheValueTheIssueNames(string literal, double expected)
     {
         Assert.Equal(BitConverter.DoubleToInt64Bits(expected), BitConverter.DoubleToInt64Bits(Scan(literal)));
@@ -52,13 +53,13 @@ public partial class TokenizerTests
 
     #region The same values in every radix
 
-    [Theory]
-    [InlineData("8000000000000401")] // 2^63 + 1025, the smallest operand the ulong conversion differs on
-    [InlineData("FFFFFFFFFFFFFFFF")] // 2^64 - 1, the last one the accumulator holds
-    [InlineData("1F49E9EE4C1BCE961")] // 36073444770624366945, from the issue
-    [InlineData("1FFFFFFFFFFFFFFFFF")] // 2^69 - 1, which needs 23 octal digits
-    [InlineData("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF")] // 2^120 - 1
-    [InlineData("100000000000000800000000000001")] // a significand that ends just above a rounding boundary
+    [Test]
+    [Arguments("8000000000000401")] // 2^63 + 1025, the smallest operand the ulong conversion differs on
+    [Arguments("FFFFFFFFFFFFFFFF")] // 2^64 - 1, the last one the accumulator holds
+    [Arguments("1F49E9EE4C1BCE961")] // 36073444770624366945, from the issue
+    [Arguments("1FFFFFFFFFFFFFFFFF")] // 2^69 - 1, which needs 23 octal digits
+    [Arguments("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF")] // 2^120 - 1
+    [Arguments("100000000000000800000000000001")] // a significand that ends just above a rounding boundary
     public void ScansTheSameValueInEveryRadix(string hexDigits)
     {
         var value = BigInteger.Parse("0" + hexDigits, NumberStyles.HexNumber, CultureInfo.InvariantCulture);
@@ -83,57 +84,57 @@ public partial class TokenizerTests
 
     #region Basic cases
 
-    [Theory]
-    [InlineData("0")]
-    [InlineData("0.")]
-    [InlineData("0.0")]
-    [InlineData("0e100")]
-    [InlineData("1")]
-    [InlineData("10.")]
-    [InlineData("0.1")]
-    [InlineData("1.5")]
-    [InlineData("1e21")]
-    [InlineData("1e-7")]
-    [InlineData(".5")]
-    [InlineData("08")] // a decimal with a leading zero
-    [InlineData("08.")] // a decimal with a leading zero and lone decimal separator
-    [InlineData("08.e0")] // a decimal with a leading zero, lone decimal separator and exponent
-    [InlineData("08.125e2")]
-    [InlineData("0123")] // legacy octal
-    [InlineData("9007199254740993")] // 2^53 + 1, a tie that goes to even
-    [InlineData("9007199254740995")] // 2^53 + 3, a tie that goes up
-    [InlineData("4503599627370497.5")] // a tie at the top of the exactly representable range
-    [InlineData("1.7976931348623157e308")] // double.MaxValue
-    [InlineData("1.7976931348623158e308")] // just short of the overflow boundary
-    [InlineData("1.7976931348623159e308")] // past it
-    [InlineData("1e309")]
-    [InlineData("2.2250738585072011e-308")] // the value that used to hang strtod
-    [InlineData("2.2250738585072014e-308")] // the smallest normal
-    [InlineData("1e-320")]
-    [InlineData("4.9e-324")] // the smallest subnormal
-    [InlineData("2.4703282292062327e-324")] // half the smallest subnormal, rounds to zero
-    [InlineData("2.4703282292062328e-324")] // a hair past it, rounds up
-    [InlineData("1e-400")]
-    [InlineData("7.8459735791271921e65")] // a 17-digit significand that needs the exact path
-    [InlineData("3.518437208883201171875e13")] // a 22-digit significand
-    [InlineData("1234567890123456789012345678901234567890")]
-    [InlineData("1234567890123456789012345678901234567890.")]
-    [InlineData("1234567890123456789012345678901234567890.e0")]
-    [InlineData("0.000000000000000000000000000000000000000000001234567890123456789")]
-    [InlineData(".000000000000000000000000000000000000000000001234567890123456789")]
-    [InlineData("1_0.5_0e1_0")]
+    [Test]
+    [Arguments("0")]
+    [Arguments("0.")]
+    [Arguments("0.0")]
+    [Arguments("0e100")]
+    [Arguments("1")]
+    [Arguments("10.")]
+    [Arguments("0.1")]
+    [Arguments("1.5")]
+    [Arguments("1e21")]
+    [Arguments("1e-7")]
+    [Arguments(".5")]
+    [Arguments("08")] // a decimal with a leading zero
+    [Arguments("08.")] // a decimal with a leading zero and lone decimal separator
+    [Arguments("08.e0")] // a decimal with a leading zero, lone decimal separator and exponent
+    [Arguments("08.125e2")]
+    [Arguments("0123")] // legacy octal
+    [Arguments("9007199254740993")] // 2^53 + 1, a tie that goes to even
+    [Arguments("9007199254740995")] // 2^53 + 3, a tie that goes up
+    [Arguments("4503599627370497.5")] // a tie at the top of the exactly representable range
+    [Arguments("1.7976931348623157e308")] // double.MaxValue
+    [Arguments("1.7976931348623158e308")] // just short of the overflow boundary
+    [Arguments("1.7976931348623159e308")] // past it
+    [Arguments("1e309")]
+    [Arguments("2.2250738585072011e-308")] // the value that used to hang strtod
+    [Arguments("2.2250738585072014e-308")] // the smallest normal
+    [Arguments("1e-320")]
+    [Arguments("4.9e-324")] // the smallest subnormal
+    [Arguments("2.4703282292062327e-324")] // half the smallest subnormal, rounds to zero
+    [Arguments("2.4703282292062328e-324")] // a hair past it, rounds up
+    [Arguments("1e-400")]
+    [Arguments("7.8459735791271921e65")] // a 17-digit significand that needs the exact path
+    [Arguments("3.518437208883201171875e13")] // a 22-digit significand
+    [Arguments("1234567890123456789012345678901234567890")]
+    [Arguments("1234567890123456789012345678901234567890.")]
+    [Arguments("1234567890123456789012345678901234567890.e0")]
+    [Arguments("0.000000000000000000000000000000000000000000001234567890123456789")]
+    [Arguments(".000000000000000000000000000000000000000000001234567890123456789")]
+    [Arguments("1_0.5_0e1_0")]
     public void ScansTheNearestDouble(string literal)
     {
         var (numerator, denominator) = ExactValueOf(literal);
         Assert.Equal(Bits(NearestDouble(numerator, denominator)), Bits(Scan(literal)));
     }
 
-    [Theory]
-    [InlineData("1e1000000", double.PositiveInfinity)]
-    [InlineData("1e-1000000", 0d)]
-    [InlineData("1e100000000000000000000", double.PositiveInfinity)]
-    [InlineData("1e-100000000000000000000", 0d)]
-    [InlineData("0e100000000000000000000", 0d)]
+    [Test]
+    [Arguments("1e1000000", double.PositiveInfinity)]
+    [Arguments("1e-1000000", 0d)]
+    [Arguments("1e100000000000000000000", double.PositiveInfinity)]
+    [Arguments("1e-100000000000000000000", 0d)]
+    [Arguments("0e100000000000000000000", 0d)]
     public void ScansAnExponentTooLargeToMatter(string literal, double expected)
     {
         Assert.Equal(Bits(expected), Bits(Scan(literal)));
@@ -143,13 +144,13 @@ public partial class TokenizerTests
 
     #region Rounding boundaries
 
-    [Theory]
-    [InlineData(1.0)]
-    [InlineData(12345.678)]
-    [InlineData(1e-300)]
-    [InlineData(4.9e-324)] // the smallest subnormal
-    [InlineData(2.2250738585072014e-308)] // the smallest normal, where the widest boundary sits
-    [InlineData(1.7976931348623157e308)] // the largest double, whose upper boundary is the overflow one
+    [Test]
+    [Arguments(1.0)]
+    [Arguments(12345.678)]
+    [Arguments(1e-300)]
+    [Arguments(4.9e-324)] // the smallest subnormal
+    [Arguments(2.2250738585072014e-308)] // the smallest normal, where the widest boundary sits
+    [Arguments(1.7976931348623157e308)] // the largest double, whose upper boundary is the overflow one
     public void ScansTheNearestDoubleAroundARoundingBoundary(double value)
     {
         var boundary = ExactDecimalOfBoundaryAbove(BitConverter.DoubleToInt64Bits(value));
@@ -170,7 +171,7 @@ public partial class TokenizerTests
         }
     }
 
-    [Fact]
+    [Test]
     public void ScansTheNearestDoubleForASignificandLongerThanTheWindow()
     {
         var random = new Random(13);
@@ -196,18 +197,18 @@ public partial class TokenizerTests
 
     #region Every literal shape, over a generated corpus
 
-    [Theory]
-    [InlineData("integer-22", 1)] // past the ulong accumulator, so double.Parse used to answer
-    [InlineData("fraction-18", 2)]
-    [InlineData("exponent+200", 3)]
-    [InlineData("exponent-200", 4)]
-    [InlineData("exponent-subnormal", 5)]
-    [InlineData("decimal-uint64-top", 6)] // in [2^63, 2^64), so the ulong conversion used to answer
-    [InlineData("hex-uint64-top", 7)]
-    [InlineData("hex-17", 8)] // past the accumulator, so the digits used to be rebuilt in a double
-    [InlineData("hex-20", 9)]
-    [InlineData("binary-70", 10)]
-    [InlineData("legacy-octal-24", 11)]
+    [Test]
+    [Arguments("integer-22", 1)] // past the ulong accumulator, so double.Parse used to answer
+    [Arguments("fraction-18", 2)]
+    [Arguments("exponent+200", 3)]
+    [Arguments("exponent-200", 4)]
+    [Arguments("exponent-subnormal", 5)]
+    [Arguments("decimal-uint64-top", 6)] // in [2^63, 2^64), so the ulong conversion used to answer
+    [Arguments("hex-uint64-top", 7)]
+    [Arguments("hex-17", 8)] // past the accumulator, so the digits used to be rebuilt in a double
+    [Arguments("hex-20", 9)]
+    [Arguments("binary-70", 10)]
+    [Arguments("legacy-octal-24", 11)]
     public void ScansTheNearestDoubleForEveryLiteralOfShape(string shape, int seed)
     {
         var random = new Random(seed);
@@ -239,7 +240,7 @@ public partial class TokenizerTests
 
     #region The unsigned conversion on its own
 
-    [Fact]
+    [Test]
     public void ConvertsEveryUInt64ToTheNearestDouble()
     {
         const int operandCount = 20000;
@@ -262,7 +263,7 @@ public partial class TokenizerTests
         Assert.True(failureCount == 0, $"{failureCount} of {operandCount} operands in [2^63, 2^64) do not convert to the nearest double");
     }
 
-    [Fact]
+    [Test]
     public void ConvertsSmallUInt64ValuesExactly()
     {
         for (var value = 0UL; value < 1000; value++)

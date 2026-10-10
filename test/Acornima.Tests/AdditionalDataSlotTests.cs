@@ -1,13 +1,14 @@
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Acornima.Helpers;
+using TUnit.Core;
 using Xunit;
 
 namespace Acornima.Tests;
 
 public class AdditionalDataSlotTests
 {
-    [Fact]
+    [Test]
     public void PrimaryData_SingleValue()
     {
         var slot = new AdditionalDataSlot();
@@ -27,7 +28,7 @@ public class AdditionalDataSlotTests
         Assert.Null(slot[0]);
     }
 
-    [Fact]
+    [Test]
     public void PrimaryData_PromotionToArray_BeforeSet()
     {
         var slot = new AdditionalDataSlot();
@@ -46,7 +47,7 @@ public class AdditionalDataSlotTests
         Assert.Equal(1, slot[1]);
     }
 
-    [Fact]
+    [Test]
     public void PrimaryData_PromotionToArray_AfterSet()
     {
         var slot = new AdditionalDataSlot();
@@ -65,7 +66,7 @@ public class AdditionalDataSlotTests
         Assert.Equal(1, slot[1]);
     }
 
-    [Fact]
+    [Test]
     public void Indexer_PrimaryData_SingleValue()
     {
         var slot = new AdditionalDataSlot();
@@ -87,7 +88,7 @@ public class AdditionalDataSlotTests
         Assert.Null(slot[0]);
     }
 
-    [Fact]
+    [Test]
     public void Indexer_PrimaryData_PromotionToArray_BeforeSet()
     {
         var slot = new AdditionalDataSlot();
@@ -106,7 +107,7 @@ public class AdditionalDataSlotTests
         Assert.Equal(1, slot[1]);
     }
 
-    [Fact]
+    [Test]
     public void Indexer_PrimaryData_PromotionToArray_AfterSet()
     {
         var slot = new AdditionalDataSlot();
@@ -125,12 +126,12 @@ public class AdditionalDataSlotTests
         Assert.Equal(1, slot[1]);
     }
 
-    [Fact]
+    [Test]
     public void ShouldPreventOverwriteWithStaleValueDuringPromotionToArray()
     {
         var startSignal1 = new object();
         var startSignal2 = new object();
-        var finishSignal = new CountdownEvent(initialCount: 2);
+        var finishIterationSignal = new CountdownEvent(initialCount: 2);
 
         var boxedSlot = new StrongBox<AdditionalDataSlot>();
 
@@ -140,7 +141,8 @@ public class AdditionalDataSlotTests
             {
                 lock (startSignal1)
                 {
-                    finishSignal.Signal();
+                    try { finishIterationSignal.Signal(); }
+                    catch { break; }
                     Monitor.Wait(startSignal1);
                     boxedSlot.Value.PrimaryData = 0;
                 }
@@ -153,21 +155,44 @@ public class AdditionalDataSlotTests
             {
                 lock (startSignal2)
                 {
-                    finishSignal.Signal();
+                    try { finishIterationSignal.Signal(); }
+                    catch { break; }
                     Monitor.Wait(startSignal2);
                     boxedSlot.Value.SetItem(1, 1, capacity: 2);
                 }
             }
         });
 
-        thread1.Start();
-        thread2.Start();
-
-        finishSignal.Wait();
-
-        for (var i = 0; i < 10000; i++)
+        try
         {
-            finishSignal.Reset();
+            thread1.Start();
+            thread2.Start();
+
+            finishIterationSignal.Wait();
+
+            for (var i = 0; i < 10000; i++)
+            {
+                finishIterationSignal.Reset();
+
+                lock (startSignal1)
+                {
+                    lock (startSignal2)
+                    {
+                        Monitor.Pulse(startSignal1);
+                        Monitor.Pulse(startSignal2);
+                    }
+                }
+
+                finishIterationSignal.Wait();
+
+                Assert.Equal(0, boxedSlot.Value.PrimaryData);
+                Assert.Equal(1, boxedSlot.Value[1]);
+                boxedSlot.Value = default;
+            }
+        }
+        finally
+        {
+            finishIterationSignal.Dispose();
 
             lock (startSignal1)
             {
@@ -177,12 +202,6 @@ public class AdditionalDataSlotTests
                     Monitor.Pulse(startSignal2);
                 }
             }
-
-            finishSignal.Wait();
-
-            Assert.Equal(0, boxedSlot.Value.PrimaryData);
-            Assert.Equal(1, boxedSlot.Value[1]);
-            boxedSlot.Value = default;
         }
     }
 }

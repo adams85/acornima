@@ -3,13 +3,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Acornima.SourceGenerators;
 using Microsoft.CodeAnalysis;
-using Xunit;
+using TUnit.Core;
 
 namespace Acornima.Tests.SourceGenerators;
 
 public class VisitationBoilerplateGeneratorTests : SourceGeneratorTest
 {
-    [Fact]
+    [Test]
     public Task VisitationBoilerplateGeneration()
     {
         var sourceFiles = Directory.EnumerateFiles(ToSourcePath("Ast"), "*.cs", SearchOption.AllDirectories)

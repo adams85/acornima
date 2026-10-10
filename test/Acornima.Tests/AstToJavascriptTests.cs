@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using Acornima.Ast;
 using Acornima.Helpers;
 using Acornima.Jsx;
+using TUnit.Core;
 using Xunit;
 
 namespace Acornima.Tests;
@@ -20,7 +21,7 @@ public class AstToJavaScriptTests
         MultiLineObjectLiteralThreshold = 1
     };
 
-    [Fact]
+    [Test]
     public void ToJavaScriptTest1()
     {
         var parser = new Parser();
@@ -46,7 +47,7 @@ public class AstToJavaScriptTests
         Assert.Equal("if(true){p();}switch(foo){case'A':p();break;}switch(foo){default:p();break;}for(var a=[];;){}for(var elem of list){}", code);
     }
 
-    [Fact]
+    [Test]
     public void ToJavaScriptTest2()
     {
         var source =
@@ -78,7 +79,7 @@ public class AstToJavaScriptTests
         Assert.Equal(expected, code);
     }
 
-    [Fact]
+    [Test]
     public void ToJavaScriptTest3()
     {
         var parser = new Parser();
@@ -100,7 +101,7 @@ public class AstToJavaScriptTests
         Assert.Equal("export class aa extends HTMLElement{constructor(a,b){super(a);this._div=document.createElement('div');}static get is(){return'aa';}}", code);
     }
 
-    [Fact]
+    [Test]
     public void ToJavaScriptTest4()
     {
         var source =
@@ -222,7 +223,7 @@ public class AstToJavaScriptTests
         Assert.Equal(expected, code);
     }
 
-    [Fact]
+    [Test]
     public void ToJavaScriptTest5()
     {
         var source =
@@ -274,7 +275,7 @@ public class AstToJavaScriptTests
         Assert.Equal(expected, code);
     }
 
-    [Fact]
+    [Test]
     public void ToJavaScriptTest6()
     {
         var source =
@@ -293,7 +294,7 @@ public class AstToJavaScriptTests
         Assert.Equal("function _createClass(Constructor,protoProps,staticProps){if(protoProps)_defineProperties(Constructor.prototype,protoProps);if(staticProps)_defineProperties(Constructor,staticProps);return Constructor;}", code);
     }
 
-    [Fact]
+    [Test]
     public void ToJavaScriptTest7()
     {
         var parser = new Parser();
@@ -308,7 +309,7 @@ public class AstToJavaScriptTests
         Assert.Equal("if((x?a.nodeName.toLowerCase()===f:1===a.nodeType)&&++d&&(p&&((i=(o=a[S]||(a[S]={}))[a.uniqueID]||(o[a.uniqueID]={}))[h]=[k,d]),a===e)){}", code);
     }
 
-    [Fact]
+    [Test]
     public void ToJavaScriptTest8()
     {
         var parser = new Parser();
@@ -329,7 +330,7 @@ public class AstToJavaScriptTests
         Assert.Equal("class a extends b{constructor(){super();this.g=1;}q=1;r='cc';}", code);
     }
 
-    [Fact]
+    [Test]
     public void ToJavaScriptTest9()
     {
         var parser = new Parser();
@@ -342,7 +343,7 @@ public class AstToJavaScriptTests
         Assert.Equal("d=(s=(r=(i=(o=(a=c)[S]||(a[S]={}))[a.uniqueID]||(o[a.uniqueID]={}))[h]||[])[0]===k&&r[1])&&r[2],a=s&&c.childNodes[s];", code);
     }
 
-    [Fact]
+    [Test]
     public void ToJavaScriptTest10()
     {
         var parser = new Parser();
@@ -355,7 +356,7 @@ public class AstToJavaScriptTests
         Assert.Equal("m=(z.document,!!v.documentElement&&!!v.head&&'function'==typeof v.addEventListener&&v.createElement,~a.indexOf('MSIE')||a.indexOf('Trident/'),'___FONT_AWESOME___');", code);
     }
 
-    [Fact]
+    [Test]
     public void ToJavaScriptTest11()
     {
         var parser = new Parser();
@@ -379,7 +380,7 @@ public class AstToJavaScriptTests
         Assert.Equal("var h=(c.navigator||{}).userAgent,a=void 0===h?'':h,z=c,v=l,m=(z.document,!!v.documentElement&&!!v.head&&'function'==typeof v.addEventListener&&v.createElement,~a.indexOf('MSIE')||a.indexOf('Trident/'),'___FONT_AWESOME___'),e=function(){try{return!0;}catch(c){return!1;}}();", code);
     }
 
-    [Fact]
+    [Test]
     public void ToJavaScriptTest12()
     {
         var parser = new Parser();
@@ -394,7 +395,7 @@ public class AstToJavaScriptTests
         Assert.Equal("var a={children:(b=O,'g'===b.tag?b.children:[b])};", code);
     }
 
-    [Fact]
+    [Test]
     public void ToJavaScriptTest13()
     {
         var parser = new Parser();
@@ -413,7 +414,7 @@ public class AstToJavaScriptTests
         Assert.Equal("if(e.IsWebService)if(h=e.HttpRequest.responseXML,'undefined'==typeof h)Trace.Write('Error: '+e.UniqueId+' data has no properties!'),m=!0;else try{h.setProperty('SelectionLanguage','XPath');}catch(l){Trace.Write('Error: data.setProperty(',SelectionLanguage,', ',XPath,') because '+l.message);}else h=e.HttpRequest.responseText;", code);
     }
 
-    [Fact]
+    [Test]
     public void ToJavaScriptTest14()
     {
         var source = """
@@ -453,7 +454,7 @@ public class AstToJavaScriptTests
         Assert.Equal(expected, code);
     }
 
-    [Fact]
+    [Test]
     public void ToJavaScriptTest15()
     {
         var parser = new Parser();
@@ -466,7 +467,7 @@ public class AstToJavaScriptTests
         Assert.Equal("h='M'+(+new Date).toString(36);", code);
     }
 
-    [Fact]
+    [Test]
     public void ToJavaScriptTest16()
     {
         var parser = new Parser();
@@ -483,7 +484,7 @@ public class AstToJavaScriptTests
         Assert.Equal("input.onchange=async e=>{const files=await readFiles(input.files,readMode);document.body.removeChild(input);resolve(files);};", code);
     }
 
-    [Fact]
+    [Test]
     public void ToJavaScriptTest17()
     {
         var parser = new Parser();
@@ -496,7 +497,7 @@ public class AstToJavaScriptTests
         Assert.Equal("export const Base=LegacyElementMixin(HTMLElement).prototype;", code);
     }
 
-    [Fact]
+    [Test]
     public void ToJavaScriptTest18()
     {
         var parser = new Parser();
@@ -509,7 +510,7 @@ public class AstToJavaScriptTests
         Assert.Equal("let{is}=getIsExtends(element);", code);
     }
 
-    [Fact]
+    [Test]
     public void ToJavaScriptTest19()
     {
         var parser = new Parser();
@@ -523,7 +524,7 @@ public class AstToJavaScriptTests
         Assert.Equal("export const wrap=window['ShadyDOM']&&window['ShadyDOM']['wrap']||(node=>node);", code);
     }
 
-    [Fact]
+    [Test]
     public void ToJavaScriptTest20()
     {
         var parser = new Parser();
@@ -536,7 +537,7 @@ public class AstToJavaScriptTests
         Assert.Equal("export{};", code);
     }
 
-    [Fact]
+    [Test]
     public void ToJavaScriptTest21()
     {
         var parser = new Parser();
@@ -551,7 +552,7 @@ public class AstToJavaScriptTests
         Assert.Equal("(()=>{mutablePropertyChange=MutableData._mutablePropertyChange;})();", code);
     }
 
-    [Fact]
+    [Test]
     public void ToJavaScriptTest22()
     {
         var parser = new Parser();
@@ -567,7 +568,7 @@ public class AstToJavaScriptTests
         Assert.Equal("var Ol,jl=new(function(){var l,h,z;return l=c;}());", code);
     }
 
-    [Fact]
+    [Test]
     public void ToJavaScriptTest23()
     {
         var parser = new Parser();
@@ -584,7 +585,7 @@ public class AstToJavaScriptTests
         Assert.Equal("[y,{[Symbol.iterator](){return b;},a:5}];", code);
     }
 
-    [Fact]
+    [Test]
     public void ToJavaScriptTest24()
     {
         var source =
@@ -621,7 +622,7 @@ public class AstToJavaScriptTests
         Assert.Equal(expected, code);
     }
 
-    [Fact]
+    [Test]
     public void ToJavaScriptTest25()
     {
         var source = """
@@ -659,7 +660,7 @@ public class AstToJavaScriptTests
         Assert.Equal(expected, code);
     }
 
-    [Fact]
+    [Test]
     public void ToJavaScriptTest26()
     {
         var source =
@@ -686,105 +687,105 @@ public class AstToJavaScriptTests
         Assert.Equal(source, code);
     }
 
-    [Theory]
-    [InlineData("a + -b", false, "a+-b")]
-    [InlineData("a + +b", false, "a+ +b")]
-    [InlineData("a + +b", true, null)]
-    [InlineData("a + --b", false, "a+--b")]
-    [InlineData("a + ++b", false, "a+ ++b")]
-    [InlineData("a + ++b", true, null)]
-    [InlineData("a + -b * 2", false, "a+-b*2")]
-    [InlineData("a + +b * 2", false, "a+ +b*2")]
-    [InlineData("a + +b * 2", true, null)]
-    [InlineData("a + --b * 2", false, "a+--b*2")]
-    [InlineData("a + ++b * 2", false, "a+ ++b*2")]
-    [InlineData("a + ++b * 2", true, null)]
-    [InlineData("a + (+b) ** 2", false, "a+(+b)**2")]
-    [InlineData("a + (+b) ** 2", true, null)]
-    [InlineData("a + ++b ** 2", false, "a+ ++b**2")]
-    [InlineData("a + ++b ** 2", true, null)]
-    [InlineData("a++ - b", false, "a++-b")]
-    [InlineData("a++ + b", false, "a+++b")]
-    [InlineData("a++ + b", true, null)]
-    [InlineData("a++ + +b", false, "a+++ +b")]
-    [InlineData("a++ + +b", true, null)]
-    [InlineData("a++ + ++b", false, "a+++ ++b")]
-    [InlineData("a++ + ++b", true, null)]
+    [Test]
+    [Arguments("a + -b", false, "a+-b")]
+    [Arguments("a + +b", false, "a+ +b")]
+    [Arguments("a + +b", true, null)]
+    [Arguments("a + --b", false, "a+--b")]
+    [Arguments("a + ++b", false, "a+ ++b")]
+    [Arguments("a + ++b", true, null)]
+    [Arguments("a + -b * 2", false, "a+-b*2")]
+    [Arguments("a + +b * 2", false, "a+ +b*2")]
+    [Arguments("a + +b * 2", true, null)]
+    [Arguments("a + --b * 2", false, "a+--b*2")]
+    [Arguments("a + ++b * 2", false, "a+ ++b*2")]
+    [Arguments("a + ++b * 2", true, null)]
+    [Arguments("a + (+b) ** 2", false, "a+(+b)**2")]
+    [Arguments("a + (+b) ** 2", true, null)]
+    [Arguments("a + ++b ** 2", false, "a+ ++b**2")]
+    [Arguments("a + ++b ** 2", true, null)]
+    [Arguments("a++ - b", false, "a++-b")]
+    [Arguments("a++ + b", false, "a+++b")]
+    [Arguments("a++ + b", true, null)]
+    [Arguments("a++ + +b", false, "a+++ +b")]
+    [Arguments("a++ + +b", true, null)]
+    [Arguments("a++ + ++b", false, "a+++ ++b")]
+    [Arguments("a++ + ++b", true, null)]
 
-    [InlineData("a - +b", false, "a-+b")]
-    [InlineData("a - -b", false, "a- -b")]
-    [InlineData("a - -b", true, null)]
-    [InlineData("a - ++b", false, "a-++b")]
-    [InlineData("a - --b", false, "a- --b")]
-    [InlineData("a - --b", true, null)]
-    [InlineData("a - +b * 2", false, "a-+b*2")]
-    [InlineData("a - -b * 2", false, "a- -b*2")]
-    [InlineData("a - -b * 2", true, null)]
-    [InlineData("a - ++b * 2", false, "a-++b*2")]
-    [InlineData("a - --b * 2", false, "a- --b*2")]
-    [InlineData("a - --b * 2", true, null)]
-    [InlineData("a - (-b) ** 2", false, "a-(-b)**2")]
-    [InlineData("a - (-b) ** 2", true, null)]
-    [InlineData("a - --b ** 2", false, "a- --b**2")]
-    [InlineData("a - --b ** 2", true, null)]
-    [InlineData("a-- + b", false, "a--+b")]
-    [InlineData("a-- - b", false, "a---b")]
-    [InlineData("a-- - b", true, null)]
-    [InlineData("a-- - -b", false, "a--- -b")]
-    [InlineData("a-- - -b", true, null)]
-    [InlineData("a-- - --b", false, "a--- --b")]
-    [InlineData("a-- - --b", true, null)]
+    [Arguments("a - +b", false, "a-+b")]
+    [Arguments("a - -b", false, "a- -b")]
+    [Arguments("a - -b", true, null)]
+    [Arguments("a - ++b", false, "a-++b")]
+    [Arguments("a - --b", false, "a- --b")]
+    [Arguments("a - --b", true, null)]
+    [Arguments("a - +b * 2", false, "a-+b*2")]
+    [Arguments("a - -b * 2", false, "a- -b*2")]
+    [Arguments("a - -b * 2", true, null)]
+    [Arguments("a - ++b * 2", false, "a-++b*2")]
+    [Arguments("a - --b * 2", false, "a- --b*2")]
+    [Arguments("a - --b * 2", true, null)]
+    [Arguments("a - (-b) ** 2", false, "a-(-b)**2")]
+    [Arguments("a - (-b) ** 2", true, null)]
+    [Arguments("a - --b ** 2", false, "a- --b**2")]
+    [Arguments("a - --b ** 2", true, null)]
+    [Arguments("a-- + b", false, "a--+b")]
+    [Arguments("a-- - b", false, "a---b")]
+    [Arguments("a-- - b", true, null)]
+    [Arguments("a-- - -b", false, "a--- -b")]
+    [Arguments("a-- - -b", true, null)]
+    [Arguments("a-- - --b", false, "a--- --b")]
+    [Arguments("a-- - --b", true, null)]
 
-    [InlineData("a + +(+b)", false, "a+ + +b")]
-    [InlineData("a + +(+b)", true, null)]
-    [InlineData("a + +(-b)", false, "a+ +-b")]
-    [InlineData("a + +(-b)", true, null)]
-    [InlineData("a + -(+b)", false, "a+-+b")]
-    [InlineData("a + -(+b)", true, null)]
-    [InlineData("a + -(-b)", false, "a+- -b")]
-    [InlineData("a + -(-b)", true, null)]
-    [InlineData("a + +(++b)", false, "a+ + ++b")]
-    [InlineData("a + +(++b)", true, null)]
-    [InlineData("a + -(++b)", false, "a+-++b")]
-    [InlineData("a + -(++b)", true, null)]
-    [InlineData("a + -(~b)", false, "a+-~b")]
-    [InlineData("a + -(~b)", true, null)]
+    [Arguments("a + +(+b)", false, "a+ + +b")]
+    [Arguments("a + +(+b)", true, null)]
+    [Arguments("a + +(-b)", false, "a+ +-b")]
+    [Arguments("a + +(-b)", true, null)]
+    [Arguments("a + -(+b)", false, "a+-+b")]
+    [Arguments("a + -(+b)", true, null)]
+    [Arguments("a + -(-b)", false, "a+- -b")]
+    [Arguments("a + -(-b)", true, null)]
+    [Arguments("a + +(++b)", false, "a+ + ++b")]
+    [Arguments("a + +(++b)", true, null)]
+    [Arguments("a + -(++b)", false, "a+-++b")]
+    [Arguments("a + -(++b)", true, null)]
+    [Arguments("a + -(~b)", false, "a+-~b")]
+    [Arguments("a + -(~b)", true, null)]
 
-    [InlineData("a - -(-b)", false, "a- - -b")]
-    [InlineData("a - -(-b)", true, null)]
-    [InlineData("a - -(+b)", false, "a- -+b")]
-    [InlineData("a - -(+b)", true, null)]
-    [InlineData("a - +(-b)", false, "a-+-b")]
-    [InlineData("a - +(-b)", true, null)]
-    [InlineData("a - +(+b)", false, "a-+ +b")]
-    [InlineData("a - +(+b)", true, null)]
-    [InlineData("a - -(--b)", false, "a- - --b")]
-    [InlineData("a - -(--b)", true, null)]
-    [InlineData("a - +(--b)", false, "a-+--b")]
-    [InlineData("a - +(--b)", true, null)]
-    [InlineData("a - +(~b)", false, "a-+~b")]
-    [InlineData("a - +(~b)", true, null)]
+    [Arguments("a - -(-b)", false, "a- - -b")]
+    [Arguments("a - -(-b)", true, null)]
+    [Arguments("a - -(+b)", false, "a- -+b")]
+    [Arguments("a - -(+b)", true, null)]
+    [Arguments("a - +(-b)", false, "a-+-b")]
+    [Arguments("a - +(-b)", true, null)]
+    [Arguments("a - +(+b)", false, "a-+ +b")]
+    [Arguments("a - +(+b)", true, null)]
+    [Arguments("a - -(--b)", false, "a- - --b")]
+    [Arguments("a - -(--b)", true, null)]
+    [Arguments("a - +(--b)", false, "a-+--b")]
+    [Arguments("a - +(--b)", true, null)]
+    [Arguments("a - +(~b)", false, "a-+~b")]
+    [Arguments("a - +(~b)", true, null)]
 
-    [InlineData("a / (/x/, b)", false, "a/(/x/,b)")]
-    [InlineData("a / (/x/, b)", true, null)]
-    [InlineData("a / /x/", false, "a/ /x/")]
-    [InlineData("a / /x/", true, null)]
+    [Arguments("a / (/x/, b)", false, "a/(/x/,b)")]
+    [Arguments("a / (/x/, b)", true, null)]
+    [Arguments("a / /x/", false, "a/ /x/")]
+    [Arguments("a / /x/", true, null)]
 
-    [InlineData("a < --b", false, "a<--b")]
-    [InlineData("a < --b", true, null)]
-    [InlineData("a < !(--b, c)", false, "a<!(--b,c)")]
-    [InlineData("a < !(--b, c)", true, null)]
-    [InlineData("a < !(--b)", false, "a<! --b")]
-    [InlineData("a < !(--b)", true, null)]
-    [InlineData("(a, b--) > c", false, "(a,b--)>c")]
-    [InlineData("(a, b--) > c", true, null)]
-    [InlineData("b-- > c", false, "b-- >c")]
-    [InlineData("b-- > c", true, null)]
+    [Arguments("a < --b", false, "a<--b")]
+    [Arguments("a < --b", true, null)]
+    [Arguments("a < !(--b, c)", false, "a<!(--b,c)")]
+    [Arguments("a < !(--b, c)", true, null)]
+    [Arguments("a < !(--b)", false, "a<! --b")]
+    [Arguments("a < !(--b)", true, null)]
+    [Arguments("(a, b--) > c", false, "(a,b--)>c")]
+    [Arguments("(a, b--) > c", true, null)]
+    [Arguments("b-- > c", false, "b-- >c")]
+    [Arguments("b-- > c", true, null)]
 
-    [InlineData("+(-(~(!x++))), -(-x)", false, "+-~!x++,- -x")]
-    [InlineData("+(-(~(!x++))), -(-x)", true, null)]
-    [InlineData("(() => {\n  if (true)\n    +(-(~(!x++))), -(-x);\n})()", false, "(()=>{if(true)+-~!x++,- -x})()")]
-    [InlineData("(() => {\n  if (true)\n    +(-(~(!x++))), -(-x);\n})()", true, null)]
+    [Arguments("+(-(~(!x++))), -(-x)", false, "+-~!x++,- -x")]
+    [Arguments("+(-(~(!x++))), -(-x)", true, null)]
+    [Arguments("(() => {\n  if (true)\n    +(-(~(!x++))), -(-x);\n})()", false, "(()=>{if(true)+-~!x++,- -x})()")]
+    [Arguments("(() => {\n  if (true)\n    +(-(~(!x++))), -(-x);\n})()", true, null)]
     public void ToJavaScriptTest_AmbiguousOperatorSequence_ShouldBeDisambiguated(string source, bool format, string? expectedCode)
     {
         source = source.Replace("\n", Environment.NewLine);
@@ -798,35 +799,35 @@ public class AstToJavaScriptTests
         Assert.Equal(program.DescendantNodesAndSelf(), programReparsed.DescendantNodesAndSelf(), NodeTypeEqualityComparer.Default);
     }
 
-    [Theory]
-    [InlineData("a && b ?? c", true)]
-    [InlineData("(a && b) ?? c", false)]
-    [InlineData("a && (b ?? c)", false)]
-    [InlineData("a ?? b && c", true)]
-    [InlineData("(a ?? b) && c", false)]
-    [InlineData("a ?? (b && c)", false)]
-    [InlineData("a || b ?? c", true)]
-    [InlineData("(a || b) ?? c", false)]
-    [InlineData("a || (b ?? c)", false)]
-    [InlineData("a ?? b || c", true)]
-    [InlineData("(a ?? b) || c", false)]
-    [InlineData("a ?? (b || c)", false)]
-    [InlineData("a ?? b || c ?? d", true)]
-    [InlineData("(a ?? b) || c ?? d", true)]
-    [InlineData("a ?? (b || c) ?? d", false)]
-    [InlineData("a ?? b || (c ?? d)", true)]
-    [InlineData("(a ?? b) || (c ?? d)", false)]
-    [InlineData("void a && b ?? c", true)]
-    [InlineData("(void a && b) ?? c", false)]
-    [InlineData("a ?? void b && c", true)]
-    [InlineData("a ?? (void b && c)", false)]
-    [InlineData("a ?? void (b && c)", false)]
-    [InlineData("function* f() {\n  yield a && b ?? c;\n}", true)]
-    [InlineData("function* f() {\n  (yield a && b) ?? c;\n}", false)]
-    [InlineData("function* f() {\n  a ?? yield b && c;\n}", true)]
-    [InlineData("function* f() {\n  a ?? (yield b && c);\n}", false)]
-    [InlineData("function* f() {\n  a ?? yield (b && c);\n}", true)]
-    [InlineData("n || o === \"back\" ? (n ?? \"\") || \"back\" : \"\"", false)]
+    [Test]
+    [Arguments("a && b ?? c", true)]
+    [Arguments("(a && b) ?? c", false)]
+    [Arguments("a && (b ?? c)", false)]
+    [Arguments("a ?? b && c", true)]
+    [Arguments("(a ?? b) && c", false)]
+    [Arguments("a ?? (b && c)", false)]
+    [Arguments("a || b ?? c", true)]
+    [Arguments("(a || b) ?? c", false)]
+    [Arguments("a || (b ?? c)", false)]
+    [Arguments("a ?? b || c", true)]
+    [Arguments("(a ?? b) || c", false)]
+    [Arguments("a ?? (b || c)", false)]
+    [Arguments("a ?? b || c ?? d", true)]
+    [Arguments("(a ?? b) || c ?? d", true)]
+    [Arguments("a ?? (b || c) ?? d", false)]
+    [Arguments("a ?? b || (c ?? d)", true)]
+    [Arguments("(a ?? b) || (c ?? d)", false)]
+    [Arguments("void a && b ?? c", true)]
+    [Arguments("(void a && b) ?? c", false)]
+    [Arguments("a ?? void b && c", true)]
+    [Arguments("a ?? (void b && c)", false)]
+    [Arguments("a ?? void (b && c)", false)]
+    [Arguments("function* f() {\n  yield a && b ?? c;\n}", true)]
+    [Arguments("function* f() {\n  (yield a && b) ?? c;\n}", false)]
+    [Arguments("function* f() {\n  a ?? yield b && c;\n}", true)]
+    [Arguments("function* f() {\n  a ?? (yield b && c);\n}", false)]
+    [Arguments("function* f() {\n  a ?? yield (b && c);\n}", true)]
+    [Arguments("n || o === \"back\" ? (n ?? \"\") || \"back\" : \"\"", false)]
     public void ToJavaScriptTest_NullishCoalescingMixedWithLogicalAndOr_ShouldBeParenthesized(string source, bool expectParseError)
     {
         source = source.Replace("\n", Environment.NewLine);
@@ -843,11 +844,11 @@ public class AstToJavaScriptTests
         }
     }
 
-    [Theory]
-    [InlineData("[a = b, c] = [];\n", false)]
-    [InlineData("[a = (b, c)] = [];\n", false)]
-    [InlineData("export default a, b;\n", true)]
-    [InlineData("export default (a, b);\n", false)]
+    [Test]
+    [Arguments("[a = b, c] = [];\n", false)]
+    [Arguments("[a = (b, c)] = [];\n", false)]
+    [Arguments("export default a, b;\n", true)]
+    [Arguments("export default (a, b);\n", false)]
     public void ToJavaScriptTest_AmbiguousSequenceExpression_ShouldBeParenthesized(string source, bool expectParseError)
     {
         source = source.Replace("\n", Environment.NewLine);
@@ -876,15 +877,15 @@ public class AstToJavaScriptTests
         public int GetHashCode(Node? obj) => obj?.GetHashCode() ?? 0;
     }
 
-    public static IEnumerable<object[]> SourceFiles(string relativePath) => ParserTests.Fixtures(relativePath)
-        .SelectMany(fixture => new[]
-        {
-            new[] { fixture[0], false },
-            new[] { fixture[0], true }
-        });
+    public static IEnumerable<(string, bool)> SourceFiles(string relativePath) => ParserTests.Fixtures(relativePath)
+        .SelectMany<string, (string, bool)>(fixture =>
+        [
+            (fixture, false),
+            (fixture, true),
+        ]);
 
-    [Theory]
-    [MemberData(nameof(SourceFiles), ParserTests.FixturesDirName)]
+    [Test]
+    [MethodDataSource(nameof(SourceFiles), Arguments = [ParserTests.FixturesDirName])]
     public void OriginalAndReparsedASTsShouldMatch(string fixture, bool preserveParens)
     {
         static T CreateParserOptions<T>(bool tolerant, ExperimentalESFeatures experimentalESFeatures, bool preserveParens) where T : ParserOptions, new() => new T

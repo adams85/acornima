@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Acornima.Ast;
+using TUnit.Core;
 using Xunit;
 
 namespace Acornima.Tests;
@@ -10,31 +11,31 @@ namespace Acornima.Tests;
 
 public partial class RegExpTests
 {
-    [Theory]
-    [InlineData("/ab?c/u", RegExpParseMode.Skip, false, false, null)]
-    [InlineData("/ab?c/u", RegExpParseMode.Skip, true, false, null)]
-    [InlineData("/ab?c/u", RegExpParseMode.Validate, false, false, null)]
-    [InlineData("/ab?c/u", RegExpParseMode.Validate, true, false, null)]
-    [InlineData("/ab?c/u", RegExpParseMode.AdaptToInterpreted, false, false, false)]
-    [InlineData("/ab?c/u", RegExpParseMode.AdaptToInterpreted, true, false, false)]
-    [InlineData("/ab?c/u", RegExpParseMode.AdaptToCompiled, false, false, true)]
-    [InlineData("/ab?c/u", RegExpParseMode.AdaptToCompiled, true, false, true)]
-    [InlineData("/ab|?c/u", RegExpParseMode.Skip, false, false, null)]
-    [InlineData("/ab|?c/u", RegExpParseMode.Skip, true, false, null)]
-    [InlineData("/ab|?c/u", RegExpParseMode.Validate, false, true, null)]
-    [InlineData("/ab|?c/u", RegExpParseMode.Validate, true, true, null)]
-    [InlineData("/ab|?c/u", RegExpParseMode.AdaptToInterpreted, false, true, null)]
-    [InlineData("/ab|?c/u", RegExpParseMode.AdaptToInterpreted, true, true, null)]
-    [InlineData("/ab|?c/u", RegExpParseMode.AdaptToCompiled, false, true, null)]
-    [InlineData("/ab|?c/u", RegExpParseMode.AdaptToCompiled, true, true, null)]
-    [InlineData("/\\1a(b?)c/u", RegExpParseMode.Skip, false, false, null)]
-    [InlineData("/\\1a(b?)c/u", RegExpParseMode.Skip, true, false, null)]
-    [InlineData("/\\1a(b?)c/u", RegExpParseMode.Validate, false, false, null)]
-    [InlineData("/\\1a(b?)c/u", RegExpParseMode.Validate, true, false, null)]
-    [InlineData("/\\1a(b?)c/u", RegExpParseMode.AdaptToInterpreted, false, true, null)]
-    [InlineData("/\\1a(b?)c/u", RegExpParseMode.AdaptToInterpreted, true, false, null)]
-    [InlineData("/\\1a(b?)c/u", RegExpParseMode.AdaptToCompiled, false, true, null)]
-    [InlineData("/\\1a(b?)c/u", RegExpParseMode.AdaptToCompiled, true, false, null)]
+    [Test]
+    [Arguments("/ab?c/u", RegExpParseMode.Skip, false, false, null)]
+    [Arguments("/ab?c/u", RegExpParseMode.Skip, true, false, null)]
+    [Arguments("/ab?c/u", RegExpParseMode.Validate, false, false, null)]
+    [Arguments("/ab?c/u", RegExpParseMode.Validate, true, false, null)]
+    [Arguments("/ab?c/u", RegExpParseMode.AdaptToInterpreted, false, false, false)]
+    [Arguments("/ab?c/u", RegExpParseMode.AdaptToInterpreted, true, false, false)]
+    [Arguments("/ab?c/u", RegExpParseMode.AdaptToCompiled, false, false, true)]
+    [Arguments("/ab?c/u", RegExpParseMode.AdaptToCompiled, true, false, true)]
+    [Arguments("/ab|?c/u", RegExpParseMode.Skip, false, false, null)]
+    [Arguments("/ab|?c/u", RegExpParseMode.Skip, true, false, null)]
+    [Arguments("/ab|?c/u", RegExpParseMode.Validate, false, true, null)]
+    [Arguments("/ab|?c/u", RegExpParseMode.Validate, true, true, null)]
+    [Arguments("/ab|?c/u", RegExpParseMode.AdaptToInterpreted, false, true, null)]
+    [Arguments("/ab|?c/u", RegExpParseMode.AdaptToInterpreted, true, true, null)]
+    [Arguments("/ab|?c/u", RegExpParseMode.AdaptToCompiled, false, true, null)]
+    [Arguments("/ab|?c/u", RegExpParseMode.AdaptToCompiled, true, true, null)]
+    [Arguments("/\\1a(b?)c/u", RegExpParseMode.Skip, false, false, null)]
+    [Arguments("/\\1a(b?)c/u", RegExpParseMode.Skip, true, false, null)]
+    [Arguments("/\\1a(b?)c/u", RegExpParseMode.Validate, false, false, null)]
+    [Arguments("/\\1a(b?)c/u", RegExpParseMode.Validate, true, false, null)]
+    [Arguments("/\\1a(b?)c/u", RegExpParseMode.AdaptToInterpreted, false, true, null)]
+    [Arguments("/\\1a(b?)c/u", RegExpParseMode.AdaptToInterpreted, true, false, null)]
+    [Arguments("/\\1a(b?)c/u", RegExpParseMode.AdaptToCompiled, false, true, null)]
+    [Arguments("/\\1a(b?)c/u", RegExpParseMode.AdaptToCompiled, true, false, null)]
     public void ShouldRespectParserOptions(string expression, RegExpParseMode parseMode, bool tolerant, bool expectError, bool? expectCompiled)
     {
         var matchTimeout = TimeSpan.FromMilliseconds(1234);
@@ -65,19 +66,19 @@ public partial class RegExpTests
         }
     }
 
-    [InlineData("ab?c", "u", false, false, false, false)]
-    [InlineData("ab?c", "u", false, true, false, false)]
-    [InlineData("ab?c", "u", true, false, false, true)]
-    [InlineData("ab?c", "u", true, true, false, true)]
-    [InlineData("ab|?c", "u", false, false, true, null)]
-    [InlineData("ab|?c", "u", false, true, true, null)]
-    [InlineData("ab|?c", "u", true, false, true, null)]
-    [InlineData("ab|?c", "u", true, true, true, null)]
-    [InlineData("\\1a(b?)c", "u", false, false, false, null)]
-    [InlineData("\\1a(b?)c", "u", false, true, true, null)]
-    [InlineData("\\1a(b?)c", "u", true, false, false, null)]
-    [InlineData("\\1a(b?)c", "u", true, true, true, null)]
-    [Theory]
+    [Test]
+    [Arguments("ab?c", "u", false, false, false, false)]
+    [Arguments("ab?c", "u", false, true, false, false)]
+    [Arguments("ab?c", "u", true, false, false, true)]
+    [Arguments("ab?c", "u", true, true, false, true)]
+    [Arguments("ab|?c", "u", false, false, true, null)]
+    [Arguments("ab|?c", "u", false, true, true, null)]
+    [Arguments("ab|?c", "u", true, false, true, null)]
+    [Arguments("ab|?c", "u", true, true, true, null)]
+    [Arguments("\\1a(b?)c", "u", false, false, false, null)]
+    [Arguments("\\1a(b?)c", "u", false, true, true, null)]
+    [Arguments("\\1a(b?)c", "u", true, false, false, null)]
+    [Arguments("\\1a(b?)c", "u", true, true, true, null)]
     public void AdaptRegExpShouldRespectParameters(string pattern, string flags, bool compiled, bool throwIfNotAdaptable, bool expectError, bool? expectCompiled)
     {
         var matchTimeout = TimeSpan.FromMilliseconds(1234);
@@ -102,17 +103,17 @@ public partial class RegExpTests
         }
     }
 
-    [Theory]
-    [InlineData("\\", "", nameof(SyntaxErrorMessages.RegExpEscapeAtEndOfPattern))]
-    [InlineData("\\\\", "", null)]
-    [InlineData("\\\\\\", "", nameof(SyntaxErrorMessages.RegExpEscapeAtEndOfPattern))]
-    [InlineData("a\\", "", nameof(SyntaxErrorMessages.RegExpEscapeAtEndOfPattern))]
-    [InlineData("ab?c", "u", null)]
-    [InlineData("ab|?c", "u", nameof(SyntaxErrorMessages.RegExpNothingToRepeat))]
-    [InlineData("\\1a(b?)c", "u", null)]
-    [InlineData("ab?c", "v", null)]
-    [InlineData("ab|?c", "v", nameof(SyntaxErrorMessages.RegExpNothingToRepeat))]
-    [InlineData("\\1a(b?)c", "v", null)]
+    [Test]
+    [Arguments("\\", "", nameof(SyntaxErrorMessages.RegExpEscapeAtEndOfPattern))]
+    [Arguments("\\\\", "", null)]
+    [Arguments("\\\\\\", "", nameof(SyntaxErrorMessages.RegExpEscapeAtEndOfPattern))]
+    [Arguments("a\\", "", nameof(SyntaxErrorMessages.RegExpEscapeAtEndOfPattern))]
+    [Arguments("ab?c", "u", null)]
+    [Arguments("ab|?c", "u", nameof(SyntaxErrorMessages.RegExpNothingToRepeat))]
+    [Arguments("\\1a(b?)c", "u", null)]
+    [Arguments("ab?c", "v", null)]
+    [Arguments("ab|?c", "v", nameof(SyntaxErrorMessages.RegExpNothingToRepeat))]
+    [Arguments("\\1a(b?)c", "v", null)]
     public void ValidateRegExpShouldWork(string pattern, string flags, string? expectedErrorCode)
     {
         Assert.Equal(expectedErrorCode is null, Tokenizer.ValidateRegExp(pattern, flags, out var error));
@@ -127,11 +128,11 @@ public partial class RegExpTests
         }
     }
 
-    [Theory]
-    [InlineData("\\p{L}", "", null)]
-    [InlineData("\\p{L}", "u", nameof(SyntaxErrorMessages.RegExpInvalidEscape))]
-    [InlineData("[\\p{L}]", "", null)]
-    [InlineData("[\\p{L}]", "u", nameof(SyntaxErrorMessages.RegExpInvalidEscape))]
+    [Test]
+    [Arguments("\\p{L}", "", null)]
+    [Arguments("\\p{L}", "u", nameof(SyntaxErrorMessages.RegExpInvalidEscape))]
+    [Arguments("[\\p{L}]", "", null)]
+    [Arguments("[\\p{L}]", "u", nameof(SyntaxErrorMessages.RegExpInvalidEscape))]
     public void ShouldRejectUnicodeCharacterClassEscapesBeforeES2018(string pattern, string flags, string? expectedErrorCode)
     {
         var parser = CreateRegExpParser(pattern, flags, new TokenizerOptions { EcmaVersion = EcmaVersion.ES2017 });
@@ -147,17 +148,17 @@ public partial class RegExpTests
         }
     }
 
-    [Theory]
-    [InlineData("(?<a>)\\k<a>", "", nameof(SyntaxErrorMessages.RegExpInvalidGroup))]
-    [InlineData("(?<a>)\\k<a>", "u", nameof(SyntaxErrorMessages.RegExpInvalidGroup))]
-    [InlineData("\\k<a>(?<a>)", "", nameof(SyntaxErrorMessages.RegExpInvalidGroup))]
-    [InlineData("\\k<a>(?<a>)", "u", nameof(SyntaxErrorMessages.RegExpInvalidGroup))]
-    [InlineData("(?<a>)[\\k<a>]", "", nameof(SyntaxErrorMessages.RegExpInvalidGroup))]
-    [InlineData("(?<a>)[\\k<a>]", "u", nameof(SyntaxErrorMessages.RegExpInvalidGroup))]
-    [InlineData("[\\k<a>](?<a>)", "", nameof(SyntaxErrorMessages.RegExpInvalidGroup))]
-    [InlineData("[\\k<a>](?<a>)", "u", nameof(SyntaxErrorMessages.RegExpInvalidGroup))]
-    [InlineData("\\2(?<a>)", "", nameof(SyntaxErrorMessages.RegExpInvalidGroup))]
-    [InlineData("\\2(?<a>)", "u", nameof(SyntaxErrorMessages.RegExpInvalidGroup))]
+    [Test]
+    [Arguments("(?<a>)\\k<a>", "", nameof(SyntaxErrorMessages.RegExpInvalidGroup))]
+    [Arguments("(?<a>)\\k<a>", "u", nameof(SyntaxErrorMessages.RegExpInvalidGroup))]
+    [Arguments("\\k<a>(?<a>)", "", nameof(SyntaxErrorMessages.RegExpInvalidGroup))]
+    [Arguments("\\k<a>(?<a>)", "u", nameof(SyntaxErrorMessages.RegExpInvalidGroup))]
+    [Arguments("(?<a>)[\\k<a>]", "", nameof(SyntaxErrorMessages.RegExpInvalidGroup))]
+    [Arguments("(?<a>)[\\k<a>]", "u", nameof(SyntaxErrorMessages.RegExpInvalidGroup))]
+    [Arguments("[\\k<a>](?<a>)", "", nameof(SyntaxErrorMessages.RegExpInvalidGroup))]
+    [Arguments("[\\k<a>](?<a>)", "u", nameof(SyntaxErrorMessages.RegExpInvalidGroup))]
+    [Arguments("\\2(?<a>)", "", nameof(SyntaxErrorMessages.RegExpInvalidGroup))]
+    [Arguments("\\2(?<a>)", "u", nameof(SyntaxErrorMessages.RegExpInvalidGroup))]
     public void ShouldRejectNamedBackreferencesBeforeES2018(string pattern, string flags, string expectedErrorCode)
     {
         var parser = CreateRegExpParser(pattern, flags, new TokenizerOptions { EcmaVersion = EcmaVersion.ES2017 });
@@ -166,9 +167,9 @@ public partial class RegExpTests
         Assert.Equal(expectedErrorCode, ex.Error.Code);
     }
 
-    [Theory]
-    [InlineData("\\1\\k<a\\u{61}>(?<a\\u{61}>)", "", nameof(SyntaxErrorMessages.RegExpInvalidCaptureGroupName))]
-    [InlineData("\\1\\k<a\\u{61}>(?<a\\u{61}>)", "u", null)]
+    [Test]
+    [Arguments("\\1\\k<a\\u{61}>(?<a\\u{61}>)", "", nameof(SyntaxErrorMessages.RegExpInvalidCaptureGroupName))]
+    [Arguments("\\1\\k<a\\u{61}>(?<a\\u{61}>)", "u", null)]
     public void ShouldRejectAstralUnicodeEscapeInNamedBackreferencesBeforeES2020(string pattern, string flags, string? expectedErrorCode)
     {
         var parser = CreateRegExpParser(pattern, flags, new TokenizerOptions { EcmaVersion = EcmaVersion.ES2019 });
@@ -184,18 +185,18 @@ public partial class RegExpTests
         }
     }
 
-    [Theory]
-    [InlineData("(?<a>x)|(?<a>y)", "u")]
-    [InlineData("((?<a>x))|(?<a>y)", "u")]
-    [InlineData("(?:(?<a>x))|(?<a>y)", "u")]
-    [InlineData("(?<!(?<a>x))|(?<a>y)", "u")]
-    [InlineData("(?<a>x)|((?<a>y))", "u")]
-    [InlineData("(?<a>x)|(?:(?<a>y))", "u")]
-    [InlineData("(?<a>x)|(?!(?<a>y))", "u")]
-    [InlineData("(?<a>x)|(?<a>y)|(?<a>z)", "u")]
-    [InlineData("((?<a>x)|(?<a>y))|(?<a>z)", "u")]
-    [InlineData("(?<a>x)|((?<a>y)|(?<a>z))", "u")]
-    [InlineData("(?<a>x)|(((?<a>y)))|(?<a>z)", "u")]
+    [Test]
+    [Arguments("(?<a>x)|(?<a>y)", "u")]
+    [Arguments("((?<a>x))|(?<a>y)", "u")]
+    [Arguments("(?:(?<a>x))|(?<a>y)", "u")]
+    [Arguments("(?<!(?<a>x))|(?<a>y)", "u")]
+    [Arguments("(?<a>x)|((?<a>y))", "u")]
+    [Arguments("(?<a>x)|(?:(?<a>y))", "u")]
+    [Arguments("(?<a>x)|(?!(?<a>y))", "u")]
+    [Arguments("(?<a>x)|(?<a>y)|(?<a>z)", "u")]
+    [Arguments("((?<a>x)|(?<a>y))|(?<a>z)", "u")]
+    [Arguments("(?<a>x)|((?<a>y)|(?<a>z))", "u")]
+    [Arguments("(?<a>x)|(((?<a>y)))|(?<a>z)", "u")]
     public void ShouldRejectDuplicateGroupNamesInAlternatesBeforeES2025(string pattern, string flags)
     {
         var parser = CreateRegExpParser(pattern, flags, new TokenizerOptions { EcmaVersion = EcmaVersion.ES2024 });
@@ -205,7 +206,7 @@ public partial class RegExpTests
 
     // Conversion tests for modifiers involving multiline/dotAll that produce patterns with
     // literal newline characters (\n, \r, \u2028, \u2029) — these can't be expressed in InlineData.
-    [Fact]
+    [Test]
     public void ShouldConvertRegExpModifiers_MultilineAndDotAll()
     {
         var nl = "[\n\r\u2028\u2029]";
@@ -261,7 +262,7 @@ public partial class RegExpTests
         }
     }
 
-    [Fact]
+    [Test]
     public void ShouldNotAffectNonCapturingGroupsWhenModifiersEnabled()
     {
         var parser = CreateRegExpParser("(?:a)", "", new TokenizerOptions
@@ -279,44 +280,44 @@ public partial class RegExpTests
     // Verify that the converted regex actually matches correctly.
 
     // ignoreCase modifier
-    [InlineData("(?i:abc)", "", "ABC", true)]
-    [InlineData("(?i:abc)", "", "abc", true)]
-    [InlineData("a(?i:b)c", "", "aBc", true)]
-    [InlineData("a(?i:b)c", "", "ABc", false)]   // 'a' is case-sensitive outside group
-    [InlineData("a(?i:b)c", "", "aBC", false)]   // 'c' is case-sensitive outside group
-    [InlineData("(?-i:abc)", "i", "ABC", false)]  // remove ignoreCase
-    [InlineData("(?-i:abc)", "i", "abc", true)]
+    [Arguments("(?i:abc)", "", "ABC", true)]
+    [Arguments("(?i:abc)", "", "abc", true)]
+    [Arguments("a(?i:b)c", "", "aBc", true)]
+    [Arguments("a(?i:b)c", "", "ABc", false)]   // 'a' is case-sensitive outside group
+    [Arguments("a(?i:b)c", "", "aBC", false)]   // 'c' is case-sensitive outside group
+    [Arguments("(?-i:abc)", "i", "ABC", false)]  // remove ignoreCase
+    [Arguments("(?-i:abc)", "i", "abc", true)]
     // dotAll modifier
-    [InlineData("(?s:.)", "", "\n", true)]         // dot matches newline inside group
-    [InlineData("(?s:.)a", "", "\na", true)]
-    [InlineData("a(?s:.)b", "", "a\nb", true)]
-    [InlineData("a.b", "", "a\nb", false)]         // dot outside doesn't match newline
-    [InlineData("(?-s:.)", "s", "\n", false)]      // remove dotAll
-    [InlineData("(?-s:.)", "s", "a", true)]
+    [Arguments("(?s:.)", "", "\n", true)]         // dot matches newline inside group
+    [Arguments("(?s:.)a", "", "\na", true)]
+    [Arguments("a(?s:.)b", "", "a\nb", true)]
+    [Arguments("a.b", "", "a\nb", false)]         // dot outside doesn't match newline
+    [Arguments("(?-s:.)", "s", "\n", false)]      // remove dotAll
+    [Arguments("(?-s:.)", "s", "a", true)]
     // multiline modifier
-    [InlineData("(?m:^a)", "", "b\na", true)]      // ^ matches after newline inside group
-    [InlineData("(?m:a$)", "", "a\nb", true)]      // $ matches before newline inside group
-    [InlineData("^a", "", "b\na", false)]           // ^ outside doesn't match after newline
+    [Arguments("(?m:^a)", "", "b\na", true)]      // ^ matches after newline inside group
+    [Arguments("(?m:a$)", "", "a\nb", true)]      // $ matches before newline inside group
+    [Arguments("^a", "", "b\na", false)]           // ^ outside doesn't match after newline
     // empty remove syntax
-    [InlineData("(?s-:.).", "", "\na", true)]
-    [InlineData("(?m-:^a)", "", "b\na", true)]
+    [Arguments("(?s-:.).", "", "\na", true)]
+    [Arguments("(?m-:^a)", "", "b\na", true)]
     // nested modifiers
-    [InlineData("(?s:(?-s:.).).", "", "a\na", true)]   // outer . matches \n, inner . doesn't
-    [InlineData("(?s:(?-s:.).).", "", "\n\na", false)]  // inner . doesn't match \n
+    [Arguments("(?s:(?-s:.).).", "", "a\na", true)]   // outer . matches \n, inner . doesn't
+    [Arguments("(?s:(?-s:.).).", "", "\n\na", false)]  // inner . doesn't match \n
     // alternation inside modifier group
-    [InlineData("(?i:a|B)", "", "a", true)]
-    [InlineData("(?i:a|B)", "", "b", true)]
-    [InlineData("(?i:a|B)", "", "A", true)]
-    [InlineData("(?i:a|B)", "", "B", true)]
+    [Arguments("(?i:a|B)", "", "a", true)]
+    [Arguments("(?i:a|B)", "", "b", true)]
+    [Arguments("(?i:a|B)", "", "A", true)]
+    [Arguments("(?i:a|B)", "", "B", true)]
     // quantified modifier group
-    [InlineData("(?i:a)+", "", "aAaA", true)]
-    [InlineData("(?i:a)*", "", "", true)]
+    [Arguments("(?i:a)+", "", "aAaA", true)]
+    [Arguments("(?i:a)*", "", "", true)]
     // empty modifier group content
-    [InlineData("(?i:)", "", "", true)]
+    [Arguments("(?i:)", "", "", true)]
     // character class inside modifier group
-    [InlineData("(?i:[a-z])", "", "A", true)]
-    [InlineData("(?i:[a-z])", "", "Z", true)]
-    [Theory]
+    [Arguments("(?i:[a-z])", "", "A", true)]
+    [Arguments("(?i:[a-z])", "", "Z", true)]
+    [Test]
     public void ShouldMatchRegExpModifiers(string pattern, string flags, string input, bool expectedMatch)
     {
         var parser = CreateRegExpParser(pattern, flags, new TokenizerOptions
@@ -334,7 +335,7 @@ public partial class RegExpTests
     // === RegExp Modifiers: Feature gating test ===
     // Verify that modifier syntax is rejected when the feature is not enabled.
 
-    [Fact]
+    [Test]
     public void ShouldRejectModifierSyntaxWhenFeatureDisabled()
     {
         var parser = CreateRegExpParser("(?i:abc)", "", new TokenizerOptions
@@ -348,7 +349,7 @@ public partial class RegExpTests
         Assert.Throws<SyntaxErrorException>(() => parser.Parse());
     }
 
-    [Fact]
+    [Test]
     public void ShouldRejectModifierSyntaxWhenFeatureEnabledButTargetingPreES2018()
     {
         var parser = CreateRegExpParser("(?i:abc)", "", new TokenizerOptions
@@ -362,20 +363,20 @@ public partial class RegExpTests
         Assert.Throws<SyntaxErrorException>(() => parser.Parse());
     }
 
-    [Theory]
-    [InlineData(@"(?:x)", false, false)]
-    [InlineData(@"(?![^\\x28]*\\x29)", false, false)]
-    [InlineData(@"(?<!(Saturday|Sunday))", false, false)]
-    [InlineData(@"(?:x)", true, true)]
+    [Test]
+    [Arguments(@"(?:x)", false, false)]
+    [Arguments(@"(?![^\\x28]*\\x29)", false, false)]
+    [Arguments(@"(?<!(Saturday|Sunday))", false, false)]
+    [Arguments(@"(?:x)", true, true)]
 #if NET9_0_OR_GREATER
-    [InlineData(@"(?![^\\x28]*\\x29)", true, true)]
-    [InlineData(@"(?<!(Saturday|Sunday))", true, true)]
+    [Arguments(@"(?![^\\x28]*\\x29)", true, true)]
+    [Arguments(@"(?<!(Saturday|Sunday))", true, true)]
 #elif NET7_0_OR_GREATER
-    [InlineData(@"(?![^\\x28]*\\x29)", true, false)]
-    [InlineData(@"(?<!(Saturday|Sunday))", true, false)]
+    [Arguments(@"(?![^\\x28]*\\x29)", true, false)]
+    [Arguments(@"(?<!(Saturday|Sunday))", true, false)]
 #else
-    [InlineData(@"(?![^\\x28]*\\x29)", true, true)]
-    [InlineData(@"(?<!(Saturday|Sunday))", true, true)]
+    [Arguments(@"(?![^\\x28]*\\x29)", true, true)]
+    [Arguments(@"(?<!(Saturday|Sunday))", true, true)]
 #endif
     public void ShouldNotCompileNegativeLookaroundOnNET7OrLater(string pattern, bool compileRegex, bool expectedIsCompiled)
     {
@@ -398,7 +399,7 @@ public partial class RegExpTests
         return regExpParser;
     }
 
-    [Fact]
+    [Test]
     public void FlagV_ConversionShouldReportFailure()
     {
         var parser = new Parser(new ParserOptions
@@ -411,7 +412,7 @@ public partial class RegExpTests
         Assert.Null(expr.As<RegExpLiteral>().Value);
     }
 
-    [Fact]
+    [Test]
     public void FlagV_ConversionReportsSyntaxErrorsFirst()
     {
         // Syntax error should take precedence over conversion-not-supported error.
@@ -420,7 +421,7 @@ public partial class RegExpTests
         Assert.Contains("Unterminated character class", ex.Message);
     }
 
-    [Fact]
+    [Test]
     public void FlagV_IsMutuallyExclusiveWithUFlag()
     {
         var parser = new Parser(new ParserOptions
@@ -431,7 +432,7 @@ public partial class RegExpTests
         Assert.ThrowsAny<SyntaxErrorException>(() => parser.ParseExpression("/abc/uv"));
     }
 
-    [Fact]
+    [Test]
     public void FlagV_IsSyntaxErrorBeforeES2024()
     {
         var parser = new Parser(new ParserOptions
@@ -443,7 +444,7 @@ public partial class RegExpTests
         Assert.ThrowsAny<SyntaxErrorException>(() => parser.ParseExpression("/abc/v"));
     }
 
-    [Fact]
+    [Test]
     public void FlagV_ThrowsCatchableExceptionOnTooDeepRecursion_WhenParsing()
     {
         var parser = new Parser();
@@ -452,7 +453,7 @@ public partial class RegExpTests
         Assert.Throws<InsufficientExecutionStackException>(() => parser.ParseScript(input));
     }
 
-    [Fact]
+    [Test]
     public void FlagV_ThrowsCatchableExceptionOnTooDeepRecursion_WhenTokenizing()
     {
         const int depth = 100_000;
@@ -461,7 +462,7 @@ public partial class RegExpTests
         Assert.Throws<InsufficientExecutionStackException>(() => tokenizer.Next());
     }
 
-    [Fact]
+    [Test]
     public void CanSkipInvalidRegExp()
     {
         var input = $"s\n  .match(u ? /[]]/u : /[]]/)";
@@ -506,12 +507,12 @@ public partial class RegExpTests
         Assert.Equal(capturedContext.Item2, token.RegExpValue.Value.Flags);
     }
 
-    [Theory]
-    [InlineData(@"[]", "", null, 0)]
-    [InlineData(@"[]", "x", nameof(SyntaxErrorMessages.InvalidRegExpFlags), 4)]
-    [InlineData(@"[]", "uv", nameof(SyntaxErrorMessages.InvalidRegExpFlags), 4)]
-    [InlineData(@"[]]", "su", nameof(SyntaxErrorMessages.RegExpLoneQuantifierBrackets), 3)]
-    [InlineData(@"[\p{sc=Greek}]", "u", "RegExpConversionFailed", 2)]
+    [Test]
+    [Arguments(@"[]", "", null, 0)]
+    [Arguments(@"[]", "x", nameof(SyntaxErrorMessages.InvalidRegExpFlags), 4)]
+    [Arguments(@"[]", "uv", nameof(SyntaxErrorMessages.InvalidRegExpFlags), 4)]
+    [Arguments(@"[]]", "su", nameof(SyntaxErrorMessages.RegExpLoneQuantifierBrackets), 3)]
+    [Arguments(@"[\p{sc=Greek}]", "u", "RegExpConversionFailed", 2)]
     public void CanHookIntoRegExpParsing(string pattern, string flags, string? expectedErrorCode, int expectedErrorIndex)
     {
         var input = $"s\n  .match(/{pattern}/{flags})";

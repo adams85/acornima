@@ -7,22 +7,32 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Acornima.Ast;
 using Acornima.Tests.Helpers;
+using TUnit.Core;
 using Xunit;
 
 namespace Acornima.Tests;
 
+using static HookType;
+
 #pragma warning disable CS0618 // Type or member is obsolete
 
-public partial class RegExpTests : IClassFixture<RegExpTests.SharedContextFixture>
+public partial class RegExpTests
 {
-    private readonly SharedContextFixture _fixture;
+    private static SharedContextFixture s_fixture = null!;
 
-    public RegExpTests(SharedContextFixture fixture)
+    [Before(Class)]
+    public static void BeforeClass()
     {
-        _fixture = fixture;
+        s_fixture = new SharedContextFixture();
     }
 
-    public static IEnumerable<object[]> TestCases(string relativePath)
+    [After(Class)]
+    public static void AfterClass()
+    {
+        s_fixture.Dispose();
+    }
+
+    public static IEnumerable<(string, string, string, string, string, string)> TestCases(string relativePath)
     {
         var fixturesPath = Path.Combine(ParserTests.GetFixturesPath(), relativePath);
         var testCasesFilePath = Path.Combine(fixturesPath, "testcases.txt");
@@ -48,12 +58,13 @@ public partial class RegExpTests : IClassFixture<RegExpTests.SharedContextFixtur
                 Array.Resize(ref parts, 6);
             }
 
-            yield return parts;
+            yield return (parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]);
         }
     }
 
-    [Theory]
-    [MemberData(nameof(TestCases), "Fixtures.RegExp")]
+    [Test]
+    [NotInParallel]
+    [MethodDataSource(nameof(TestCases), Arguments = ["Fixtures.RegExp"])]
     public void ExecuteTestCase(string pattern, string flags, string expectedAdaptedPattern, string testString, string expectedMatchesJson, string hints)
     {
         // When upgrading .NET runtime version, it's expected that some of the tests may fail because the regexp rewriting logic
@@ -89,10 +100,10 @@ public partial class RegExpTests : IClassFixture<RegExpTests.SharedContextFixtur
         // so we need to parse the JSON containing the matches "manually"...
         var (expectedMatches, syntaxError) = RegExpMatch.MatchesFrom(JavaScriptString.ParseAsExpression(expectedMatchesJson));
 
-        var regExpValidator = _fixture.RegExpValidator;
+        var regExpValidator = s_fixture.RegExpValidator;
         regExpValidator.Reset(pattern, patternStartIndex: 0, flags, flagsStartIndex: 0);
 
-        var regExpConverter = expectedMatches is not null ? _fixture.RegExpConverterTolerant : _fixture.RegExpConverterNonTolerant;
+        var regExpConverter = expectedMatches is not null ? s_fixture.RegExpConverterTolerant : s_fixture.RegExpConverterNonTolerant;
         regExpConverter.Reset(pattern, patternStartIndex: 0, flags, flagsStartIndex: 0);
 
         if (expectedMatches is not null)
@@ -277,7 +288,7 @@ public partial class RegExpTests : IClassFixture<RegExpTests.SharedContextFixtur
         }
     }
 
-    public sealed class SharedContextFixture : IDisposable
+    public sealed class SharedContextFixture
     {
         private readonly Tokenizer _tokenizerForRegExpValidator;
         private readonly Tokenizer _tokenizerForNonTolerantRegExpConverter;

@@ -4,13 +4,14 @@ using System.Linq;
 using Acornima.Ast;
 using Acornima.Jsx;
 using Acornima.Jsx.Ast;
+using TUnit.Core;
 using Xunit;
 
 namespace Acornima.Tests;
 
 public partial class JsxParserTests
 {
-    [Fact]
+    [Test]
     public void ThrowsCatchableExceptionOnTooDeepRecursion_ParseElement()
     {
         var parser = new JsxParser();
@@ -19,7 +20,7 @@ public partial class JsxParserTests
         Assert.Throws<InsufficientExecutionStackException>(() => parser.ParseScript(input));
     }
 
-    [Fact]
+    [Test]
     public void ThrowsCatchableExceptionOnTooDeepRecursion_ParseAttribute()
     {
         var parser = new JsxParser();
@@ -28,7 +29,7 @@ public partial class JsxParserTests
         Assert.Throws<InsufficientExecutionStackException>(() => parser.ParseScript(input));
     }
 
-    [Fact]
+    [Test]
     public void UpstreamIssue92()
     {
         // https://github.com/acornjs/acorn-jsx/issues/92
@@ -47,7 +48,7 @@ public partial class JsxParserTests
         Assert.IsType<JsxElement>(expressionStatement.Expression);
     }
 
-    [Fact]
+    [Test]
     public void UpstreamIssue127()
     {
         // https://github.com/acornjs/acorn-jsx/issues/127
@@ -70,24 +71,24 @@ public partial class JsxParserTests
         Assert.IsType<JsxText>(jsxElement.Children[2]);
     }
 
-    [Theory]
-    [InlineData("", new TokenKind[0])]
-    [InlineData(
+    [Test]
+    [Arguments("", new TokenKind[0])]
+    [Arguments(
         " <></> ",
         new[] { TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator },
         1, 1, 6)]
-    [InlineData(
+    [Arguments(
         "(<></>)",
         new[] { TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator },
         1, 1, 6)]
-    [InlineData(
+    [Arguments(
         """
         let a
         <></>
         """,
         new[] { TokenKind.Identifier, TokenKind.Identifier, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator },
         2, 0, 5)]
-    [InlineData(
+    [Arguments(
         """
         let a<!--
         --> <></>
@@ -95,7 +96,7 @@ public partial class JsxParserTests
         """,
         new[] { TokenKind.Identifier, TokenKind.Identifier, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator },
         3, 0, 5)]
-    [InlineData(
+    [Arguments(
         """
         let a<!-- <></>
         <></>
@@ -103,14 +104,14 @@ public partial class JsxParserTests
         """,
         new[] { TokenKind.Identifier, TokenKind.Identifier, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator },
         2, 0, 5)]
-    [InlineData(
+    [Arguments(
         "({ *m() { yield <></> } })",
         new[]
         {
             TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Identifier, TokenKind.Punctuator, TokenKind.Punctuator,
             TokenKind.Punctuator, TokenKind.Identifier, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator,
         })]
-    [InlineData(
+    [Arguments(
         "async function f() { await <></> }",
         new[]
         {

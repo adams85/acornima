@@ -6,50 +6,51 @@ using System.Numerics;
 using System.Xml.Linq;
 using Acornima.Ast;
 using Acornima.Helpers;
+using TUnit.Core;
 using Xunit;
 
 namespace Acornima.Tests;
 
 public partial class ParserTests
 {
-    [Theory]
-    [InlineData("script", null, 0, 0, typeof(ArgumentNullException))]
-    [InlineData("script", "", 0, 0, null)]
-    [InlineData("script", "", 0, 1, typeof(ArgumentOutOfRangeException))]
-    [InlineData("script", "", -1, 0, typeof(ArgumentOutOfRangeException))]
-    [InlineData("script", "", -1, 1, typeof(ArgumentOutOfRangeException))]
-    [InlineData("script", " ", 0, 0, null)]
-    [InlineData("script", " ", 0, 1, null)]
-    [InlineData("script", " ", 1, 0, null)]
-    [InlineData("script", " ", 1, 1, typeof(ArgumentOutOfRangeException))]
-    [InlineData("script", " ", -1, 0, typeof(ArgumentOutOfRangeException))]
-    [InlineData("script", " ", -1, 1, typeof(ArgumentOutOfRangeException))]
-    [InlineData("module", null, 0, 0, typeof(ArgumentNullException))]
-    [InlineData("module", "", 0, 0, null)]
-    [InlineData("module", "", 0, 1, typeof(ArgumentOutOfRangeException))]
-    [InlineData("module", "", -1, 0, typeof(ArgumentOutOfRangeException))]
-    [InlineData("module", "", -1, 1, typeof(ArgumentOutOfRangeException))]
-    [InlineData("module", " ", 0, 0, null)]
-    [InlineData("module", " ", 0, 1, null)]
-    [InlineData("module", " ", 1, 0, null)]
-    [InlineData("module", " ", 1, 1, typeof(ArgumentOutOfRangeException))]
-    [InlineData("module", " ", -1, 0, typeof(ArgumentOutOfRangeException))]
-    [InlineData("module", " ", -1, 1, typeof(ArgumentOutOfRangeException))]
-    [InlineData("expression", null, 0, 0, typeof(ArgumentNullException))]
-    [InlineData("expression", "", 0, 0, typeof(SyntaxErrorException))]
-    [InlineData("expression", "", 0, 1, typeof(ArgumentOutOfRangeException))]
-    [InlineData("expression", "", -1, 0, typeof(ArgumentOutOfRangeException))]
-    [InlineData("expression", "", -1, 1, typeof(ArgumentOutOfRangeException))]
-    [InlineData("expression", " ", 0, 0, typeof(SyntaxErrorException))]
-    [InlineData("expression", " ", 0, 1, typeof(SyntaxErrorException))]
-    [InlineData("expression", " ", 1, 0, typeof(SyntaxErrorException))]
-    [InlineData("expression", " ", 1, 1, typeof(ArgumentOutOfRangeException))]
-    [InlineData("expression", " ", -1, 0, typeof(ArgumentOutOfRangeException))]
-    [InlineData("expression", " ", -1, 1, typeof(ArgumentOutOfRangeException))]
-    [InlineData("expression", " x", 0, 1, typeof(SyntaxErrorException))]
-    [InlineData("expression", " x ", 2, 1, typeof(SyntaxErrorException))]
-    [InlineData("expression", " x ", 1, 1, null)]
-    [InlineData("expression", " x ", 0, 3, null)]
+    [Test]
+    [Arguments("script", null, 0, 0, typeof(ArgumentNullException))]
+    [Arguments("script", "", 0, 0, null)]
+    [Arguments("script", "", 0, 1, typeof(ArgumentOutOfRangeException))]
+    [Arguments("script", "", -1, 0, typeof(ArgumentOutOfRangeException))]
+    [Arguments("script", "", -1, 1, typeof(ArgumentOutOfRangeException))]
+    [Arguments("script", " ", 0, 0, null)]
+    [Arguments("script", " ", 0, 1, null)]
+    [Arguments("script", " ", 1, 0, null)]
+    [Arguments("script", " ", 1, 1, typeof(ArgumentOutOfRangeException))]
+    [Arguments("script", " ", -1, 0, typeof(ArgumentOutOfRangeException))]
+    [Arguments("script", " ", -1, 1, typeof(ArgumentOutOfRangeException))]
+    [Arguments("module", null, 0, 0, typeof(ArgumentNullException))]
+    [Arguments("module", "", 0, 0, null)]
+    [Arguments("module", "", 0, 1, typeof(ArgumentOutOfRangeException))]
+    [Arguments("module", "", -1, 0, typeof(ArgumentOutOfRangeException))]
+    [Arguments("module", "", -1, 1, typeof(ArgumentOutOfRangeException))]
+    [Arguments("module", " ", 0, 0, null)]
+    [Arguments("module", " ", 0, 1, null)]
+    [Arguments("module", " ", 1, 0, null)]
+    [Arguments("module", " ", 1, 1, typeof(ArgumentOutOfRangeException))]
+    [Arguments("module", " ", -1, 0, typeof(ArgumentOutOfRangeException))]
+    [Arguments("module", " ", -1, 1, typeof(ArgumentOutOfRangeException))]
+    [Arguments("expression", null, 0, 0, typeof(ArgumentNullException))]
+    [Arguments("expression", "", 0, 0, typeof(SyntaxErrorException))]
+    [Arguments("expression", "", 0, 1, typeof(ArgumentOutOfRangeException))]
+    [Arguments("expression", "", -1, 0, typeof(ArgumentOutOfRangeException))]
+    [Arguments("expression", "", -1, 1, typeof(ArgumentOutOfRangeException))]
+    [Arguments("expression", " ", 0, 0, typeof(SyntaxErrorException))]
+    [Arguments("expression", " ", 0, 1, typeof(SyntaxErrorException))]
+    [Arguments("expression", " ", 1, 0, typeof(SyntaxErrorException))]
+    [Arguments("expression", " ", 1, 1, typeof(ArgumentOutOfRangeException))]
+    [Arguments("expression", " ", -1, 0, typeof(ArgumentOutOfRangeException))]
+    [Arguments("expression", " ", -1, 1, typeof(ArgumentOutOfRangeException))]
+    [Arguments("expression", " x", 0, 1, typeof(SyntaxErrorException))]
+    [Arguments("expression", " x ", 2, 1, typeof(SyntaxErrorException))]
+    [Arguments("expression", " x ", 1, 1, null)]
+    [Arguments("expression", " x ", 0, 3, null)]
     public void ShouldValidateParseArgs(string sourceType, string? input, int start, int length, Type? expectedExceptionType)
     {
         var parser = new Parser();
@@ -78,7 +79,7 @@ public partial class ParserTests
     /// <summary>
     /// Ensures that we don't regress in stack handling, only test in modern runtime for now
     /// </summary>
-    [Fact]
+    [Test]
     public void CanHandleDeepRecursion()
     {
         if (OperatingSystem.IsMacOS())
@@ -98,7 +99,7 @@ public partial class ParserTests
     }
 #endif
 
-    [Fact]
+    [Test]
     public void ThrowsCatchableExceptionOnTooDeepRecursion_MaybeAssign()
     {
         var parser = new Parser();
@@ -107,7 +108,7 @@ public partial class ParserTests
         Assert.Throws<InsufficientExecutionStackException>(() => parser.ParseScript(input));
     }
 
-    [Fact]
+    [Test]
     public void ThrowsCatchableExceptionOnTooDeepRecursion_MaybeAssign_Yield()
     {
         var parser = new Parser();
@@ -116,7 +117,7 @@ public partial class ParserTests
         Assert.Throws<InsufficientExecutionStackException>(() => parser.ParseScript(input));
     }
 
-    [Fact]
+    [Test]
     public void ThrowsCatchableExceptionOnTooDeepRecursion_MaybeUnary_Prefix()
     {
         var parser = new Parser();
@@ -125,7 +126,7 @@ public partial class ParserTests
         Assert.Throws<InsufficientExecutionStackException>(() => parser.ParseScript(input));
     }
 
-    [Fact]
+    [Test]
     public void ThrowsCatchableExceptionOnTooDeepRecursion_MaybeUnary_Exponentiation()
     {
         var parser = new Parser();
@@ -134,7 +135,7 @@ public partial class ParserTests
         Assert.Throws<InsufficientExecutionStackException>(() => parser.ParseScript(input));
     }
 
-    [Fact]
+    [Test]
     public void ThrowsCatchableExceptionOnTooDeepRecursion_MaybeUnary_Await()
     {
         var parser = new Parser();
@@ -143,7 +144,7 @@ public partial class ParserTests
         Assert.Throws<InsufficientExecutionStackException>(() => parser.ParseModule(input));
     }
 
-    [Fact]
+    [Test]
     public void ThrowsCatchableExceptionOnTooDeepRecursion_ExprAtom()
     {
         var parser = new Parser();
@@ -152,7 +153,7 @@ public partial class ParserTests
         Assert.Throws<InsufficientExecutionStackException>(() => parser.ParseScript(input));
     }
 
-    [Fact]
+    [Test]
     public void ThrowsCatchableExceptionOnTooDeepRecursion_Binding()
     {
         var parser = new Parser();
@@ -161,7 +162,7 @@ public partial class ParserTests
         Assert.Throws<InsufficientExecutionStackException>(() => parser.ParseScript(input));
     }
 
-    [Fact]
+    [Test]
     public void ThrowsCatchableExceptionOnTooDeepRecursion_Binding_Reinterpreted()
     {
         var parser = new Parser();
@@ -170,7 +171,7 @@ public partial class ParserTests
         Assert.Throws<InsufficientExecutionStackException>(() => parser.ParseScript(input));
     }
 
-    [Fact]
+    [Test]
     public void ThrowsCatchableExceptionOnTooDeepRecursion_Statement()
     {
         var parser = new Parser();
@@ -179,7 +180,7 @@ public partial class ParserTests
         Assert.Throws<InsufficientExecutionStackException>(() => parser.ParseScript(input));
     }
 
-    [Fact]
+    [Test]
     public void CanReuseParser()
     {
         var comments = new List<Comment>();
@@ -213,9 +214,9 @@ public partial class ParserTests
         Assert.Equal(0, comments[0].Range.Start);
     }
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
+    [Test]
+    [Arguments(false)]
+    [Arguments(true)]
     public void RecordsParentNodeInUserDataCorrectly(bool registerUserHandler)
     {
         var userHandlerCalled = false;
@@ -233,9 +234,9 @@ public partial class ParserTests
         Assert.Equal(registerUserHandler, userHandlerCalled);
     }
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
+    [Test]
+    [Arguments(false)]
+    [Arguments(true)]
     public void ShouldPreserveUserOnNodeHandler(bool registerUserHandler)
     {
         const string code = "function toObj(a, b) { return { a, b: x => { let y = 2; return x * y } }; }";
@@ -259,11 +260,11 @@ public partial class ParserTests
         Assert.Equal(registerUserHandler, userHandlerCalled);
     }
 
-    [Theory]
-    [InlineData("", 0, 1, 0)]
-    [InlineData("  ", 2, 1, 2)]
-    [InlineData(" ", 1, 1, 1)]
-    [InlineData(" \r\n ", 4, 2, 1)]
+    [Test]
+    [Arguments("", 0, 1, 0)]
+    [Arguments("  ", 2, 1, 2)]
+    [Arguments(" ", 1, 1, 1)]
+    [Arguments(" \r\n ", 4, 2, 1)]
     public void ShouldParseWhitespace(string code, int expectedEofIndex, int expectedEofLineNumber, int expectedEofColumn)
     {
         var tokens = new List<Token>();
@@ -281,7 +282,7 @@ public partial class ParserTests
         Assert.Equal(SourceLocation.From(expectedEofPosition, expectedEofPosition), token.Location);
     }
 
-    [Fact]
+    [Test]
     public void ShouldParseTokens()
     {
         var tokens = new List<Token>();
@@ -394,12 +395,12 @@ public partial class ParserTests
         Assert.Equal(SourceLocation.From(Position.From(6, 0), Position.From(6, 0)), token.Location);
     }
 
-    [Theory]
-    [InlineData("#!/usr/bin/env node", CommentKind.HashBang, "/usr/bin/env node")]
-    [InlineData("//this is a comment", CommentKind.Line, "this is a comment")]
-    [InlineData("<!--this is a comment", CommentKind.Line, "this is a comment")]
-    [InlineData("-->this is a comment", CommentKind.Line, "this is a comment")]
-    [InlineData("/*this is a comment*/", CommentKind.Block, "this is a comment")]
+    [Test]
+    [Arguments("#!/usr/bin/env node", CommentKind.HashBang, "/usr/bin/env node")]
+    [Arguments("//this is a comment", CommentKind.Line, "this is a comment")]
+    [Arguments("<!--this is a comment", CommentKind.Line, "this is a comment")]
+    [Arguments("-->this is a comment", CommentKind.Line, "this is a comment")]
+    [Arguments("/*this is a comment*/", CommentKind.Block, "this is a comment")]
     public void ShouldParseLoneComments(string code, CommentKind expectedCommentKind, string expectedContent)
     {
         var comments = new List<Comment>();
@@ -413,7 +414,7 @@ public partial class ParserTests
         Assert.Equal(code, comment.GetRawValue(code).ToString());
     }
 
-    [Fact]
+    [Test]
     public void ShouldParseLineComment()
     {
         var comments = new List<Comment>();
@@ -438,7 +439,7 @@ public partial class ParserTests
         Assert.Equal(SourceLocation.From(Position.From(2, 11), Position.From(2, 37), sourceFile), comment.Location);
     }
 
-    [Fact]
+    [Test]
     public void ShouldParseBlockComment()
     {
         var comments = new List<Comment>();
@@ -472,9 +473,9 @@ public partial class ParserTests
         Assert.Equal(SourceLocation.From(Position.From(2, 11), Position.From(3, 16), sourceFile), comment.Location);
     }
 
-    [Theory]
-    [InlineData("script", false)]
-    [InlineData("module", true)]
+    [Test]
+    [Arguments("script", false)]
+    [Arguments("module", true)]
     public void ShouldParseHtmlLikeLineComment(string sourceType, bool expectSyntaxError)
     {
         var comments = new List<Comment>();
@@ -515,19 +516,19 @@ public partial class ParserTests
         }
     }
 
-    [Theory]
-    [InlineData("script", EcmaVersion.ES2023, null, false)]
-    [InlineData("script", EcmaVersion.ES2023, false, true)]
-    [InlineData("script", EcmaVersion.ES2022, null, true)]
-    [InlineData("script", EcmaVersion.ES2022, true, false)]
-    [InlineData("module", EcmaVersion.ES2023, null, false)]
-    [InlineData("module", EcmaVersion.ES2023, false, true)]
-    [InlineData("module", EcmaVersion.ES2022, null, true)]
-    [InlineData("module", EcmaVersion.ES2022, true, false)]
-    [InlineData("expression", EcmaVersion.ES2023, null, true)]
-    [InlineData("expression", EcmaVersion.ES2023, false, true)]
-    [InlineData("expression", EcmaVersion.ES2023, true, true)]
-    [InlineData("expression", EcmaVersion.ES2022, true, true)]
+    [Test]
+    [Arguments("script", EcmaVersion.ES2023, null, false)]
+    [Arguments("script", EcmaVersion.ES2023, false, true)]
+    [Arguments("script", EcmaVersion.ES2022, null, true)]
+    [Arguments("script", EcmaVersion.ES2022, true, false)]
+    [Arguments("module", EcmaVersion.ES2023, null, false)]
+    [Arguments("module", EcmaVersion.ES2023, false, true)]
+    [Arguments("module", EcmaVersion.ES2022, null, true)]
+    [Arguments("module", EcmaVersion.ES2022, true, false)]
+    [Arguments("expression", EcmaVersion.ES2023, null, true)]
+    [Arguments("expression", EcmaVersion.ES2023, false, true)]
+    [Arguments("expression", EcmaVersion.ES2023, true, true)]
+    [Arguments("expression", EcmaVersion.ES2022, true, true)]
     public void ShouldParseHashBangComment(string sourceType, EcmaVersion ecmaVersion, bool? allowHashBang, bool expectSyntaxError)
     {
         var comments = new List<Comment>();
@@ -572,9 +573,9 @@ public partial class ParserTests
         }
     }
 
-    [Theory]
-    [InlineData(0)]
-    [InlineData(1)]
+    [Test]
+    [Arguments(0)]
+    [Arguments(1)]
     public void ThrowsErrorForInvalidHashBangComment(int startIndex)
     {
         var comments = new List<Comment>();
@@ -590,7 +591,7 @@ public partial class ParserTests
         var ex = Assert.Throws<SyntaxErrorException>(() => parser.ParseScript(code, startIndex, code.Length - startIndex));
     }
 
-    [Fact]
+    [Test]
     public void ShouldParseCommentsWithinSliceOnly()
     {
         var comments = new List<Comment>();
@@ -644,7 +645,7 @@ public partial class ParserTests
         }
     }
 
-    [Fact]
+    [Test]
     public void ShouldParseLocation()
     {
         var parser = new Parser();
@@ -654,7 +655,7 @@ public partial class ParserTests
         Assert.Equal(Position.From(2, 0), program.Location.End);
     }
 
-    [Fact]
+    [Test]
     public void ProgramShouldBeStrict()
     {
         var parser = new Parser();
@@ -663,7 +664,7 @@ public partial class ParserTests
         Assert.True(program.Strict);
     }
 
-    [Fact]
+    [Test]
     public void ProgramShouldNotBeStrict()
     {
         var parser = new Parser();
@@ -672,7 +673,7 @@ public partial class ParserTests
         Assert.False(program.Strict);
     }
 
-    [Fact]
+    [Test]
     public void FunctionShouldNotBeStrict()
     {
         var parser = new Parser();
@@ -682,7 +683,7 @@ public partial class ParserTests
         Assert.False(function.Body.Strict);
     }
 
-    [Fact]
+    [Test]
     public void FunctionWithUseStrictShouldBeStrict()
     {
         var parser = new Parser();
@@ -692,7 +693,7 @@ public partial class ParserTests
         Assert.True(function.Body.Strict);
     }
 
-    [Fact]
+    [Test]
     public void FunctionShouldBeStrictInProgramStrict()
     {
         var parser = new Parser();
@@ -702,7 +703,7 @@ public partial class ParserTests
         Assert.True(function.Body.Strict);
     }
 
-    [Fact]
+    [Test]
     public void FunctionShouldBeStrict()
     {
         var parser = new Parser();
@@ -712,7 +713,7 @@ public partial class ParserTests
         Assert.True(function.Body.Strict);
     }
 
-    [Fact]
+    [Test]
     public void FunctionShouldBeStrictInStrictFunction()
     {
         var parser = new Parser();
@@ -727,7 +728,7 @@ public partial class ParserTests
         Assert.True(q.Body.Strict);
     }
 
-    [Fact]
+    [Test]
     public void CodeFollowingStrictFunctionShouldNotBeStrict()
     {
         // The legacy octal literal is valid as it's not part of the strict function's code,
@@ -746,17 +747,17 @@ public partial class ParserTests
         Assert.False(program.Strict);
     }
 
-    [Theory]
+    [Test]
     // In tolerant mode no error may be recorded for the token which follows the closing brace of a strict function body
     // when the enclosing code is not strict, and exactly one must be recorded when it is.
     // See https://github.com/adams85/acornima/issues/50
-    [InlineData("function f() { 'use strict' } 0755", false, 0)]
-    [InlineData("function f() { 'use strict'; } '\\222'", false, 0)]
-    [InlineData("function f() { 'use strict' } 0755\nfunction g() { 'use strict' } 0644", false, 0)]
-    [InlineData("function f() { 'use strict'; 0755 }", false, 1)]
-    [InlineData("'use strict'; function f() {} 0755", false, 1)]
-    [InlineData("function f() { 'use strict'; function g() {} 0755 }", false, 1)]
-    [InlineData("function f() { 'use strict' } 0755", true, 1)]
+    [Arguments("function f() { 'use strict' } 0755", false, 0)]
+    [Arguments("function f() { 'use strict'; } '\\222'", false, 0)]
+    [Arguments("function f() { 'use strict' } 0755\nfunction g() { 'use strict' } 0644", false, 0)]
+    [Arguments("function f() { 'use strict'; 0755 }", false, 1)]
+    [Arguments("'use strict'; function f() {} 0755", false, 1)]
+    [Arguments("function f() { 'use strict'; function g() {} 0755 }", false, 1)]
+    [Arguments("function f() { 'use strict' } 0755", true, 1)]
     public void ShouldReportLegacyOctalFollowingStrictFunctionBodyOnlyInStrictCode(string input, bool strict, int expectedErrorCount)
     {
         var errorCollector = new ParseErrorCollector();
@@ -766,173 +767,173 @@ public partial class ParserTests
         Assert.Equal(expectedErrorCount, errorCollector.Errors.Count);
     }
 
-    [Theory]
-    [InlineData("'use strict'; 0", false, EcmaVersion.ES3, null)]
-    [InlineData("'use strict'; 0", false, EcmaVersion.ES5, null)]
-    [InlineData("'use strict'; 0", true, EcmaVersion.ES6, null)]
-    [InlineData("'use strict'; 00", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
-    [InlineData("'use strict'; 00", true, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
-    [InlineData("'use strict'\nin {}; 00", false, EcmaVersion.ES6, "<no directive>")]
-    [InlineData("'\\00'; 'use strict'; 00", false, EcmaVersion.ES3, null)]
-    [InlineData("'\\00'; 'use strict'; 00", false, EcmaVersion.ES5, "Octal escape sequences are not allowed in strict mode")]
-    [InlineData("'\\00'; 'use strict'; 00", true, EcmaVersion.ES6, "Octal escape sequences are not allowed in strict mode")]
-    [InlineData("'use strict'; '\\00'; 00", false, EcmaVersion.ES3, null)]
-    [InlineData("'use strict'; '\\00'; 00", false, EcmaVersion.ES5, "Octal escape sequences are not allowed in strict mode")]
-    [InlineData("'use strict'; '\\00'; 00", true, EcmaVersion.ES6, "Octal escape sequences are not allowed in strict mode")]
+    [Test]
+    [Arguments("'use strict'; 0", false, EcmaVersion.ES3, null)]
+    [Arguments("'use strict'; 0", false, EcmaVersion.ES5, null)]
+    [Arguments("'use strict'; 0", true, EcmaVersion.ES6, null)]
+    [Arguments("'use strict'; 00", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
+    [Arguments("'use strict'; 00", true, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
+    [Arguments("'use strict'\nin {}; 00", false, EcmaVersion.ES6, "<no directive>")]
+    [Arguments("'\\00'; 'use strict'; 00", false, EcmaVersion.ES3, null)]
+    [Arguments("'\\00'; 'use strict'; 00", false, EcmaVersion.ES5, "Octal escape sequences are not allowed in strict mode")]
+    [Arguments("'\\00'; 'use strict'; 00", true, EcmaVersion.ES6, "Octal escape sequences are not allowed in strict mode")]
+    [Arguments("'use strict'; '\\00'; 00", false, EcmaVersion.ES3, null)]
+    [Arguments("'use strict'; '\\00'; 00", false, EcmaVersion.ES5, "Octal escape sequences are not allowed in strict mode")]
+    [Arguments("'use strict'; '\\00'; 00", true, EcmaVersion.ES6, "Octal escape sequences are not allowed in strict mode")]
 
-    [InlineData("'x';'use strict'; 0", false, EcmaVersion.ES5, null)]
-    [InlineData("'x';'use strict'; 00", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
-    [InlineData("'x' 'use strict'; 0", false, EcmaVersion.ES5, "Unexpected string")]
-    [InlineData("'x' 'use strict'; 00", false, EcmaVersion.ES5, "Unexpected string")]
-    [InlineData("'x'\n'use strict'; 0", false, EcmaVersion.ES5, null)]
-    [InlineData("'x'\n'use strict'; 00", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
+    [Arguments("'x';'use strict'; 0", false, EcmaVersion.ES5, null)]
+    [Arguments("'x';'use strict'; 00", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
+    [Arguments("'x' 'use strict'; 0", false, EcmaVersion.ES5, "Unexpected string")]
+    [Arguments("'x' 'use strict'; 00", false, EcmaVersion.ES5, "Unexpected string")]
+    [Arguments("'x'\n'use strict'; 0", false, EcmaVersion.ES5, null)]
+    [Arguments("'x'\n'use strict'; 00", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
 
-    [InlineData("function f() {'use strict'; 0 }", false, EcmaVersion.ES5, null)]
-    [InlineData("() => {'use strict'; 0 }", true, EcmaVersion.ES6, null)]
-    [InlineData("function f() {'use strict'; 00 }", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
-    [InlineData("() => {'use strict'; 00 }", true, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
-    [InlineData("function f() {'\\00'; 'use strict'; 00", false, EcmaVersion.ES5, "Octal escape sequences are not allowed in strict mode")]
-    [InlineData("() => {'\\00'; 'use strict'; 00", true, EcmaVersion.ES6, "Octal escape sequences are not allowed in strict mode")]
-    [InlineData("function f() {'use strict'; '\\00'; 00", false, EcmaVersion.ES5, "Octal escape sequences are not allowed in strict mode")]
-    [InlineData("function f() {'use strict'; '\\8'; 00", false, EcmaVersion.ES5, "\\8 and \\9 are not allowed in strict mode")]
-    [InlineData("function f() {'use strict'; '\\9'; 00", false, EcmaVersion.ES5, "\\8 and \\9 are not allowed in strict mode")]
-    [InlineData("() => {'use strict'; '\\00'; 00", true, EcmaVersion.ES6, "Octal escape sequences are not allowed in strict mode")]
+    [Arguments("function f() {'use strict'; 0 }", false, EcmaVersion.ES5, null)]
+    [Arguments("() => {'use strict'; 0 }", true, EcmaVersion.ES6, null)]
+    [Arguments("function f() {'use strict'; 00 }", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
+    [Arguments("() => {'use strict'; 00 }", true, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
+    [Arguments("function f() {'\\00'; 'use strict'; 00", false, EcmaVersion.ES5, "Octal escape sequences are not allowed in strict mode")]
+    [Arguments("() => {'\\00'; 'use strict'; 00", true, EcmaVersion.ES6, "Octal escape sequences are not allowed in strict mode")]
+    [Arguments("function f() {'use strict'; '\\00'; 00", false, EcmaVersion.ES5, "Octal escape sequences are not allowed in strict mode")]
+    [Arguments("function f() {'use strict'; '\\8'; 00", false, EcmaVersion.ES5, "\\8 and \\9 are not allowed in strict mode")]
+    [Arguments("function f() {'use strict'; '\\9'; 00", false, EcmaVersion.ES5, "\\8 and \\9 are not allowed in strict mode")]
+    [Arguments("() => {'use strict'; '\\00'; 00", true, EcmaVersion.ES6, "Octal escape sequences are not allowed in strict mode")]
 
-    [InlineData("(x = 0) => 00", false, EcmaVersion.ES6, "<no directive>")]
-    [InlineData("(x = 0) => 00", true, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
-    [InlineData("(x = 0) => { 00 }", false, EcmaVersion.ES6, "<no directive>")]
-    [InlineData("(x = 0) => { 00 }", true, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
-    [InlineData("(x = 0) => {'use strict'; 0 }", false, EcmaVersion.ES6, null)]
-    [InlineData("(x = 0) => {'use strict'; 0 }", false, EcmaVersion.ES7, "Illegal 'use strict' directive in function with non-simple parameter list")]
-    [InlineData("'use strict'; (x = 0) => {'use strict'; 0 }", false, EcmaVersion.ES6, null)]
-    [InlineData("(x = 0) => {'use strict'; 0 }", true, EcmaVersion.ES6, null)]
-    [InlineData("(x = 0) => {'use strict'; 00 }", false, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
-    [InlineData("(x = 0) => {'use strict'; 00 }", false, EcmaVersion.ES7, "Illegal 'use strict' directive in function with non-simple parameter list")]
-    [InlineData("'use strict'; (x = 0) => {'use strict'; 00 }", false, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
-    [InlineData("(x = 0) => {'use strict'; 00 }", true, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
-    [InlineData("(x = 0) => {'\\00'; 'use strict'; 00", false, EcmaVersion.ES6, "Octal escape sequences are not allowed in strict mode")]
-    [InlineData("(x = 0) => {'\\8'; 'use strict'; 00", false, EcmaVersion.ES6, "\\8 and \\9 are not allowed in strict mode")]
-    [InlineData("(x = 0) => {'\\9'; 'use strict'; 00", false, EcmaVersion.ES6, "\\8 and \\9 are not allowed in strict mode")]
-    [InlineData("(x = 0) => {'\\00'; 'use strict'; 00", false, EcmaVersion.ES7, "Illegal 'use strict' directive in function with non-simple parameter list")]
-    [InlineData("'use strict'; (x = 0) => {'\\00'; 'use strict'; 00", false, EcmaVersion.ES6, "Octal escape sequences are not allowed in strict mode")]
-    [InlineData("(x = 0) => {'\\00'; 'use strict'; 00", true, EcmaVersion.ES6, "Octal escape sequences are not allowed in strict mode")]
+    [Arguments("(x = 0) => 00", false, EcmaVersion.ES6, "<no directive>")]
+    [Arguments("(x = 0) => 00", true, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
+    [Arguments("(x = 0) => { 00 }", false, EcmaVersion.ES6, "<no directive>")]
+    [Arguments("(x = 0) => { 00 }", true, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
+    [Arguments("(x = 0) => {'use strict'; 0 }", false, EcmaVersion.ES6, null)]
+    [Arguments("(x = 0) => {'use strict'; 0 }", false, EcmaVersion.ES7, "Illegal 'use strict' directive in function with non-simple parameter list")]
+    [Arguments("'use strict'; (x = 0) => {'use strict'; 0 }", false, EcmaVersion.ES6, null)]
+    [Arguments("(x = 0) => {'use strict'; 0 }", true, EcmaVersion.ES6, null)]
+    [Arguments("(x = 0) => {'use strict'; 00 }", false, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
+    [Arguments("(x = 0) => {'use strict'; 00 }", false, EcmaVersion.ES7, "Illegal 'use strict' directive in function with non-simple parameter list")]
+    [Arguments("'use strict'; (x = 0) => {'use strict'; 00 }", false, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
+    [Arguments("(x = 0) => {'use strict'; 00 }", true, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
+    [Arguments("(x = 0) => {'\\00'; 'use strict'; 00", false, EcmaVersion.ES6, "Octal escape sequences are not allowed in strict mode")]
+    [Arguments("(x = 0) => {'\\8'; 'use strict'; 00", false, EcmaVersion.ES6, "\\8 and \\9 are not allowed in strict mode")]
+    [Arguments("(x = 0) => {'\\9'; 'use strict'; 00", false, EcmaVersion.ES6, "\\8 and \\9 are not allowed in strict mode")]
+    [Arguments("(x = 0) => {'\\00'; 'use strict'; 00", false, EcmaVersion.ES7, "Illegal 'use strict' directive in function with non-simple parameter list")]
+    [Arguments("'use strict'; (x = 0) => {'\\00'; 'use strict'; 00", false, EcmaVersion.ES6, "Octal escape sequences are not allowed in strict mode")]
+    [Arguments("(x = 0) => {'\\00'; 'use strict'; 00", true, EcmaVersion.ES6, "Octal escape sequences are not allowed in strict mode")]
 
-    [InlineData("(x = 0) => {'use strict'; 0 }; 00", false, EcmaVersion.ES6, null)]
-    [InlineData("'use strict'; (x = 0) => {'use strict'; 0 }; 00", false, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
-    [InlineData("(x = 0) => {'use strict'; 0 }; 00", true, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
+    [Arguments("(x = 0) => {'use strict'; 0 }; 00", false, EcmaVersion.ES6, null)]
+    [Arguments("'use strict'; (x = 0) => {'use strict'; 0 }; 00", false, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
+    [Arguments("(x = 0) => {'use strict'; 0 }; 00", true, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
 
     // Strict mode must be turned off before the token which follows the closing brace of a strict function body is read,
     // as that token already belongs to the enclosing code. See https://github.com/adams85/acornima/issues/50
-    [InlineData("function f() { 'use strict' } 0755", false, EcmaVersion.ES5, null)]
-    [InlineData("function f() { 'use strict'; } 0755", false, EcmaVersion.ES5, null)]
-    [InlineData("function f() { 'use strict' } 00", false, EcmaVersion.ES5, null)]
-    [InlineData("function f() { 'use strict'; } 08", false, EcmaVersion.ES5, null)]
-    [InlineData("function f() { 'use strict'; } 09", false, EcmaVersion.ES5, null)]
-    [InlineData("function f() { 'use strict'; } '\\222'", false, EcmaVersion.ES5, null)]
-    [InlineData("function f() { 'use strict'; } '\\8'", false, EcmaVersion.ES5, null)]
-    [InlineData("function f() { 'use strict'; } '\\9'", false, EcmaVersion.ES5, null)]
-    [InlineData("function f() { 'use strict' } 0755", false, EcmaVersion.ES3, null)]
-    [InlineData("x = function() { 'use strict' }\n0755", false, EcmaVersion.ES5, null)]
-    [InlineData("async function f() { 'use strict' } 0755", false, EcmaVersion.ES8, null)]
-    [InlineData("function* g() { 'use strict' } 0755", false, EcmaVersion.ES6, null)]
-    [InlineData("async function* g() { 'use strict' } 0755", false, EcmaVersion.ES9, null)]
-    [InlineData("x = () => { 'use strict' }\n0755", false, EcmaVersion.ES6, null)]
-    [InlineData("x = () => { 'use strict' }\n'\\222'", false, EcmaVersion.ES6, null)]
-    [InlineData("x = async () => { 'use strict' }\n0755", false, EcmaVersion.ES8, null)]
-    [InlineData("({ m() { 'use strict' }, n: 0755 })", false, EcmaVersion.ES6, null)]
-    [InlineData("({ get m() { 'use strict' }, n: 0755 })", false, EcmaVersion.ES6, null)]
-    [InlineData("({ set m(v) { 'use strict' }, n: 0755 })", false, EcmaVersion.ES6, null)]
-    [InlineData("class C { m() { 'use strict' } } 0755", false, EcmaVersion.ES6, null)]
+    [Arguments("function f() { 'use strict' } 0755", false, EcmaVersion.ES5, null)]
+    [Arguments("function f() { 'use strict'; } 0755", false, EcmaVersion.ES5, null)]
+    [Arguments("function f() { 'use strict' } 00", false, EcmaVersion.ES5, null)]
+    [Arguments("function f() { 'use strict'; } 08", false, EcmaVersion.ES5, null)]
+    [Arguments("function f() { 'use strict'; } 09", false, EcmaVersion.ES5, null)]
+    [Arguments("function f() { 'use strict'; } '\\222'", false, EcmaVersion.ES5, null)]
+    [Arguments("function f() { 'use strict'; } '\\8'", false, EcmaVersion.ES5, null)]
+    [Arguments("function f() { 'use strict'; } '\\9'", false, EcmaVersion.ES5, null)]
+    [Arguments("function f() { 'use strict' } 0755", false, EcmaVersion.ES3, null)]
+    [Arguments("x = function() { 'use strict' }\n0755", false, EcmaVersion.ES5, null)]
+    [Arguments("async function f() { 'use strict' } 0755", false, EcmaVersion.ES8, null)]
+    [Arguments("function* g() { 'use strict' } 0755", false, EcmaVersion.ES6, null)]
+    [Arguments("async function* g() { 'use strict' } 0755", false, EcmaVersion.ES9, null)]
+    [Arguments("x = () => { 'use strict' }\n0755", false, EcmaVersion.ES6, null)]
+    [Arguments("x = () => { 'use strict' }\n'\\222'", false, EcmaVersion.ES6, null)]
+    [Arguments("x = async () => { 'use strict' }\n0755", false, EcmaVersion.ES8, null)]
+    [Arguments("({ m() { 'use strict' }, n: 0755 })", false, EcmaVersion.ES6, null)]
+    [Arguments("({ get m() { 'use strict' }, n: 0755 })", false, EcmaVersion.ES6, null)]
+    [Arguments("({ set m(v) { 'use strict' }, n: 0755 })", false, EcmaVersion.ES6, null)]
+    [Arguments("class C { m() { 'use strict' } } 0755", false, EcmaVersion.ES6, null)]
 
     // ...but only when the enclosing code isn't strict for a reason of its own, in which case strict mode must be kept.
-    [InlineData("'use strict'; function f() {} 0755", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
-    [InlineData("'use strict'; function f() { 'use strict' } 0755", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
-    [InlineData("function f() { 'use strict' } 0755", true, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
-    [InlineData("function f() { 'use strict'; function g() {} 0755 }", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
-    [InlineData("function f() { 'use strict'; function g() { 'use strict' } 0755 }", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
-    [InlineData("function f() { 'use strict'; function g() { 'use strict'; } '\\222' }", false, EcmaVersion.ES5, "Octal escape sequences are not allowed in strict mode")]
-    [InlineData("'use strict'; { } 0755", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
-    [InlineData("function f() { 'use strict'; { } 0755 }", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
-    [InlineData("function f() { 'use strict'; if (x) { } 0755 }", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
-    [InlineData("function f() { 'use strict'; try { } finally { } 0755 }", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
-    [InlineData("function f() { 'use strict'; with (x) {} } 0755", false, EcmaVersion.ES5, "Strict mode code may not include a with statement")]
-    [InlineData("class C { static { 0755 } }", false, EcmaVersion.ES13, "Octal literals are not allowed in strict mode")]
+    [Arguments("'use strict'; function f() {} 0755", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
+    [Arguments("'use strict'; function f() { 'use strict' } 0755", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
+    [Arguments("function f() { 'use strict' } 0755", true, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
+    [Arguments("function f() { 'use strict'; function g() {} 0755 }", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
+    [Arguments("function f() { 'use strict'; function g() { 'use strict' } 0755 }", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
+    [Arguments("function f() { 'use strict'; function g() { 'use strict'; } '\\222' }", false, EcmaVersion.ES5, "Octal escape sequences are not allowed in strict mode")]
+    [Arguments("'use strict'; { } 0755", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
+    [Arguments("function f() { 'use strict'; { } 0755 }", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
+    [Arguments("function f() { 'use strict'; if (x) { } 0755 }", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
+    [Arguments("function f() { 'use strict'; try { } finally { } 0755 }", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
+    [Arguments("function f() { 'use strict'; with (x) {} } 0755", false, EcmaVersion.ES5, "Strict mode code may not include a with statement")]
+    [Arguments("class C { static { 0755 } }", false, EcmaVersion.ES13, "Octal literals are not allowed in strict mode")]
 
-    [InlineData("'use strict';\r\nfunction f(arguments){}", false, EcmaVersion.ES3, null)]
-    [InlineData("'use strict';\r\nfunction f(arguments){}", false, EcmaVersion.ES5, "Unexpected eval or arguments in strict mode")]
-    [InlineData("'use strict';\r\n(arguments)=>{}", false, EcmaVersion.ES6, "Unexpected eval or arguments in strict mode")]
-    [InlineData("'use strict'\r\nfunction f(eval){}", false, EcmaVersion.ES3, null)]
-    [InlineData("'use strict'\r\nfunction f(eval){}", false, EcmaVersion.ES5, "Unexpected eval or arguments in strict mode")]
-    [InlineData("'use strict'\r\n(eval)=>{}", false, EcmaVersion.ES6, "Unexpected token '=>'")] // V8 reports "Malformed arrow function parameter list"
+    [Arguments("'use strict';\r\nfunction f(arguments){}", false, EcmaVersion.ES3, null)]
+    [Arguments("'use strict';\r\nfunction f(arguments){}", false, EcmaVersion.ES5, "Unexpected eval or arguments in strict mode")]
+    [Arguments("'use strict';\r\n(arguments)=>{}", false, EcmaVersion.ES6, "Unexpected eval or arguments in strict mode")]
+    [Arguments("'use strict'\r\nfunction f(eval){}", false, EcmaVersion.ES3, null)]
+    [Arguments("'use strict'\r\nfunction f(eval){}", false, EcmaVersion.ES5, "Unexpected eval or arguments in strict mode")]
+    [Arguments("'use strict'\r\n(eval)=>{}", false, EcmaVersion.ES6, "Unexpected token '=>'")] // V8 reports "Malformed arrow function parameter list"
 
     // A "use strict" directive which is terminated by automatic semicolon insertion must put the parser into strict mode
     // before the token following the directive is checked, even though that token is necessarily scanned earlier
     // (it is the very token which the ASI decision is based on). See https://github.com/adams85/acornima/issues/47
-    [InlineData("'use strict'\n0755", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
-    [InlineData("'use strict'\n0755", true, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
-    [InlineData("'use strict'\r\n0755", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
-    [InlineData("'use strict'\n00", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
-    [InlineData("'use strict'\n08", false, EcmaVersion.ES5, "Decimals with leading zeros are not allowed in strict mode")]
-    [InlineData("'use strict'\n09", false, EcmaVersion.ES5, "Decimals with leading zeros are not allowed in strict mode")]
-    [InlineData("'use strict'\n08.5", false, EcmaVersion.ES5, "Decimals with leading zeros are not allowed in strict mode")]
-    [InlineData("'use strict'\n'\\222'", false, EcmaVersion.ES5, "Octal escape sequences are not allowed in strict mode")]
-    [InlineData("'use strict'\n'\\8'", false, EcmaVersion.ES5, "\\8 and \\9 are not allowed in strict mode")]
-    [InlineData("'use strict'\n'\\9'", false, EcmaVersion.ES5, "\\8 and \\9 are not allowed in strict mode")]
-    [InlineData("'use strict'\n/*c*/ 0755", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
-    [InlineData("'use strict'\n//c\n0755", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
-    [InlineData("'use strict'\n0755 + 0644", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
-    [InlineData("'use strict'\n'\\222' + '\\222'", false, EcmaVersion.ES5, "Octal escape sequences are not allowed in strict mode")]
-    [InlineData("'use strict'\n0755\n0644", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
-    [InlineData("'use strict'\nvar z;\n0755", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
-    [InlineData("'x'\n'use strict'\n0755", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
-    [InlineData("'\\222'\n'use strict'\n0755", false, EcmaVersion.ES5, "Octal escape sequences are not allowed in strict mode")]
-    [InlineData("'use strict'\n'use strict'\n0755", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
-    [InlineData("function f() { 'use strict'\n0755 }", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
-    [InlineData("function f() { 'use strict'\n'\\222' }", false, EcmaVersion.ES5, "Octal escape sequences are not allowed in strict mode")]
-    [InlineData("function f() { 'use strict'\n'\\8' }", false, EcmaVersion.ES5, "\\8 and \\9 are not allowed in strict mode")]
-    [InlineData("function f() { 'use strict'\n0755 }", true, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
-    [InlineData("(function() { 'use strict'\n0755 })", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
-    [InlineData("() => { 'use strict'\n0755 }", false, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
-    [InlineData("({ m() { 'use strict'\n0755 } })", false, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
-    [InlineData("class C { m() { 'use strict'\n0755 } }", false, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
-    [InlineData("async function f() { 'use strict'\n0755 }", false, EcmaVersion.ES8, "Octal literals are not allowed in strict mode")]
-    [InlineData("function* g() { 'use strict'\n0755 }", false, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
-    [InlineData("({ get m() { 'use strict'\n0755 } })", false, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
-    [InlineData("({ set m(v) { 'use strict'\n0755 } })", false, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
-    [InlineData("0755", true, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
+    [Arguments("'use strict'\n0755", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
+    [Arguments("'use strict'\n0755", true, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
+    [Arguments("'use strict'\r\n0755", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
+    [Arguments("'use strict'\n00", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
+    [Arguments("'use strict'\n08", false, EcmaVersion.ES5, "Decimals with leading zeros are not allowed in strict mode")]
+    [Arguments("'use strict'\n09", false, EcmaVersion.ES5, "Decimals with leading zeros are not allowed in strict mode")]
+    [Arguments("'use strict'\n08.5", false, EcmaVersion.ES5, "Decimals with leading zeros are not allowed in strict mode")]
+    [Arguments("'use strict'\n'\\222'", false, EcmaVersion.ES5, "Octal escape sequences are not allowed in strict mode")]
+    [Arguments("'use strict'\n'\\8'", false, EcmaVersion.ES5, "\\8 and \\9 are not allowed in strict mode")]
+    [Arguments("'use strict'\n'\\9'", false, EcmaVersion.ES5, "\\8 and \\9 are not allowed in strict mode")]
+    [Arguments("'use strict'\n/*c*/ 0755", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
+    [Arguments("'use strict'\n//c\n0755", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
+    [Arguments("'use strict'\n0755 + 0644", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
+    [Arguments("'use strict'\n'\\222' + '\\222'", false, EcmaVersion.ES5, "Octal escape sequences are not allowed in strict mode")]
+    [Arguments("'use strict'\n0755\n0644", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
+    [Arguments("'use strict'\nvar z;\n0755", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
+    [Arguments("'x'\n'use strict'\n0755", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
+    [Arguments("'\\222'\n'use strict'\n0755", false, EcmaVersion.ES5, "Octal escape sequences are not allowed in strict mode")]
+    [Arguments("'use strict'\n'use strict'\n0755", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
+    [Arguments("function f() { 'use strict'\n0755 }", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
+    [Arguments("function f() { 'use strict'\n'\\222' }", false, EcmaVersion.ES5, "Octal escape sequences are not allowed in strict mode")]
+    [Arguments("function f() { 'use strict'\n'\\8' }", false, EcmaVersion.ES5, "\\8 and \\9 are not allowed in strict mode")]
+    [Arguments("function f() { 'use strict'\n0755 }", true, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
+    [Arguments("(function() { 'use strict'\n0755 })", false, EcmaVersion.ES5, "Octal literals are not allowed in strict mode")]
+    [Arguments("() => { 'use strict'\n0755 }", false, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
+    [Arguments("({ m() { 'use strict'\n0755 } })", false, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
+    [Arguments("class C { m() { 'use strict'\n0755 } }", false, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
+    [Arguments("async function f() { 'use strict'\n0755 }", false, EcmaVersion.ES8, "Octal literals are not allowed in strict mode")]
+    [Arguments("function* g() { 'use strict'\n0755 }", false, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
+    [Arguments("({ get m() { 'use strict'\n0755 } })", false, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
+    [Arguments("({ set m(v) { 'use strict'\n0755 } })", false, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
+    [Arguments("0755", true, EcmaVersion.ES6, "Octal literals are not allowed in strict mode")]
 
     // ...but only when the string literal is actually a directive, that is, when automatic semicolon insertion does apply,
     // and only when the directive is a "use strict" directive.
-    [InlineData("'use strict'\n0", false, EcmaVersion.ES5, null)]
-    [InlineData("'use strict'\n0.5", false, EcmaVersion.ES5, null)]
-    [InlineData("'use strict'\n0x1F", false, EcmaVersion.ES5, null)]
-    [InlineData("'use strict'\n0e755", false, EcmaVersion.ES5, null)]
-    [InlineData("'use strict'\n+0755", false, EcmaVersion.ES5, "<no directive>")]
-    [InlineData("'use strict'\n.length; 0755", false, EcmaVersion.ES5, "<no directive>")]
-    [InlineData("'use strict'\ninstanceof String; 0755", false, EcmaVersion.ES5, "<no directive>")]
-    [InlineData("'use strict'\nin {}; 0755", false, EcmaVersion.ES6, "<no directive>")]
-    [InlineData("'use strict'\n`\\222`", false, EcmaVersion.ES9, "<no directive>")] // a tagged template, so no ASI and hence no directive at all (invalid escapes in tagged templates are allowed since ES2018)
-    [InlineData("'x'\n0755", false, EcmaVersion.ES5, null)]
-    [InlineData("'\\222'\n0755", false, EcmaVersion.ES5, null)]
-    [InlineData("'\\8'\n0755", false, EcmaVersion.ES5, null)]
-    [InlineData("0755\n'use strict'", false, EcmaVersion.ES5, "<no directive>")]
-    [InlineData("0755", false, EcmaVersion.ES5, "<no directive>")]
-    [InlineData("function f() { 0755 }", false, EcmaVersion.ES5, "<no directive>")]
-    [InlineData("function f() { 0755; 'use strict'; }", false, EcmaVersion.ES5, "<no directive>")]
-    [InlineData("function f() { 'use strict'\nvar x }", false, EcmaVersion.ES5, null)]
-    [InlineData("'use strict'\n0755", false, EcmaVersion.ES3, "<no directive>")]
+    [Arguments("'use strict'\n0", false, EcmaVersion.ES5, null)]
+    [Arguments("'use strict'\n0.5", false, EcmaVersion.ES5, null)]
+    [Arguments("'use strict'\n0x1F", false, EcmaVersion.ES5, null)]
+    [Arguments("'use strict'\n0e755", false, EcmaVersion.ES5, null)]
+    [Arguments("'use strict'\n+0755", false, EcmaVersion.ES5, "<no directive>")]
+    [Arguments("'use strict'\n.length; 0755", false, EcmaVersion.ES5, "<no directive>")]
+    [Arguments("'use strict'\ninstanceof String; 0755", false, EcmaVersion.ES5, "<no directive>")]
+    [Arguments("'use strict'\nin {}; 0755", false, EcmaVersion.ES6, "<no directive>")]
+    [Arguments("'use strict'\n`\\222`", false, EcmaVersion.ES9, "<no directive>")] // a tagged template, so no ASI and hence no directive at all (invalid escapes in tagged templates are allowed since ES2018)
+    [Arguments("'x'\n0755", false, EcmaVersion.ES5, null)]
+    [Arguments("'\\222'\n0755", false, EcmaVersion.ES5, null)]
+    [Arguments("'\\8'\n0755", false, EcmaVersion.ES5, null)]
+    [Arguments("0755\n'use strict'", false, EcmaVersion.ES5, "<no directive>")]
+    [Arguments("0755", false, EcmaVersion.ES5, "<no directive>")]
+    [Arguments("function f() { 0755 }", false, EcmaVersion.ES5, "<no directive>")]
+    [Arguments("function f() { 0755; 'use strict'; }", false, EcmaVersion.ES5, "<no directive>")]
+    [Arguments("function f() { 'use strict'\nvar x }", false, EcmaVersion.ES5, null)]
+    [Arguments("'use strict'\n0755", false, EcmaVersion.ES3, "<no directive>")]
 
     // The retroactive check of the directive prologue's own string literals must keep working.
-    [InlineData("function f() { '\\222'; 'use strict'; }", false, EcmaVersion.ES5, "Octal escape sequences are not allowed in strict mode")]
-    [InlineData("function f() { '\\8'; 'use strict'; }", false, EcmaVersion.ES5, "\\8 and \\9 are not allowed in strict mode")]
-    [InlineData("function f() { '\\222'\n'use strict'\n}", false, EcmaVersion.ES5, "Octal escape sequences are not allowed in strict mode")]
+    [Arguments("function f() { '\\222'; 'use strict'; }", false, EcmaVersion.ES5, "Octal escape sequences are not allowed in strict mode")]
+    [Arguments("function f() { '\\8'; 'use strict'; }", false, EcmaVersion.ES5, "\\8 and \\9 are not allowed in strict mode")]
+    [Arguments("function f() { '\\222'\n'use strict'\n}", false, EcmaVersion.ES5, "Octal escape sequences are not allowed in strict mode")]
 
-    [InlineData("function f() { '\\077'; 'use strict'; await x }", false, EcmaVersion.ES8, "Octal escape sequences are not allowed in strict mode")]
-    [InlineData("function f() { '\\077'; 'use strict' await x }", false, EcmaVersion.ES8, "Octal escape sequences are not allowed in strict mode")]
-    [InlineData("function f() { '\\077'; 'use strict' \n await x }", false, EcmaVersion.ES8, "Octal escape sequences are not allowed in strict mode")]
-    [InlineData("function f() { 'use strict'; await '\\077' }", false, EcmaVersion.ES8, "Octal escape sequences are not allowed in strict mode")] // V8 reports "await is only valid in async functions and the top level bodies of modules"
-    [InlineData("function f() { 'use strict' await '\\077' }", false, EcmaVersion.ES8, "Unexpected identifier 'await'")]  // V8 reports "Unexpected reserved word"
-    [InlineData("function f() { 'use strict' \n await '\\077' }", false, EcmaVersion.ES8, "Octal escape sequences are not allowed in strict mode")] // V8 reports "await is only valid in async functions and the top level bodies of modules"
+    [Arguments("function f() { '\\077'; 'use strict'; await x }", false, EcmaVersion.ES8, "Octal escape sequences are not allowed in strict mode")]
+    [Arguments("function f() { '\\077'; 'use strict' await x }", false, EcmaVersion.ES8, "Octal escape sequences are not allowed in strict mode")]
+    [Arguments("function f() { '\\077'; 'use strict' \n await x }", false, EcmaVersion.ES8, "Octal escape sequences are not allowed in strict mode")]
+    [Arguments("function f() { 'use strict'; await '\\077' }", false, EcmaVersion.ES8, "Octal escape sequences are not allowed in strict mode")] // V8 reports "await is only valid in async functions and the top level bodies of modules"
+    [Arguments("function f() { 'use strict' await '\\077' }", false, EcmaVersion.ES8, "Unexpected identifier 'await'")]  // V8 reports "Unexpected reserved word"
+    [Arguments("function f() { 'use strict' \n await '\\077' }", false, EcmaVersion.ES8, "Octal escape sequences are not allowed in strict mode")] // V8 reports "await is only valid in async functions and the top level bodies of modules"
     public void ShouldHandleStrictModeDetectionEdgeCases(string input, bool isModule, EcmaVersion ecmaVersion, string? expectedError)
     {
         var parser = new Parser(new ParserOptions { EcmaVersion = ecmaVersion });
@@ -962,22 +963,22 @@ public partial class ParserTests
         }
     }
 
-    [Theory]
+    [Test]
     // The error must be reported for the offending construct itself, not for the directive,
     // and the source order of errors must be preserved. See https://github.com/adams85/acornima/issues/47
-    [InlineData("'use strict'\n0755", "StrictOctalLiteral", 13, 2, 0)]
-    [InlineData("'use strict'\r\n0755", "StrictOctalLiteral", 14, 2, 0)]
-    [InlineData("'use strict'\n00", "StrictOctalLiteral", 13, 2, 0)]
-    [InlineData("'use strict'\n08", "StrictDecimalWithLeadingZero", 13, 2, 0)]
-    [InlineData("'use strict'\n09", "StrictDecimalWithLeadingZero", 13, 2, 0)]
-    [InlineData("'use strict'\n'\\222'", "StrictOctalEscape", 14, 2, 1)]
-    [InlineData("'use strict'\n'\\8'", "Strict8Or9Escape", 14, 2, 1)]
-    [InlineData("'use strict'\n'\\9'", "Strict8Or9Escape", 14, 2, 1)]
-    [InlineData("'use strict'\n/*c*/ 0755", "StrictOctalLiteral", 19, 2, 6)]
-    [InlineData("'use strict'\n0755 + 0644", "StrictOctalLiteral", 13, 2, 0)]
-    [InlineData("'use strict'\n'\\222' + '\\222'", "StrictOctalEscape", 14, 2, 1)]
-    [InlineData("function f() { 'use strict'\n0755 }", "StrictOctalLiteral", 28, 2, 0)]
-    [InlineData("'\\222'\n'use strict'\n0755", "StrictOctalEscape", 1, 1, 1)]
+    [Arguments("'use strict'\n0755", "StrictOctalLiteral", 13, 2, 0)]
+    [Arguments("'use strict'\r\n0755", "StrictOctalLiteral", 14, 2, 0)]
+    [Arguments("'use strict'\n00", "StrictOctalLiteral", 13, 2, 0)]
+    [Arguments("'use strict'\n08", "StrictDecimalWithLeadingZero", 13, 2, 0)]
+    [Arguments("'use strict'\n09", "StrictDecimalWithLeadingZero", 13, 2, 0)]
+    [Arguments("'use strict'\n'\\222'", "StrictOctalEscape", 14, 2, 1)]
+    [Arguments("'use strict'\n'\\8'", "Strict8Or9Escape", 14, 2, 1)]
+    [Arguments("'use strict'\n'\\9'", "Strict8Or9Escape", 14, 2, 1)]
+    [Arguments("'use strict'\n/*c*/ 0755", "StrictOctalLiteral", 19, 2, 6)]
+    [Arguments("'use strict'\n0755 + 0644", "StrictOctalLiteral", 13, 2, 0)]
+    [Arguments("'use strict'\n'\\222' + '\\222'", "StrictOctalEscape", 14, 2, 1)]
+    [Arguments("function f() { 'use strict'\n0755 }", "StrictOctalLiteral", 28, 2, 0)]
+    [Arguments("'\\222'\n'use strict'\n0755", "StrictOctalEscape", 1, 1, 1)]
     public void ShouldReportPositionOfLegacyOctalFollowingAsiTerminatedUseStrictDirective(
         string input, string expectedErrorCode, int expectedIndex, int expectedLineNumber, int expectedColumn)
     {
@@ -990,16 +991,16 @@ public partial class ParserTests
         Assert.Equal(expectedColumn, ex.Column);
     }
 
-    [Theory]
+    [Test]
     // In tolerant mode the retroactive check must report each offending construct exactly once,
     // that is, it must not report the same construct which the tokenizer has already reported
     // (and vice versa). See https://github.com/adams85/acornima/issues/47
-    [InlineData("'use strict'\n0755", 1)]
-    [InlineData("'use strict'\n'\\222'", 1)]
-    [InlineData("'use strict'\n0755\n0644", 2)]
-    [InlineData("'\\222'\n'use strict'\n0755", 2)]
-    [InlineData("'use strict'\n0", 0)]
-    [InlineData("'x'\n0755", 0)]
+    [Arguments("'use strict'\n0755", 1)]
+    [Arguments("'use strict'\n'\\222'", 1)]
+    [Arguments("'use strict'\n0755\n0644", 2)]
+    [Arguments("'\\222'\n'use strict'\n0755", 2)]
+    [Arguments("'use strict'\n0", 0)]
+    [Arguments("'x'\n0755", 0)]
     public void ShouldReportLegacyOctalFollowingAsiTerminatedUseStrictDirectiveExactlyOnce(string input, int expectedErrorCount)
     {
         var errorCollector = new ParseErrorCollector();
@@ -1009,15 +1010,15 @@ public partial class ParserTests
         Assert.Equal(expectedErrorCount, errorCollector.Errors.Count);
     }
 
-    [Theory]
+    [Test]
     // When strict mode is turned on by the parser option, it already applies to the very first token,
     // so nothing needs to be (and nothing may be) reported retroactively.
-    [InlineData("0755", "StrictOctalLiteral")]
-    [InlineData("08", "StrictDecimalWithLeadingZero")]
-    [InlineData("'\\222'", "StrictOctalEscape")]
-    [InlineData("'\\8'", "Strict8Or9Escape")]
-    [InlineData("'use strict'\n0755", "StrictOctalLiteral")]
-    [InlineData("'use strict'\n'\\222'", "StrictOctalEscape")]
+    [Arguments("0755", "StrictOctalLiteral")]
+    [Arguments("08", "StrictDecimalWithLeadingZero")]
+    [Arguments("'\\222'", "StrictOctalEscape")]
+    [Arguments("'\\8'", "Strict8Or9Escape")]
+    [Arguments("'use strict'\n0755", "StrictOctalLiteral")]
+    [Arguments("'use strict'\n'\\222'", "StrictOctalEscape")]
     public void ShouldReportLegacyOctalWhenStrictModeIsTurnedOnByOption(string input, string expectedErrorCode)
     {
         var parser = new Parser();
@@ -1026,24 +1027,24 @@ public partial class ParserTests
         Assert.Equal(expectedErrorCode, ex.Error.Code);
     }
 
-    [Theory]
-    [InlineData("script", "class arguments {}", EcmaVersion.Latest, "Unexpected eval or arguments in strict mode")]
-    [InlineData("module", "class arguments {}", EcmaVersion.Latest, "Unexpected eval or arguments in strict mode")]
-    [InlineData("script", "class eval {}", EcmaVersion.Latest, "Unexpected eval or arguments in strict mode")]
-    [InlineData("module", "class eval {}", EcmaVersion.Latest, "Unexpected eval or arguments in strict mode")]
-    [InlineData("script", "class let {}", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("module", "class let {}", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "class enum {}", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("module", "class enum {}", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Test]
+    [Arguments("script", "class arguments {}", EcmaVersion.Latest, "Unexpected eval or arguments in strict mode")]
+    [Arguments("module", "class arguments {}", EcmaVersion.Latest, "Unexpected eval or arguments in strict mode")]
+    [Arguments("script", "class eval {}", EcmaVersion.Latest, "Unexpected eval or arguments in strict mode")]
+    [Arguments("module", "class eval {}", EcmaVersion.Latest, "Unexpected eval or arguments in strict mode")]
+    [Arguments("script", "class let {}", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("module", "class let {}", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "class enum {}", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("module", "class enum {}", EcmaVersion.Latest, "Unexpected reserved word")]
 
-    [InlineData("script", "(class arguments {})", EcmaVersion.Latest, "Unexpected eval or arguments in strict mode")]
-    [InlineData("module", "(class arguments {})", EcmaVersion.Latest, "Unexpected eval or arguments in strict mode")]
-    [InlineData("script", "(class eval {})", EcmaVersion.Latest, "Unexpected eval or arguments in strict mode")]
-    [InlineData("module", "(class eval {})", EcmaVersion.Latest, "Unexpected eval or arguments in strict mode")]
-    [InlineData("script", "(class let {})", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("module", "(class let {})", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "(class enum {})", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("module", "(class enum {})", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "(class arguments {})", EcmaVersion.Latest, "Unexpected eval or arguments in strict mode")]
+    [Arguments("module", "(class arguments {})", EcmaVersion.Latest, "Unexpected eval or arguments in strict mode")]
+    [Arguments("script", "(class eval {})", EcmaVersion.Latest, "Unexpected eval or arguments in strict mode")]
+    [Arguments("module", "(class eval {})", EcmaVersion.Latest, "Unexpected eval or arguments in strict mode")]
+    [Arguments("script", "(class let {})", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("module", "(class let {})", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "(class enum {})", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("module", "(class enum {})", EcmaVersion.Latest, "Unexpected reserved word")]
     public void ShouldHandleReservedWordEdgeCases(string sourceType, string input, EcmaVersion ecmaVersion, string? expectedError)
     {
         var parser = new Parser(new ParserOptions { EcmaVersion = ecmaVersion });
@@ -1060,11 +1061,11 @@ public partial class ParserTests
         }
     }
 
-    [Theory]
-    [InlineData("script", "(class { x = () => arguments })", EcmaVersion.Latest, "'arguments' is not allowed in class field initializer or static initialization block")]
-    [InlineData("script", "() => { (class { x = () => arguments }) }", EcmaVersion.Latest, "'arguments' is not allowed in class field initializer or static initialization block")]
-    [InlineData("script", "() => class { x = () => { arguments } }", EcmaVersion.Latest, "'arguments' is not allowed in class field initializer or static initialization block")]
-    [InlineData("script", "() => class { x = function() { arguments } }", EcmaVersion.Latest, null)]
+    [Test]
+    [Arguments("script", "(class { x = () => arguments })", EcmaVersion.Latest, "'arguments' is not allowed in class field initializer or static initialization block")]
+    [Arguments("script", "() => { (class { x = () => arguments }) }", EcmaVersion.Latest, "'arguments' is not allowed in class field initializer or static initialization block")]
+    [Arguments("script", "() => class { x = () => { arguments } }", EcmaVersion.Latest, "'arguments' is not allowed in class field initializer or static initialization block")]
+    [Arguments("script", "() => class { x = function() { arguments } }", EcmaVersion.Latest, null)]
     public void ShouldHandleArgumentsEdgeCases(string sourceType, string input, EcmaVersion ecmaVersion, string? expectedError)
     {
         var parser = new Parser(new ParserOptions { EcmaVersion = ecmaVersion });
@@ -1081,21 +1082,21 @@ public partial class ParserTests
         }
     }
 
-    [Theory]
-    [InlineData("script", "class C { x = () => new.target }", EcmaVersion.Latest, null)]
-    [InlineData("script", "(class { x = () => new.target })", EcmaVersion.Latest, null)]
-    [InlineData("script", "() => { (class { x = () => new.target }) }", EcmaVersion.Latest, null)]
-    [InlineData("script", "() => class { x = () => { new.target } }", EcmaVersion.Latest, null)]
-    [InlineData("script", "() => class { x = function() { new.target } }", EcmaVersion.Latest, null)]
+    [Test]
+    [Arguments("script", "class C { x = () => new.target }", EcmaVersion.Latest, null)]
+    [Arguments("script", "(class { x = () => new.target })", EcmaVersion.Latest, null)]
+    [Arguments("script", "() => { (class { x = () => new.target }) }", EcmaVersion.Latest, null)]
+    [Arguments("script", "() => class { x = () => { new.target } }", EcmaVersion.Latest, null)]
+    [Arguments("script", "() => class { x = function() { new.target } }", EcmaVersion.Latest, null)]
 
-    [InlineData("script", "class C { [new.target]() { } }", EcmaVersion.Latest, "new.target expression is not allowed here")]
-    [InlineData("script", "() => class C { [new.target]() { } }", EcmaVersion.Latest, "new.target expression is not allowed here")]
-    [InlineData("script", "() => { return class C { [new.target]() { } } }", EcmaVersion.Latest, "new.target expression is not allowed here")]
-    [InlineData("script", "function f() { return class C { [new.target]() { } } }", EcmaVersion.Latest, null)]
-    [InlineData("script", "(function() { return class C { [new.target]() { } } })", EcmaVersion.Latest, null)]
+    [Arguments("script", "class C { [new.target]() { } }", EcmaVersion.Latest, "new.target expression is not allowed here")]
+    [Arguments("script", "() => class C { [new.target]() { } }", EcmaVersion.Latest, "new.target expression is not allowed here")]
+    [Arguments("script", "() => { return class C { [new.target]() { } } }", EcmaVersion.Latest, "new.target expression is not allowed here")]
+    [Arguments("script", "function f() { return class C { [new.target]() { } } }", EcmaVersion.Latest, null)]
+    [Arguments("script", "(function() { return class C { [new.target]() { } } })", EcmaVersion.Latest, null)]
 
-    [InlineData("script", "class C { m(a = new.target) { } }", EcmaVersion.Latest, null)]
-    [InlineData("script", "class C { m({ [new.target]: a }) { } }", EcmaVersion.Latest, null)]
+    [Arguments("script", "class C { m(a = new.target) { } }", EcmaVersion.Latest, null)]
+    [Arguments("script", "class C { m({ [new.target]: a }) { } }", EcmaVersion.Latest, null)]
     public void ShouldHandleNewTargetEdgeCases(string sourceType, string input, EcmaVersion ecmaVersion, string? expectedError)
     {
         var parser = new Parser(new ParserOptions { EcmaVersion = ecmaVersion });
@@ -1112,28 +1113,28 @@ public partial class ParserTests
         }
     }
 
-    [Theory]
-    [InlineData("script", "(class { x = () => super.y })", EcmaVersion.Latest, null)]
-    [InlineData("script", "() => { (class { x = () => super.y }) }", EcmaVersion.Latest, null)]
-    [InlineData("script", "() => class { x = () => { super.y } }", EcmaVersion.Latest, null)]
-    [InlineData("script", "() => class { x = function() { super.y } }", EcmaVersion.Latest, "'super' keyword unexpected here")]
-    [InlineData("script", "class C { x = class extends super.constructor { [super.constructor.name] = super.constructor } }", EcmaVersion.Latest, null)]
-    [InlineData("script", "() => class { x = class extends super.constructor { [super.constructor.name] = super.constructor } }", EcmaVersion.Latest, null)]
+    [Test]
+    [Arguments("script", "(class { x = () => super.y })", EcmaVersion.Latest, null)]
+    [Arguments("script", "() => { (class { x = () => super.y }) }", EcmaVersion.Latest, null)]
+    [Arguments("script", "() => class { x = () => { super.y } }", EcmaVersion.Latest, null)]
+    [Arguments("script", "() => class { x = function() { super.y } }", EcmaVersion.Latest, "'super' keyword unexpected here")]
+    [Arguments("script", "class C { x = class extends super.constructor { [super.constructor.name] = super.constructor } }", EcmaVersion.Latest, null)]
+    [Arguments("script", "() => class { x = class extends super.constructor { [super.constructor.name] = super.constructor } }", EcmaVersion.Latest, null)]
 
-    [InlineData("script", "class C extends Object { constructor() { class X { p = super() } } }", EcmaVersion.Latest, "'super' keyword unexpected here")]
-    [InlineData("script", "class C extends Object { constructor() { class X { [super()]() {} } } }", EcmaVersion.Latest, null)]
-    [InlineData("script", "class C extends Object { constructor() { class X { m(a = super()) {} } } }", EcmaVersion.Latest, "'super' keyword unexpected here")]
-    [InlineData("script", "class C extends Object { constructor() { class X { m({[super()]: a }) {} } } }", EcmaVersion.Latest, "'super' keyword unexpected here")]
+    [Arguments("script", "class C extends Object { constructor() { class X { p = super() } } }", EcmaVersion.Latest, "'super' keyword unexpected here")]
+    [Arguments("script", "class C extends Object { constructor() { class X { [super()]() {} } } }", EcmaVersion.Latest, null)]
+    [Arguments("script", "class C extends Object { constructor() { class X { m(a = super()) {} } } }", EcmaVersion.Latest, "'super' keyword unexpected here")]
+    [Arguments("script", "class C extends Object { constructor() { class X { m({[super()]: a }) {} } } }", EcmaVersion.Latest, "'super' keyword unexpected here")]
 
-    [InlineData("script", "class C { m() { return class X { p = super.toString() } } }", EcmaVersion.Latest, null)]
-    [InlineData("script", "class C { m() { return class X { [super.toString()]() {} } } }", EcmaVersion.Latest, null)]
-    [InlineData("script", "class C { m() { return class X { m(a = super.toString()) {} } } }", EcmaVersion.Latest, null)]
-    [InlineData("script", "class C { m() { return class X { m({[super.toString()]: a }) {} } } }", EcmaVersion.Latest, null)]
+    [Arguments("script", "class C { m() { return class X { p = super.toString() } } }", EcmaVersion.Latest, null)]
+    [Arguments("script", "class C { m() { return class X { [super.toString()]() {} } } }", EcmaVersion.Latest, null)]
+    [Arguments("script", "class C { m() { return class X { m(a = super.toString()) {} } } }", EcmaVersion.Latest, null)]
+    [Arguments("script", "class C { m() { return class X { m({[super.toString()]: a }) {} } } }", EcmaVersion.Latest, null)]
 
-    [InlineData("script", "class C { m = () => class X { p = super.toString() } }", EcmaVersion.Latest, null)]
-    [InlineData("script", "class C { m = () => class X { [super.toString()]() {} } }", EcmaVersion.Latest, null)]
-    [InlineData("script", "class C { m = () => class X { m(a = super.toString()) {} } }", EcmaVersion.Latest, null)]
-    [InlineData("script", "class C { m = () => class X { m({[super.toString()]: a }) {} } }", EcmaVersion.Latest, null)]
+    [Arguments("script", "class C { m = () => class X { p = super.toString() } }", EcmaVersion.Latest, null)]
+    [Arguments("script", "class C { m = () => class X { [super.toString()]() {} } }", EcmaVersion.Latest, null)]
+    [Arguments("script", "class C { m = () => class X { m(a = super.toString()) {} } }", EcmaVersion.Latest, null)]
+    [Arguments("script", "class C { m = () => class X { m({[super.toString()]: a }) {} } }", EcmaVersion.Latest, null)]
     public void ShouldHandleSuperKeywordEdgeCases(string sourceType, string input, EcmaVersion ecmaVersion, string? expectedError)
     {
         var parser = new Parser(new ParserOptions { EcmaVersion = ecmaVersion });
@@ -1150,70 +1151,70 @@ public partial class ParserTests
         }
     }
 
-    [Theory]
+    [Test]
     // Direct super calls are not allowed at the top level unless AllowSuperCallOutsideConstructor is enabled.
     // (AllowSuperOutsideMethod alone doesn't enable them.)
-    [InlineData("script", "super()", false, false, "'super' keyword unexpected here")]
-    [InlineData("script", "super()", true, false, "'super' keyword unexpected here")]
-    [InlineData("script", "super()", false, true, null)]
-    [InlineData("script", "super()", true, true, null)]
-    [InlineData("module", "super()", false, false, "'super' keyword unexpected here")]
-    [InlineData("module", "super()", false, true, null)]
-    [InlineData("expression", "super()", false, false, "'super' keyword unexpected here")]
-    [InlineData("expression", "super()", false, true, null)]
+    [Arguments("script", "super()", false, false, "'super' keyword unexpected here")]
+    [Arguments("script", "super()", true, false, "'super' keyword unexpected here")]
+    [Arguments("script", "super()", false, true, null)]
+    [Arguments("script", "super()", true, true, null)]
+    [Arguments("module", "super()", false, false, "'super' keyword unexpected here")]
+    [Arguments("module", "super()", false, true, null)]
+    [Arguments("expression", "super()", false, false, "'super' keyword unexpected here")]
+    [Arguments("expression", "super()", false, true, null)]
 
     // Arrow functions inherit the this binding of the top level, so direct super calls are allowed in them as well.
-    [InlineData("script", "(() => super())()", false, false, "'super' keyword unexpected here")]
-    [InlineData("script", "(() => super())()", false, true, null)]
-    [InlineData("script", "() => () => super()", false, true, null)]
-    [InlineData("script", "async () => super()", false, true, null)]
+    [Arguments("script", "(() => super())()", false, false, "'super' keyword unexpected here")]
+    [Arguments("script", "(() => super())()", false, true, null)]
+    [Arguments("script", "() => () => super()", false, true, null)]
+    [Arguments("script", "async () => super()", false, true, null)]
     // (The argument of the nested eval call is just a string literal to the parser. When the host parses that string,
     // the top level cases above apply to it.)
-    [InlineData("script", "(() => eval('super()'))()", false, false, null)]
-    [InlineData("script", "(() => eval('super()'))()", false, true, null)]
+    [Arguments("script", "(() => eval('super()'))()", false, false, null)]
+    [Arguments("script", "(() => eval('super()'))()", false, true, null)]
 
     // Ordinary functions introduce a this binding of their own, so direct super calls remain disallowed in them.
-    [InlineData("script", "function f() { super() }", false, true, "'super' keyword unexpected here")]
-    [InlineData("script", "function f() { super() }", true, true, "'super' keyword unexpected here")]
-    [InlineData("script", "(function () { super() })", false, true, "'super' keyword unexpected here")]
-    [InlineData("script", "() => function () { super() }", false, true, "'super' keyword unexpected here")]
-    [InlineData("script", "({ m() { super() } })", false, true, "'super' keyword unexpected here")]
+    [Arguments("script", "function f() { super() }", false, true, "'super' keyword unexpected here")]
+    [Arguments("script", "function f() { super() }", true, true, "'super' keyword unexpected here")]
+    [Arguments("script", "(function () { super() })", false, true, "'super' keyword unexpected here")]
+    [Arguments("script", "() => function () { super() }", false, true, "'super' keyword unexpected here")]
+    [Arguments("script", "({ m() { super() } })", false, true, "'super' keyword unexpected here")]
 
     // Super property accesses are allowed wherever direct super calls are, and AllowSuperOutsideMethod allows
     // exactly those, without allowing direct super calls.
-    [InlineData("script", "super.x", false, false, "'super' keyword unexpected here")]
-    [InlineData("script", "super.x", true, false, null)]
-    [InlineData("script", "super.x", false, true, null)]
-    [InlineData("script", "(() => super.x)()", false, true, null)]
-    [InlineData("script", "(() => super.x)()", true, false, null)]
+    [Arguments("script", "super.x", false, false, "'super' keyword unexpected here")]
+    [Arguments("script", "super.x", true, false, null)]
+    [Arguments("script", "super.x", false, true, null)]
+    [Arguments("script", "(() => super.x)()", false, true, null)]
+    [Arguments("script", "(() => super.x)()", true, false, null)]
     // (Both options follow the top level's this binding, so neither of them reaches into an ordinary function.)
-    [InlineData("script", "function f() { super.x }", false, true, "'super' keyword unexpected here")]
-    [InlineData("script", "function f() { super.x }", true, false, "'super' keyword unexpected here")]
-    [InlineData("script", "function f() { super.x }", true, true, "'super' keyword unexpected here")]
+    [Arguments("script", "function f() { super.x }", false, true, "'super' keyword unexpected here")]
+    [Arguments("script", "function f() { super.x }", true, false, "'super' keyword unexpected here")]
+    [Arguments("script", "function f() { super.x }", true, true, "'super' keyword unexpected here")]
     // (Methods bring a home object of their own, so they are unaffected by either option.)
-    [InlineData("script", "({ m() { super.x } })", false, false, null)]
-    [InlineData("script", "({ m() { super.x } })", true, false, null)]
+    [Arguments("script", "({ m() { super.x } })", false, false, null)]
+    [Arguments("script", "({ m() { super.x } })", true, false, null)]
 
     // Classes are unaffected: the constructor of a derived class remains the only place where direct super calls are allowed.
-    [InlineData("script", "class A extends B { constructor() { super() } }", false, false, null)]
-    [InlineData("script", "class A extends B { constructor() { super() } }", false, true, null)]
-    [InlineData("script", "class A { constructor() { super() } }", false, false, "'super' keyword unexpected here")]
-    [InlineData("script", "class A { constructor() { super() } }", false, true, "'super' keyword unexpected here")]
-    [InlineData("script", "class A extends B { m() { super() } }", false, true, "'super' keyword unexpected here")]
-    [InlineData("script", "class A extends B { constructor() { function f() { super() } } }", false, true, "'super' keyword unexpected here")]
-    [InlineData("script", "class C { x = super.y }", false, false, null)]
-    [InlineData("script", "class C { x = super.y }", false, true, null)]
+    [Arguments("script", "class A extends B { constructor() { super() } }", false, false, null)]
+    [Arguments("script", "class A extends B { constructor() { super() } }", false, true, null)]
+    [Arguments("script", "class A { constructor() { super() } }", false, false, "'super' keyword unexpected here")]
+    [Arguments("script", "class A { constructor() { super() } }", false, true, "'super' keyword unexpected here")]
+    [Arguments("script", "class A extends B { m() { super() } }", false, true, "'super' keyword unexpected here")]
+    [Arguments("script", "class A extends B { constructor() { function f() { super() } } }", false, true, "'super' keyword unexpected here")]
+    [Arguments("script", "class C { x = super.y }", false, false, null)]
+    [Arguments("script", "class C { x = super.y }", false, true, null)]
     // (Class field initializers don't introduce a this binding of their own, but they are never a place for a direct
     // super call either: https://tc39.es/ecma262/#sec-class-definitions-static-semantics-early-errors makes it a
     // Syntax Error if the Initializer Contains SuperCall. So neither the constructor of a derived class nor the
     // option enables one there.)
-    [InlineData("script", "class A extends B { constructor() { class C { x = super() } } }", false, false, "'super' keyword unexpected here")]
-    [InlineData("script", "class C { x = super() }", false, false, "'super' keyword unexpected here")]
-    [InlineData("script", "class C { x = super() }", false, true, "'super' keyword unexpected here")]
+    [Arguments("script", "class A extends B { constructor() { class C { x = super() } } }", false, false, "'super' keyword unexpected here")]
+    [Arguments("script", "class C { x = super() }", false, false, "'super' keyword unexpected here")]
+    [Arguments("script", "class C { x = super() }", false, true, "'super' keyword unexpected here")]
     // (A computed class element name, on the other hand, is evaluated in the enclosing scope, so it inherits
     // whatever that scope allows.)
-    [InlineData("script", "class C { [super()]() { } }", false, false, "'super' keyword unexpected here")]
-    [InlineData("script", "class C { [super()]() { } }", false, true, null)]
+    [Arguments("script", "class C { [super()]() { } }", false, false, "'super' keyword unexpected here")]
+    [Arguments("script", "class C { [super()]() { } }", false, true, null)]
     public void ShouldHandleSuperCallOutsideConstructor(string sourceType, string input, bool allowSuperOutsideMethod, bool allowSuperCallOutsideConstructor, string? expectedError)
     {
         var parser = new Parser(new ParserOptions
@@ -1234,7 +1235,7 @@ public partial class ParserTests
         }
     }
 
-    [Fact]
+    [Test]
     public void AllowSuperCallOutsideConstructorShouldDefaultToFalse()
     {
         Assert.False(new ParserOptions().AllowSuperCallOutsideConstructor);
@@ -1248,66 +1249,66 @@ public partial class ParserTests
         Assert.True((options with { EcmaVersion = EcmaVersion.ES2022 }).AllowSuperCallOutsideConstructor);
     }
 
-    [Theory]
-    [InlineData("script", "(class { x = await })", EcmaVersion.Latest, null)]
-    [InlineData("module", "(class { x = await })", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "(class { x = await 1 })", EcmaVersion.Latest, "await is only valid in async functions and the top level bodies of modules")]
-    [InlineData("module", "(class { x = await 1 })", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Test]
+    [Arguments("script", "(class { x = await })", EcmaVersion.Latest, null)]
+    [Arguments("module", "(class { x = await })", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "(class { x = await 1 })", EcmaVersion.Latest, "await is only valid in async functions and the top level bodies of modules")]
+    [Arguments("module", "(class { x = await 1 })", EcmaVersion.Latest, "Unexpected reserved word")]
 
-    [InlineData("script", "(class { x = () => await })", EcmaVersion.Latest, null)]
-    [InlineData("module", "(class { x = () => await })", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "(class { x = () => await 1 })", EcmaVersion.Latest, "await is only valid in async functions and the top level bodies of modules")]
-    [InlineData("module", "(class { x = () => await 1 })", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "(class { x = () => await })", EcmaVersion.Latest, null)]
+    [Arguments("module", "(class { x = () => await })", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "(class { x = () => await 1 })", EcmaVersion.Latest, "await is only valid in async functions and the top level bodies of modules")]
+    [Arguments("module", "(class { x = () => await 1 })", EcmaVersion.Latest, "Unexpected reserved word")]
 
-    [InlineData("script", "(class { x = async () => await })", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("module", "(class { x = async () => await })", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("script", "(class { x = async () => await 1 })", EcmaVersion.Latest, null)]
-    [InlineData("module", "(class { x = async () => await 1 })", EcmaVersion.Latest, null)]
+    [Arguments("script", "(class { x = async () => await })", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("module", "(class { x = async () => await })", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("script", "(class { x = async () => await 1 })", EcmaVersion.Latest, null)]
+    [Arguments("module", "(class { x = async () => await 1 })", EcmaVersion.Latest, null)]
 
-    [InlineData("script", "() => class { x = await }", EcmaVersion.Latest, null)]
-    [InlineData("module", "() => class { x = await }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "() => class { x = await 1 }", EcmaVersion.Latest, "await is only valid in async functions and the top level bodies of modules")]
-    [InlineData("module", "() => class { x = await 1 }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "() => class { x = await }", EcmaVersion.Latest, null)]
+    [Arguments("module", "() => class { x = await }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "() => class { x = await 1 }", EcmaVersion.Latest, "await is only valid in async functions and the top level bodies of modules")]
+    [Arguments("module", "() => class { x = await 1 }", EcmaVersion.Latest, "Unexpected reserved word")]
 
-    [InlineData("script", "() => class { x = () => await }", EcmaVersion.Latest, null)]
-    [InlineData("module", "() => class { x = () => await }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "() => class { x = () => await 1 }", EcmaVersion.Latest, "await is only valid in async functions and the top level bodies of modules")]
-    [InlineData("module", "() => class { x = () => await 1 }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "() => class { x = () => await }", EcmaVersion.Latest, null)]
+    [Arguments("module", "() => class { x = () => await }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "() => class { x = () => await 1 }", EcmaVersion.Latest, "await is only valid in async functions and the top level bodies of modules")]
+    [Arguments("module", "() => class { x = () => await 1 }", EcmaVersion.Latest, "Unexpected reserved word")]
 
-    [InlineData("script", "() => class { x = async () => await }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("module", "() => class { x = async () => await }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("script", "() => class { x = async () => await 1 }", EcmaVersion.Latest, null)]
-    [InlineData("module", "() => class { x = async () => await 1 }", EcmaVersion.Latest, null)]
+    [Arguments("script", "() => class { x = async () => await }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("module", "() => class { x = async () => await }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("script", "() => class { x = async () => await 1 }", EcmaVersion.Latest, null)]
+    [Arguments("module", "() => class { x = async () => await 1 }", EcmaVersion.Latest, null)]
 
-    [InlineData("script", "async () => class { x = await }", EcmaVersion.Latest, null)]
-    [InlineData("module", "async () => class { x = await }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async () => class { x = await 1 }", EcmaVersion.Latest, "Unexpected number")]
-    [InlineData("module", "async () => class { x = await 1 }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async () => class { x = await }", EcmaVersion.Latest, null)]
+    [Arguments("module", "async () => class { x = await }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async () => class { x = await 1 }", EcmaVersion.Latest, "Unexpected number")]
+    [Arguments("module", "async () => class { x = await 1 }", EcmaVersion.Latest, "Unexpected reserved word")]
 
-    [InlineData("script", "async () => class { x = () => await }", EcmaVersion.Latest, null)]
-    [InlineData("module", "async () => class { x = () => await }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async () => class { x = () => await 1 }", EcmaVersion.Latest, "Unexpected number")]
-    [InlineData("module", "async () => class { x = () => await 1 }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async () => class { x = () => await }", EcmaVersion.Latest, null)]
+    [Arguments("module", "async () => class { x = () => await }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async () => class { x = () => await 1 }", EcmaVersion.Latest, "Unexpected number")]
+    [Arguments("module", "async () => class { x = () => await 1 }", EcmaVersion.Latest, "Unexpected reserved word")]
 
-    [InlineData("script", "async () => class { x = async () => await }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("module", "async () => class { x = async () => await }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("script", "async () => class { x = async () => await 1 }", EcmaVersion.Latest, null)]
-    [InlineData("module", "async () => class { x = async () => await 1 }", EcmaVersion.Latest, null)]
+    [Arguments("script", "async () => class { x = async () => await }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("module", "async () => class { x = async () => await }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("script", "async () => class { x = async () => await 1 }", EcmaVersion.Latest, null)]
+    [Arguments("module", "async () => class { x = async () => await 1 }", EcmaVersion.Latest, null)]
 
-    [InlineData("script", "async () => class { x = (a = await) => a }", EcmaVersion.Latest, null)]
-    [InlineData("module", "async () => class { x = (a = await) => a }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async () => class { x = (a = await 1) => a }", EcmaVersion.Latest, "Unexpected number")]
-    [InlineData("module", "async () => class { x = (a = await 1) => a }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async () => class { x = (a = await) => a }", EcmaVersion.Latest, null)]
+    [Arguments("module", "async () => class { x = (a = await) => a }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async () => class { x = (a = await 1) => a }", EcmaVersion.Latest, "Unexpected number")]
+    [Arguments("module", "async () => class { x = (a = await 1) => a }", EcmaVersion.Latest, "Unexpected reserved word")]
 
-    [InlineData("script", "async () => class { x = class await { y = await } }", EcmaVersion.Latest, null)]
-    [InlineData("module", "async () => class { x = class await { y = await } }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async () => class { x = class await { y = await 1 } }", EcmaVersion.Latest, "await is only valid in async functions and the top level bodies of modules")]
-    [InlineData("module", "async () => class { x = class await { y = await 1 } }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async () => class { x = class await { y = await } }", EcmaVersion.Latest, null)]
+    [Arguments("module", "async () => class { x = class await { y = await } }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async () => class { x = class await { y = await 1 } }", EcmaVersion.Latest, "await is only valid in async functions and the top level bodies of modules")]
+    [Arguments("module", "async () => class { x = class await { y = await 1 } }", EcmaVersion.Latest, "Unexpected reserved word")]
 
-    [InlineData("script", "async () => class { x = () => { { try {} catch (await) { } } } }", EcmaVersion.Latest, null)]
-    [InlineData("module", "async () => class { x = () => { { try {} catch (await) { } } } }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async () => class { x = () => { { try {} catch { var await = 1 } } } }", EcmaVersion.Latest, null)]
-    [InlineData("module", "async () => class { x = () => { { try {} catch { var await = 1 } } } }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async () => class { x = () => { { try {} catch (await) { } } } }", EcmaVersion.Latest, null)]
+    [Arguments("module", "async () => class { x = () => { { try {} catch (await) { } } } }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async () => class { x = () => { { try {} catch { var await = 1 } } } }", EcmaVersion.Latest, null)]
+    [Arguments("module", "async () => class { x = () => { { try {} catch { var await = 1 } } } }", EcmaVersion.Latest, "Unexpected reserved word")]
     public void ShouldHandleAwaitInClassFieldInitializer(string sourceType, string input, EcmaVersion ecmaVersion, string? expectedError)
     {
         // See also: https://github.com/acornjs/acorn/issues/1334, https://github.com/acornjs/acorn/issues/1338
@@ -1326,41 +1327,41 @@ public partial class ParserTests
         }
     }
 
-    [Theory]
-    [InlineData("script", "await", EcmaVersion.Latest, null)]
-    [InlineData("script", "await", EcmaVersion.ES13, null)]
-    [InlineData("script", "await", EcmaVersion.ES8, null)]
-    [InlineData("script", "await", EcmaVersion.ES7, null)]
-    [InlineData("module", "await", EcmaVersion.Latest, "Unexpected end of input")]
-    [InlineData("module", "await", EcmaVersion.ES13, "Unexpected end of input")]
-    [InlineData("module", "await", EcmaVersion.ES12, "Unexpected reserved word")]
-    [InlineData("module", "await", EcmaVersion.ES6, "Unexpected reserved word")]
-    [InlineData("script", "await 0", EcmaVersion.Latest, "await is only valid in async functions and the top level bodies of modules")]
-    [InlineData("script", "await 0", EcmaVersion.ES13, "await is only valid in async functions and the top level bodies of modules")]
-    [InlineData("script", "await 0", EcmaVersion.ES8, "await is only valid in async functions and the top level bodies of modules")]
-    [InlineData("script", "await 0", EcmaVersion.ES7, "Unexpected number")]
-    [InlineData("module", "await 0", EcmaVersion.Latest, null)]
-    [InlineData("module", "await 0", EcmaVersion.ES13, null)]
-    [InlineData("module", "await 0", EcmaVersion.ES12, "Unexpected reserved word")]
-    [InlineData("module", "await 0", EcmaVersion.ES6, "Unexpected reserved word")]
-    [InlineData("script", "{ await 0 }", EcmaVersion.Latest, "await is only valid in async functions and the top level bodies of modules")]
-    [InlineData("script", "{ await 0 }", EcmaVersion.ES13, "await is only valid in async functions and the top level bodies of modules")]
-    [InlineData("script", "{ await 0 }", EcmaVersion.ES8, "await is only valid in async functions and the top level bodies of modules")]
-    [InlineData("script", "{ await 0 }", EcmaVersion.ES7, "Unexpected number")]
-    [InlineData("module", "{ await 0 }", EcmaVersion.Latest, null)]
-    [InlineData("module", "{ await 0 }", EcmaVersion.ES13, null)]
-    [InlineData("module", "{ await 0 }", EcmaVersion.ES12, "Unexpected reserved word")]
-    [InlineData("module", "{ await 0 }", EcmaVersion.ES6, "Unexpected reserved word")]
-    [InlineData("script", "for await (x of a) {}", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "for await (x of a) {}", EcmaVersion.ES13, "Unexpected reserved word")]
-    [InlineData("script", "for await (x of a) {}", EcmaVersion.ES12, "Unexpected reserved word")]
-    [InlineData("script", "for await (x of a) {}", EcmaVersion.ES9, "Unexpected reserved word")]
-    [InlineData("script", "for await (x of a) {}", EcmaVersion.ES8, "Unexpected identifier 'await'")]
-    [InlineData("module", "for await (x of a) {}", EcmaVersion.Latest, null)]
-    [InlineData("module", "for await (x of a) {}", EcmaVersion.ES13, null)]
-    [InlineData("module", "for await (x of a) {}", EcmaVersion.ES12, "Unexpected reserved word")]
-    [InlineData("module", "for await (x of a) {}", EcmaVersion.ES9, "Unexpected reserved word")]
-    [InlineData("module", "for await (x of a) {}", EcmaVersion.ES8, "Unexpected identifier 'await'")]
+    [Test]
+    [Arguments("script", "await", EcmaVersion.Latest, null)]
+    [Arguments("script", "await", EcmaVersion.ES13, null)]
+    [Arguments("script", "await", EcmaVersion.ES8, null)]
+    [Arguments("script", "await", EcmaVersion.ES7, null)]
+    [Arguments("module", "await", EcmaVersion.Latest, "Unexpected end of input")]
+    [Arguments("module", "await", EcmaVersion.ES13, "Unexpected end of input")]
+    [Arguments("module", "await", EcmaVersion.ES12, "Unexpected reserved word")]
+    [Arguments("module", "await", EcmaVersion.ES6, "Unexpected reserved word")]
+    [Arguments("script", "await 0", EcmaVersion.Latest, "await is only valid in async functions and the top level bodies of modules")]
+    [Arguments("script", "await 0", EcmaVersion.ES13, "await is only valid in async functions and the top level bodies of modules")]
+    [Arguments("script", "await 0", EcmaVersion.ES8, "await is only valid in async functions and the top level bodies of modules")]
+    [Arguments("script", "await 0", EcmaVersion.ES7, "Unexpected number")]
+    [Arguments("module", "await 0", EcmaVersion.Latest, null)]
+    [Arguments("module", "await 0", EcmaVersion.ES13, null)]
+    [Arguments("module", "await 0", EcmaVersion.ES12, "Unexpected reserved word")]
+    [Arguments("module", "await 0", EcmaVersion.ES6, "Unexpected reserved word")]
+    [Arguments("script", "{ await 0 }", EcmaVersion.Latest, "await is only valid in async functions and the top level bodies of modules")]
+    [Arguments("script", "{ await 0 }", EcmaVersion.ES13, "await is only valid in async functions and the top level bodies of modules")]
+    [Arguments("script", "{ await 0 }", EcmaVersion.ES8, "await is only valid in async functions and the top level bodies of modules")]
+    [Arguments("script", "{ await 0 }", EcmaVersion.ES7, "Unexpected number")]
+    [Arguments("module", "{ await 0 }", EcmaVersion.Latest, null)]
+    [Arguments("module", "{ await 0 }", EcmaVersion.ES13, null)]
+    [Arguments("module", "{ await 0 }", EcmaVersion.ES12, "Unexpected reserved word")]
+    [Arguments("module", "{ await 0 }", EcmaVersion.ES6, "Unexpected reserved word")]
+    [Arguments("script", "for await (x of a) {}", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "for await (x of a) {}", EcmaVersion.ES13, "Unexpected reserved word")]
+    [Arguments("script", "for await (x of a) {}", EcmaVersion.ES12, "Unexpected reserved word")]
+    [Arguments("script", "for await (x of a) {}", EcmaVersion.ES9, "Unexpected reserved word")]
+    [Arguments("script", "for await (x of a) {}", EcmaVersion.ES8, "Unexpected identifier 'await'")]
+    [Arguments("module", "for await (x of a) {}", EcmaVersion.Latest, null)]
+    [Arguments("module", "for await (x of a) {}", EcmaVersion.ES13, null)]
+    [Arguments("module", "for await (x of a) {}", EcmaVersion.ES12, "Unexpected reserved word")]
+    [Arguments("module", "for await (x of a) {}", EcmaVersion.ES9, "Unexpected reserved word")]
+    [Arguments("module", "for await (x of a) {}", EcmaVersion.ES8, "Unexpected identifier 'await'")]
     public void ShouldHandleAwaitOutsideFunction(string sourceType, string input, EcmaVersion ecmaVersion, string? expectedError)
     {
         var parser = new Parser(new ParserOptions { EcmaVersion = ecmaVersion });
@@ -1377,389 +1378,389 @@ public partial class ParserTests
         }
     }
 
-    [Theory]
-    [InlineData("script", "async function f() { var await = 0 }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("module", "async function f() { var await = 0 }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async function f() { var [await] = [] }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token ']'"
-    [InlineData("module", "async function f() { var [await] = [] }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token ']'"
-    [InlineData("script", "async function f() { var [x = await] = [] }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("module", "async function f() { var [x = await] = [] }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("script", "async function f() { var [...await] = [] }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token ']'"
-    [InlineData("module", "async function f() { var [...await] = [] }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token ']'"
-    [InlineData("script", "async function f() { var {await} = {} }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("module", "async function f() { var {await} = {} }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async function f() { var {x: await} = {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token '}'"
-    [InlineData("module", "async function f() { var {x: await} = {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token '}'"
-    [InlineData("script", "async function f() { var {x = await} = {} }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("module", "async function f() { var {x = await} = {} }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("script", "async function f() { var {...await} = {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token '}'"
-    [InlineData("module", "async function f() { var {...await} = {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token '}'"
-    [InlineData("script", "async function f() { var [{await}] = [] }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("module", "async function f() { var [{await}] = [] }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Test]
+    [Arguments("script", "async function f() { var await = 0 }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("module", "async function f() { var await = 0 }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { var [await] = [] }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token ']'"
+    [Arguments("module", "async function f() { var [await] = [] }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token ']'"
+    [Arguments("script", "async function f() { var [x = await] = [] }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("module", "async function f() { var [x = await] = [] }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("script", "async function f() { var [...await] = [] }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token ']'"
+    [Arguments("module", "async function f() { var [...await] = [] }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token ']'"
+    [Arguments("script", "async function f() { var {await} = {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("module", "async function f() { var {await} = {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { var {x: await} = {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token '}'"
+    [Arguments("module", "async function f() { var {x: await} = {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token '}'"
+    [Arguments("script", "async function f() { var {x = await} = {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("module", "async function f() { var {x = await} = {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("script", "async function f() { var {...await} = {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token '}'"
+    [Arguments("module", "async function f() { var {...await} = {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token '}'"
+    [Arguments("script", "async function f() { var [{await}] = [] }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("module", "async function f() { var [{await}] = [] }", EcmaVersion.Latest, "Unexpected reserved word")]
 
-    [InlineData("script", "async function f() { fn = await => 1 }", EcmaVersion.Latest, "Unexpected token '=>'")]
-    [InlineData("module", "async function f() { fn = await => 1 }", EcmaVersion.Latest, "Unexpected token '=>'")]
-    [InlineData("script", "async function f() { (await) => {} }", EcmaVersion.Latest, "Unexpected token ')'")]
-    [InlineData("module", "async function f() { (await) => {} }", EcmaVersion.Latest, "Unexpected token ')'")]
-    [InlineData("script", "async function f() { (...await) => {} }", EcmaVersion.Latest, "Unexpected token ')'")] // V8 reports "Unexpected reserved word"
-    [InlineData("module", "async function f() { (...await) => {} }", EcmaVersion.Latest, "Unexpected token ')'")] // V8 reports "Unexpected reserved word"
-    [InlineData("script", "async function f() { ([await]) => {} }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("module", "async function f() { ([await]) => {} }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("script", "async function f() { ([x = await]) => {} }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("module", "async function f() { ([x = await]) => {} }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("script", "async function f() { ([...await]) => {} }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("module", "async function f() { ([...await]) => {} }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("script", "async function f() { ({await}) => {} }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("module", "async function f() { ({await}) => {} }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async function f() { ({x: await}) => {} }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("module", "async function f() { ({x: await}) => {} }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("script", "async function f() { ({x = await}) => {} }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("module", "async function f() { ({x = await}) => {} }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("script", "async function f() { ({...await}) => {} }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("module", "async function f() { ({...await}) => {} }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("script", "async function f() { ([{await}]) => {} }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("module", "async function f() { ([{await}]) => {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { fn = await => 1 }", EcmaVersion.Latest, "Unexpected token '=>'")]
+    [Arguments("module", "async function f() { fn = await => 1 }", EcmaVersion.Latest, "Unexpected token '=>'")]
+    [Arguments("script", "async function f() { (await) => {} }", EcmaVersion.Latest, "Unexpected token ')'")]
+    [Arguments("module", "async function f() { (await) => {} }", EcmaVersion.Latest, "Unexpected token ')'")]
+    [Arguments("script", "async function f() { (...await) => {} }", EcmaVersion.Latest, "Unexpected token ')'")] // V8 reports "Unexpected reserved word"
+    [Arguments("module", "async function f() { (...await) => {} }", EcmaVersion.Latest, "Unexpected token ')'")] // V8 reports "Unexpected reserved word"
+    [Arguments("script", "async function f() { ([await]) => {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("module", "async function f() { ([await]) => {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("script", "async function f() { ([x = await]) => {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("module", "async function f() { ([x = await]) => {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("script", "async function f() { ([...await]) => {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("module", "async function f() { ([...await]) => {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("script", "async function f() { ({await}) => {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("module", "async function f() { ({await}) => {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { ({x: await}) => {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("module", "async function f() { ({x: await}) => {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("script", "async function f() { ({x = await}) => {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("module", "async function f() { ({x = await}) => {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("script", "async function f() { ({...await}) => {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("module", "async function f() { ({...await}) => {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("script", "async function f() { ([{await}]) => {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("module", "async function f() { ([{await}]) => {} }", EcmaVersion.Latest, "Unexpected reserved word")]
 
-    [InlineData("script", "async function f() { fn = async await => 1 }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("module", "async function f() { fn = async await => 1 }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async function f() { async (await) => {} }", EcmaVersion.Latest, "Unexpected token ')'")]
-    [InlineData("module", "async function f() { async (await) => {} }", EcmaVersion.Latest, "Unexpected token ')'")]
-    [InlineData("script", "async function f() { async (...await) => {} }", EcmaVersion.Latest, "Unexpected token ')'")]
-    [InlineData("module", "async function f() { async (...await) => {} }", EcmaVersion.Latest, "Unexpected token ')'")]
-    [InlineData("script", "async function f() { async ([await]) => {} }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("module", "async function f() { async ([await]) => {} }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("script", "async function f() { async ([x = await]) => {} }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("module", "async function f() { async ([x = await]) => {} }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("script", "async function f() { async ([...await]) => {} }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("module", "async function f() { async ([...await]) => {} }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("script", "async function f() { async ({await}) => {} }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("module", "async function f() { async ({await}) => {} }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async function f() { async ({x: await}) => {} }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("module", "async function f() { async ({x: await}) => {} }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("script", "async function f() { async ({x = await}) => {} }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("module", "async function f() { async ({x = await}) => {} }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("script", "async function f() { async ({...await}) => {} }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("module", "async function f() { async ({...await}) => {} }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("script", "async function f() { async ([{await}]) => {} }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("module", "async function f() { async ([{await}]) => {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { fn = async await => 1 }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("module", "async function f() { fn = async await => 1 }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { async (await) => {} }", EcmaVersion.Latest, "Unexpected token ')'")]
+    [Arguments("module", "async function f() { async (await) => {} }", EcmaVersion.Latest, "Unexpected token ')'")]
+    [Arguments("script", "async function f() { async (...await) => {} }", EcmaVersion.Latest, "Unexpected token ')'")]
+    [Arguments("module", "async function f() { async (...await) => {} }", EcmaVersion.Latest, "Unexpected token ')'")]
+    [Arguments("script", "async function f() { async ([await]) => {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("module", "async function f() { async ([await]) => {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("script", "async function f() { async ([x = await]) => {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("module", "async function f() { async ([x = await]) => {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("script", "async function f() { async ([...await]) => {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("module", "async function f() { async ([...await]) => {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("script", "async function f() { async ({await}) => {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("module", "async function f() { async ({await}) => {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { async ({x: await}) => {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("module", "async function f() { async ({x: await}) => {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("script", "async function f() { async ({x = await}) => {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("module", "async function f() { async ({x = await}) => {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("script", "async function f() { async ({...await}) => {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("module", "async function f() { async ({...await}) => {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("script", "async function f() { async ([{await}]) => {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("module", "async function f() { async ([{await}]) => {} }", EcmaVersion.Latest, "Unexpected reserved word")]
 
-    [InlineData("script", "fn = async await => 1", EcmaVersion.Latest, "'await' is not a valid identifier name in an async function")]
-    [InlineData("module", "fn = async await => 1", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async (await) => {}", EcmaVersion.Latest, "'await' is not a valid identifier name in an async function")]
-    [InlineData("module", "async (await) => {}", EcmaVersion.Latest, "Unexpected token ')'")]
-    [InlineData("script", "async (...await) => {}", EcmaVersion.Latest, "'await' is not a valid identifier name in an async function")]
-    [InlineData("module", "async (...await) => {}", EcmaVersion.Latest, "Unexpected token ')'")]
-    [InlineData("script", "async ([await]) => {}", EcmaVersion.Latest, "'await' is not a valid identifier name in an async function")]
-    [InlineData("module", "async ([await]) => {}", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("script", "async ([x = await]) => {}", EcmaVersion.Latest, "'await' is not a valid identifier name in an async function")]
-    [InlineData("module", "async ([x = await]) => {}", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("script", "async ([...await]) => {}", EcmaVersion.Latest, "'await' is not a valid identifier name in an async function")]
-    [InlineData("module", "async ([...await]) => {}", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("script", "async ({await}) => {}", EcmaVersion.Latest, "'await' is not a valid identifier name in an async function")]
-    [InlineData("module", "async ({await}) => {}", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async ({x: await}) => {}", EcmaVersion.Latest, "'await' is not a valid identifier name in an async function")]
-    [InlineData("module", "async ({x: await}) => {}", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("script", "async ({x = await}) => {}", EcmaVersion.Latest, "'await' is not a valid identifier name in an async function")]
-    [InlineData("module", "async ({x = await}) => {}", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("script", "async ({...await}) => {}", EcmaVersion.Latest, "'await' is not a valid identifier name in an async function")]
-    [InlineData("module", "async ({...await}) => {}", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("script", "async ([{await}]) => {}", EcmaVersion.Latest, "'await' is not a valid identifier name in an async function")]
-    [InlineData("module", "async ([{await}]) => {}", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "fn = async await => 1", EcmaVersion.Latest, "'await' is not a valid identifier name in an async function")]
+    [Arguments("module", "fn = async await => 1", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async (await) => {}", EcmaVersion.Latest, "'await' is not a valid identifier name in an async function")]
+    [Arguments("module", "async (await) => {}", EcmaVersion.Latest, "Unexpected token ')'")]
+    [Arguments("script", "async (...await) => {}", EcmaVersion.Latest, "'await' is not a valid identifier name in an async function")]
+    [Arguments("module", "async (...await) => {}", EcmaVersion.Latest, "Unexpected token ')'")]
+    [Arguments("script", "async ([await]) => {}", EcmaVersion.Latest, "'await' is not a valid identifier name in an async function")]
+    [Arguments("module", "async ([await]) => {}", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("script", "async ([x = await]) => {}", EcmaVersion.Latest, "'await' is not a valid identifier name in an async function")]
+    [Arguments("module", "async ([x = await]) => {}", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("script", "async ([...await]) => {}", EcmaVersion.Latest, "'await' is not a valid identifier name in an async function")]
+    [Arguments("module", "async ([...await]) => {}", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("script", "async ({await}) => {}", EcmaVersion.Latest, "'await' is not a valid identifier name in an async function")]
+    [Arguments("module", "async ({await}) => {}", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async ({x: await}) => {}", EcmaVersion.Latest, "'await' is not a valid identifier name in an async function")]
+    [Arguments("module", "async ({x: await}) => {}", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("script", "async ({x = await}) => {}", EcmaVersion.Latest, "'await' is not a valid identifier name in an async function")]
+    [Arguments("module", "async ({x = await}) => {}", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("script", "async ({...await}) => {}", EcmaVersion.Latest, "'await' is not a valid identifier name in an async function")]
+    [Arguments("module", "async ({...await}) => {}", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("script", "async ([{await}]) => {}", EcmaVersion.Latest, "'await' is not a valid identifier name in an async function")]
+    [Arguments("module", "async ([{await}]) => {}", EcmaVersion.Latest, "Unexpected reserved word")]
 
-    [InlineData("script", "async function f() { function await() {} }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("module", "async function f() { function await() {} }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async function f() { (function await() {}) }", EcmaVersion.Latest, null)]
-    [InlineData("module", "async function f() { (function await() {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async function f() { (function (await) {}) }", EcmaVersion.Latest, null)]
-    [InlineData("module", "async function f() { (function (await) {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async function f() { (function (...await) {}) }", EcmaVersion.Latest, null)]
-    [InlineData("module", "async function f() { (function (...await) {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async function f() { (function ([await]) {}) }", EcmaVersion.Latest, null)]
-    [InlineData("module", "async function f() { (function ([await]) {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async function f() { (function ([x = await]) {}) }", EcmaVersion.Latest, null)]
-    [InlineData("module", "async function f() { (function ([x = await]) {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async function f() { (function ([...await]) {}) }", EcmaVersion.Latest, null)]
-    [InlineData("module", "async function f() { (function ([...await]) {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async function f() { (function ({await}) {}) }", EcmaVersion.Latest, null)]
-    [InlineData("module", "async function f() { (function ({await}) {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async function f() { (function ({x: await}) {}) }", EcmaVersion.Latest, null)]
-    [InlineData("module", "async function f() { (function ({x: await}) {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async function f() { (function ({x = await}) {}) }", EcmaVersion.Latest, null)]
-    [InlineData("module", "async function f() { (function ({x = await}) {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async function f() { (function ({...await}) {}) }", EcmaVersion.Latest, null)]
-    [InlineData("module", "async function f() { (function ({...await}) {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async function f() { (function ([{await}]) {}) }", EcmaVersion.Latest, null)]
-    [InlineData("module", "async function f() { (function ([{await}]) {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { function await() {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("module", "async function f() { function await() {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { (function await() {}) }", EcmaVersion.Latest, null)]
+    [Arguments("module", "async function f() { (function await() {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { (function (await) {}) }", EcmaVersion.Latest, null)]
+    [Arguments("module", "async function f() { (function (await) {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { (function (...await) {}) }", EcmaVersion.Latest, null)]
+    [Arguments("module", "async function f() { (function (...await) {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { (function ([await]) {}) }", EcmaVersion.Latest, null)]
+    [Arguments("module", "async function f() { (function ([await]) {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { (function ([x = await]) {}) }", EcmaVersion.Latest, null)]
+    [Arguments("module", "async function f() { (function ([x = await]) {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { (function ([...await]) {}) }", EcmaVersion.Latest, null)]
+    [Arguments("module", "async function f() { (function ([...await]) {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { (function ({await}) {}) }", EcmaVersion.Latest, null)]
+    [Arguments("module", "async function f() { (function ({await}) {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { (function ({x: await}) {}) }", EcmaVersion.Latest, null)]
+    [Arguments("module", "async function f() { (function ({x: await}) {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { (function ({x = await}) {}) }", EcmaVersion.Latest, null)]
+    [Arguments("module", "async function f() { (function ({x = await}) {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { (function ({...await}) {}) }", EcmaVersion.Latest, null)]
+    [Arguments("module", "async function f() { (function ({...await}) {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { (function ([{await}]) {}) }", EcmaVersion.Latest, null)]
+    [Arguments("module", "async function f() { (function ([{await}]) {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
 
-    [InlineData("script", "async function f() { async function await() {} }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("module", "async function f() { async function await() {} }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async function f() { fn = async function await() {} }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("module", "async function f() { fn = async function await() {} }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async function f() { fn = async function (await) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("module", "async function f() { fn = async function (await) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async function f() { fn = async function (...await) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("module", "async function f() { fn = async function (...await) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async function f() { fn = async function ([await]) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Illegal await-expression in formal parameters of async function"
-    [InlineData("module", "async function f() { fn = async function ([await]) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Illegal await-expression in formal parameters of async function"
-    [InlineData("script", "async function f() { fn = async function ([x = await]) {} }", EcmaVersion.Latest, "Unexpected token ']'")] // V8 reports "Illegal await-expression in formal parameters of async function"
-    [InlineData("module", "async function f() { fn = async function ([x = await]) {} }", EcmaVersion.Latest, "Unexpected token ']'")] // V8 reports "Illegal await-expression in formal parameters of async function"
-    [InlineData("script", "async function f() { fn = async function ([...await]) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Illegal await-expression in formal parameters of async function"
-    [InlineData("module", "async function f() { fn = async function ([...await]) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Illegal await-expression in formal parameters of async function"
-    [InlineData("script", "async function f() { fn = async function ({await}) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("module", "async function f() { fn = async function ({await}) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async function f() { fn = async function ({x: await}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Illegal await-expression in formal parameters of async function"
-    [InlineData("module", "async function f() { fn = async function ({x: await}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Illegal await-expression in formal parameters of async function"
-    [InlineData("script", "async function f() { fn = async function ({x = await}) {} }", EcmaVersion.Latest, "Unexpected token '}'")] // V8 reports "Illegal await-expression in formal parameters of async function"
-    [InlineData("module", "async function f() { fn = async function ({x = await}) {} }", EcmaVersion.Latest, "Unexpected token '}'")] // V8 reports "Illegal await-expression in formal parameters of async function"
-    [InlineData("script", "async function f() { fn = async function ({...await}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Illegal await-expression in formal parameters of async function"
-    [InlineData("module", "async function f() { fn = async function ({...await}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Illegal await-expression in formal parameters of async function"
-    [InlineData("script", "async function f() { fn = async function ([{await}]) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("module", "async function f() { fn = async function ([{await}]) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { async function await() {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("module", "async function f() { async function await() {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { fn = async function await() {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("module", "async function f() { fn = async function await() {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { fn = async function (await) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("module", "async function f() { fn = async function (await) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { fn = async function (...await) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("module", "async function f() { fn = async function (...await) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { fn = async function ([await]) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Illegal await-expression in formal parameters of async function"
+    [Arguments("module", "async function f() { fn = async function ([await]) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Illegal await-expression in formal parameters of async function"
+    [Arguments("script", "async function f() { fn = async function ([x = await]) {} }", EcmaVersion.Latest, "Unexpected token ']'")] // V8 reports "Illegal await-expression in formal parameters of async function"
+    [Arguments("module", "async function f() { fn = async function ([x = await]) {} }", EcmaVersion.Latest, "Unexpected token ']'")] // V8 reports "Illegal await-expression in formal parameters of async function"
+    [Arguments("script", "async function f() { fn = async function ([...await]) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Illegal await-expression in formal parameters of async function"
+    [Arguments("module", "async function f() { fn = async function ([...await]) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Illegal await-expression in formal parameters of async function"
+    [Arguments("script", "async function f() { fn = async function ({await}) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("module", "async function f() { fn = async function ({await}) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { fn = async function ({x: await}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Illegal await-expression in formal parameters of async function"
+    [Arguments("module", "async function f() { fn = async function ({x: await}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Illegal await-expression in formal parameters of async function"
+    [Arguments("script", "async function f() { fn = async function ({x = await}) {} }", EcmaVersion.Latest, "Unexpected token '}'")] // V8 reports "Illegal await-expression in formal parameters of async function"
+    [Arguments("module", "async function f() { fn = async function ({x = await}) {} }", EcmaVersion.Latest, "Unexpected token '}'")] // V8 reports "Illegal await-expression in formal parameters of async function"
+    [Arguments("script", "async function f() { fn = async function ({...await}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Illegal await-expression in formal parameters of async function"
+    [Arguments("module", "async function f() { fn = async function ({...await}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Illegal await-expression in formal parameters of async function"
+    [Arguments("script", "async function f() { fn = async function ([{await}]) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("module", "async function f() { fn = async function ([{await}]) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
 
-    [InlineData("script", "async function f() { class await {} }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("module", "async function f() { class await {} }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async function f() { (class await {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("module", "async function f() { (class await {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async function f() { (class { await = 0 }) }", EcmaVersion.Latest, null)]
-    [InlineData("module", "async function f() { (class { await = 0 }) }", EcmaVersion.Latest, null)]
-    [InlineData("script", "async function f() { (class { x = await }) }", EcmaVersion.Latest, null)]
-    [InlineData("module", "async function f() { (class { x = await }) }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async function f() { (class { await() {} }) }", EcmaVersion.Latest, null)]
-    [InlineData("module", "async function f() { (class { await() {} }) }", EcmaVersion.Latest, null)]
-    [InlineData("script", "async function f() { (class { m(await) {} }) }", EcmaVersion.Latest, null)]
-    [InlineData("module", "async function f() { (class { m(await) {} }) }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async function f() { (class { m(...await) {} }) }", EcmaVersion.Latest, null)]
-    [InlineData("module", "async function f() { (class { m(...await) {} }) }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async function f() { (class { m({m({x: [await]}) {} }) }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
-    [InlineData("module", "async function f() { (class { m({m({x: [await]}) {} }) }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [Arguments("script", "async function f() { class await {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("module", "async function f() { class await {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { (class await {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("module", "async function f() { (class await {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { (class { await = 0 }) }", EcmaVersion.Latest, null)]
+    [Arguments("module", "async function f() { (class { await = 0 }) }", EcmaVersion.Latest, null)]
+    [Arguments("script", "async function f() { (class { x = await }) }", EcmaVersion.Latest, null)]
+    [Arguments("module", "async function f() { (class { x = await }) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { (class { await() {} }) }", EcmaVersion.Latest, null)]
+    [Arguments("module", "async function f() { (class { await() {} }) }", EcmaVersion.Latest, null)]
+    [Arguments("script", "async function f() { (class { m(await) {} }) }", EcmaVersion.Latest, null)]
+    [Arguments("module", "async function f() { (class { m(await) {} }) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { (class { m(...await) {} }) }", EcmaVersion.Latest, null)]
+    [Arguments("module", "async function f() { (class { m(...await) {} }) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { (class { m({m({x: [await]}) {} }) }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [Arguments("module", "async function f() { (class { m({m({x: [await]}) {} }) }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
 
-    [InlineData("script", "async function f() { ({await: 0}) }", EcmaVersion.Latest, null)]
-    [InlineData("module", "async function f() { ({await: 0}) }", EcmaVersion.Latest, null)]
-    [InlineData("script", "async function f() { ({x: await}) }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("module", "async function f() { ({x: await}) }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("script", "function f() { ({x: await}) }", EcmaVersion.Latest, null)]
-    [InlineData("module", "function f() { ({x: await}) }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async function f() { ({await() {} }) }", EcmaVersion.Latest, null)]
-    [InlineData("module", "async function f() { ({await() {} }) }", EcmaVersion.Latest, null)]
-    [InlineData("script", "async function f() { ({m(await) {} }) }", EcmaVersion.Latest, null)]
-    [InlineData("module", "async function f() { ({m(await) {} }) }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async function f() { ({m(...await) {} }) }", EcmaVersion.Latest, null)]
-    [InlineData("module", "async function f() { ({m(...await) {} }) }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async function f() { ({m({x: [await]}) {} }) }", EcmaVersion.Latest, null)]
-    [InlineData("module", "async function f() { ({m({x: [await]}) {} }) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { ({await: 0}) }", EcmaVersion.Latest, null)]
+    [Arguments("module", "async function f() { ({await: 0}) }", EcmaVersion.Latest, null)]
+    [Arguments("script", "async function f() { ({x: await}) }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("module", "async function f() { ({x: await}) }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("script", "function f() { ({x: await}) }", EcmaVersion.Latest, null)]
+    [Arguments("module", "function f() { ({x: await}) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { ({await() {} }) }", EcmaVersion.Latest, null)]
+    [Arguments("module", "async function f() { ({await() {} }) }", EcmaVersion.Latest, null)]
+    [Arguments("script", "async function f() { ({m(await) {} }) }", EcmaVersion.Latest, null)]
+    [Arguments("module", "async function f() { ({m(await) {} }) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { ({m(...await) {} }) }", EcmaVersion.Latest, null)]
+    [Arguments("module", "async function f() { ({m(...await) {} }) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { ({m({x: [await]}) {} }) }", EcmaVersion.Latest, null)]
+    [Arguments("module", "async function f() { ({m({x: [await]}) {} }) }", EcmaVersion.Latest, "Unexpected reserved word")]
 
-    [InlineData("script", "async function f() { try {} catch (await) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("module", "async function f() { try {} catch (await) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async function f() { try {} catch (...await) {} }", EcmaVersion.Latest, "Unexpected token '...'")]
-    [InlineData("module", "async function f() { try {} catch (...await) {} }", EcmaVersion.Latest, "Unexpected token '...'")]
-    [InlineData("script", "async function f() { try {} catch ([await]) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token ']'"
-    [InlineData("module", "async function f() { try {} catch ([await]) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token ']'"
-    [InlineData("script", "async function f() { try {} catch ([x = await]) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("module", "async function f() { try {} catch ([x = await]) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("script", "async function f() { try {} catch ([...await]) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token ']'"
-    [InlineData("module", "async function f() { try {} catch ([...await]) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token ']'"
-    [InlineData("script", "async function f() { try {} catch ({await}) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("module", "async function f() { try {} catch ({await}) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async function f() { try {} catch ({x: await}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token '}'"
-    [InlineData("module", "async function f() { try {} catch ({x: await}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token '}'"
-    [InlineData("script", "async function f() { try {} catch ({x = await}) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("module", "async function f() { try {} catch ({x = await}) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("script", "async function f() { try {} catch ({...await}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token '}'"
-    [InlineData("module", "async function f() { try {} catch ({...await}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token '}'"
-    [InlineData("script", "async function f() { try {} catch ([{await}]) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("module", "async function f() { try {} catch ([{await}]) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { try {} catch (await) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("module", "async function f() { try {} catch (await) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { try {} catch (...await) {} }", EcmaVersion.Latest, "Unexpected token '...'")]
+    [Arguments("module", "async function f() { try {} catch (...await) {} }", EcmaVersion.Latest, "Unexpected token '...'")]
+    [Arguments("script", "async function f() { try {} catch ([await]) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token ']'"
+    [Arguments("module", "async function f() { try {} catch ([await]) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token ']'"
+    [Arguments("script", "async function f() { try {} catch ([x = await]) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("module", "async function f() { try {} catch ([x = await]) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("script", "async function f() { try {} catch ([...await]) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token ']'"
+    [Arguments("module", "async function f() { try {} catch ([...await]) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token ']'"
+    [Arguments("script", "async function f() { try {} catch ({await}) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("module", "async function f() { try {} catch ({await}) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { try {} catch ({x: await}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token '}'"
+    [Arguments("module", "async function f() { try {} catch ({x: await}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token '}'"
+    [Arguments("script", "async function f() { try {} catch ({x = await}) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("module", "async function f() { try {} catch ({x = await}) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("script", "async function f() { try {} catch ({...await}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token '}'"
+    [Arguments("module", "async function f() { try {} catch ({...await}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")] // V8 reports "Unexpected token '}'"
+    [Arguments("script", "async function f() { try {} catch ([{await}]) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("module", "async function f() { try {} catch ([{await}]) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
 
-    [InlineData("script", "async function f() { await: { break await } }", EcmaVersion.Latest, "Unexpected token ':'")]
-    [InlineData("module", "async function f() { await: { break await } }", EcmaVersion.Latest, "Unexpected token ':'")]
-    [InlineData("script", "async function f() { { break await } }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("module", "async function f() { { break await } }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { await: { break await } }", EcmaVersion.Latest, "Unexpected token ':'")]
+    [Arguments("module", "async function f() { await: { break await } }", EcmaVersion.Latest, "Unexpected token ':'")]
+    [Arguments("script", "async function f() { { break await } }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("module", "async function f() { { break await } }", EcmaVersion.Latest, "Unexpected reserved word")]
 
-    [InlineData("script", "function* g() { var yield = 0 }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
-    [InlineData("module", "function* g() { var yield = 0 }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "function* g() { var [yield] = [] }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
-    [InlineData("module", "function* g() { var [yield] = [] }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
-    [InlineData("script", "function* g() { var [x = yield] = [] }", EcmaVersion.Latest, null)]
-    [InlineData("module", "function* g() { var [x = yield] = [] }", EcmaVersion.Latest, null)]
-    [InlineData("script", "function* g() { var [...yield] = [] }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
-    [InlineData("module", "function* g() { var [...yield] = [] }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
-    [InlineData("script", "function* g() { var {yield} = {} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
-    [InlineData("module", "function* g() { var {yield} = {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "function* g() { var {x: yield} = {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
-    [InlineData("module", "function* g() { var {x: yield} = {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
-    [InlineData("script", "function* g() { var {x = yield} = {} }", EcmaVersion.Latest, null)]
-    [InlineData("module", "function* g() { var {x = yield} = {} }", EcmaVersion.Latest, null)]
-    [InlineData("script", "function* g() { var {...yield} = {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
-    [InlineData("module", "function* g() { var {...yield} = {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
-    [InlineData("script", "function* g() { var [{yield}] = [] }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
-    [InlineData("module", "function* g() { var [{yield}] = [] }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { var yield = 0 }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [Arguments("module", "function* g() { var yield = 0 }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { var [yield] = [] }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [Arguments("module", "function* g() { var [yield] = [] }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [Arguments("script", "function* g() { var [x = yield] = [] }", EcmaVersion.Latest, null)]
+    [Arguments("module", "function* g() { var [x = yield] = [] }", EcmaVersion.Latest, null)]
+    [Arguments("script", "function* g() { var [...yield] = [] }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [Arguments("module", "function* g() { var [...yield] = [] }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [Arguments("script", "function* g() { var {yield} = {} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [Arguments("module", "function* g() { var {yield} = {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { var {x: yield} = {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [Arguments("module", "function* g() { var {x: yield} = {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [Arguments("script", "function* g() { var {x = yield} = {} }", EcmaVersion.Latest, null)]
+    [Arguments("module", "function* g() { var {x = yield} = {} }", EcmaVersion.Latest, null)]
+    [Arguments("script", "function* g() { var {...yield} = {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [Arguments("module", "function* g() { var {...yield} = {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [Arguments("script", "function* g() { var [{yield}] = [] }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [Arguments("module", "function* g() { var [{yield}] = [] }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
 
-    [InlineData("script", "function* g() { fn = yield => 1 }", EcmaVersion.Latest, "Unexpected token '=>'")]
-    [InlineData("module", "function* g() { fn = yield => 1 }", EcmaVersion.Latest, "Unexpected token '=>'")]
-    [InlineData("script", "function* g() { (yield) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")] // V8 reports "Invalid destructuring assignment target"
-    [InlineData("module", "function* g() { (yield) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")] // V8 reports "Invalid destructuring assignment target"
-    [InlineData("script", "function* g() { (...yield) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")] // V8 reports "Unexpected identifier 'yield'"
-    [InlineData("module", "function* g() { (...yield) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")] // V8 reports "Unexpected strict mode reserved word"
-    [InlineData("script", "function* g() { ([yield]) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
-    [InlineData("module", "function* g() { ([yield]) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
-    [InlineData("script", "function* g() { ([x = yield]) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
-    [InlineData("module", "function* g() { ([x = yield]) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
-    [InlineData("script", "function* g() { ([...yield]) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
-    [InlineData("module", "function* g() { ([...yield]) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
-    [InlineData("script", "function* g() { ({yield}) => {} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
-    [InlineData("module", "function* g() { ({yield}) => {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "function* g() { ({x: yield}) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
-    [InlineData("module", "function* g() { ({x: yield}) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
-    [InlineData("script", "function* g() { ({x = yield}) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
-    [InlineData("module", "function* g() { ({x = yield}) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
-    [InlineData("script", "function* g() { ({...yield}) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")] // V8 reports "`...` must be followed by an identifier in declaration contexts"
-    [InlineData("module", "function* g() { ({...yield}) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")] // V8 reports "`...` must be followed by an identifier in declaration contexts"
-    [InlineData("script", "function* g() { ([{yield}]) => {} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
-    [InlineData("module", "function* g() { ([{yield}]) => {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { fn = yield => 1 }", EcmaVersion.Latest, "Unexpected token '=>'")]
+    [Arguments("module", "function* g() { fn = yield => 1 }", EcmaVersion.Latest, "Unexpected token '=>'")]
+    [Arguments("script", "function* g() { (yield) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")] // V8 reports "Invalid destructuring assignment target"
+    [Arguments("module", "function* g() { (yield) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")] // V8 reports "Invalid destructuring assignment target"
+    [Arguments("script", "function* g() { (...yield) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")] // V8 reports "Unexpected identifier 'yield'"
+    [Arguments("module", "function* g() { (...yield) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")] // V8 reports "Unexpected strict mode reserved word"
+    [Arguments("script", "function* g() { ([yield]) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
+    [Arguments("module", "function* g() { ([yield]) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
+    [Arguments("script", "function* g() { ([x = yield]) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
+    [Arguments("module", "function* g() { ([x = yield]) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
+    [Arguments("script", "function* g() { ([...yield]) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
+    [Arguments("module", "function* g() { ([...yield]) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
+    [Arguments("script", "function* g() { ({yield}) => {} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [Arguments("module", "function* g() { ({yield}) => {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { ({x: yield}) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
+    [Arguments("module", "function* g() { ({x: yield}) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
+    [Arguments("script", "function* g() { ({x = yield}) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
+    [Arguments("module", "function* g() { ({x = yield}) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
+    [Arguments("script", "function* g() { ({...yield}) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")] // V8 reports "`...` must be followed by an identifier in declaration contexts"
+    [Arguments("module", "function* g() { ({...yield}) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")] // V8 reports "`...` must be followed by an identifier in declaration contexts"
+    [Arguments("script", "function* g() { ([{yield}]) => {} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [Arguments("module", "function* g() { ([{yield}]) => {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
 
-    [InlineData("script", "function* g() { fn = async yield => 1 }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
-    [InlineData("module", "function* g() { fn = async yield => 1 }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "function* g() { async (yield) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")] // V8 reports "Invalid destructuring assignment target"
-    [InlineData("module", "function* g() { async (yield) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")] // V8 reports "Invalid destructuring assignment target"
-    [InlineData("script", "function* g() { async (...yield) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")] // V8 reports "Invalid destructuring assignment target"
-    [InlineData("module", "function* g() { async (...yield) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")] // V8 reports "Invalid destructuring assignment target"
-    [InlineData("script", "function* g() { async ([yield]) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
-    [InlineData("module", "function* g() { async ([yield]) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
-    [InlineData("script", "function* g() { async ([x = yield]) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
-    [InlineData("module", "function* g() { async ([x = yield]) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
-    [InlineData("script", "function* g() { async ([...yield]) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
-    [InlineData("module", "function* g() { async ([...yield]) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
-    [InlineData("script", "function* g() { async ({yield}) => {} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
-    [InlineData("module", "function* g() { async ({yield}) => {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "function* g() { async ({x: yield}) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
-    [InlineData("module", "function* g() { async ({x: yield}) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
-    [InlineData("script", "function* g() { async ({x = yield}) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
-    [InlineData("module", "function* g() { async ({x = yield}) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
-    [InlineData("script", "function* g() { async ({...yield}) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")] // V8 reports "`...` must be followed by an identifier in declaration contexts"
-    [InlineData("module", "function* g() { async ({...yield}) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")] // V8 reports "`...` must be followed by an identifier in declaration contexts"
-    [InlineData("script", "function* g() { async ([{yield}]) => {} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
-    [InlineData("module", "function* g() { async ([{yield}]) => {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { fn = async yield => 1 }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [Arguments("module", "function* g() { fn = async yield => 1 }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { async (yield) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")] // V8 reports "Invalid destructuring assignment target"
+    [Arguments("module", "function* g() { async (yield) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")] // V8 reports "Invalid destructuring assignment target"
+    [Arguments("script", "function* g() { async (...yield) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")] // V8 reports "Invalid destructuring assignment target"
+    [Arguments("module", "function* g() { async (...yield) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")] // V8 reports "Invalid destructuring assignment target"
+    [Arguments("script", "function* g() { async ([yield]) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
+    [Arguments("module", "function* g() { async ([yield]) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
+    [Arguments("script", "function* g() { async ([x = yield]) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
+    [Arguments("module", "function* g() { async ([x = yield]) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
+    [Arguments("script", "function* g() { async ([...yield]) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
+    [Arguments("module", "function* g() { async ([...yield]) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
+    [Arguments("script", "function* g() { async ({yield}) => {} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [Arguments("module", "function* g() { async ({yield}) => {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { async ({x: yield}) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
+    [Arguments("module", "function* g() { async ({x: yield}) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
+    [Arguments("script", "function* g() { async ({x = yield}) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
+    [Arguments("module", "function* g() { async ({x = yield}) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")]
+    [Arguments("script", "function* g() { async ({...yield}) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")] // V8 reports "`...` must be followed by an identifier in declaration contexts"
+    [Arguments("module", "function* g() { async ({...yield}) => {} }", EcmaVersion.Latest, "Yield expression not allowed in formal parameter")] // V8 reports "`...` must be followed by an identifier in declaration contexts"
+    [Arguments("script", "function* g() { async ([{yield}]) => {} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [Arguments("module", "function* g() { async ([{yield}]) => {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
 
-    [InlineData("script", "function* g() { function yield() {} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
-    [InlineData("module", "function* g() { function yield() {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "function* g() { (function yield() {}) }", EcmaVersion.Latest, null)]
-    [InlineData("module", "function* g() { (function yield() {}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "function* g() { (function (yield) {}) }", EcmaVersion.Latest, null)]
-    [InlineData("module", "function* g() { (function (yield) {}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "function* g() { (function (...yield) {}) }", EcmaVersion.Latest, null)]
-    [InlineData("module", "function* g() { (function (...yield) {}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "function* g() { (function ([yield]) {}) }", EcmaVersion.Latest, null)]
-    [InlineData("module", "function* g() { (function ([yield]) {}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "function* g() { (function ([x = yield]) {}) }", EcmaVersion.Latest, null)]
-    [InlineData("module", "function* g() { (function ([x = yield]) {}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "function* g() { (function ([...yield]) {}) }", EcmaVersion.Latest, null)]
-    [InlineData("module", "function* g() { (function ([...yield]) {}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "function* g() { (function ({yield}) {}) }", EcmaVersion.Latest, null)]
-    [InlineData("module", "function* g() { (function ({yield}) {}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "function* g() { (function ({x: yield}) {}) }", EcmaVersion.Latest, null)]
-    [InlineData("module", "function* g() { (function ({x: yield}) {}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "function* g() { (function ({x = yield}) {}) }", EcmaVersion.Latest, null)]
-    [InlineData("module", "function* g() { (function ({x = yield}) {}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "function* g() { (function ({...yield}) {}) }", EcmaVersion.Latest, null)]
-    [InlineData("module", "function* g() { (function ({...yield}) {}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "function* g() { (function ([{yield}]) {}) }", EcmaVersion.Latest, null)]
-    [InlineData("module", "function* g() { (function ([{yield}]) {}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { function yield() {} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [Arguments("module", "function* g() { function yield() {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { (function yield() {}) }", EcmaVersion.Latest, null)]
+    [Arguments("module", "function* g() { (function yield() {}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { (function (yield) {}) }", EcmaVersion.Latest, null)]
+    [Arguments("module", "function* g() { (function (yield) {}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { (function (...yield) {}) }", EcmaVersion.Latest, null)]
+    [Arguments("module", "function* g() { (function (...yield) {}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { (function ([yield]) {}) }", EcmaVersion.Latest, null)]
+    [Arguments("module", "function* g() { (function ([yield]) {}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { (function ([x = yield]) {}) }", EcmaVersion.Latest, null)]
+    [Arguments("module", "function* g() { (function ([x = yield]) {}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { (function ([...yield]) {}) }", EcmaVersion.Latest, null)]
+    [Arguments("module", "function* g() { (function ([...yield]) {}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { (function ({yield}) {}) }", EcmaVersion.Latest, null)]
+    [Arguments("module", "function* g() { (function ({yield}) {}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { (function ({x: yield}) {}) }", EcmaVersion.Latest, null)]
+    [Arguments("module", "function* g() { (function ({x: yield}) {}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { (function ({x = yield}) {}) }", EcmaVersion.Latest, null)]
+    [Arguments("module", "function* g() { (function ({x = yield}) {}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { (function ({...yield}) {}) }", EcmaVersion.Latest, null)]
+    [Arguments("module", "function* g() { (function ({...yield}) {}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { (function ([{yield}]) {}) }", EcmaVersion.Latest, null)]
+    [Arguments("module", "function* g() { (function ([{yield}]) {}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
 
-    [InlineData("script", "function* g() { async function yield() {} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
-    [InlineData("module", "function* g() { async function yield() {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "function* g() { fn = async function yield() {} }", EcmaVersion.Latest, null)]
-    [InlineData("module", "function* g() { fn = async function yield() {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "function* g() { fn = async function (yield) {} }", EcmaVersion.Latest, null)]
-    [InlineData("module", "function* g() { fn = async function (yield) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "function* g() { fn = async function (...yield) {} }", EcmaVersion.Latest, null)]
-    [InlineData("module", "function* g() { fn = async function (...yield) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "function* g() { fn = async function ([yield]) {} }", EcmaVersion.Latest, null)]
-    [InlineData("module", "function* g() { fn = async function ([yield]) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "function* g() { fn = async function ([x = yield]) {} }", EcmaVersion.Latest, null)]
-    [InlineData("module", "function* g() { fn = async function ([x = yield]) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "function* g() { fn = async function ([...yield]) {} }", EcmaVersion.Latest, null)]
-    [InlineData("module", "function* g() { fn = async function ([...yield]) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "function* g() { fn = async function ({yield}) {} }", EcmaVersion.Latest, null)]
-    [InlineData("module", "function* g() { fn = async function ({yield}) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "function* g() { fn = async function ({x: yield}) {} }", EcmaVersion.Latest, null)]
-    [InlineData("module", "function* g() { fn = async function ({x: yield}) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "function* g() { fn = async function ({x = yield}) {} }", EcmaVersion.Latest, null)]
-    [InlineData("module", "function* g() { fn = async function ({x = yield}) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "function* g() { fn = async function ({...yield}) {} }", EcmaVersion.Latest, null)]
-    [InlineData("module", "function* g() { fn = async function ({...yield}) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "function* g() { fn = async function ([{yield}]) {} }", EcmaVersion.Latest, null)]
-    [InlineData("module", "function* g() { fn = async function ([{yield}]) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { async function yield() {} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [Arguments("module", "function* g() { async function yield() {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { fn = async function yield() {} }", EcmaVersion.Latest, null)]
+    [Arguments("module", "function* g() { fn = async function yield() {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { fn = async function (yield) {} }", EcmaVersion.Latest, null)]
+    [Arguments("module", "function* g() { fn = async function (yield) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { fn = async function (...yield) {} }", EcmaVersion.Latest, null)]
+    [Arguments("module", "function* g() { fn = async function (...yield) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { fn = async function ([yield]) {} }", EcmaVersion.Latest, null)]
+    [Arguments("module", "function* g() { fn = async function ([yield]) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { fn = async function ([x = yield]) {} }", EcmaVersion.Latest, null)]
+    [Arguments("module", "function* g() { fn = async function ([x = yield]) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { fn = async function ([...yield]) {} }", EcmaVersion.Latest, null)]
+    [Arguments("module", "function* g() { fn = async function ([...yield]) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { fn = async function ({yield}) {} }", EcmaVersion.Latest, null)]
+    [Arguments("module", "function* g() { fn = async function ({yield}) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { fn = async function ({x: yield}) {} }", EcmaVersion.Latest, null)]
+    [Arguments("module", "function* g() { fn = async function ({x: yield}) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { fn = async function ({x = yield}) {} }", EcmaVersion.Latest, null)]
+    [Arguments("module", "function* g() { fn = async function ({x = yield}) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { fn = async function ({...yield}) {} }", EcmaVersion.Latest, null)]
+    [Arguments("module", "function* g() { fn = async function ({...yield}) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { fn = async function ([{yield}]) {} }", EcmaVersion.Latest, null)]
+    [Arguments("module", "function* g() { fn = async function ([{yield}]) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
 
-    [InlineData("script", "function* g() { class yield {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")] // V8 reports "Unexpected identifier 'yield'" (even though class id should be parsed in strict mode and yield is a strict mode identifier)
-    [InlineData("module", "function* g() { class yield {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "function* g() { (class yield {}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")] // V8 reports "Unexpected identifier 'yield'" (even though class id should be parsed in strict mode and yield is a strict mode identifier)
-    [InlineData("module", "function* g() { (class yield {}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "function* g() { (class { yield = 0 }) }", EcmaVersion.Latest, null)]
-    [InlineData("module", "function* g() { (class { yield = 0 }) }", EcmaVersion.Latest, null)]
-    [InlineData("script", "function* g() { (class { x = yield }) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("module", "function* g() { (class { x = yield }) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "function* g() { (class { yield() {} }) }", EcmaVersion.Latest, null)]
-    [InlineData("module", "function* g() { (class { yield() {} }) }", EcmaVersion.Latest, null)]
-    [InlineData("script", "function* g() { (class { m(yield) {} }) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("module", "function* g() { (class { m(yield) {} }) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "function* g() { (class { m(...yield) {} }) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("module", "function* g() { (class { m(...yield) {} }) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "function* g() { (class { m({m({x: [yield]}) {} }) }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
-    [InlineData("module", "function* g() { (class { m({m({x: [yield]}) {} }) }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [Arguments("script", "function* g() { class yield {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")] // V8 reports "Unexpected identifier 'yield'" (even though class id should be parsed in strict mode and yield is a strict mode identifier)
+    [Arguments("module", "function* g() { class yield {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { (class yield {}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")] // V8 reports "Unexpected identifier 'yield'" (even though class id should be parsed in strict mode and yield is a strict mode identifier)
+    [Arguments("module", "function* g() { (class yield {}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { (class { yield = 0 }) }", EcmaVersion.Latest, null)]
+    [Arguments("module", "function* g() { (class { yield = 0 }) }", EcmaVersion.Latest, null)]
+    [Arguments("script", "function* g() { (class { x = yield }) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("module", "function* g() { (class { x = yield }) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { (class { yield() {} }) }", EcmaVersion.Latest, null)]
+    [Arguments("module", "function* g() { (class { yield() {} }) }", EcmaVersion.Latest, null)]
+    [Arguments("script", "function* g() { (class { m(yield) {} }) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("module", "function* g() { (class { m(yield) {} }) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { (class { m(...yield) {} }) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("module", "function* g() { (class { m(...yield) {} }) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { (class { m({m({x: [yield]}) {} }) }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [Arguments("module", "function* g() { (class { m({m({x: [yield]}) {} }) }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
 
-    [InlineData("script", "function* g() { ({yield: 0}) }", EcmaVersion.Latest, null)]
-    [InlineData("module", "function* g() { ({yield: 0}) }", EcmaVersion.Latest, null)]
-    [InlineData("script", "function* g() { ({x: yield}) }", EcmaVersion.Latest, null)]
-    [InlineData("module", "function* g() { ({x: yield}) }", EcmaVersion.Latest, null)]
-    [InlineData("script", "function g() { ({x: yield}) }", EcmaVersion.Latest, null)]
-    [InlineData("module", "function g() { ({x: yield}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "function* g() { ({yield() {} }) }", EcmaVersion.Latest, null)]
-    [InlineData("module", "function* g() { ({yield() {} }) }", EcmaVersion.Latest, null)]
-    [InlineData("script", "function* g() { ({m(yield) {} }) }", EcmaVersion.Latest, null)]
-    [InlineData("module", "function* g() { ({m(yield) {} }) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "function* g() { ({m(...yield) {} }) }", EcmaVersion.Latest, null)]
-    [InlineData("module", "function* g() { ({m(...yield) {} }) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "function* g() { ({m({x: [yield]}) {} }) }", EcmaVersion.Latest, null)]
-    [InlineData("module", "function* g() { ({m({x: [yield]}) {} }) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { ({yield: 0}) }", EcmaVersion.Latest, null)]
+    [Arguments("module", "function* g() { ({yield: 0}) }", EcmaVersion.Latest, null)]
+    [Arguments("script", "function* g() { ({x: yield}) }", EcmaVersion.Latest, null)]
+    [Arguments("module", "function* g() { ({x: yield}) }", EcmaVersion.Latest, null)]
+    [Arguments("script", "function g() { ({x: yield}) }", EcmaVersion.Latest, null)]
+    [Arguments("module", "function g() { ({x: yield}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { ({yield() {} }) }", EcmaVersion.Latest, null)]
+    [Arguments("module", "function* g() { ({yield() {} }) }", EcmaVersion.Latest, null)]
+    [Arguments("script", "function* g() { ({m(yield) {} }) }", EcmaVersion.Latest, null)]
+    [Arguments("module", "function* g() { ({m(yield) {} }) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { ({m(...yield) {} }) }", EcmaVersion.Latest, null)]
+    [Arguments("module", "function* g() { ({m(...yield) {} }) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { ({m({x: [yield]}) {} }) }", EcmaVersion.Latest, null)]
+    [Arguments("module", "function* g() { ({m({x: [yield]}) {} }) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
 
-    [InlineData("script", "function* g() { try {} catch (yield) {} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
-    [InlineData("module", "function* g() { try {} catch (yield) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "function* g() { try {} catch (...yield) {} }", EcmaVersion.Latest, "Unexpected token '...'")]
-    [InlineData("module", "function* g() { try {} catch (...yield) {} }", EcmaVersion.Latest, "Unexpected token '...'")]
-    [InlineData("script", "function* g() { try {} catch ([yield]) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
-    [InlineData("module", "function* g() { try {} catch ([yield]) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
-    [InlineData("script", "function* g() { try {} catch ([x = yield]) {} }", EcmaVersion.Latest, null)]
-    [InlineData("module", "function* g() { try {} catch ([x = yield]) {} }", EcmaVersion.Latest, null)]
-    [InlineData("script", "function* g() { try {} catch ([...yield]) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
-    [InlineData("module", "function* g() { try {} catch ([...yield]) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
-    [InlineData("script", "function* g() { try {} catch ({yield}) {} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
-    [InlineData("module", "function* g() { try {} catch ({yield}) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "function* g() { try {} catch ({x: yield}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
-    [InlineData("module", "function* g() { try {} catch ({x: yield}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
-    [InlineData("script", "function* g() { try {} catch ({x = yield}) {} }", EcmaVersion.Latest, null)]
-    [InlineData("module", "function* g() { try {} catch ({x = yield}) {} }", EcmaVersion.Latest, null)]
-    [InlineData("script", "function* g() { try {} catch ({...yield}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
-    [InlineData("module", "function* g() { try {} catch ({...yield}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
-    [InlineData("script", "function* g() { try {} catch ([{yield}]) {} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
-    [InlineData("module", "function* g() { try {} catch ([{yield}]) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { try {} catch (yield) {} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [Arguments("module", "function* g() { try {} catch (yield) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { try {} catch (...yield) {} }", EcmaVersion.Latest, "Unexpected token '...'")]
+    [Arguments("module", "function* g() { try {} catch (...yield) {} }", EcmaVersion.Latest, "Unexpected token '...'")]
+    [Arguments("script", "function* g() { try {} catch ([yield]) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [Arguments("module", "function* g() { try {} catch ([yield]) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [Arguments("script", "function* g() { try {} catch ([x = yield]) {} }", EcmaVersion.Latest, null)]
+    [Arguments("module", "function* g() { try {} catch ([x = yield]) {} }", EcmaVersion.Latest, null)]
+    [Arguments("script", "function* g() { try {} catch ([...yield]) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [Arguments("module", "function* g() { try {} catch ([...yield]) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [Arguments("script", "function* g() { try {} catch ({yield}) {} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [Arguments("module", "function* g() { try {} catch ({yield}) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { try {} catch ({x: yield}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [Arguments("module", "function* g() { try {} catch ({x: yield}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [Arguments("script", "function* g() { try {} catch ({x = yield}) {} }", EcmaVersion.Latest, null)]
+    [Arguments("module", "function* g() { try {} catch ({x = yield}) {} }", EcmaVersion.Latest, null)]
+    [Arguments("script", "function* g() { try {} catch ({...yield}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [Arguments("module", "function* g() { try {} catch ({...yield}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [Arguments("script", "function* g() { try {} catch ([{yield}]) {} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [Arguments("module", "function* g() { try {} catch ([{yield}]) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
 
-    [InlineData("script", "function* g() { yield: { break yield } }", EcmaVersion.Latest, "Unexpected token ':'")]
-    [InlineData("module", "function* g() { yield: { break yield } }", EcmaVersion.Latest, "Unexpected token ':'")]
-    [InlineData("script", "function* g() { { break yield } }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
-    [InlineData("module", "function* g() { { break yield } }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { yield: { break yield } }", EcmaVersion.Latest, "Unexpected token ':'")]
+    [Arguments("module", "function* g() { yield: { break yield } }", EcmaVersion.Latest, "Unexpected token ':'")]
+    [Arguments("script", "function* g() { { break yield } }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [Arguments("module", "function* g() { { break yield } }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
 
-    [InlineData("script", "(...x,)=>a", EcmaVersion.Latest, "Rest parameter must be last formal parameter")]
-    [InlineData("script", "([...x,])=>a", EcmaVersion.Latest, "Rest element must be last element")]
-    [InlineData("script", "({...x,})=>a", EcmaVersion.Latest, "Rest element must be last element")]
-    [InlineData("script", "async(...x,)=>a", EcmaVersion.Latest, "Rest parameter must be last formal parameter")]
-    [InlineData("script", "async([...x,])=>a", EcmaVersion.Latest, "Rest element must be last element")]
-    [InlineData("script", "async({...x,})=>a", EcmaVersion.Latest, "Rest element must be last element")]
-    [InlineData("script", "function f(...x,){}", EcmaVersion.Latest, "Rest parameter must be last formal parameter")]
-    [InlineData("script", "function f([...x,]){}", EcmaVersion.Latest, "Rest element must be last element")]
-    [InlineData("script", "function f({...x,}){}", EcmaVersion.Latest, "Rest element must be last element")]
-    [InlineData("script", "var[...x,]=[]", EcmaVersion.Latest, "Rest element must be last element")]
-    [InlineData("script", "var{...x,}={}", EcmaVersion.Latest, "Rest element must be last element")]
-    [InlineData("script", "try{}catch([...x,]){}", EcmaVersion.Latest, "Rest element must be last element")]
-    [InlineData("script", "try{}catch({...x,}){}", EcmaVersion.Latest, "Rest element must be last element")]
+    [Arguments("script", "(...x,)=>a", EcmaVersion.Latest, "Rest parameter must be last formal parameter")]
+    [Arguments("script", "([...x,])=>a", EcmaVersion.Latest, "Rest element must be last element")]
+    [Arguments("script", "({...x,})=>a", EcmaVersion.Latest, "Rest element must be last element")]
+    [Arguments("script", "async(...x,)=>a", EcmaVersion.Latest, "Rest parameter must be last formal parameter")]
+    [Arguments("script", "async([...x,])=>a", EcmaVersion.Latest, "Rest element must be last element")]
+    [Arguments("script", "async({...x,})=>a", EcmaVersion.Latest, "Rest element must be last element")]
+    [Arguments("script", "function f(...x,){}", EcmaVersion.Latest, "Rest parameter must be last formal parameter")]
+    [Arguments("script", "function f([...x,]){}", EcmaVersion.Latest, "Rest element must be last element")]
+    [Arguments("script", "function f({...x,}){}", EcmaVersion.Latest, "Rest element must be last element")]
+    [Arguments("script", "var[...x,]=[]", EcmaVersion.Latest, "Rest element must be last element")]
+    [Arguments("script", "var{...x,}={}", EcmaVersion.Latest, "Rest element must be last element")]
+    [Arguments("script", "try{}catch([...x,]){}", EcmaVersion.Latest, "Rest element must be last element")]
+    [Arguments("script", "try{}catch({...x,}){}", EcmaVersion.Latest, "Rest element must be last element")]
     public void ShouldHandleVariableBindingEdgeCases(string sourceType, string input, EcmaVersion ecmaVersion, string? expectedError)
     {
         var parser = new Parser(new ParserOptions { EcmaVersion = ecmaVersion });
@@ -1776,334 +1777,334 @@ public partial class ParserTests
         }
     }
 
-    [Theory]
-    [InlineData("script", "async function f() { await = 0 }", EcmaVersion.Latest, "Unexpected token '='")]
-    [InlineData("module", "async function f() { await = 0 }", EcmaVersion.Latest, "Unexpected token '='")]
-    [InlineData("script", "async function f() { (await) = 0 }", EcmaVersion.Latest, "Unexpected token ')'")]
-    [InlineData("module", "async function f() { (await) = 0 }", EcmaVersion.Latest, "Unexpected token ')'")]
-    [InlineData("script", "async function f() { [await] = [] }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("module", "async function f() { [await] = [] }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("script", "async function f() { [x = await] = [] }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("module", "async function f() { [x = await] = [] }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("script", "async function f() { [...await] = [] }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("module", "async function f() { [...await] = [] }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("script", "async function f() { ({await} = {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("module", "async function f() { ({await} = {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async function f() { ({x: await} = {}) }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("module", "async function f() { ({x: await} = {}) }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("script", "async function f() { ({x = await} = {}) }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("module", "async function f() { ({x = await} = {}) }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("script", "async function f() { ({...await} = {}) }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("module", "async function f() { ({...await} = {}) }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("script", "async function f() { [{await}] = [] }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("module", "async function f() { [{await}] = [] }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Test]
+    [Arguments("script", "async function f() { await = 0 }", EcmaVersion.Latest, "Unexpected token '='")]
+    [Arguments("module", "async function f() { await = 0 }", EcmaVersion.Latest, "Unexpected token '='")]
+    [Arguments("script", "async function f() { (await) = 0 }", EcmaVersion.Latest, "Unexpected token ')'")]
+    [Arguments("module", "async function f() { (await) = 0 }", EcmaVersion.Latest, "Unexpected token ')'")]
+    [Arguments("script", "async function f() { [await] = [] }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("module", "async function f() { [await] = [] }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("script", "async function f() { [x = await] = [] }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("module", "async function f() { [x = await] = [] }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("script", "async function f() { [...await] = [] }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("module", "async function f() { [...await] = [] }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("script", "async function f() { ({await} = {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("module", "async function f() { ({await} = {}) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { ({x: await} = {}) }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("module", "async function f() { ({x: await} = {}) }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("script", "async function f() { ({x = await} = {}) }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("module", "async function f() { ({x = await} = {}) }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("script", "async function f() { ({...await} = {}) }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("module", "async function f() { ({...await} = {}) }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("script", "async function f() { [{await}] = [] }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("module", "async function f() { [{await}] = [] }", EcmaVersion.Latest, "Unexpected reserved word")]
 
-    [InlineData("script", "async function f() { for (await in {}) {} }", EcmaVersion.Latest, "Unexpected token 'in'")]
-    [InlineData("module", "async function f() { for (await in {}) {} }", EcmaVersion.Latest, "Unexpected token 'in'")]
-    [InlineData("script", "async function f() { for ((await) in {}) {} }", EcmaVersion.Latest, "Unexpected token ')'")]
-    [InlineData("module", "async function f() { for ((await) in {}) {} }", EcmaVersion.Latest, "Unexpected token ')'")]
-    [InlineData("script", "async function f() { for ([await] in {}) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("module", "async function f() { for ([await] in {}) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("script", "async function f() { for ([x = await] in {}) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("module", "async function f() { for ([x = await] in {}) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("script", "async function f() { for ([...await] in {}) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("module", "async function f() { for ([...await] in {}) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("script", "async function f() { for ({await} in {})) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("module", "async function f() { for ({await} in {})) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async function f() { for ({x: await} in {}) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("module", "async function f() { for ({x: await} in {}) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("script", "async function f() { for ({x = await} in {}) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("module", "async function f() { for ({x = await} in {}) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("script", "async function f() { for ({...await} in {}) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("module", "async function f() { for ({...await} in {}) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("script", "async function f() { for ([{await}] in {}) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("module", "async function f() { for ([{await}] in {}) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { for (await in {}) {} }", EcmaVersion.Latest, "Unexpected token 'in'")]
+    [Arguments("module", "async function f() { for (await in {}) {} }", EcmaVersion.Latest, "Unexpected token 'in'")]
+    [Arguments("script", "async function f() { for ((await) in {}) {} }", EcmaVersion.Latest, "Unexpected token ')'")]
+    [Arguments("module", "async function f() { for ((await) in {}) {} }", EcmaVersion.Latest, "Unexpected token ')'")]
+    [Arguments("script", "async function f() { for ([await] in {}) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("module", "async function f() { for ([await] in {}) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("script", "async function f() { for ([x = await] in {}) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("module", "async function f() { for ([x = await] in {}) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("script", "async function f() { for ([...await] in {}) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("module", "async function f() { for ([...await] in {}) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("script", "async function f() { for ({await} in {})) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("module", "async function f() { for ({await} in {})) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { for ({x: await} in {}) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("module", "async function f() { for ({x: await} in {}) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("script", "async function f() { for ({x = await} in {}) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("module", "async function f() { for ({x = await} in {}) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("script", "async function f() { for ({...await} in {}) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("module", "async function f() { for ({...await} in {}) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("script", "async function f() { for ([{await}] in {}) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("module", "async function f() { for ([{await}] in {}) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
 
-    [InlineData("script", "async function f() { for (await of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("module", "async function f() { for (await of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("script", "async function f() { for ((await) of []) {} }", EcmaVersion.Latest, "Unexpected token ')'")]
-    [InlineData("module", "async function f() { for ((await) of []) {} }", EcmaVersion.Latest, "Unexpected token ')'")]
-    [InlineData("script", "async function f() { for ([await] of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("module", "async function f() { for ([await] of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("script", "async function f() { for ([x = await] of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("module", "async function f() { for ([x = await] of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("script", "async function f() { for ([...await] of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("module", "async function f() { for ([...await] of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("script", "async function f() { for ({await} of [])) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("module", "async function f() { for ({await} of [])) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async function f() { for ({x: await} of []) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("module", "async function f() { for ({x: await} of []) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("script", "async function f() { for ({x = await} of []) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("module", "async function f() { for ({x = await} of []) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("script", "async function f() { for ({...await} of []) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("module", "async function f() { for ({...await} of []) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("script", "async function f() { for ([{await}] of []) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("module", "async function f() { for ([{await}] of []) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { for (await of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("module", "async function f() { for (await of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("script", "async function f() { for ((await) of []) {} }", EcmaVersion.Latest, "Unexpected token ')'")]
+    [Arguments("module", "async function f() { for ((await) of []) {} }", EcmaVersion.Latest, "Unexpected token ')'")]
+    [Arguments("script", "async function f() { for ([await] of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("module", "async function f() { for ([await] of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("script", "async function f() { for ([x = await] of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("module", "async function f() { for ([x = await] of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("script", "async function f() { for ([...await] of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("module", "async function f() { for ([...await] of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("script", "async function f() { for ({await} of [])) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("module", "async function f() { for ({await} of [])) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { for ({x: await} of []) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("module", "async function f() { for ({x: await} of []) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("script", "async function f() { for ({x = await} of []) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("module", "async function f() { for ({x = await} of []) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("script", "async function f() { for ({...await} of []) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("module", "async function f() { for ({...await} of []) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("script", "async function f() { for ([{await}] of []) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("module", "async function f() { for ([{await}] of []) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
 
-    [InlineData("script", "async function f() { for await (await of []) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("module", "async function f() { for await (await of []) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async function f() { for await ((await) of []) {} }", EcmaVersion.Latest, "Unexpected token ')'")]
-    [InlineData("module", "async function f() { for await ((await) of []) {} }", EcmaVersion.Latest, "Unexpected token ')'")]
-    [InlineData("script", "async function f() { for await ([await] of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("module", "async function f() { for await ([await] of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("script", "async function f() { for await ([x = await] of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("module", "async function f() { for await ([x = await] of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("script", "async function f() { for await ([...await] of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("module", "async function f() { for await ([...await] of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("script", "async function f() { for await ({await} of [])) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("module", "async function f() { for await ({await} of [])) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async function f() { for await ({x: await} of []) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("module", "async function f() { for await ({x: await} of []) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("script", "async function f() { for await ({x = await} of []) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("module", "async function f() { for await ({x = await} of []) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("script", "async function f() { for await ({...await} of []) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("module", "async function f() { for await ({...await} of []) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("script", "async function f() { for await ([{await}] of []) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("module", "async function f() { for await ([{await}] of []) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { for await (await of []) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("module", "async function f() { for await (await of []) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { for await ((await) of []) {} }", EcmaVersion.Latest, "Unexpected token ')'")]
+    [Arguments("module", "async function f() { for await ((await) of []) {} }", EcmaVersion.Latest, "Unexpected token ')'")]
+    [Arguments("script", "async function f() { for await ([await] of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("module", "async function f() { for await ([await] of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("script", "async function f() { for await ([x = await] of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("module", "async function f() { for await ([x = await] of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("script", "async function f() { for await ([...await] of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("module", "async function f() { for await ([...await] of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("script", "async function f() { for await ({await} of [])) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("module", "async function f() { for await ({await} of [])) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { for await ({x: await} of []) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("module", "async function f() { for await ({x: await} of []) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("script", "async function f() { for await ({x = await} of []) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("module", "async function f() { for await ({x = await} of []) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("script", "async function f() { for await ({...await} of []) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("module", "async function f() { for await ({...await} of []) {} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("script", "async function f() { for await ([{await}] of []) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("module", "async function f() { for await ([{await}] of []) {} }", EcmaVersion.Latest, "Unexpected reserved word")]
 
-    [InlineData("script", "async function f() { await += 1 }", EcmaVersion.Latest, "Unexpected token '+='")]
-    [InlineData("module", "async function f() { await += 1 }", EcmaVersion.Latest, "Unexpected token '+='")]
-    [InlineData("script", "async function f() { (await) += 1 }", EcmaVersion.Latest, "Unexpected token ')'")]
-    [InlineData("module", "async function f() { (await) += 1 }", EcmaVersion.Latest, "Unexpected token ')'")]
-    [InlineData("script", "async function f() { [await] += 1 }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("module", "async function f() { [await] += 1 }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("script", "async function f() { [x = await] += 1 }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("module", "async function f() { [x = await] += 1 }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("script", "async function f() { [...await] += 1 }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("module", "async function f() { [...await] += 1 }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("script", "async function f() { ({await} += 1) }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("module", "async function f() { ({await} += 1) }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async function f() { ({x: await} += 1) }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("module", "async function f() { ({x: await} += 1) }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("script", "async function f() { ({x = await} += 1) }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("module", "async function f() { ({x = await} += 1) }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("script", "async function f() { ({...await} += 1) }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("module", "async function f() { ({...await} += 1) }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("script", "async function f() { await += 1 }", EcmaVersion.Latest, "Unexpected token '+='")]
+    [Arguments("module", "async function f() { await += 1 }", EcmaVersion.Latest, "Unexpected token '+='")]
+    [Arguments("script", "async function f() { (await) += 1 }", EcmaVersion.Latest, "Unexpected token ')'")]
+    [Arguments("module", "async function f() { (await) += 1 }", EcmaVersion.Latest, "Unexpected token ')'")]
+    [Arguments("script", "async function f() { [await] += 1 }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("module", "async function f() { [await] += 1 }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("script", "async function f() { [x = await] += 1 }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("module", "async function f() { [x = await] += 1 }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("script", "async function f() { [...await] += 1 }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("module", "async function f() { [...await] += 1 }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("script", "async function f() { ({await} += 1) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("module", "async function f() { ({await} += 1) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { ({x: await} += 1) }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("module", "async function f() { ({x: await} += 1) }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("script", "async function f() { ({x = await} += 1) }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("module", "async function f() { ({x = await} += 1) }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("script", "async function f() { ({...await} += 1) }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("module", "async function f() { ({...await} += 1) }", EcmaVersion.Latest, "Unexpected token '}'")]
 
-    [InlineData("script", "async function f() { ++await }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("module", "async function f() { ++await }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("script", "async function f() { ++(await) }", EcmaVersion.Latest, "Unexpected token ')'")]
-    [InlineData("module", "async function f() { ++(await) }", EcmaVersion.Latest, "Unexpected token ')'")]
-    [InlineData("script", "async function f() { ++[await] }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("module", "async function f() { ++[await] }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("script", "async function f() { ++[x = await] }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("module", "async function f() { ++[x = await] }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("script", "async function f() { ++[...await] }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("module", "async function f() { ++[...await] }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("script", "async function f() { ++{await} }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("module", "async function f() { ++{await} }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async function f() { ++{x: await} }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("module", "async function f() { ++{x: await} }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("script", "async function f() { ++{x = await} }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("module", "async function f() { ++{x = await} }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("script", "async function f() { ++{...await} }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("module", "async function f() { ++{...await} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("script", "async function f() { ++await }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("module", "async function f() { ++await }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("script", "async function f() { ++(await) }", EcmaVersion.Latest, "Unexpected token ')'")]
+    [Arguments("module", "async function f() { ++(await) }", EcmaVersion.Latest, "Unexpected token ')'")]
+    [Arguments("script", "async function f() { ++[await] }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("module", "async function f() { ++[await] }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("script", "async function f() { ++[x = await] }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("module", "async function f() { ++[x = await] }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("script", "async function f() { ++[...await] }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("module", "async function f() { ++[...await] }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("script", "async function f() { ++{await} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("module", "async function f() { ++{await} }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { ++{x: await} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("module", "async function f() { ++{x: await} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("script", "async function f() { ++{x = await} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("module", "async function f() { ++{x = await} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("script", "async function f() { ++{...await} }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("module", "async function f() { ++{...await} }", EcmaVersion.Latest, "Unexpected token '}'")]
 
-    [InlineData("script", "async function f() { await++ }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("module", "async function f() { await++ }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("script", "async function f() { (await)++ }", EcmaVersion.Latest, "Unexpected token ')'")]
-    [InlineData("module", "async function f() { (await)++ }", EcmaVersion.Latest, "Unexpected token ')'")]
-    [InlineData("script", "async function f() { [await]++ }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("module", "async function f() { [await]++ }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("script", "async function f() { [x = await]++ }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("module", "async function f() { [x = await]++ }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("script", "async function f() { [...await]++ }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("module", "async function f() { [...await]++ }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("script", "async function f() { ({await}++) }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("module", "async function f() { ({await}++) }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("script", "async function f() { ({x: await}++) }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("module", "async function f() { ({x: await}++) }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("script", "async function f() { ({x = await}++) }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("module", "async function f() { ({x = await}++) }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("script", "async function f() { ({...await}++) }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("module", "async function f() { ({...await}++) }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("script", "async function f() { await++ }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("module", "async function f() { await++ }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("script", "async function f() { (await)++ }", EcmaVersion.Latest, "Unexpected token ')'")]
+    [Arguments("module", "async function f() { (await)++ }", EcmaVersion.Latest, "Unexpected token ')'")]
+    [Arguments("script", "async function f() { [await]++ }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("module", "async function f() { [await]++ }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("script", "async function f() { [x = await]++ }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("module", "async function f() { [x = await]++ }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("script", "async function f() { [...await]++ }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("module", "async function f() { [...await]++ }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("script", "async function f() { ({await}++) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("module", "async function f() { ({await}++) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("script", "async function f() { ({x: await}++) }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("module", "async function f() { ({x: await}++) }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("script", "async function f() { ({x = await}++) }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("module", "async function f() { ({x = await}++) }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("script", "async function f() { ({...await}++) }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("module", "async function f() { ({...await}++) }", EcmaVersion.Latest, "Unexpected token '}'")]
 
-    [InlineData("script", "function* g() { yield = 0 }", EcmaVersion.Latest, "Unexpected token '='")]
-    [InlineData("module", "function* g() { yield = 0 }", EcmaVersion.Latest, "Unexpected token '='")]
-    [InlineData("script", "function* g() { (yield) = 0 }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
-    [InlineData("module", "function* g() { (yield) = 0 }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
-    [InlineData("script", "function* g() { [yield] = [] }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
-    [InlineData("module", "function* g() { [yield] = [] }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
-    [InlineData("script", "function* g() { [x = yield] = [] }", EcmaVersion.Latest, null)]
-    [InlineData("module", "function* g() { [x = yield] = [] }", EcmaVersion.Latest, null)]
-    [InlineData("script", "function* g() { [...yield] = [] }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
-    [InlineData("module", "function* g() { [...yield] = [] }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
-    [InlineData("script", "function* g() { ({yield} = {}) }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
-    [InlineData("module", "function* g() { ({yield} = {}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "function* g() { ({x: yield} = {}) }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
-    [InlineData("module", "function* g() { ({x: yield} = {}) }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
-    [InlineData("script", "function* g() { ({x = yield} = {}) }", EcmaVersion.Latest, null)]
-    [InlineData("module", "function* g() { ({x = yield} = {}) }", EcmaVersion.Latest, null)]
-    [InlineData("script", "function* g() { ({...yield} = {}) }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
-    [InlineData("module", "function* g() { ({...yield} = {}) }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
-    [InlineData("script", "function* g() { [{yield}] = [] }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
-    [InlineData("module", "function* g() { [{yield}] = [] }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { yield = 0 }", EcmaVersion.Latest, "Unexpected token '='")]
+    [Arguments("module", "function* g() { yield = 0 }", EcmaVersion.Latest, "Unexpected token '='")]
+    [Arguments("script", "function* g() { (yield) = 0 }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
+    [Arguments("module", "function* g() { (yield) = 0 }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
+    [Arguments("script", "function* g() { [yield] = [] }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [Arguments("module", "function* g() { [yield] = [] }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [Arguments("script", "function* g() { [x = yield] = [] }", EcmaVersion.Latest, null)]
+    [Arguments("module", "function* g() { [x = yield] = [] }", EcmaVersion.Latest, null)]
+    [Arguments("script", "function* g() { [...yield] = [] }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [Arguments("module", "function* g() { [...yield] = [] }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [Arguments("script", "function* g() { ({yield} = {}) }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [Arguments("module", "function* g() { ({yield} = {}) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { ({x: yield} = {}) }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [Arguments("module", "function* g() { ({x: yield} = {}) }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [Arguments("script", "function* g() { ({x = yield} = {}) }", EcmaVersion.Latest, null)]
+    [Arguments("module", "function* g() { ({x = yield} = {}) }", EcmaVersion.Latest, null)]
+    [Arguments("script", "function* g() { ({...yield} = {}) }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [Arguments("module", "function* g() { ({...yield} = {}) }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [Arguments("script", "function* g() { [{yield}] = [] }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [Arguments("module", "function* g() { [{yield}] = [] }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
 
-    [InlineData("script", "function* g() { for (yield in {}) {} }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "Invalid left-hand side in assignment"
-    [InlineData("module", "function* g() { for (yield in {}) {} }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "Invalid left-hand side in assignment"
-    [InlineData("script", "function* g() { for ((yield) in {}) {} }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "Invalid left-hand side in assignment"
-    [InlineData("module", "function* g() { for ((yield) in {}) {} }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "Invalid left-hand side in assignment"
-    [InlineData("script", "function* g() { for ([yield] in {}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
-    [InlineData("module", "function* g() { for ([yield] in {}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
-    [InlineData("script", "function* g() { for ([x = yield] in {}) {} }", EcmaVersion.Latest, null)]
-    [InlineData("module", "function* g() { for ([x = yield] in {}) {} }", EcmaVersion.Latest, null)]
-    [InlineData("script", "function* g() { for ([...yield] in {}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
-    [InlineData("module", "function* g() { for ([...yield] in {}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
-    [InlineData("script", "function* g() { for ({yield} in {})) {} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
-    [InlineData("module", "function* g() { for ({yield} in {})) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "function* g() { for ({x: yield} in {}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
-    [InlineData("module", "function* g() { for ({x: yield} in {}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
-    [InlineData("script", "function* g() { for ({x = yield} in {}) {} }", EcmaVersion.Latest, null)]
-    [InlineData("module", "function* g() { for ({x = yield} in {}) {} }", EcmaVersion.Latest, null)]
-    [InlineData("script", "function* g() { for ({...yield} in {}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
-    [InlineData("module", "function* g() { for ({...yield} in {}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
-    [InlineData("script", "function* g() { for ([{yield}] in {}) {} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
-    [InlineData("module", "function* g() { for ([{yield}] in {}) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { for (yield in {}) {} }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "Invalid left-hand side in assignment"
+    [Arguments("module", "function* g() { for (yield in {}) {} }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "Invalid left-hand side in assignment"
+    [Arguments("script", "function* g() { for ((yield) in {}) {} }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "Invalid left-hand side in assignment"
+    [Arguments("module", "function* g() { for ((yield) in {}) {} }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "Invalid left-hand side in assignment"
+    [Arguments("script", "function* g() { for ([yield] in {}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [Arguments("module", "function* g() { for ([yield] in {}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [Arguments("script", "function* g() { for ([x = yield] in {}) {} }", EcmaVersion.Latest, null)]
+    [Arguments("module", "function* g() { for ([x = yield] in {}) {} }", EcmaVersion.Latest, null)]
+    [Arguments("script", "function* g() { for ([...yield] in {}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [Arguments("module", "function* g() { for ([...yield] in {}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [Arguments("script", "function* g() { for ({yield} in {})) {} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [Arguments("module", "function* g() { for ({yield} in {})) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { for ({x: yield} in {}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [Arguments("module", "function* g() { for ({x: yield} in {}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [Arguments("script", "function* g() { for ({x = yield} in {}) {} }", EcmaVersion.Latest, null)]
+    [Arguments("module", "function* g() { for ({x = yield} in {}) {} }", EcmaVersion.Latest, null)]
+    [Arguments("script", "function* g() { for ({...yield} in {}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [Arguments("module", "function* g() { for ({...yield} in {}) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [Arguments("script", "function* g() { for ([{yield}] in {}) {} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [Arguments("module", "function* g() { for ([{yield}] in {}) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
 
-    [InlineData("script", "function* g() { for (yield of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("module", "function* g() { for (yield of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
-    [InlineData("script", "function* g() { for ((yield) of []) {} }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "Invalid left-hand side of assignment"
-    [InlineData("module", "function* g() { for ((yield) of []) {} }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "Invalid left-hand side of assignment"
-    [InlineData("script", "function* g() { for ([yield] of []) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
-    [InlineData("module", "function* g() { for ([yield] of []) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
-    [InlineData("script", "function* g() { for ([x = yield] of []) {} }", EcmaVersion.Latest, null)]
-    [InlineData("module", "function* g() { for ([x = yield] of []) {} }", EcmaVersion.Latest, null)]
-    [InlineData("script", "function* g() { for ([...yield] of []) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
-    [InlineData("module", "function* g() { for ([...yield] of []) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
-    [InlineData("script", "function* g() { for ({yield} of [])) {} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
-    [InlineData("module", "function* g() { for ({yield} of [])) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "function* g() { for ({x: yield} of []) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
-    [InlineData("module", "function* g() { for ({x: yield} of []) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
-    [InlineData("script", "function* g() { for ({x = yield} of []) {} }", EcmaVersion.Latest, null)]
-    [InlineData("module", "function* g() { for ({x = yield} of []) {} }", EcmaVersion.Latest, null)]
-    [InlineData("script", "function* g() { for ({...yield} of []) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
-    [InlineData("module", "function* g() { for ({...yield} of []) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
-    [InlineData("script", "function* g() { for ([{yield}] of []) {} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
-    [InlineData("module", "function* g() { for ([{yield}] of []) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { for (yield of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("module", "function* g() { for (yield of []) {} }", EcmaVersion.Latest, "Unexpected token ']'")]
+    [Arguments("script", "function* g() { for ((yield) of []) {} }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "Invalid left-hand side of assignment"
+    [Arguments("module", "function* g() { for ((yield) of []) {} }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "Invalid left-hand side of assignment"
+    [Arguments("script", "function* g() { for ([yield] of []) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [Arguments("module", "function* g() { for ([yield] of []) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [Arguments("script", "function* g() { for ([x = yield] of []) {} }", EcmaVersion.Latest, null)]
+    [Arguments("module", "function* g() { for ([x = yield] of []) {} }", EcmaVersion.Latest, null)]
+    [Arguments("script", "function* g() { for ([...yield] of []) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [Arguments("module", "function* g() { for ([...yield] of []) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [Arguments("script", "function* g() { for ({yield} of [])) {} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [Arguments("module", "function* g() { for ({yield} of [])) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { for ({x: yield} of []) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [Arguments("module", "function* g() { for ({x: yield} of []) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [Arguments("script", "function* g() { for ({x = yield} of []) {} }", EcmaVersion.Latest, null)]
+    [Arguments("module", "function* g() { for ({x = yield} of []) {} }", EcmaVersion.Latest, null)]
+    [Arguments("script", "function* g() { for ({...yield} of []) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [Arguments("module", "function* g() { for ({...yield} of []) {} }", EcmaVersion.Latest, "Invalid destructuring assignment target")]
+    [Arguments("script", "function* g() { for ([{yield}] of []) {} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [Arguments("module", "function* g() { for ([{yield}] of []) {} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
 
-    [InlineData("script", "function* g() { yield += 1 }", EcmaVersion.Latest, "Unexpected token '+='")]
-    [InlineData("module", "function* g() { yield += 1 }", EcmaVersion.Latest, "Unexpected token '+='")]
-    [InlineData("script", "function* g() { (yield) += 1 }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
-    [InlineData("module", "function* g() { (yield) += 1 }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
-    [InlineData("script", "function* g() { [yield] += 1 }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
-    [InlineData("module", "function* g() { [yield] += 1 }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
-    [InlineData("script", "function* g() { [x = yield] += 1 }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
-    [InlineData("module", "function* g() { [x = yield] += 1 }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
-    [InlineData("script", "function* g() { [...yield] += 1 }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
-    [InlineData("module", "function* g() { [...yield] += 1 }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
-    [InlineData("script", "function* g() { ({yield} += 1) }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
-    [InlineData("module", "function* g() { ({yield} += 1) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "function* g() { ({x: yield} += 1) }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
-    [InlineData("module", "function* g() { ({x: yield} += 1) }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
-    [InlineData("script", "function* g() { ({x = yield} += 1) }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
-    [InlineData("module", "function* g() { ({x = yield} += 1) }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
-    [InlineData("script", "function* g() { ({...yield} += 1) }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
-    [InlineData("module", "function* g() { ({...yield} += 1) }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
+    [Arguments("script", "function* g() { yield += 1 }", EcmaVersion.Latest, "Unexpected token '+='")]
+    [Arguments("module", "function* g() { yield += 1 }", EcmaVersion.Latest, "Unexpected token '+='")]
+    [Arguments("script", "function* g() { (yield) += 1 }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
+    [Arguments("module", "function* g() { (yield) += 1 }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
+    [Arguments("script", "function* g() { [yield] += 1 }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
+    [Arguments("module", "function* g() { [yield] += 1 }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
+    [Arguments("script", "function* g() { [x = yield] += 1 }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
+    [Arguments("module", "function* g() { [x = yield] += 1 }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
+    [Arguments("script", "function* g() { [...yield] += 1 }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
+    [Arguments("module", "function* g() { [...yield] += 1 }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
+    [Arguments("script", "function* g() { ({yield} += 1) }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [Arguments("module", "function* g() { ({yield} += 1) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { ({x: yield} += 1) }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
+    [Arguments("module", "function* g() { ({x: yield} += 1) }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
+    [Arguments("script", "function* g() { ({x = yield} += 1) }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
+    [Arguments("module", "function* g() { ({x = yield} += 1) }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
+    [Arguments("script", "function* g() { ({...yield} += 1) }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
+    [Arguments("module", "function* g() { ({...yield} += 1) }", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
 
-    [InlineData("script", "function* g() { ++yield }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
-    [InlineData("module", "function* g() { ++yield }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "function* g() { ++(yield) }", EcmaVersion.Latest, "Invalid left-hand side expression in prefix operation")]
-    [InlineData("module", "function* g() { ++(yield) }", EcmaVersion.Latest, "Invalid left-hand side expression in prefix operation")]
-    [InlineData("script", "function* g() { ++[yield] }", EcmaVersion.Latest, "Invalid left-hand side expression in prefix operation")]
-    [InlineData("module", "function* g() { ++[yield] }", EcmaVersion.Latest, "Invalid left-hand side expression in prefix operation")]
-    [InlineData("script", "function* g() { ++[x = yield] }", EcmaVersion.Latest, "Invalid left-hand side expression in prefix operation")]
-    [InlineData("module", "function* g() { ++[x = yield] }", EcmaVersion.Latest, "Invalid left-hand side expression in prefix operation")]
-    [InlineData("script", "function* g() { ++[...yield] }", EcmaVersion.Latest, "Invalid left-hand side expression in prefix operation")]
-    [InlineData("module", "function* g() { ++[...yield] }", EcmaVersion.Latest, "Invalid left-hand side expression in prefix operation")]
-    [InlineData("script", "function* g() { ++{yield} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
-    [InlineData("module", "function* g() { ++{yield} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "function* g() { ++{x: yield} }", EcmaVersion.Latest, "Invalid left-hand side expression in prefix operation")]
-    [InlineData("module", "function* g() { ++{x: yield} }", EcmaVersion.Latest, "Invalid left-hand side expression in prefix operation")]
-    [InlineData("script", "function* g() { ++{x = yield} }", EcmaVersion.Latest, "Invalid shorthand property initializer")] // V8 reports "Invalid left-hand side expression in prefix operation"
-    [InlineData("module", "function* g() { ++{x = yield} }", EcmaVersion.Latest, "Invalid shorthand property initializer")] // V8 reports "Invalid left-hand side expression in prefix operation"
-    [InlineData("script", "function* g() { ++{...yield} }", EcmaVersion.Latest, "Invalid left-hand side expression in prefix operation")]
-    [InlineData("module", "function* g() { ++{...yield} }", EcmaVersion.Latest, "Invalid left-hand side expression in prefix operation")]
+    [Arguments("script", "function* g() { ++yield }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [Arguments("module", "function* g() { ++yield }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { ++(yield) }", EcmaVersion.Latest, "Invalid left-hand side expression in prefix operation")]
+    [Arguments("module", "function* g() { ++(yield) }", EcmaVersion.Latest, "Invalid left-hand side expression in prefix operation")]
+    [Arguments("script", "function* g() { ++[yield] }", EcmaVersion.Latest, "Invalid left-hand side expression in prefix operation")]
+    [Arguments("module", "function* g() { ++[yield] }", EcmaVersion.Latest, "Invalid left-hand side expression in prefix operation")]
+    [Arguments("script", "function* g() { ++[x = yield] }", EcmaVersion.Latest, "Invalid left-hand side expression in prefix operation")]
+    [Arguments("module", "function* g() { ++[x = yield] }", EcmaVersion.Latest, "Invalid left-hand side expression in prefix operation")]
+    [Arguments("script", "function* g() { ++[...yield] }", EcmaVersion.Latest, "Invalid left-hand side expression in prefix operation")]
+    [Arguments("module", "function* g() { ++[...yield] }", EcmaVersion.Latest, "Invalid left-hand side expression in prefix operation")]
+    [Arguments("script", "function* g() { ++{yield} }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [Arguments("module", "function* g() { ++{yield} }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { ++{x: yield} }", EcmaVersion.Latest, "Invalid left-hand side expression in prefix operation")]
+    [Arguments("module", "function* g() { ++{x: yield} }", EcmaVersion.Latest, "Invalid left-hand side expression in prefix operation")]
+    [Arguments("script", "function* g() { ++{x = yield} }", EcmaVersion.Latest, "Invalid shorthand property initializer")] // V8 reports "Invalid left-hand side expression in prefix operation"
+    [Arguments("module", "function* g() { ++{x = yield} }", EcmaVersion.Latest, "Invalid shorthand property initializer")] // V8 reports "Invalid left-hand side expression in prefix operation"
+    [Arguments("script", "function* g() { ++{...yield} }", EcmaVersion.Latest, "Invalid left-hand side expression in prefix operation")]
+    [Arguments("module", "function* g() { ++{...yield} }", EcmaVersion.Latest, "Invalid left-hand side expression in prefix operation")]
 
-    [InlineData("script", "function* g() { yield++ }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("module", "function* g() { yield++ }", EcmaVersion.Latest, "Unexpected token '}'")]
-    [InlineData("script", "function* g() { (yield)++ }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
-    [InlineData("module", "function* g() { (yield)++ }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
-    [InlineData("script", "function* g() { [yield]++ }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
-    [InlineData("module", "function* g() { [yield]++ }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
-    [InlineData("script", "function* g() { [x = yield]++ }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
-    [InlineData("module", "function* g() { [x = yield]++ }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
-    [InlineData("script", "function* g() { [...yield]++ }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
-    [InlineData("module", "function* g() { [...yield]++ }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
-    [InlineData("script", "function* g() { ({yield}++) }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
-    [InlineData("module", "function* g() { ({yield}++) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
-    [InlineData("script", "function* g() { ({x: yield}++) }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
-    [InlineData("module", "function* g() { ({x: yield}++) }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
-    [InlineData("script", "function* g() { ({x = yield}++) }", EcmaVersion.Latest, "Invalid shorthand property initializer")] // V8 reports "Invalid left-hand side expression in postfix operation"
-    [InlineData("module", "function* g() { ({x = yield}++) }", EcmaVersion.Latest, "Invalid shorthand property initializer")] // V8 reports "Invalid left-hand side expression in postfix operation"
-    [InlineData("script", "function* g() { ({x = yield}\n++) }", EcmaVersion.Latest, "Invalid shorthand property initializer")]
-    [InlineData("module", "function* g() { ({x = yield}\n++) }", EcmaVersion.Latest, "Invalid shorthand property initializer")]
-    [InlineData("script", "function* g() { ({...yield}++) }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
-    [InlineData("module", "function* g() { ({...yield}++) }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
+    [Arguments("script", "function* g() { yield++ }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("module", "function* g() { yield++ }", EcmaVersion.Latest, "Unexpected token '}'")]
+    [Arguments("script", "function* g() { (yield)++ }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
+    [Arguments("module", "function* g() { (yield)++ }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
+    [Arguments("script", "function* g() { [yield]++ }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
+    [Arguments("module", "function* g() { [yield]++ }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
+    [Arguments("script", "function* g() { [x = yield]++ }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
+    [Arguments("module", "function* g() { [x = yield]++ }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
+    [Arguments("script", "function* g() { [...yield]++ }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
+    [Arguments("module", "function* g() { [...yield]++ }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
+    [Arguments("script", "function* g() { ({yield}++) }", EcmaVersion.Latest, "Unexpected identifier 'yield'")]
+    [Arguments("module", "function* g() { ({yield}++) }", EcmaVersion.Latest, "Unexpected strict mode reserved word")]
+    [Arguments("script", "function* g() { ({x: yield}++) }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
+    [Arguments("module", "function* g() { ({x: yield}++) }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
+    [Arguments("script", "function* g() { ({x = yield}++) }", EcmaVersion.Latest, "Invalid shorthand property initializer")] // V8 reports "Invalid left-hand side expression in postfix operation"
+    [Arguments("module", "function* g() { ({x = yield}++) }", EcmaVersion.Latest, "Invalid shorthand property initializer")] // V8 reports "Invalid left-hand side expression in postfix operation"
+    [Arguments("script", "function* g() { ({x = yield}\n++) }", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [Arguments("module", "function* g() { ({x = yield}\n++) }", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [Arguments("script", "function* g() { ({...yield}++) }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
+    [Arguments("module", "function* g() { ({...yield}++) }", EcmaVersion.Latest, "Invalid left-hand side expression in postfix operation")]
 
-    [InlineData("script", "(...x,)=a", EcmaVersion.Latest, "Unexpected token '...'")] // V8 reports "Rest parameter must be last formal parameter"
-    [InlineData("script", "[...x,]=a", EcmaVersion.Latest, "Rest element must be last element")]
-    [InlineData("script", "{...x,}=a", EcmaVersion.Latest, "Unexpected token '...'")] // V8 reports "Rest parameter must be last formal parameter"
-    [InlineData("script", "({...x,}=a)", EcmaVersion.Latest, "Rest element must be last element")]
-    [InlineData("script", "++{__proto__: x, __proto__: y}", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")] // V8 reports "Invalid left-hand side expression in prefix operation"
-    [InlineData("module", "++{__proto__: x, __proto__: y}", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")] // V8 reports "Invalid left-hand side expression in prefix operation"
-    [InlineData("script", "({__proto__: x, __proto__: y}++)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")] // V8 reports "Invalid left-hand side expression in postfix operation"
-    [InlineData("module", "({__proto__: x, __proto__: y}++)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")] // V8 reports "Invalid left-hand side expression in postfix operation"
-    [InlineData("script", "({__proto__: x, __proto__: y}\n++)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
-    [InlineData("module", "({__proto__: x, __proto__: y}\n++)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [Arguments("script", "(...x,)=a", EcmaVersion.Latest, "Unexpected token '...'")] // V8 reports "Rest parameter must be last formal parameter"
+    [Arguments("script", "[...x,]=a", EcmaVersion.Latest, "Rest element must be last element")]
+    [Arguments("script", "{...x,}=a", EcmaVersion.Latest, "Unexpected token '...'")] // V8 reports "Rest parameter must be last formal parameter"
+    [Arguments("script", "({...x,}=a)", EcmaVersion.Latest, "Rest element must be last element")]
+    [Arguments("script", "++{__proto__: x, __proto__: y}", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")] // V8 reports "Invalid left-hand side expression in prefix operation"
+    [Arguments("module", "++{__proto__: x, __proto__: y}", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")] // V8 reports "Invalid left-hand side expression in prefix operation"
+    [Arguments("script", "({__proto__: x, __proto__: y}++)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")] // V8 reports "Invalid left-hand side expression in postfix operation"
+    [Arguments("module", "({__proto__: x, __proto__: y}++)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")] // V8 reports "Invalid left-hand side expression in postfix operation"
+    [Arguments("script", "({__proto__: x, __proto__: y}\n++)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [Arguments("module", "({__proto__: x, __proto__: y}\n++)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
 
-    [InlineData("script", "({__proto__: x, __proto__: y}.x = 0)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
-    [InlineData("script", "({__proto__: x, __proto__: y}.x += 0)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
-    [InlineData("script", "++{__proto__: x, __proto__: y}.x", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
-    [InlineData("script", "({__proto__: x, __proto__: y}.x++)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
-    [InlineData("script", "for ({__proto__: x, __proto__: y}.x = 0;;) { }", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
-    [InlineData("script", "for ({__proto__: x, __proto__: y}.x in {}) { }", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
-    [InlineData("script", "for ({__proto__: x, __proto__: y}.x of []) { }", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
-    [InlineData("script", "async () => { for await ({__proto__: x, __proto__: y}.x of []) { } }", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [Arguments("script", "({__proto__: x, __proto__: y}.x = 0)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [Arguments("script", "({__proto__: x, __proto__: y}.x += 0)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [Arguments("script", "++{__proto__: x, __proto__: y}.x", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [Arguments("script", "({__proto__: x, __proto__: y}.x++)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [Arguments("script", "for ({__proto__: x, __proto__: y}.x = 0;;) { }", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [Arguments("script", "for ({__proto__: x, __proto__: y}.x in {}) { }", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [Arguments("script", "for ({__proto__: x, __proto__: y}.x of []) { }", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [Arguments("script", "async () => { for await ({__proto__: x, __proto__: y}.x of []) { } }", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
 
-    [InlineData("script", "({__proto__: x, __proto__: y}[x] = 0)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
-    [InlineData("script", "({__proto__: x, __proto__: y}() = 0)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
-    [InlineData("script", "({__proto__: x, __proto__: y}`` = 0)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")] // V8 reports "Invalid left-hand side expression in prefix operation"
-    [InlineData("script", "async () => { for await ({__proto__: x, __proto__: y}[x] of []) { } }", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
-    [InlineData("script", "async () => { for await ({__proto__: x, __proto__: y}() of []) { } }", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")] // V8 incorrectly accepts this! (Chrome 151)
-    [InlineData("script", "async () => { for await ({__proto__: x, __proto__: y}`` of []) { } }", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")] // V8 reports "Invalid left-hand side expression in prefix operation"
+    [Arguments("script", "({__proto__: x, __proto__: y}[x] = 0)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [Arguments("script", "({__proto__: x, __proto__: y}() = 0)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [Arguments("script", "({__proto__: x, __proto__: y}`` = 0)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")] // V8 reports "Invalid left-hand side expression in prefix operation"
+    [Arguments("script", "async () => { for await ({__proto__: x, __proto__: y}[x] of []) { } }", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [Arguments("script", "async () => { for await ({__proto__: x, __proto__: y}() of []) { } }", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")] // V8 incorrectly accepts this! (Chrome 151)
+    [Arguments("script", "async () => { for await ({__proto__: x, __proto__: y}`` of []) { } }", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")] // V8 reports "Invalid left-hand side expression in prefix operation"
 
-    [InlineData("script", "({ [{__proto__: x, __proto__: y}]: x } = 0)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
-    [InlineData("script", "({ [{__proto__: x, __proto__: y} = 0]: x } = 0)", EcmaVersion.Latest, null)]
+    [Arguments("script", "({ [{__proto__: x, __proto__: y}]: x } = 0)", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [Arguments("script", "({ [{__proto__: x, __proto__: y} = 0]: x } = 0)", EcmaVersion.Latest, null)]
 
-    [InlineData("script", "({a = 0})", EcmaVersion.Latest, "Invalid shorthand property initializer")]
-    [InlineData("script", "[{a = 0}, {b = 0}.x]", EcmaVersion.Latest, "Invalid shorthand property initializer")]
-    [InlineData("script", "f({a = 0})", EcmaVersion.Latest, "Invalid shorthand property initializer")]
-    [InlineData("script", "[{a = 0}.x]", EcmaVersion.Latest, "Invalid shorthand property initializer")]
-    [InlineData("script", "({a: {b = 0}.x})", EcmaVersion.Latest, "Invalid shorthand property initializer")]
-    [InlineData("script", "({...{b = 0}.x})", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [Arguments("script", "({a = 0})", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [Arguments("script", "[{a = 0}, {b = 0}.x]", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [Arguments("script", "f({a = 0})", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [Arguments("script", "[{a = 0}.x]", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [Arguments("script", "({a: {b = 0}.x})", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [Arguments("script", "({...{b = 0}.x})", EcmaVersion.Latest, "Invalid shorthand property initializer")]
 
-    [InlineData("script", "({a = 0}.x = 0)", EcmaVersion.Latest, "Invalid shorthand property initializer")]
-    [InlineData("script", "({a = 0}.x += 0)", EcmaVersion.Latest, "Invalid shorthand property initializer")]
-    [InlineData("script", "({a = 0}.x++)", EcmaVersion.Latest, "Invalid shorthand property initializer")]
-    [InlineData("script", "(++{a = 0}.x)", EcmaVersion.Latest, "Invalid shorthand property initializer")]
-    [InlineData("script", "[{a = 0}][0] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")]
-    [InlineData("script", "[{a = 0}.x] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")]
-    [InlineData("script", "[...{a = 0}.x] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")]
-    [InlineData("script", "({a: {b = 0}.x} = {})", EcmaVersion.Latest, "Invalid shorthand property initializer")]
-    [InlineData("script", "({...{b = 0}.x} = {})", EcmaVersion.Latest, "Invalid shorthand property initializer")]
-    [InlineData("script", "[{a = 0}[0]] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")]
-    [InlineData("script", "[{a = 0}, {b = 0}.x] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")]
-    [InlineData("script", "for ([{a = 0}.x];;) { }", EcmaVersion.Latest, "Invalid shorthand property initializer")]
-    [InlineData("script", "for ([{a = 0}.x] in []) { }", EcmaVersion.Latest, "Invalid shorthand property initializer")]
-    [InlineData("script", "for ([{a = 0}.x] of []) { }", EcmaVersion.Latest, "Invalid shorthand property initializer")]
-    [InlineData("script", "async () => { for await ([{a = 0}.x] of []) { } }", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [Arguments("script", "({a = 0}.x = 0)", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [Arguments("script", "({a = 0}.x += 0)", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [Arguments("script", "({a = 0}.x++)", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [Arguments("script", "(++{a = 0}.x)", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [Arguments("script", "[{a = 0}][0] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [Arguments("script", "[{a = 0}.x] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [Arguments("script", "[...{a = 0}.x] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [Arguments("script", "({a: {b = 0}.x} = {})", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [Arguments("script", "({...{b = 0}.x} = {})", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [Arguments("script", "[{a = 0}[0]] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [Arguments("script", "[{a = 0}, {b = 0}.x] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [Arguments("script", "for ([{a = 0}.x];;) { }", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [Arguments("script", "for ([{a = 0}.x] in []) { }", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [Arguments("script", "for ([{a = 0}.x] of []) { }", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [Arguments("script", "async () => { for await ([{a = 0}.x] of []) { } }", EcmaVersion.Latest, "Invalid shorthand property initializer")]
 
-    [InlineData("script", "[{a = 0}] = []", EcmaVersion.Latest, null)]
-    [InlineData("script", "({a: {b = 0}} = {})", EcmaVersion.Latest, null)]
-    [InlineData("script", "[{a: 0}.x] = []", EcmaVersion.Latest, null)]
+    [Arguments("script", "[{a = 0}] = []", EcmaVersion.Latest, null)]
+    [Arguments("script", "({a: {b = 0}} = {})", EcmaVersion.Latest, null)]
+    [Arguments("script", "[{a: 0}.x] = []", EcmaVersion.Latest, null)]
 
-    [InlineData("script", "[{__proto__: a, __proto__: a}, {x = 0}.x] = []", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
-    [InlineData("script", "[{x = 0}, {__proto__: a, __proto__: a}.x] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")]
-    [InlineData("script", "[{__proto__: a, __proto__: a, x = 0}, {__proto__: a, __proto__: a}.x] = []", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
-    [InlineData("script", "[{__proto__: a, x = 0, __proto__: a}, {__proto__: a, __proto__: a}.x] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")]
-    [InlineData("script", "[{__proto__: a, __proto__: a, x = 0}, {x = 0}.x] = []", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
-    [InlineData("script", "[{__proto__: a, x = 0, __proto__: a}, {x = 0}.x] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")]
-    [InlineData("script", "[[{a = 0}], {b = 0} = {}, {c: [{__proto__: a, __proto__: a}]}.x] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [Arguments("script", "[{__proto__: a, __proto__: a}, {x = 0}.x] = []", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [Arguments("script", "[{x = 0}, {__proto__: a, __proto__: a}.x] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [Arguments("script", "[{__proto__: a, __proto__: a, x = 0}, {__proto__: a, __proto__: a}.x] = []", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [Arguments("script", "[{__proto__: a, x = 0, __proto__: a}, {__proto__: a, __proto__: a}.x] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [Arguments("script", "[{__proto__: a, __proto__: a, x = 0}, {x = 0}.x] = []", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [Arguments("script", "[{__proto__: a, x = 0, __proto__: a}, {x = 0}.x] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [Arguments("script", "[[{a = 0}], {b = 0} = {}, {c: [{__proto__: a, __proto__: a}]}.x] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")]
     public void ShouldHandleVariableAssignmentEdgeCases(string sourceType, string input, EcmaVersion ecmaVersion, string? expectedError)
     {
         var parser = new Parser(new ParserOptions { EcmaVersion = ecmaVersion });
@@ -2120,89 +2121,89 @@ public partial class ParserTests
         }
     }
 
-    [Theory]
-    [InlineData("script", "for (async of [1]) { console.log(async) }", EcmaVersion.ES7, null)]
-    [InlineData("module", "for (async of [1]) { console.log(async) }", EcmaVersion.ES7, null)]
-    [InlineData("script", "for (async of [1]) { console.log(async) }", EcmaVersion.ES8, "The left-hand side of a for-of loop may not be 'async'")]
-    [InlineData("module", "for (async of [1]) { console.log(async) }", EcmaVersion.ES8, "The left-hand side of a for-of loop may not be 'async'")]
-    [InlineData("script", "for (async of [1]) { console.log(async) }", EcmaVersion.Latest, "The left-hand side of a for-of loop may not be 'async'")]
-    [InlineData("module", "for (async of [1]) { console.log(async) }", EcmaVersion.Latest, "The left-hand side of a for-of loop may not be 'async'")]
-    [InlineData("script", "for (async\nof [1]) { console.log(async) }", EcmaVersion.ES7, null)]
-    [InlineData("module", "for (async\nof [1]) { console.log(async) }", EcmaVersion.ES7, null)]
-    [InlineData("script", "for (async\nof [1]) { console.log(async) }", EcmaVersion.ES8, "The left-hand side of a for-of loop may not be 'async'")]
-    [InlineData("module", "for (async\nof [1]) { console.log(async) }", EcmaVersion.ES8, "The left-hand side of a for-of loop may not be 'async'")]
-    [InlineData("script", "for (async\nof [1]) { console.log(async) }", EcmaVersion.Latest, "The left-hand side of a for-of loop may not be 'async'")]
-    [InlineData("module", "for (async\nof [1]) { console.log(async) }", EcmaVersion.Latest, "The left-hand side of a for-of loop may not be 'async'")]
-    [InlineData("script", "for (async of\n[1]) { console.log(async) }", EcmaVersion.ES7, null)]
-    [InlineData("module", "for (async of\n[1]) { console.log(async) }", EcmaVersion.ES7, null)]
-    [InlineData("script", "for (async of\n[1]) { console.log(async) }", EcmaVersion.ES8, "The left-hand side of a for-of loop may not be 'async'")]
-    [InlineData("module", "for (async of\n[1]) { console.log(async) }", EcmaVersion.ES8, "The left-hand side of a for-of loop may not be 'async'")]
-    [InlineData("script", "for (async of\n[1]) { console.log(async) }", EcmaVersion.Latest, "The left-hand side of a for-of loop may not be 'async'")]
-    [InlineData("module", "for (async of\n[1]) { console.log(async) }", EcmaVersion.Latest, "The left-hand side of a for-of loop may not be 'async'")]
+    [Test]
+    [Arguments("script", "for (async of [1]) { console.log(async) }", EcmaVersion.ES7, null)]
+    [Arguments("module", "for (async of [1]) { console.log(async) }", EcmaVersion.ES7, null)]
+    [Arguments("script", "for (async of [1]) { console.log(async) }", EcmaVersion.ES8, "The left-hand side of a for-of loop may not be 'async'")]
+    [Arguments("module", "for (async of [1]) { console.log(async) }", EcmaVersion.ES8, "The left-hand side of a for-of loop may not be 'async'")]
+    [Arguments("script", "for (async of [1]) { console.log(async) }", EcmaVersion.Latest, "The left-hand side of a for-of loop may not be 'async'")]
+    [Arguments("module", "for (async of [1]) { console.log(async) }", EcmaVersion.Latest, "The left-hand side of a for-of loop may not be 'async'")]
+    [Arguments("script", "for (async\nof [1]) { console.log(async) }", EcmaVersion.ES7, null)]
+    [Arguments("module", "for (async\nof [1]) { console.log(async) }", EcmaVersion.ES7, null)]
+    [Arguments("script", "for (async\nof [1]) { console.log(async) }", EcmaVersion.ES8, "The left-hand side of a for-of loop may not be 'async'")]
+    [Arguments("module", "for (async\nof [1]) { console.log(async) }", EcmaVersion.ES8, "The left-hand side of a for-of loop may not be 'async'")]
+    [Arguments("script", "for (async\nof [1]) { console.log(async) }", EcmaVersion.Latest, "The left-hand side of a for-of loop may not be 'async'")]
+    [Arguments("module", "for (async\nof [1]) { console.log(async) }", EcmaVersion.Latest, "The left-hand side of a for-of loop may not be 'async'")]
+    [Arguments("script", "for (async of\n[1]) { console.log(async) }", EcmaVersion.ES7, null)]
+    [Arguments("module", "for (async of\n[1]) { console.log(async) }", EcmaVersion.ES7, null)]
+    [Arguments("script", "for (async of\n[1]) { console.log(async) }", EcmaVersion.ES8, "The left-hand side of a for-of loop may not be 'async'")]
+    [Arguments("module", "for (async of\n[1]) { console.log(async) }", EcmaVersion.ES8, "The left-hand side of a for-of loop may not be 'async'")]
+    [Arguments("script", "for (async of\n[1]) { console.log(async) }", EcmaVersion.Latest, "The left-hand side of a for-of loop may not be 'async'")]
+    [Arguments("module", "for (async of\n[1]) { console.log(async) }", EcmaVersion.Latest, "The left-hand side of a for-of loop may not be 'async'")]
 
-    [InlineData("script", "for await (async of [1]) { console.log(async) }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("module", "for await (async of [1]) { console.log(async) }", EcmaVersion.Latest, null)]
-    [InlineData("script", "async () => { for await (async of [1]) { console.log(async) } }", EcmaVersion.Latest, null)]
-    [InlineData("script", "for await (async\nof [1]) { console.log(async) }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("module", "for await (async\nof [1]) { console.log(async) }", EcmaVersion.Latest, null)]
-    [InlineData("script", "async () => { for await (async\nof [1]) { console.log(async) } }", EcmaVersion.Latest, null)]
-    [InlineData("script", "for await (async of\n[1]) { console.log(async) }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("module", "for await (async of\n[1]) { console.log(async) }", EcmaVersion.Latest, null)]
-    [InlineData("script", "async () => { for await (async of\n[1]) { console.log(async) } }", EcmaVersion.Latest, null)]
+    [Arguments("script", "for await (async of [1]) { console.log(async) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("module", "for await (async of [1]) { console.log(async) }", EcmaVersion.Latest, null)]
+    [Arguments("script", "async () => { for await (async of [1]) { console.log(async) } }", EcmaVersion.Latest, null)]
+    [Arguments("script", "for await (async\nof [1]) { console.log(async) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("module", "for await (async\nof [1]) { console.log(async) }", EcmaVersion.Latest, null)]
+    [Arguments("script", "async () => { for await (async\nof [1]) { console.log(async) } }", EcmaVersion.Latest, null)]
+    [Arguments("script", "for await (async of\n[1]) { console.log(async) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("module", "for await (async of\n[1]) { console.log(async) }", EcmaVersion.Latest, null)]
+    [Arguments("script", "async () => { for await (async of\n[1]) { console.log(async) } }", EcmaVersion.Latest, null)]
 
-    [InlineData("script", "for (x = async of [1]) { console.log(async) }", EcmaVersion.ES7, "Invalid left-hand side in for-loop")]
-    [InlineData("module", "for (x = async of [1]) { console.log(async) }", EcmaVersion.ES7, "Invalid left-hand side in for-loop")]
-    [InlineData("script", "for (x = async of [1]) { console.log(async) }", EcmaVersion.ES8, "Invalid left-hand side in for-loop")]
-    [InlineData("module", "for (x = async of [1]) { console.log(async) }", EcmaVersion.ES8, "Invalid left-hand side in for-loop")]
-    [InlineData("script", "for (x = async of [1]) { console.log(async) }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "The left-hand side of a for-of loop may not be 'async'."
-    [InlineData("module", "for (x = async of [1]) { console.log(async) }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "The left-hand side of a for-of loop may not be 'async'."
-    [InlineData("script", "for (x = async\nof [1]) { console.log(async) }", EcmaVersion.ES7, "Invalid left-hand side in for-loop")]
-    [InlineData("module", "for (x = async\nof [1]) { console.log(async) }", EcmaVersion.ES7, "Invalid left-hand side in for-loop")]
-    [InlineData("script", "for (x = async\nof [1]) { console.log(async) }", EcmaVersion.ES8, "Invalid left-hand side in for-loop")]
-    [InlineData("module", "for (x = async\nof [1]) { console.log(async) }", EcmaVersion.ES8, "Invalid left-hand side in for-loop")]
-    [InlineData("script", "for (x = async\nof [1]) { console.log(async) }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "The left-hand side of a for-of loop may not be 'async'."
-    [InlineData("module", "for (x = async\nof [1]) { console.log(async) }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "The left-hand side of a for-of loop may not be 'async'."
-    [InlineData("script", "for (x = async of\n[1]) { console.log(async) }", EcmaVersion.ES7, "Invalid left-hand side in for-loop")]
-    [InlineData("module", "for (x = async of\n[1]) { console.log(async) }", EcmaVersion.ES7, "Invalid left-hand side in for-loop")]
-    [InlineData("script", "for (x = async of\n[1]) { console.log(async) }", EcmaVersion.ES8, "Invalid left-hand side in for-loop")]
-    [InlineData("module", "for (x = async of\n[1]) { console.log(async) }", EcmaVersion.ES8, "Invalid left-hand side in for-loop")]
-    [InlineData("script", "for (x = async of\n[1]) { console.log(async) }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "The left-hand side of a for-of loop may not be 'async'."
-    [InlineData("module", "for (x = async of\n[1]) { console.log(async) }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "The left-hand side of a for-of loop may not be 'async'."
+    [Arguments("script", "for (x = async of [1]) { console.log(async) }", EcmaVersion.ES7, "Invalid left-hand side in for-loop")]
+    [Arguments("module", "for (x = async of [1]) { console.log(async) }", EcmaVersion.ES7, "Invalid left-hand side in for-loop")]
+    [Arguments("script", "for (x = async of [1]) { console.log(async) }", EcmaVersion.ES8, "Invalid left-hand side in for-loop")]
+    [Arguments("module", "for (x = async of [1]) { console.log(async) }", EcmaVersion.ES8, "Invalid left-hand side in for-loop")]
+    [Arguments("script", "for (x = async of [1]) { console.log(async) }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "The left-hand side of a for-of loop may not be 'async'."
+    [Arguments("module", "for (x = async of [1]) { console.log(async) }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "The left-hand side of a for-of loop may not be 'async'."
+    [Arguments("script", "for (x = async\nof [1]) { console.log(async) }", EcmaVersion.ES7, "Invalid left-hand side in for-loop")]
+    [Arguments("module", "for (x = async\nof [1]) { console.log(async) }", EcmaVersion.ES7, "Invalid left-hand side in for-loop")]
+    [Arguments("script", "for (x = async\nof [1]) { console.log(async) }", EcmaVersion.ES8, "Invalid left-hand side in for-loop")]
+    [Arguments("module", "for (x = async\nof [1]) { console.log(async) }", EcmaVersion.ES8, "Invalid left-hand side in for-loop")]
+    [Arguments("script", "for (x = async\nof [1]) { console.log(async) }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "The left-hand side of a for-of loop may not be 'async'."
+    [Arguments("module", "for (x = async\nof [1]) { console.log(async) }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "The left-hand side of a for-of loop may not be 'async'."
+    [Arguments("script", "for (x = async of\n[1]) { console.log(async) }", EcmaVersion.ES7, "Invalid left-hand side in for-loop")]
+    [Arguments("module", "for (x = async of\n[1]) { console.log(async) }", EcmaVersion.ES7, "Invalid left-hand side in for-loop")]
+    [Arguments("script", "for (x = async of\n[1]) { console.log(async) }", EcmaVersion.ES8, "Invalid left-hand side in for-loop")]
+    [Arguments("module", "for (x = async of\n[1]) { console.log(async) }", EcmaVersion.ES8, "Invalid left-hand side in for-loop")]
+    [Arguments("script", "for (x = async of\n[1]) { console.log(async) }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "The left-hand side of a for-of loop may not be 'async'."
+    [Arguments("module", "for (x = async of\n[1]) { console.log(async) }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "The left-hand side of a for-of loop may not be 'async'."
 
-    [InlineData("script", "for await (x = async of [1]) { console.log(async) }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("module", "for await (x = async of [1]) { console.log(async) }", EcmaVersion.Latest, "Unexpected token '='")]
-    [InlineData("script", "async () => { for await (x = async of [1]) { console.log(async) } }", EcmaVersion.Latest, "Unexpected token '='")]
-    [InlineData("script", "for await (x = async\nof [1]) { console.log(async) }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("module", "for await (x = async\nof [1]) { console.log(async) }", EcmaVersion.Latest, "Unexpected token '='")]
-    [InlineData("script", "async () => { for await (x = async\nof [1]) { console.log(async) } }", EcmaVersion.Latest, "Unexpected token '='")]
-    [InlineData("script", "for await (x = async of\n[1]) { console.log(async) }", EcmaVersion.Latest, "Unexpected reserved word")]
-    [InlineData("module", "for await (x = async of\n[1]) { console.log(async) }", EcmaVersion.Latest, "Unexpected token '='")]
-    [InlineData("script", "async () => { for await (x = async of\n[1]) { console.log(async) } }", EcmaVersion.Latest, "Unexpected token '='")]
+    [Arguments("script", "for await (x = async of [1]) { console.log(async) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("module", "for await (x = async of [1]) { console.log(async) }", EcmaVersion.Latest, "Unexpected token '='")]
+    [Arguments("script", "async () => { for await (x = async of [1]) { console.log(async) } }", EcmaVersion.Latest, "Unexpected token '='")]
+    [Arguments("script", "for await (x = async\nof [1]) { console.log(async) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("module", "for await (x = async\nof [1]) { console.log(async) }", EcmaVersion.Latest, "Unexpected token '='")]
+    [Arguments("script", "async () => { for await (x = async\nof [1]) { console.log(async) } }", EcmaVersion.Latest, "Unexpected token '='")]
+    [Arguments("script", "for await (x = async of\n[1]) { console.log(async) }", EcmaVersion.Latest, "Unexpected reserved word")]
+    [Arguments("module", "for await (x = async of\n[1]) { console.log(async) }", EcmaVersion.Latest, "Unexpected token '='")]
+    [Arguments("script", "async () => { for await (x = async of\n[1]) { console.log(async) } }", EcmaVersion.Latest, "Unexpected token '='")]
 
-    [InlineData("script", "for (x, async of [1]) { console.log(async) }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "The left-hand side of a for-of loop may not be 'async'."
-    [InlineData("module", "for (x, async of [1]) { console.log(async) }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "The left-hand side of a for-of loop may not be 'async'."
+    [Arguments("script", "for (x, async of [1]) { console.log(async) }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "The left-hand side of a for-of loop may not be 'async'."
+    [Arguments("module", "for (x, async of [1]) { console.log(async) }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "The left-hand side of a for-of loop may not be 'async'."
 
-    [InlineData("script", "for (x, y = async of [1]) { console.log(async) }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "The left-hand side of a for-of loop may not be 'async'."
-    [InlineData("module", "for (x, y = async of [1]) { console.log(async) }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "The left-hand side of a for-of loop may not be 'async'."
+    [Arguments("script", "for (x, y = async of [1]) { console.log(async) }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "The left-hand side of a for-of loop may not be 'async'."
+    [Arguments("module", "for (x, y = async of [1]) { console.log(async) }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")] // V8 reports "The left-hand side of a for-of loop may not be 'async'."
 
-    [InlineData("script", "async () => { for await (x, async of [1]) { console.log(async) } }", EcmaVersion.Latest, "Unexpected token ','")]
-    [InlineData("module", "async () => { for await (x, async of [1]) { console.log(async) } }", EcmaVersion.Latest, "Unexpected token ','")]
+    [Arguments("script", "async () => { for await (x, async of [1]) { console.log(async) } }", EcmaVersion.Latest, "Unexpected token ','")]
+    [Arguments("module", "async () => { for await (x, async of [1]) { console.log(async) } }", EcmaVersion.Latest, "Unexpected token ','")]
 
-    [InlineData("script", "async () => { for await (x, y = async of [1]) { console.log(async) } }", EcmaVersion.Latest, "Unexpected token ','")]
-    [InlineData("module", "async () => { for await (x, y = async of [1]) { console.log(async) } }", EcmaVersion.Latest, "Unexpected token ','")]
+    [Arguments("script", "async () => { for await (x, y = async of [1]) { console.log(async) } }", EcmaVersion.Latest, "Unexpected token ','")]
+    [Arguments("module", "async () => { for await (x, y = async of [1]) { console.log(async) } }", EcmaVersion.Latest, "Unexpected token ','")]
 
-    [InlineData("script", "for (x ? async of => {} : y of [1]) { console.log(async) }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")]
-    [InlineData("module", "for (x ? async of => {} : y of [1]) { console.log(async) }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")]
+    [Arguments("script", "for (x ? async of => {} : y of [1]) { console.log(async) }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")]
+    [Arguments("module", "for (x ? async of => {} : y of [1]) { console.log(async) }", EcmaVersion.Latest, "Invalid left-hand side in for-loop")]
 
-    [InlineData("script", "async () => { for await (x ? async of => {} : y of [1]) { console.log(async) } }", EcmaVersion.Latest, "Unexpected token '?'")]
-    [InlineData("module", "async () => { for await (x ? async of => {} : y of [1]) { console.log(async) } }", EcmaVersion.Latest, "Unexpected token '?'")]
+    [Arguments("script", "async () => { for await (x ? async of => {} : y of [1]) { console.log(async) } }", EcmaVersion.Latest, "Unexpected token '?'")]
+    [Arguments("module", "async () => { for await (x ? async of => {} : y of [1]) { console.log(async) } }", EcmaVersion.Latest, "Unexpected token '?'")]
 
-    [InlineData("script", "async () => { for ((async) of [1]) { console.log(async) } }", EcmaVersion.Latest, null)]
-    [InlineData("module", "async () => { for ((async) of [1]) { console.log(async) } }", EcmaVersion.Latest, null)]
-    [InlineData("script", "async () => { for ((async)\nof [1]) { console.log(async) } }", EcmaVersion.Latest, null)]
-    [InlineData("module", "async () => { for ((async)\nof [1]) { console.log(async) } }", EcmaVersion.Latest, null)]
-    [InlineData("script", "async () => { for ((async) of\n[1]) { console.log(async) } }", EcmaVersion.Latest, null)]
-    [InlineData("module", "async () => { for ((async) of\n[1]) { console.log(async) } }", EcmaVersion.Latest, null)]
+    [Arguments("script", "async () => { for ((async) of [1]) { console.log(async) } }", EcmaVersion.Latest, null)]
+    [Arguments("module", "async () => { for ((async) of [1]) { console.log(async) } }", EcmaVersion.Latest, null)]
+    [Arguments("script", "async () => { for ((async)\nof [1]) { console.log(async) } }", EcmaVersion.Latest, null)]
+    [Arguments("module", "async () => { for ((async)\nof [1]) { console.log(async) } }", EcmaVersion.Latest, null)]
+    [Arguments("script", "async () => { for ((async) of\n[1]) { console.log(async) } }", EcmaVersion.Latest, null)]
+    [Arguments("module", "async () => { for ((async) of\n[1]) { console.log(async) } }", EcmaVersion.Latest, null)]
     public void ShouldHandleAsyncOfAmbiguityInForLoop(string sourceType, string input, EcmaVersion ecmaVersion, string? expectedError)
     {
         // See also: https://github.com/tc39/ecma262/issues/2034
@@ -2221,123 +2222,123 @@ public partial class ParserTests
         }
     }
 
-    [Theory]
-    [InlineData("script", "using x = resource", false, false, "Unexpected identifier 'x'")]
-    [InlineData("module", "using x = resource", false, false, null)]
-    [InlineData("script", "using x = resource", true, false, null)]
-    [InlineData("module", "using x = resource", true, false, null)]
-    [InlineData("script", "await using x = resource", false, false, "await is only valid in async functions and the top level bodies of modules")]
-    [InlineData("module", "await using x = resource", false, false, null)]
-    [InlineData("script", "await using x = resource", false, true, "Unexpected identifier 'x'")]
-    [InlineData("script", "await using x = resource", true, false, "await is only valid in async functions and the top level bodies of modules")]
-    [InlineData("module", "await using x = resource", true, false, null)]
-    [InlineData("script", "await using x = resource", true, true, null)]
+    [Test]
+    [Arguments("script", "using x = resource", false, false, "Unexpected identifier 'x'")]
+    [Arguments("module", "using x = resource", false, false, null)]
+    [Arguments("script", "using x = resource", true, false, null)]
+    [Arguments("module", "using x = resource", true, false, null)]
+    [Arguments("script", "await using x = resource", false, false, "await is only valid in async functions and the top level bodies of modules")]
+    [Arguments("module", "await using x = resource", false, false, null)]
+    [Arguments("script", "await using x = resource", false, true, "Unexpected identifier 'x'")]
+    [Arguments("script", "await using x = resource", true, false, "await is only valid in async functions and the top level bodies of modules")]
+    [Arguments("module", "await using x = resource", true, false, null)]
+    [Arguments("script", "await using x = resource", true, true, null)]
 
-    [InlineData("script", "switch (0) { case 0: using x = resource }", false, false, "Unexpected identifier 'x'")]
-    [InlineData("module", "switch (0) { case 0: using x = resource }", false, false, "Unexpected identifier 'x'")]
-    [InlineData("script", "switch (0) { case 0: using x = resource }", true, false, "Unexpected identifier 'x'")]
-    [InlineData("module", "switch (0) { case 0: using x = resource }", true, false, "Unexpected identifier 'x'")]
-    [InlineData("script", "switch (0) { case 0: await using x = resource }", false, false, "await is only valid in async functions and the top level bodies of modules")]
-    [InlineData("module", "switch (0) { case 0: await using x = resource }", false, false, "Unexpected identifier 'x'")]
-    [InlineData("script", "switch (0) { case 0: await using x = resource }", false, true, "Unexpected identifier 'x'")]
-    [InlineData("script", "switch (0) { case 0: await using x = resource }", true, false, "await is only valid in async functions and the top level bodies of modules")]
-    [InlineData("module", "switch (0) { case 0: await using x = resource }", true, false, "Unexpected identifier 'x'")]
-    [InlineData("script", "switch (0) { case 0: await using x = resource }", true, true, "Unexpected identifier 'x'")]
+    [Arguments("script", "switch (0) { case 0: using x = resource }", false, false, "Unexpected identifier 'x'")]
+    [Arguments("module", "switch (0) { case 0: using x = resource }", false, false, "Unexpected identifier 'x'")]
+    [Arguments("script", "switch (0) { case 0: using x = resource }", true, false, "Unexpected identifier 'x'")]
+    [Arguments("module", "switch (0) { case 0: using x = resource }", true, false, "Unexpected identifier 'x'")]
+    [Arguments("script", "switch (0) { case 0: await using x = resource }", false, false, "await is only valid in async functions and the top level bodies of modules")]
+    [Arguments("module", "switch (0) { case 0: await using x = resource }", false, false, "Unexpected identifier 'x'")]
+    [Arguments("script", "switch (0) { case 0: await using x = resource }", false, true, "Unexpected identifier 'x'")]
+    [Arguments("script", "switch (0) { case 0: await using x = resource }", true, false, "await is only valid in async functions and the top level bodies of modules")]
+    [Arguments("module", "switch (0) { case 0: await using x = resource }", true, false, "Unexpected identifier 'x'")]
+    [Arguments("script", "switch (0) { case 0: await using x = resource }", true, true, "Unexpected identifier 'x'")]
 
-    [InlineData("module", "for (using", false, false, "Unexpected end of input")]
-    [InlineData("script", "for (using", false, false, "Unexpected end of input")]
-    [InlineData("module", "for (using of =) {}", false, false, "Unexpected token ')'")]
-    [InlineData("script", "for (using of =) {}", false, false, "Unexpected token ')'")]
-    [InlineData("module", "for (using of = x;;) {}", false, false, null)]
-    [InlineData("script", "for (using of = x;;) {}", false, false, null)]
+    [Arguments("module", "for (using", false, false, "Unexpected end of input")]
+    [Arguments("script", "for (using", false, false, "Unexpected end of input")]
+    [Arguments("module", "for (using of =) {}", false, false, "Unexpected token ')'")]
+    [Arguments("script", "for (using of =) {}", false, false, "Unexpected token ')'")]
+    [Arguments("module", "for (using of = x;;) {}", false, false, null)]
+    [Arguments("script", "for (using of = x;;) {}", false, false, null)]
 
-    [InlineData("module", "for (await using", false, false, "Unexpected end of input")]
-    [InlineData("script", "for (await using", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
-    [InlineData("module", "for (await using of =) {}", false, false, "Unexpected token ')'")]
-    [InlineData("script", "for (await using of =) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
-    [InlineData("module", "for (await using of = x;;) {}", false, false, null)]
-    [InlineData("script", "for (await using of = x;;) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
+    [Arguments("module", "for (await using", false, false, "Unexpected end of input")]
+    [Arguments("script", "for (await using", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
+    [Arguments("module", "for (await using of =) {}", false, false, "Unexpected token ')'")]
+    [Arguments("script", "for (await using of =) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
+    [Arguments("module", "for (await using of = x;;) {}", false, false, null)]
+    [Arguments("script", "for (await using of = x;;) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
 
-    [InlineData("module", "for (using of = of of of) {}", false, false, "for-of loop variable declaration may not have an initializer")]
-    [InlineData("script", "for (using of = of of of) {}", false, false, "for-of loop variable declaration may not have an initializer")]
-    [InlineData("module", "for (using of =/**/of of of) {}", false, false, "for-of loop variable declaration may not have an initializer")]
-    [InlineData("script", "for (using of =/**/of of of) {}", false, false, "for-of loop variable declaration may not have an initializer")]
-    [InlineData("module", "for (using of == of of of) {}", false, false, "Unexpected token '=='")]
-    [InlineData("script", "for (using of == of of of) {}", false, false, "Unexpected token '=='")]
-    [InlineData("module", "for (using of => of of of) {}", false, false, "Unexpected token '=>'")]
-    [InlineData("script", "for (using of => of of of) {}", false, false, "Unexpected token '=>'")]
+    [Arguments("module", "for (using of = of of of) {}", false, false, "for-of loop variable declaration may not have an initializer")]
+    [Arguments("script", "for (using of = of of of) {}", false, false, "for-of loop variable declaration may not have an initializer")]
+    [Arguments("module", "for (using of =/**/of of of) {}", false, false, "for-of loop variable declaration may not have an initializer")]
+    [Arguments("script", "for (using of =/**/of of of) {}", false, false, "for-of loop variable declaration may not have an initializer")]
+    [Arguments("module", "for (using of == of of of) {}", false, false, "Unexpected token '=='")]
+    [Arguments("script", "for (using of == of of of) {}", false, false, "Unexpected token '=='")]
+    [Arguments("module", "for (using of => of of of) {}", false, false, "Unexpected token '=>'")]
+    [Arguments("script", "for (using of => of of of) {}", false, false, "Unexpected token '=>'")]
 
-    [InlineData("module", "for (using in =) {}", false, false, "Unexpected token '='")]
-    [InlineData("script", "for (using in =) {}", false, false, "Unexpected token '='")]
-    [InlineData("module", "for (using in = x;;) {}", false, false, "Unexpected token '='")]
-    [InlineData("script", "for (using in = x;;) {}", false, false, "Unexpected token '='")]
+    [Arguments("module", "for (using in =) {}", false, false, "Unexpected token '='")]
+    [Arguments("script", "for (using in =) {}", false, false, "Unexpected token '='")]
+    [Arguments("module", "for (using in = x;;) {}", false, false, "Unexpected token '='")]
+    [Arguments("script", "for (using in = x;;) {}", false, false, "Unexpected token '='")]
 
-    [InlineData("module", "for (await using in =) {}", false, false, "Invalid left-hand side in for-loop")]
-    [InlineData("script", "for (await using in =) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
-    [InlineData("module", "for (await using in = x;;) {}", false, false, "Invalid left-hand side in for-loop")]
-    [InlineData("script", "for (await using in = x;;) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
+    [Arguments("module", "for (await using in =) {}", false, false, "Invalid left-hand side in for-loop")]
+    [Arguments("script", "for (await using in =) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
+    [Arguments("module", "for (await using in = x;;) {}", false, false, "Invalid left-hand side in for-loop")]
+    [Arguments("script", "for (await using in = x;;) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
 
-    [InlineData("module", "for (using of = of in of) {}", false, false, "for-in loop variable declaration may not have an initializer")]
-    [InlineData("script", "for (using of = of in of) {}", false, false, "for-in loop variable declaration may not have an initializer")]
-    [InlineData("module", "for (using of =/**/of in of) {}", false, false, "for-in loop variable declaration may not have an initializer")]
-    [InlineData("script", "for (using of =/**/of in of) {}", false, false, "for-in loop variable declaration may not have an initializer")]
-    [InlineData("module", "for (using of == of in of) {}", false, false, "Unexpected token '=='")]
-    [InlineData("script", "for (using of == of in of) {}", false, false, "Unexpected token '=='")]
-    [InlineData("module", "for (using of => of in of) {}", false, false, "Unexpected token '=>'")]
-    [InlineData("script", "for (using of => of in of) {}", false, false, "Unexpected token '=>'")]
-    [InlineData("module", "for (await using of = of in of) {}", false, false, "for-in loop variable declaration may not have an initializer")]
-    [InlineData("script", "for (await using of = of in of) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
+    [Arguments("module", "for (using of = of in of) {}", false, false, "for-in loop variable declaration may not have an initializer")]
+    [Arguments("script", "for (using of = of in of) {}", false, false, "for-in loop variable declaration may not have an initializer")]
+    [Arguments("module", "for (using of =/**/of in of) {}", false, false, "for-in loop variable declaration may not have an initializer")]
+    [Arguments("script", "for (using of =/**/of in of) {}", false, false, "for-in loop variable declaration may not have an initializer")]
+    [Arguments("module", "for (using of == of in of) {}", false, false, "Unexpected token '=='")]
+    [Arguments("script", "for (using of == of in of) {}", false, false, "Unexpected token '=='")]
+    [Arguments("module", "for (using of => of in of) {}", false, false, "Unexpected token '=>'")]
+    [Arguments("script", "for (using of => of in of) {}", false, false, "Unexpected token '=>'")]
+    [Arguments("module", "for (await using of = of in of) {}", false, false, "for-in loop variable declaration may not have an initializer")]
+    [Arguments("script", "for (await using of = of in of) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
 
-    [InlineData("module", "for (using of of []) {}", false, false, "Unexpected token ']'")]
-    [InlineData("script", "for (using of of []) {}", false, false, "Unexpected token ']'")]
-    [InlineData("module", "for (await using of of []) {}", false, false, null)]
-    [InlineData("script", "for (await using of of []) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
-    [InlineData("script", "async () => { for (await using of of []) {} }", false, false, null)]
+    [Arguments("module", "for (using of of []) {}", false, false, "Unexpected token ']'")]
+    [Arguments("script", "for (using of of []) {}", false, false, "Unexpected token ']'")]
+    [Arguments("module", "for (await using of of []) {}", false, false, null)]
+    [Arguments("script", "for (await using of of []) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
+    [Arguments("script", "async () => { for (await using of of []) {} }", false, false, null)]
 
-    [InlineData("module", "for (using of x) {}", false, false, null)]
-    [InlineData("script", "for (using of x) {}", false, false, null)]
-    [InlineData("module", "for (using\nof x) {}", false, false, null)]
-    [InlineData("script", "for (using\nof x) {}", false, false, null)]
+    [Arguments("module", "for (using of x) {}", false, false, null)]
+    [Arguments("script", "for (using of x) {}", false, false, null)]
+    [Arguments("module", "for (using\nof x) {}", false, false, null)]
+    [Arguments("script", "for (using\nof x) {}", false, false, null)]
 
-    [InlineData("module", "for (using in x) {}", false, false, null)]
-    [InlineData("script", "for (using in x) {}", false, false, null)]
-    [InlineData("module", "for (using\nin x) {}", false, false, null)]
-    [InlineData("script", "for (using\nin x) {}", false, false, null)]
+    [Arguments("module", "for (using in x) {}", false, false, null)]
+    [Arguments("script", "for (using in x) {}", false, false, null)]
+    [Arguments("module", "for (using\nin x) {}", false, false, null)]
+    [Arguments("script", "for (using\nin x) {}", false, false, null)]
 
-    [InlineData("module", "for (using instanceof x) {}", false, false, "Unexpected token ')'")]
-    [InlineData("script", "for (using instanceof x) {}", false, false, "Unexpected token ')'")]
-    [InlineData("module", "for (using\ninstanceof x) {}", false, false, "Unexpected token ')'")]
-    [InlineData("script", "for (using\ninstanceof x) {}", false, false, "Unexpected token ')'")]
+    [Arguments("module", "for (using instanceof x) {}", false, false, "Unexpected token ')'")]
+    [Arguments("script", "for (using instanceof x) {}", false, false, "Unexpected token ')'")]
+    [Arguments("module", "for (using\ninstanceof x) {}", false, false, "Unexpected token ')'")]
+    [Arguments("script", "for (using\ninstanceof x) {}", false, false, "Unexpected token ')'")]
 
-    [InlineData("module", "for (await using of x) {}", false, false, "Missing initializer in await using declaration")]
-    [InlineData("script", "for (await using of x) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
-    [InlineData("script", "async () => { for (await using of x) {} }", false, false, "Missing initializer in await using declaration")]
-    [InlineData("module", "for (await\nusing of x) {}", false, false, "Invalid left-hand side in for-loop")]
-    [InlineData("script", "for (await\nusing of x) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
-    [InlineData("script", "async () => { for (await\nusing of x) {} }", false, false, "Invalid left-hand side in for-loop")]
-    [InlineData("module", "for (await using\nof x) {}", false, false, "Invalid left-hand side in for-loop")]
-    [InlineData("script", "for (await using\nof x) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
-    [InlineData("script", "async () => { for (await using\nof x) {} }", false, false, "Invalid left-hand side in for-loop")]
-    [InlineData("module", "for (await\nusing\nof x) {}", false, false, "Invalid left-hand side in for-loop")]
-    [InlineData("script", "for (await\nusing\nof x) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
-    [InlineData("script", "async () => { for (await\nusing\nof x) {} }", false, false, "Invalid left-hand side in for-loop")]
+    [Arguments("module", "for (await using of x) {}", false, false, "Missing initializer in await using declaration")]
+    [Arguments("script", "for (await using of x) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
+    [Arguments("script", "async () => { for (await using of x) {} }", false, false, "Missing initializer in await using declaration")]
+    [Arguments("module", "for (await\nusing of x) {}", false, false, "Invalid left-hand side in for-loop")]
+    [Arguments("script", "for (await\nusing of x) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
+    [Arguments("script", "async () => { for (await\nusing of x) {} }", false, false, "Invalid left-hand side in for-loop")]
+    [Arguments("module", "for (await using\nof x) {}", false, false, "Invalid left-hand side in for-loop")]
+    [Arguments("script", "for (await using\nof x) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
+    [Arguments("script", "async () => { for (await using\nof x) {} }", false, false, "Invalid left-hand side in for-loop")]
+    [Arguments("module", "for (await\nusing\nof x) {}", false, false, "Invalid left-hand side in for-loop")]
+    [Arguments("script", "for (await\nusing\nof x) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
+    [Arguments("script", "async () => { for (await\nusing\nof x) {} }", false, false, "Invalid left-hand side in for-loop")]
 
-    [InlineData("module", "for (await using in x) {}", false, false, "Invalid left-hand side in for-loop")]
-    [InlineData("script", "for (await using in x) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
-    [InlineData("script", "async () => { for (await using in x) {} }", false, false, "Invalid left-hand side in for-loop")]
-    [InlineData("module", "for (await\nusing in x) {}", false, false, "Invalid left-hand side in for-loop")]
-    [InlineData("script", "for (await\nusing in x) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
-    [InlineData("script", "async () => { for (await\nusing in x) {} }", false, false, "Invalid left-hand side in for-loop")]
-    [InlineData("module", "for (await using\nin x) {}", false, false, "Invalid left-hand side in for-loop")]
-    [InlineData("script", "for (await using\nin x) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
-    [InlineData("script", "async () => { for (await using\nin x) {} }", false, false, "Invalid left-hand side in for-loop")]
-    [InlineData("module", "for (await\nusing\nin x) {}", false, false, "Invalid left-hand side in for-loop")]
-    [InlineData("script", "for (await\nusing\nin x) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
-    [InlineData("script", "async () => { for (await\nusing\nin x) {} }", false, false, "Invalid left-hand side in for-loop")]
+    [Arguments("module", "for (await using in x) {}", false, false, "Invalid left-hand side in for-loop")]
+    [Arguments("script", "for (await using in x) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
+    [Arguments("script", "async () => { for (await using in x) {} }", false, false, "Invalid left-hand side in for-loop")]
+    [Arguments("module", "for (await\nusing in x) {}", false, false, "Invalid left-hand side in for-loop")]
+    [Arguments("script", "for (await\nusing in x) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
+    [Arguments("script", "async () => { for (await\nusing in x) {} }", false, false, "Invalid left-hand side in for-loop")]
+    [Arguments("module", "for (await using\nin x) {}", false, false, "Invalid left-hand side in for-loop")]
+    [Arguments("script", "for (await using\nin x) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
+    [Arguments("script", "async () => { for (await using\nin x) {} }", false, false, "Invalid left-hand side in for-loop")]
+    [Arguments("module", "for (await\nusing\nin x) {}", false, false, "Invalid left-hand side in for-loop")]
+    [Arguments("script", "for (await\nusing\nin x) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
+    [Arguments("script", "async () => { for (await\nusing\nin x) {} }", false, false, "Invalid left-hand side in for-loop")]
 
-    [InlineData("module", "for (await using instanceof x) {}", false, false, "Unexpected token ')'")]
-    [InlineData("script", "for (await using instanceof x) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
-    [InlineData("script", "async () => { for (await using instanceof x) {} }", false, false, "Unexpected token ')'")]
+    [Arguments("module", "for (await using instanceof x) {}", false, false, "Unexpected token ')'")]
+    [Arguments("script", "for (await using instanceof x) {}", false, false, "Unexpected identifier 'using'")] // V8 reports "Unexpected token 'using'"
+    [Arguments("script", "async () => { for (await using instanceof x) {} }", false, false, "Unexpected token ')'")]
     public void ShouldHandleUsingEdgeCases(string sourceType, string input, bool allowTopLevelUsing, bool allowAwaitOutsideFunction, string? expectedError)
     {
         var parser = new Parser(new ParserOptions
@@ -2358,7 +2359,7 @@ public partial class ParserTests
         }
     }
 
-    [Fact]
+    [Test]
     public void LabelSetShouldPointToStatement()
     {
         var parser = new Parser();
@@ -2369,9 +2370,9 @@ public partial class ParserTests
         Assert.Equal(labeledStatement.Label, body.LabelSet);
     }
 
-    [Theory]
-    [InlineData(1.189008226412092e+38, "0x5973772948c653ac1971f1576e03c4d4")]
-    [InlineData(18446744073709552000d, "0xffffffffffffffff")]
+    [Test]
+    [Arguments(1.189008226412092e+38, "0x5973772948c653ac1971f1576e03c4d4")]
+    [Arguments(18446744073709552000d, "0xffffffffffffffff")]
     public void ShouldParseNumericLiterals(object expected, string source)
     {
         var parser = new Parser();
@@ -2383,11 +2384,11 @@ public partial class ParserTests
         Assert.Equal(expected, literal.Value);
     }
 
-    [Theory]
-    [InlineData("export { Mercury as \"☿\" } from \"./export-expname_FIXTURE.js\";", NodeType.ExportNamedDeclaration, false, "Mercury", true, "☿")]
-    [InlineData("export * as \"All\" from \"./export-expname_FIXTURE.js\";", NodeType.ExportAllDeclaration, false, null, true, "All")]
-    [InlineData("export { \"☿\" as Ami } from \"./export-expname_FIXTURE.js\"", NodeType.ExportNamedDeclaration, true, "☿", false, "Ami")]
-    [InlineData("import { \"☿\" as Ami } from \"./export-expname_FIXTURE.js\";", NodeType.ImportDeclaration, false, "Ami", true, "☿")]
+    [Test]
+    [Arguments("export { Mercury as \"☿\" } from \"./export-expname_FIXTURE.js\";", NodeType.ExportNamedDeclaration, false, "Mercury", true, "☿")]
+    [Arguments("export * as \"All\" from \"./export-expname_FIXTURE.js\";", NodeType.ExportAllDeclaration, false, null, true, "All")]
+    [Arguments("export { \"☿\" as Ami } from \"./export-expname_FIXTURE.js\"", NodeType.ExportNamedDeclaration, true, "☿", false, "Ami")]
+    [Arguments("import { \"☿\" as Ami } from \"./export-expname_FIXTURE.js\";", NodeType.ImportDeclaration, false, "Ami", true, "☿")]
     public void ShouldParseModuleImportExportWithStringLiterals(string source, NodeType nodeType,
         bool localIsLiteral, string? expectedLocalName, bool exportedIsLiteral, string? expectedExportedName)
     {
@@ -2432,7 +2433,7 @@ public partial class ParserTests
         }
     }
 
-    [Fact]
+    [Test]
     public void ShouldParseClassInheritance()
     {
         var parser = new Parser();
@@ -2442,7 +2443,7 @@ public partial class ParserTests
         Assert.IsType<CallExpression>(classDeclaration.SuperClass);
     }
 
-    [Fact]
+    [Test]
     public void ShouldParseClassStaticBlocks()
     {
         const string code =
@@ -2473,7 +2474,7 @@ public partial class ParserTests
         Assert.True(staticBlocks.SequenceEqualUnordered(staticBlocks2));
     }
 
-    [Fact]
+    [Test]
     public void ShouldSymbolPropertyKey()
     {
         var parser = new Parser();
@@ -2491,7 +2492,7 @@ public partial class ParserTests
         Assert.Equal("iterator", identifier.Name);
     }
 
-    [Fact]
+    [Test]
     public void ShouldParseArrayPattern()
     {
         var parser = new Parser();
@@ -2521,7 +2522,7 @@ public partial class ParserTests
         Assert.Equal("x", identifier.Name);
     }
 
-    [Fact]
+    [Test]
     public void ThrowsErrorForInvalidCurly()
     {
         var parser = new Parser();
@@ -2532,10 +2533,10 @@ public partial class ParserTests
         Assert.Equal("UnexpectedToken", ex.Error.Code);
     }
 
-    [Theory]
-    [InlineData(".")]
-    [InlineData("..")]
-    [InlineData("...")]
+    [Test]
+    [Arguments(".")]
+    [Arguments("..")]
+    [Arguments("...")]
     public void ThrowsErrorForDot(string script)
     {
         var parser = new Parser();
@@ -2546,7 +2547,7 @@ public partial class ParserTests
         Assert.Equal("UnexpectedToken", ex.Error.Code);
     }
 
-    [Fact]
+    [Test]
     public void ThrowsErrorForInvalidRegExpFlags()
     {
         var parser = new Parser();
@@ -2557,7 +2558,7 @@ public partial class ParserTests
         Assert.Equal("InvalidRegExpFlags", ex.Error.Code);
     }
 
-    [Fact]
+    [Test]
     public void AllowsSingleProto()
     {
         var parser = new Parser(new ParserOptions { Tolerant = false });
@@ -2570,7 +2571,7 @@ public partial class ParserTests
         Assert.Equal("__proto__", identifier.Name);
     }
 
-    [Fact]
+    [Test]
     public void ThrowsErrorForDuplicateProto()
     {
         var parser = new Parser(new ParserOptions { Tolerant = false });
@@ -2581,11 +2582,11 @@ public partial class ParserTests
         Assert.Equal("DuplicateProto", ex.Error.Code);
     }
 
-    [Theory]
-    [InlineData("(async () => { for await (var x of []) { } })()")]
-    [InlineData("(async () => { for await (let x of []) { } })()")]
-    [InlineData("(async () => { for await (const x of []) { } })()")]
-    [InlineData("(async () => { for await (x of []) { } })()")]
+    [Test]
+    [Arguments("(async () => { for await (var x of []) { } })()")]
+    [Arguments("(async () => { for await (let x of []) { } })()")]
+    [Arguments("(async () => { for await (const x of []) { } })()")]
+    [Arguments("(async () => { for await (x of []) { } })()")]
     public void ParsesValidForAwaitLoops(string code)
     {
         var errorCollector = new ParseErrorCollector();
@@ -2595,25 +2596,25 @@ public partial class ParserTests
         Assert.Empty(errorCollector.Errors);
     }
 
-    [Theory]
-    [InlineData("(async () => { for await (;;) { } })()")]
-    [InlineData("(async () => { for await (var i = 0, j = 1;;) { } })()")]
-    [InlineData("(async () => { for await (let i = 0, j = 1;;) { } })()")]
-    [InlineData("(async () => { for await (const i = 0, j = 1;;) { } })()")]
-    [InlineData("(async () => { for await (i = 0, j = 1;;) { } })()")]
-    [InlineData("(async () => { for await (var x = (0 in []) in {}) { } })()")]
-    [InlineData("(async () => { for await (let x in {}) { } })()")]
-    [InlineData("(async () => { for await (const x in {}) { } })()")]
-    [InlineData("(async () => { for await (let in {}) { } })()")]
-    [InlineData("(async () => { for await (const in {}) { } })()")]
-    [InlineData("(async () => { for await (x in {}) { } })()")]
+    [Test]
+    [Arguments("(async () => { for await (;;) { } })()")]
+    [Arguments("(async () => { for await (var i = 0, j = 1;;) { } })()")]
+    [Arguments("(async () => { for await (let i = 0, j = 1;;) { } })()")]
+    [Arguments("(async () => { for await (const i = 0, j = 1;;) { } })()")]
+    [Arguments("(async () => { for await (i = 0, j = 1;;) { } })()")]
+    [Arguments("(async () => { for await (var x = (0 in []) in {}) { } })()")]
+    [Arguments("(async () => { for await (let x in {}) { } })()")]
+    [Arguments("(async () => { for await (const x in {}) { } })()")]
+    [Arguments("(async () => { for await (let in {}) { } })()")]
+    [Arguments("(async () => { for await (const in {}) { } })()")]
+    [Arguments("(async () => { for await (x in {}) { } })()")]
     public void ReportsInvalidForAwaitLoops(string code)
     {
         var parser = new Parser(new ParserOptions { Tolerant = false });
         Assert.Throws<SyntaxErrorException>(() => parser.ParseScript(code));
     }
 
-    [Fact]
+    [Test]
     public void CanParsePrivateIdentifierInOperator()
     {
         const string code =
@@ -2637,10 +2638,10 @@ public partial class ParserTests
         Assert.Equal("bb", privateIdentifier.Name);
     }
 
-    [Theory]
-    [InlineData("`a`", "a")]
-    [InlineData("`a${b}`", "a", "b")]
-    [InlineData("`a${b}c`", "a", "b", "c")]
+    [Test]
+    [Arguments("`a`", "a")]
+    [Arguments("`a${b}`", "a", "b")]
+    [Arguments("`a${b}c`", "a", "b", "c")]
     public void TemplateLiteralChildNodesShouldCorrectOrder(string source, params string[] correctOrder)
     {
         var parser = new Parser();
@@ -2671,7 +2672,7 @@ public partial class ParserTests
         }
     }
 
-    [Fact]
+    [Test]
     public void CanParseClassElementsWithNewLinesInsteadOfSemicolon()
     {
         // field-definition-accessor-no-line-terminator.js
@@ -2710,10 +2711,10 @@ public partial class ParserTests
         Assert.Null(fourth.Value);
     }
 
-    [Theory]
-    [InlineData("script", true)]
-    [InlineData("module", false)]
-    [InlineData("expression", false)]
+    [Test]
+    [Arguments("script", true)]
+    [Arguments("module", false)]
+    [Arguments("expression", false)]
     public void ShouldParseTopLevelAwait(string sourceType, bool shouldThrow)
     {
         const string code = "await import('x')";
@@ -2734,10 +2735,10 @@ public partial class ParserTests
         }
     }
 
-    [Theory]
-    [InlineData("script", false)]
-    [InlineData("module", true)]
-    [InlineData("expression", false)]
+    [Test]
+    [Arguments("script", false)]
+    [Arguments("module", true)]
+    [Arguments("expression", false)]
     public void ShouldAllowLetKeywordInYieldExpression(string sourceType, bool shouldThrow)
     {
         // See also: https://github.com/sebastienros/esprima-dotnet/issues/403
@@ -2761,10 +2762,10 @@ public partial class ParserTests
         }
     }
 
-    [Theory]
-    [InlineData("script")]
-    [InlineData("module")]
-    [InlineData("expression")]
+    [Test]
+    [Arguments("script")]
+    [Arguments("module")]
+    [Arguments("expression")]
     public void ShouldAllowImportExpressionInYieldExpression(string sourceType)
     {
         // See also: https://github.com/sebastienros/esprima-dotnet/issues/403
@@ -2780,10 +2781,10 @@ public partial class ParserTests
         Assert.IsType<ImportExpression>(yieldExpression.Argument);
     }
 
-    [Theory]
-    [InlineData("script")]
-    [InlineData("module")]
-    [InlineData("expression")]
+    [Test]
+    [Arguments("script")]
+    [Arguments("module")]
+    [Arguments("expression")]
     public void ShouldDisallowImportKeywordInYieldExpression(string sourceType)
     {
         // See also: https://github.com/sebastienros/esprima-dotnet/issues/403
@@ -2796,7 +2797,7 @@ public partial class ParserTests
         Assert.Throws<SyntaxErrorException>(() => parseAction(parser, code));
     }
 
-    [Fact]
+    [Test]
     public void ShouldDisallowReturnInClassStaticBlock()
     {
         var parser = new Parser(new ParserOptions
@@ -2808,11 +2809,11 @@ public partial class ParserTests
         Assert.Equal("Illegal return statement", ex.Description);
     }
 
-    [Theory]
-    [InlineData(false, false)]
-    [InlineData(false, true)]
-    [InlineData(true, false)]
-    [InlineData(true, true)]
+    [Test]
+    [Arguments(false, false)]
+    [Arguments(false, true)]
+    [Arguments(true, false)]
+    [Arguments(true, true)]
     public void ShouldDisallowTestOfConditionalExpressionToBeAnUnparenthesizedArrowFunction(bool preserveParens, bool isAsync)
     {
         var asyncToken = isAsync ? "async " : "";
@@ -2830,7 +2831,7 @@ public partial class ParserTests
             parser.ParseScript(asyncToken + "() => ({} ? 1 : 0)").ToJavaScript());
     }
 
-    [Fact]
+    [Test]
     public void ShouldDisallowAdditionalSubscriptsBeforeArrowInAsyncArrowFunctions()
     {
         var parser = new Parser();
@@ -2841,11 +2842,11 @@ public partial class ParserTests
         Assert.Equal(nameof(SyntaxErrorMessages.UnexpectedToken), ex.Error.Code);
     }
 
-    [Theory]
-    [InlineData(false, false)]
-    [InlineData(false, true)]
-    [InlineData(true, false)]
-    [InlineData(true, true)]
+    [Test]
+    [Arguments(false, false)]
+    [Arguments(false, true)]
+    [Arguments(true, false)]
+    [Arguments(true, true)]
     public void ShouldAllowTestOfConditionalExpressionToBeAParenthesizedArrowFunction(bool preserveParens, bool isAsync)
     {
         var asyncToken = isAsync ? "async " : "";
@@ -2864,11 +2865,11 @@ public partial class ParserTests
         Assert.Equal("(" + asyncToken.TrimEnd() + "()=>{})?1:0", ast.ToJavaScript());
     }
 
-    [Theory]
-    [InlineData(false, false)]
-    [InlineData(false, true)]
-    [InlineData(true, false)]
-    [InlineData(true, true)]
+    [Test]
+    [Arguments(false, false)]
+    [Arguments(false, true)]
+    [Arguments(true, false)]
+    [Arguments(true, true)]
     public void ShouldDisallowNewSuper(bool parenthesize, bool preserveParens)
     {
         var parser = new Parser(new ParserOptions { PreserveParens = preserveParens });
@@ -2879,9 +2880,9 @@ public partial class ParserTests
         Assert.Equal(nameof(SyntaxErrorMessages.UnexpectedSuper), ex.Error.Code);
     }
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
+    [Test]
+    [Arguments(false)]
+    [Arguments(true)]
     public void ShouldPreserveParensInReinterpretedPattern(bool preserveParens)
     {
         var parser = new Parser(new ParserOptions { PreserveParens = preserveParens });
@@ -2889,237 +2890,237 @@ public partial class ParserTests
         Assert.Equal(preserveParens ? 2 : 0, ast.DescendantNodes().OfType<ParenthesizedExpression>().Count());
     }
 
-    [Theory]
-    [InlineData("script", "fn() = 0", null)]
-    [InlineData("script", "'use strict'; fn() = 0", "Invalid left-hand side in assignment")]
-    [InlineData("module", "fn() = 0", "Invalid left-hand side in assignment")]
-    [InlineData("script", "((fn())) = 0", null)]
-    [InlineData("module", "((fn())) = 0", "Invalid left-hand side in assignment")]
-    [InlineData("script", "fn() = (fn()) = 0", null)]
-    [InlineData("module", "fn() = (fn()) = 0", "Invalid left-hand side in assignment")]
-    [InlineData("script", "fn() += 0", null)]
-    [InlineData("module", "fn() += 0", "Invalid left-hand side in assignment")]
-    [InlineData("script", "((fn())) += 0", null)]
-    [InlineData("module", "((fn())) += 0", "Invalid left-hand side in assignment")]
-    [InlineData("script", "fn() ??= 0", "Invalid left-hand side in assignment")]
-    [InlineData("module", "fn() ??= 0", "Invalid left-hand side in assignment")]
-    [InlineData("script", "fn() ||= 0", "Invalid left-hand side in assignment")]
-    [InlineData("module", "fn() ||= 0", "Invalid left-hand side in assignment")]
-    [InlineData("script", "fn() &&= 0", "Invalid left-hand side in assignment")]
-    [InlineData("module", "fn() &&= 0", "Invalid left-hand side in assignment")]
-    [InlineData("script", "++fn()", null)]
-    [InlineData("module", "++fn()", "Invalid left-hand side expression in prefix operation")]
-    [InlineData("script", "((++fn()))", null)]
-    [InlineData("module", "((++fn()))", "Invalid left-hand side expression in prefix operation")]
-    [InlineData("script", "fn()++", null)]
-    [InlineData("module", "fn()++", "Invalid left-hand side expression in postfix operation")]
-    [InlineData("script", "((fn()))++", null)]
-    [InlineData("module", "((fn()))++", "Invalid left-hand side expression in postfix operation")]
+    [Test]
+    [Arguments("script", "fn() = 0", null)]
+    [Arguments("script", "'use strict'; fn() = 0", "Invalid left-hand side in assignment")]
+    [Arguments("module", "fn() = 0", "Invalid left-hand side in assignment")]
+    [Arguments("script", "((fn())) = 0", null)]
+    [Arguments("module", "((fn())) = 0", "Invalid left-hand side in assignment")]
+    [Arguments("script", "fn() = (fn()) = 0", null)]
+    [Arguments("module", "fn() = (fn()) = 0", "Invalid left-hand side in assignment")]
+    [Arguments("script", "fn() += 0", null)]
+    [Arguments("module", "fn() += 0", "Invalid left-hand side in assignment")]
+    [Arguments("script", "((fn())) += 0", null)]
+    [Arguments("module", "((fn())) += 0", "Invalid left-hand side in assignment")]
+    [Arguments("script", "fn() ??= 0", "Invalid left-hand side in assignment")]
+    [Arguments("module", "fn() ??= 0", "Invalid left-hand side in assignment")]
+    [Arguments("script", "fn() ||= 0", "Invalid left-hand side in assignment")]
+    [Arguments("module", "fn() ||= 0", "Invalid left-hand side in assignment")]
+    [Arguments("script", "fn() &&= 0", "Invalid left-hand side in assignment")]
+    [Arguments("module", "fn() &&= 0", "Invalid left-hand side in assignment")]
+    [Arguments("script", "++fn()", null)]
+    [Arguments("module", "++fn()", "Invalid left-hand side expression in prefix operation")]
+    [Arguments("script", "((++fn()))", null)]
+    [Arguments("module", "((++fn()))", "Invalid left-hand side expression in prefix operation")]
+    [Arguments("script", "fn()++", null)]
+    [Arguments("module", "fn()++", "Invalid left-hand side expression in postfix operation")]
+    [Arguments("script", "((fn()))++", null)]
+    [Arguments("module", "((fn()))++", "Invalid left-hand side expression in postfix operation")]
 
-    [InlineData("script", "[fn()] = []", "Invalid destructuring assignment target")]
-    [InlineData("script", "'use strict'; [fn()] = []", "Invalid destructuring assignment target")]
-    [InlineData("script", "[fn() = 0] = []", "Invalid destructuring assignment target")]
-    [InlineData("script", "'use strict'; [fn() = 0] = []", "Invalid destructuring assignment target")]
-    [InlineData("script", "[x = fn() = 0] = []", null)]
-    [InlineData("script", "'use strict'; [x = fn() = 0] = []", "Invalid left-hand side in assignment")]
-    [InlineData("script", "[fn() += 0] = []", "Invalid destructuring assignment target")]
-    [InlineData("script", "'use strict'; [fn() += 0] = []", "Invalid destructuring assignment target")]
-    [InlineData("script", "[++fn()] = []", "Invalid destructuring assignment target")]
-    [InlineData("script", "'use strict'; [++fn()] = []", "Invalid destructuring assignment target")]
-    [InlineData("script", "[fn()++] = []", "Invalid destructuring assignment target")]
-    [InlineData("script", "'use strict'; [fn()++] = []", "Invalid destructuring assignment target")]
-    [InlineData("script", "[...fn()] = []", "Invalid destructuring assignment target")]
-    [InlineData("script", "'use strict'; [...fn()] = []", "Invalid destructuring assignment target")]
-    [InlineData("script", "[...fn() = 0] = []", "Invalid destructuring assignment target")]
-    [InlineData("script", "'use strict'; [...fn() = 0] = []", "Invalid destructuring assignment target")]
-    [InlineData("script", "[...(fn() = 0)] = []", "Invalid destructuring assignment target")]
-    [InlineData("script", "'use strict'; [...(fn() = 0)] = []", "Invalid left-hand side in assignment")]
-    [InlineData("script", "([...(fn() = 0)]) = []", "Invalid left-hand side in assignment")]
-    [InlineData("script", "'use strict'; ([...(fn() = 0)]) = []", "Invalid left-hand side in assignment")]
-    [InlineData("script", "({ x: fn() } = {})", "Invalid destructuring assignment target")]
-    [InlineData("script", "'use strict'; ({ x: fn() } = {})", "Invalid destructuring assignment target")]
-    [InlineData("script", "({ x: fn() = 0 } = {})", "Invalid destructuring assignment target")]
-    [InlineData("script", "'use strict'; ({ x: fn() = 0 } = {})", "Invalid destructuring assignment target")]
-    [InlineData("script", "({ x: y = fn() = 0 } = {})", null)]
-    [InlineData("script", "'use strict'; ({ x: y = fn() = 0 } = {})", "Invalid left-hand side in assignment")]
-    [InlineData("script", "({ x: fn() += 0 } = {})", "Invalid destructuring assignment target")]
-    [InlineData("script", "'use strict'; ({ x: fn() += 0 } = {})", "Invalid destructuring assignment target")]
-    [InlineData("script", "({ x: ++fn() } = {})", "Invalid destructuring assignment target")]
-    [InlineData("script", "'use strict'; ({ x: ++fn() } = {})", "Invalid destructuring assignment target")]
-    [InlineData("script", "({ x: fn()++ } = {})", "Invalid destructuring assignment target")]
-    [InlineData("script", "'use strict'; ({ x: fn()++ } = {})", "Invalid destructuring assignment target")]
-    [InlineData("script", "({ fn(): 0 } = {})", "Unexpected token ':'")]
-    [InlineData("script", "'use strict'; ({ fn(): 0 } = {})", "Unexpected token ':'")]
-    [InlineData("script", "({ ...fn() } = {})", "Invalid destructuring assignment target")]
-    [InlineData("script", "'use strict'; ({ ...fn() } = {})", "Invalid destructuring assignment target")]
-    [InlineData("script", "({ ...fn() = 0 } = {})", "Invalid destructuring assignment target")]
-    [InlineData("script", "'use strict'; ({ ...fn() = 0 } = {})", "Invalid destructuring assignment target")]
-    [InlineData("script", "({ ...(fn() = 0) } = {})", "Invalid destructuring assignment target")]
-    [InlineData("script", "'use strict'; ({ ...(fn() = 0) } = {})", "Invalid left-hand side in assignment")]
-    [InlineData("script", "({ ...(fn() = 0) }) = {}", "Invalid left-hand side in assignment")]
-    [InlineData("script", "'use strict'; ({ ...(fn() = 0) }) = {}", "Invalid left-hand side in assignment")]
-    [InlineData("script", "[{a: fn()} = {}] = []", "Invalid destructuring assignment target")]
-    [InlineData("script", "'use strict'; [{a: fn()} = {}] = []", "Invalid destructuring assignment target")]
-    [InlineData("script", "[{a: fn() = 0} = {}] = []", "Invalid destructuring assignment target")]
-    [InlineData("script", "'use strict'; [{a: fn() = 0} = {}] = []", "Invalid destructuring assignment target")]
+    [Arguments("script", "[fn()] = []", "Invalid destructuring assignment target")]
+    [Arguments("script", "'use strict'; [fn()] = []", "Invalid destructuring assignment target")]
+    [Arguments("script", "[fn() = 0] = []", "Invalid destructuring assignment target")]
+    [Arguments("script", "'use strict'; [fn() = 0] = []", "Invalid destructuring assignment target")]
+    [Arguments("script", "[x = fn() = 0] = []", null)]
+    [Arguments("script", "'use strict'; [x = fn() = 0] = []", "Invalid left-hand side in assignment")]
+    [Arguments("script", "[fn() += 0] = []", "Invalid destructuring assignment target")]
+    [Arguments("script", "'use strict'; [fn() += 0] = []", "Invalid destructuring assignment target")]
+    [Arguments("script", "[++fn()] = []", "Invalid destructuring assignment target")]
+    [Arguments("script", "'use strict'; [++fn()] = []", "Invalid destructuring assignment target")]
+    [Arguments("script", "[fn()++] = []", "Invalid destructuring assignment target")]
+    [Arguments("script", "'use strict'; [fn()++] = []", "Invalid destructuring assignment target")]
+    [Arguments("script", "[...fn()] = []", "Invalid destructuring assignment target")]
+    [Arguments("script", "'use strict'; [...fn()] = []", "Invalid destructuring assignment target")]
+    [Arguments("script", "[...fn() = 0] = []", "Invalid destructuring assignment target")]
+    [Arguments("script", "'use strict'; [...fn() = 0] = []", "Invalid destructuring assignment target")]
+    [Arguments("script", "[...(fn() = 0)] = []", "Invalid destructuring assignment target")]
+    [Arguments("script", "'use strict'; [...(fn() = 0)] = []", "Invalid left-hand side in assignment")]
+    [Arguments("script", "([...(fn() = 0)]) = []", "Invalid left-hand side in assignment")]
+    [Arguments("script", "'use strict'; ([...(fn() = 0)]) = []", "Invalid left-hand side in assignment")]
+    [Arguments("script", "({ x: fn() } = {})", "Invalid destructuring assignment target")]
+    [Arguments("script", "'use strict'; ({ x: fn() } = {})", "Invalid destructuring assignment target")]
+    [Arguments("script", "({ x: fn() = 0 } = {})", "Invalid destructuring assignment target")]
+    [Arguments("script", "'use strict'; ({ x: fn() = 0 } = {})", "Invalid destructuring assignment target")]
+    [Arguments("script", "({ x: y = fn() = 0 } = {})", null)]
+    [Arguments("script", "'use strict'; ({ x: y = fn() = 0 } = {})", "Invalid left-hand side in assignment")]
+    [Arguments("script", "({ x: fn() += 0 } = {})", "Invalid destructuring assignment target")]
+    [Arguments("script", "'use strict'; ({ x: fn() += 0 } = {})", "Invalid destructuring assignment target")]
+    [Arguments("script", "({ x: ++fn() } = {})", "Invalid destructuring assignment target")]
+    [Arguments("script", "'use strict'; ({ x: ++fn() } = {})", "Invalid destructuring assignment target")]
+    [Arguments("script", "({ x: fn()++ } = {})", "Invalid destructuring assignment target")]
+    [Arguments("script", "'use strict'; ({ x: fn()++ } = {})", "Invalid destructuring assignment target")]
+    [Arguments("script", "({ fn(): 0 } = {})", "Unexpected token ':'")]
+    [Arguments("script", "'use strict'; ({ fn(): 0 } = {})", "Unexpected token ':'")]
+    [Arguments("script", "({ ...fn() } = {})", "Invalid destructuring assignment target")]
+    [Arguments("script", "'use strict'; ({ ...fn() } = {})", "Invalid destructuring assignment target")]
+    [Arguments("script", "({ ...fn() = 0 } = {})", "Invalid destructuring assignment target")]
+    [Arguments("script", "'use strict'; ({ ...fn() = 0 } = {})", "Invalid destructuring assignment target")]
+    [Arguments("script", "({ ...(fn() = 0) } = {})", "Invalid destructuring assignment target")]
+    [Arguments("script", "'use strict'; ({ ...(fn() = 0) } = {})", "Invalid left-hand side in assignment")]
+    [Arguments("script", "({ ...(fn() = 0) }) = {}", "Invalid left-hand side in assignment")]
+    [Arguments("script", "'use strict'; ({ ...(fn() = 0) }) = {}", "Invalid left-hand side in assignment")]
+    [Arguments("script", "[{a: fn()} = {}] = []", "Invalid destructuring assignment target")]
+    [Arguments("script", "'use strict'; [{a: fn()} = {}] = []", "Invalid destructuring assignment target")]
+    [Arguments("script", "[{a: fn() = 0} = {}] = []", "Invalid destructuring assignment target")]
+    [Arguments("script", "'use strict'; [{a: fn() = 0} = {}] = []", "Invalid destructuring assignment target")]
 
-    [InlineData("script", "for (fn() = 0;;) {}", null)]
-    [InlineData("script", "'use strict'; for (fn() = 0;;) {}", "Invalid left-hand side in assignment")]
-    [InlineData("module", "for (fn() = 0;;) {}", "Invalid left-hand side in assignment")]
-    [InlineData("script", "for ((fn() = 0);;) {}", null)]
-    [InlineData("module", "for ((fn() = 0);;) {}", "Invalid left-hand side in assignment")]
-    [InlineData("script", "for (((fn())) = 0;;) {}", null)]
-    [InlineData("module", "for (((fn())) = 0;;) {}", "Invalid left-hand side in assignment")]
-    [InlineData("script", "for (fn() += 0;;) {}", null)]
-    [InlineData("module", "for (fn() += 0;;) {}", "Invalid left-hand side in assignment")]
-    [InlineData("script", "for (fn() ??= 0;;) {}", "Invalid left-hand side in assignment")]
-    [InlineData("module", "for (fn() ??= 0;;) {}", "Invalid left-hand side in assignment")]
-    [InlineData("script", "for (++fn();;) {}", null)]
-    [InlineData("module", "for (++fn();;) {}", "Invalid left-hand side expression in prefix operation")]
-    [InlineData("script", "for (fn()++;;) {}", null)]
-    [InlineData("module", "for (fn()++;;) {}", "Invalid left-hand side expression in postfix operation")]
+    [Arguments("script", "for (fn() = 0;;) {}", null)]
+    [Arguments("script", "'use strict'; for (fn() = 0;;) {}", "Invalid left-hand side in assignment")]
+    [Arguments("module", "for (fn() = 0;;) {}", "Invalid left-hand side in assignment")]
+    [Arguments("script", "for ((fn() = 0);;) {}", null)]
+    [Arguments("module", "for ((fn() = 0);;) {}", "Invalid left-hand side in assignment")]
+    [Arguments("script", "for (((fn())) = 0;;) {}", null)]
+    [Arguments("module", "for (((fn())) = 0;;) {}", "Invalid left-hand side in assignment")]
+    [Arguments("script", "for (fn() += 0;;) {}", null)]
+    [Arguments("module", "for (fn() += 0;;) {}", "Invalid left-hand side in assignment")]
+    [Arguments("script", "for (fn() ??= 0;;) {}", "Invalid left-hand side in assignment")]
+    [Arguments("module", "for (fn() ??= 0;;) {}", "Invalid left-hand side in assignment")]
+    [Arguments("script", "for (++fn();;) {}", null)]
+    [Arguments("module", "for (++fn();;) {}", "Invalid left-hand side expression in prefix operation")]
+    [Arguments("script", "for (fn()++;;) {}", null)]
+    [Arguments("module", "for (fn()++;;) {}", "Invalid left-hand side expression in postfix operation")]
 
-    [InlineData("script", "for (fn() in {}) {}", null)]
-    [InlineData("script", "'use strict'; for (fn() in {}) {}", "Invalid left-hand side in for-loop")]
-    [InlineData("module", "for (fn() in {}) {}", "Invalid left-hand side in for-loop")]
-    [InlineData("script", "for (((fn())) in {}) {}", null)]
-    [InlineData("module", "for (((fn())) in {}) {}", "Invalid left-hand side in for-loop")]
-    [InlineData("script", "for (fn() = 0 in {}) {}", "Invalid left-hand side in for-loop")]
-    [InlineData("module", "for (fn() = 0 in {}) {}", "Invalid left-hand side in assignment")]
-    [InlineData("script", "for ((fn() = 0) in {}) {}", "Invalid left-hand side in for-loop")]
-    [InlineData("module", "for ((fn() = 0) in {}) {}", "Invalid left-hand side in assignment")]
-    [InlineData("script", "for (((fn())) = 0 in {}) {}", "Invalid left-hand side in for-loop")]
-    [InlineData("module", "for (((fn())) = 0 in {}) {}", "Invalid left-hand side in assignment")]
-    [InlineData("script", "for (fn() += 0 in {}) {}", "Invalid left-hand side in for-loop")]
-    [InlineData("module", "for (fn() += 0 in {}) {}", "Invalid left-hand side in assignment")]
-    [InlineData("script", "for (fn() ??= 0 in {}) {}", "Invalid left-hand side in assignment")]
-    [InlineData("module", "for (fn() ??= 0 in {}) {}", "Invalid left-hand side in assignment")]
-    [InlineData("script", "for (++fn() in {}) {}", "Invalid left-hand side in for-loop")]
-    [InlineData("module", "for (++fn() in {}) {}", "Invalid left-hand side expression in prefix operation")]
-    [InlineData("script", "for (fn()++ in {}) {}", "Invalid left-hand side in for-loop")]
-    [InlineData("module", "for (fn()++ in {}) {}", "Invalid left-hand side expression in postfix operation")]
-    [InlineData("script", "for ([fn()] in {}) {}", "Invalid destructuring assignment target")]
-    [InlineData("module", "for ([fn()] in {}) {}", "Invalid destructuring assignment target")]
-    [InlineData("script", "for (([fn()]) in {}) {}", "Invalid left-hand side in for-loop")] // V8 reports "Invalid destructuring assignment target"
-    [InlineData("module", "for (([fn()]) in {}) {}", "Invalid left-hand side in for-loop")] // V8 reports "Invalid destructuring assignment target"
-    [InlineData("script", "for ([...fn()] in {}) {}", "Invalid destructuring assignment target")]
-    [InlineData("module", "for ([...fn()] in {}) {}", "Invalid destructuring assignment target")]
-    [InlineData("script", "for ({x: fn()} in {}) {}", "Invalid destructuring assignment target")]
-    [InlineData("module", "for ({x: fn()} in {}) {}", "Invalid destructuring assignment target")]
-    [InlineData("script", "for (({x: fn()}) in {}) {}", "Invalid left-hand side in for-loop")] // V8 reports "Invalid destructuring assignment target"
-    [InlineData("module", "for (({x: fn()}) in {}) {}", "Invalid left-hand side in for-loop")] // V8 reports "Invalid destructuring assignment target"
-    [InlineData("script", "for ({...fn()} in {}) {}", "Invalid destructuring assignment target")]
-    [InlineData("module", "for ({...fn()} in {}) {}", "Invalid destructuring assignment target")]
+    [Arguments("script", "for (fn() in {}) {}", null)]
+    [Arguments("script", "'use strict'; for (fn() in {}) {}", "Invalid left-hand side in for-loop")]
+    [Arguments("module", "for (fn() in {}) {}", "Invalid left-hand side in for-loop")]
+    [Arguments("script", "for (((fn())) in {}) {}", null)]
+    [Arguments("module", "for (((fn())) in {}) {}", "Invalid left-hand side in for-loop")]
+    [Arguments("script", "for (fn() = 0 in {}) {}", "Invalid left-hand side in for-loop")]
+    [Arguments("module", "for (fn() = 0 in {}) {}", "Invalid left-hand side in assignment")]
+    [Arguments("script", "for ((fn() = 0) in {}) {}", "Invalid left-hand side in for-loop")]
+    [Arguments("module", "for ((fn() = 0) in {}) {}", "Invalid left-hand side in assignment")]
+    [Arguments("script", "for (((fn())) = 0 in {}) {}", "Invalid left-hand side in for-loop")]
+    [Arguments("module", "for (((fn())) = 0 in {}) {}", "Invalid left-hand side in assignment")]
+    [Arguments("script", "for (fn() += 0 in {}) {}", "Invalid left-hand side in for-loop")]
+    [Arguments("module", "for (fn() += 0 in {}) {}", "Invalid left-hand side in assignment")]
+    [Arguments("script", "for (fn() ??= 0 in {}) {}", "Invalid left-hand side in assignment")]
+    [Arguments("module", "for (fn() ??= 0 in {}) {}", "Invalid left-hand side in assignment")]
+    [Arguments("script", "for (++fn() in {}) {}", "Invalid left-hand side in for-loop")]
+    [Arguments("module", "for (++fn() in {}) {}", "Invalid left-hand side expression in prefix operation")]
+    [Arguments("script", "for (fn()++ in {}) {}", "Invalid left-hand side in for-loop")]
+    [Arguments("module", "for (fn()++ in {}) {}", "Invalid left-hand side expression in postfix operation")]
+    [Arguments("script", "for ([fn()] in {}) {}", "Invalid destructuring assignment target")]
+    [Arguments("module", "for ([fn()] in {}) {}", "Invalid destructuring assignment target")]
+    [Arguments("script", "for (([fn()]) in {}) {}", "Invalid left-hand side in for-loop")] // V8 reports "Invalid destructuring assignment target"
+    [Arguments("module", "for (([fn()]) in {}) {}", "Invalid left-hand side in for-loop")] // V8 reports "Invalid destructuring assignment target"
+    [Arguments("script", "for ([...fn()] in {}) {}", "Invalid destructuring assignment target")]
+    [Arguments("module", "for ([...fn()] in {}) {}", "Invalid destructuring assignment target")]
+    [Arguments("script", "for ({x: fn()} in {}) {}", "Invalid destructuring assignment target")]
+    [Arguments("module", "for ({x: fn()} in {}) {}", "Invalid destructuring assignment target")]
+    [Arguments("script", "for (({x: fn()}) in {}) {}", "Invalid left-hand side in for-loop")] // V8 reports "Invalid destructuring assignment target"
+    [Arguments("module", "for (({x: fn()}) in {}) {}", "Invalid left-hand side in for-loop")] // V8 reports "Invalid destructuring assignment target"
+    [Arguments("script", "for ({...fn()} in {}) {}", "Invalid destructuring assignment target")]
+    [Arguments("module", "for ({...fn()} in {}) {}", "Invalid destructuring assignment target")]
 
-    [InlineData("script", "for (fn() of []) {}", null)]
-    [InlineData("script", "'use strict'; for (fn() of []) {}", "Invalid left-hand side in for-loop")]
-    [InlineData("module", "for (fn() of []) {}", "Invalid left-hand side in for-loop")]
-    [InlineData("script", "for (((fn())) of []) {}", null)]
-    [InlineData("module", "for (((fn())) of []) {}", "Invalid left-hand side in for-loop")]
-    [InlineData("script", "for (fn() = 0 of []) {}", "Invalid left-hand side in for-loop")]
-    [InlineData("module", "for (fn() = 0 of []) {}", "Invalid left-hand side in assignment")]
-    [InlineData("script", "for ((fn() = 0) of []) {}", "Invalid left-hand side in for-loop")]
-    [InlineData("module", "for ((fn() = 0) of []) {}", "Invalid left-hand side in assignment")]
-    [InlineData("script", "for (((fn())) = 0 of []) {}", "Invalid left-hand side in for-loop")]
-    [InlineData("module", "for (((fn())) = 0 of []) {}", "Invalid left-hand side in assignment")]
-    [InlineData("script", "for (fn() += 0 of []) {}", "Invalid left-hand side in for-loop")]
-    [InlineData("module", "for (fn() += 0 of []) {}", "Invalid left-hand side in assignment")]
-    [InlineData("script", "for (fn() ??= 0 of []) {}", "Invalid left-hand side in assignment")]
-    [InlineData("module", "for (fn() ??= 0 of []) {}", "Invalid left-hand side in assignment")]
-    [InlineData("script", "for (++fn() of []) {}", "Invalid left-hand side in for-loop")]
-    [InlineData("module", "for (++fn() of []) {}", "Invalid left-hand side expression in prefix operation")]
-    [InlineData("script", "for (fn()++ of []) {}", "Invalid left-hand side in for-loop")]
-    [InlineData("module", "for (fn()++ of []) {}", "Invalid left-hand side expression in postfix operation")]
-    [InlineData("script", "for ([fn()] of []) {}", "Invalid destructuring assignment target")]
-    [InlineData("module", "for ([fn()] of []) {}", "Invalid destructuring assignment target")]
-    [InlineData("script", "for (([fn()]) of []) {}", "Invalid left-hand side in for-loop")] // V8 reports "Invalid destructuring assignment target"
-    [InlineData("module", "for (([fn()]) of []) {}", "Invalid left-hand side in for-loop")] // V8 reports "Invalid destructuring assignment target"
-    [InlineData("script", "for ([...fn()] of []) {}", "Invalid destructuring assignment target")]
-    [InlineData("module", "for ([...fn()] of []) {}", "Invalid destructuring assignment target")]
-    [InlineData("script", "for ({x: fn()} of []) {}", "Invalid destructuring assignment target")]
-    [InlineData("module", "for ({x: fn()} of []) {}", "Invalid destructuring assignment target")]
-    [InlineData("script", "for (({x: fn()}) of []) {}", "Invalid left-hand side in for-loop")] // V8 reports "Invalid destructuring assignment target"
-    [InlineData("module", "for (({x: fn()}) of []) {}", "Invalid left-hand side in for-loop")] // V8 reports "Invalid destructuring assignment target"
-    [InlineData("script", "for ({...fn()} of []) {}", "Invalid destructuring assignment target")]
-    [InlineData("module", "for ({...fn()} of []) {}", "Invalid destructuring assignment target")]
+    [Arguments("script", "for (fn() of []) {}", null)]
+    [Arguments("script", "'use strict'; for (fn() of []) {}", "Invalid left-hand side in for-loop")]
+    [Arguments("module", "for (fn() of []) {}", "Invalid left-hand side in for-loop")]
+    [Arguments("script", "for (((fn())) of []) {}", null)]
+    [Arguments("module", "for (((fn())) of []) {}", "Invalid left-hand side in for-loop")]
+    [Arguments("script", "for (fn() = 0 of []) {}", "Invalid left-hand side in for-loop")]
+    [Arguments("module", "for (fn() = 0 of []) {}", "Invalid left-hand side in assignment")]
+    [Arguments("script", "for ((fn() = 0) of []) {}", "Invalid left-hand side in for-loop")]
+    [Arguments("module", "for ((fn() = 0) of []) {}", "Invalid left-hand side in assignment")]
+    [Arguments("script", "for (((fn())) = 0 of []) {}", "Invalid left-hand side in for-loop")]
+    [Arguments("module", "for (((fn())) = 0 of []) {}", "Invalid left-hand side in assignment")]
+    [Arguments("script", "for (fn() += 0 of []) {}", "Invalid left-hand side in for-loop")]
+    [Arguments("module", "for (fn() += 0 of []) {}", "Invalid left-hand side in assignment")]
+    [Arguments("script", "for (fn() ??= 0 of []) {}", "Invalid left-hand side in assignment")]
+    [Arguments("module", "for (fn() ??= 0 of []) {}", "Invalid left-hand side in assignment")]
+    [Arguments("script", "for (++fn() of []) {}", "Invalid left-hand side in for-loop")]
+    [Arguments("module", "for (++fn() of []) {}", "Invalid left-hand side expression in prefix operation")]
+    [Arguments("script", "for (fn()++ of []) {}", "Invalid left-hand side in for-loop")]
+    [Arguments("module", "for (fn()++ of []) {}", "Invalid left-hand side expression in postfix operation")]
+    [Arguments("script", "for ([fn()] of []) {}", "Invalid destructuring assignment target")]
+    [Arguments("module", "for ([fn()] of []) {}", "Invalid destructuring assignment target")]
+    [Arguments("script", "for (([fn()]) of []) {}", "Invalid left-hand side in for-loop")] // V8 reports "Invalid destructuring assignment target"
+    [Arguments("module", "for (([fn()]) of []) {}", "Invalid left-hand side in for-loop")] // V8 reports "Invalid destructuring assignment target"
+    [Arguments("script", "for ([...fn()] of []) {}", "Invalid destructuring assignment target")]
+    [Arguments("module", "for ([...fn()] of []) {}", "Invalid destructuring assignment target")]
+    [Arguments("script", "for ({x: fn()} of []) {}", "Invalid destructuring assignment target")]
+    [Arguments("module", "for ({x: fn()} of []) {}", "Invalid destructuring assignment target")]
+    [Arguments("script", "for (({x: fn()}) of []) {}", "Invalid left-hand side in for-loop")] // V8 reports "Invalid destructuring assignment target"
+    [Arguments("module", "for (({x: fn()}) of []) {}", "Invalid left-hand side in for-loop")] // V8 reports "Invalid destructuring assignment target"
+    [Arguments("script", "for ({...fn()} of []) {}", "Invalid destructuring assignment target")]
+    [Arguments("module", "for ({...fn()} of []) {}", "Invalid destructuring assignment target")]
 
-    [InlineData("script", "(fn()) => {}", "Invalid destructuring assignment target")]
-    [InlineData("script", "'use strict'; (fn()) => {}", "Invalid destructuring assignment target")]
-    [InlineData("module", "(fn()) => {}", "Invalid destructuring assignment target")]
-    [InlineData("script", "(((fn()))) => {}", "Invalid destructuring assignment target")]
-    [InlineData("module", "(((fn()))) => {}", "Invalid destructuring assignment target")]
-    [InlineData("script", "(fn() = 0) => {}", "Invalid destructuring assignment target")]
-    [InlineData("module", "(fn() = 0) => {}", "Invalid left-hand side in assignment")]
-    [InlineData("script", "((fn() = 0) => {}", "Invalid destructuring assignment target")]
-    [InlineData("module", "((fn() = 0) => {}", "Invalid left-hand side in assignment")]
-    [InlineData("script", "(((fn())) = 0) => {}", "Invalid destructuring assignment target")]
-    [InlineData("module", "(((fn())) = 0) => {}", "Invalid left-hand side in assignment")]
-    [InlineData("script", "(fn() += 0) => {}", "Invalid destructuring assignment target")]
-    [InlineData("module", "(fn() += 0) => {}", "Invalid left-hand side in assignment")]
-    [InlineData("script", "(fn() ??= 0) => {}", "Invalid left-hand side in assignment")]
-    [InlineData("module", "(fn() ??= 0) => {}", "Invalid left-hand side in assignment")]
-    [InlineData("script", "(++fn()) => {}", "Invalid destructuring assignment target")]
-    [InlineData("module", "(++fn()) => {}", "Invalid left-hand side expression in prefix operation")]
-    [InlineData("script", "(fn()++) => {}", "Invalid destructuring assignment target")]
-    [InlineData("module", "(fn()++) => {}", "Invalid left-hand side expression in postfix operation")]
-    [InlineData("script", "(x, ...fn()) => {}", "Invalid destructuring assignment target")] // V8 reports "Unexpected token '...'"
-    [InlineData("module", "(x, ...fn()) => {}", "Invalid destructuring assignment target")] // V8 reports "Unexpected token '...'"
-    [InlineData("script", "(x, ...fn() = 0) => {}", "Invalid destructuring assignment target")] // V8 reports "Unexpected token '...'"
-    [InlineData("module", "(x, ...fn() = 0) => {}", "Invalid left-hand side in assignment")] // V8 reports "Unexpected token '...'"
-    [InlineData("script", "(x, ...(fn() = 0)) => {}", "Invalid destructuring assignment target")] // V8 reports "Unexpected token '('"
-    [InlineData("module", "(x, ...(fn() = 0)) => {}", "Invalid left-hand side in assignment")] // V8 reports "Unexpected token '('"
-    [InlineData("script", "([fn()]) => {}", "Invalid destructuring assignment target")]
-    [InlineData("module", "([fn()]) => {}", "Invalid destructuring assignment target")]
-    [InlineData("script", "([...fn()]) => {}", "Invalid destructuring assignment target")]
-    [InlineData("module", "([...fn()]) => {}", "Invalid destructuring assignment target")]
-    [InlineData("script", "({x: fn()}) => {}", "Invalid destructuring assignment target")]
-    [InlineData("module", "({x: fn()}) => {}", "Invalid destructuring assignment target")]
-    [InlineData("script", "({...fn()}) => {}", "Invalid destructuring assignment target")]
-    [InlineData("module", "({...fn()}) => {}", "Invalid destructuring assignment target")]
+    [Arguments("script", "(fn()) => {}", "Invalid destructuring assignment target")]
+    [Arguments("script", "'use strict'; (fn()) => {}", "Invalid destructuring assignment target")]
+    [Arguments("module", "(fn()) => {}", "Invalid destructuring assignment target")]
+    [Arguments("script", "(((fn()))) => {}", "Invalid destructuring assignment target")]
+    [Arguments("module", "(((fn()))) => {}", "Invalid destructuring assignment target")]
+    [Arguments("script", "(fn() = 0) => {}", "Invalid destructuring assignment target")]
+    [Arguments("module", "(fn() = 0) => {}", "Invalid left-hand side in assignment")]
+    [Arguments("script", "((fn() = 0) => {}", "Invalid destructuring assignment target")]
+    [Arguments("module", "((fn() = 0) => {}", "Invalid left-hand side in assignment")]
+    [Arguments("script", "(((fn())) = 0) => {}", "Invalid destructuring assignment target")]
+    [Arguments("module", "(((fn())) = 0) => {}", "Invalid left-hand side in assignment")]
+    [Arguments("script", "(fn() += 0) => {}", "Invalid destructuring assignment target")]
+    [Arguments("module", "(fn() += 0) => {}", "Invalid left-hand side in assignment")]
+    [Arguments("script", "(fn() ??= 0) => {}", "Invalid left-hand side in assignment")]
+    [Arguments("module", "(fn() ??= 0) => {}", "Invalid left-hand side in assignment")]
+    [Arguments("script", "(++fn()) => {}", "Invalid destructuring assignment target")]
+    [Arguments("module", "(++fn()) => {}", "Invalid left-hand side expression in prefix operation")]
+    [Arguments("script", "(fn()++) => {}", "Invalid destructuring assignment target")]
+    [Arguments("module", "(fn()++) => {}", "Invalid left-hand side expression in postfix operation")]
+    [Arguments("script", "(x, ...fn()) => {}", "Invalid destructuring assignment target")] // V8 reports "Unexpected token '...'"
+    [Arguments("module", "(x, ...fn()) => {}", "Invalid destructuring assignment target")] // V8 reports "Unexpected token '...'"
+    [Arguments("script", "(x, ...fn() = 0) => {}", "Invalid destructuring assignment target")] // V8 reports "Unexpected token '...'"
+    [Arguments("module", "(x, ...fn() = 0) => {}", "Invalid left-hand side in assignment")] // V8 reports "Unexpected token '...'"
+    [Arguments("script", "(x, ...(fn() = 0)) => {}", "Invalid destructuring assignment target")] // V8 reports "Unexpected token '('"
+    [Arguments("module", "(x, ...(fn() = 0)) => {}", "Invalid left-hand side in assignment")] // V8 reports "Unexpected token '('"
+    [Arguments("script", "([fn()]) => {}", "Invalid destructuring assignment target")]
+    [Arguments("module", "([fn()]) => {}", "Invalid destructuring assignment target")]
+    [Arguments("script", "([...fn()]) => {}", "Invalid destructuring assignment target")]
+    [Arguments("module", "([...fn()]) => {}", "Invalid destructuring assignment target")]
+    [Arguments("script", "({x: fn()}) => {}", "Invalid destructuring assignment target")]
+    [Arguments("module", "({x: fn()}) => {}", "Invalid destructuring assignment target")]
+    [Arguments("script", "({...fn()}) => {}", "Invalid destructuring assignment target")]
+    [Arguments("module", "({...fn()}) => {}", "Invalid destructuring assignment target")]
 
-    [InlineData("script", "async (fn()) => {}", "Invalid destructuring assignment target")]
-    [InlineData("script", "'use strict'; async (fn()) => {}", "Invalid destructuring assignment target")]
-    [InlineData("module", "async (fn()) => {}", "Invalid destructuring assignment target")]
-    [InlineData("script", "async (await()) => {}", "'await' is not a valid identifier name in an async function")] // V8 reports "Unexpected token ')'"
-    [InlineData("module", "async (await()) => {}", "Unexpected token ')'")] // V8 reports "Invalid destructuring assignment target"
-    [InlineData("script", "async (((fn()))) => {}", "Invalid destructuring assignment target")]
-    [InlineData("module", "async (((fn()))) => {}", "Invalid destructuring assignment target")]
-    [InlineData("script", "async ((await())) => {}", "Invalid destructuring assignment target")] // V8 reports "Unexpected token ')'"
-    [InlineData("module", "async ((await())) => {}", "Unexpected token ')'")] // V8 reports "Invalid destructuring assignment target"
-    [InlineData("script", "async (fn() = 0) => {}", "Invalid destructuring assignment target")]
-    [InlineData("module", "async (fn() = 0) => {}", "Invalid left-hand side in assignment")]
-    [InlineData("script", "async (await() = 0) => {}", "'await' is not a valid identifier name in an async function")] // V8 reports "Unexpected token ')'"
-    [InlineData("module", "async (await() = 0) => {}", "Unexpected token ')'")] // V8 reports "Unexpected token ')'"
-    [InlineData("script", "async ((fn() = 0) => {}", "Invalid destructuring assignment target")]
-    [InlineData("module", "async ((fn() = 0) => {}", "Invalid left-hand side in assignment")]
-    [InlineData("script", "async ((await() = 0)) => {}", "Invalid destructuring assignment target")] // V8 reports "Unexpected token ')'"
-    [InlineData("module", "async ((await() = 0)) => {}", "Unexpected token ')'")] // V8 reports "Invalid destructuring assignment target"
-    [InlineData("script", "async (((fn())) = 0) => {}", "Invalid destructuring assignment target")]
-    [InlineData("module", "async (((fn())) = 0) => {}", "Invalid left-hand side in assignment")]
-    [InlineData("script", "async ((await()) = 0) => {}", "Invalid destructuring assignment target")] // V8 reports "'await' is not a valid identifier name in an async function"
-    [InlineData("module", "async ((await()) = 0) => {}", "Unexpected token ')'")] // V8 reports "Invalid destructuring assignment target"
-    [InlineData("script", "async (fn() += 0) => {}", "Invalid destructuring assignment target")]
-    [InlineData("module", "async (fn() += 0) => {}", "Invalid left-hand side in assignment")]
-    [InlineData("script", "async (fn() ??= 0) => {}", "Invalid left-hand side in assignment")]
-    [InlineData("module", "async (fn() ??= 0) => {}", "Invalid left-hand side in assignment")]
-    [InlineData("script", "async (++fn()) => {}", "Invalid destructuring assignment target")]
-    [InlineData("module", "async (++fn()) => {}", "Invalid left-hand side expression in prefix operation")]
-    [InlineData("script", "async (fn()++) => {}", "Invalid destructuring assignment target")]
-    [InlineData("module", "async (fn()++) => {}", "Invalid left-hand side expression in postfix operation")]
-    [InlineData("script", "async (x, ...fn()) => {}", "Invalid destructuring assignment target")] // V8 reports "Unexpected token '...'"
-    [InlineData("module", "async (x, ...fn()) => {}", "Invalid destructuring assignment target")] // V8 reports "Unexpected token '...'"
-    [InlineData("script", "async (x, ...fn() = 0) => {}", "Invalid destructuring assignment target")] // V8 reports "Unexpected token '...'"
-    [InlineData("module", "async (x, ...fn() = 0) => {}", "Invalid left-hand side in assignment")] // V8 reports "Unexpected token '...'"
-    [InlineData("script", "async (x, ...(fn() = 0)) => {}", "Invalid destructuring assignment target")] // V8 reports "Unexpected token '('"
-    [InlineData("module", "async (x, ...(fn() = 0)) => {}", "Invalid left-hand side in assignment")] // V8 reports "Unexpected token '('"
-    [InlineData("script", "async ([fn()]) => {}", "Invalid destructuring assignment target")]
-    [InlineData("module", "async ([fn()]) => {}", "Invalid destructuring assignment target")]
-    [InlineData("script", "async ([...fn()]) => {}", "Invalid destructuring assignment target")]
-    [InlineData("module", "async ([...fn()]) => {}", "Invalid destructuring assignment target")]
-    [InlineData("script", "async ({x: fn()}) => {}", "Invalid destructuring assignment target")]
-    [InlineData("module", "async ({x: fn()}) => {}", "Invalid destructuring assignment target")]
-    [InlineData("script", "async ({...fn()}) => {}", "Invalid destructuring assignment target")]
-    [InlineData("module", "async ({...fn()}) => {}", "Invalid destructuring assignment target")]
+    [Arguments("script", "async (fn()) => {}", "Invalid destructuring assignment target")]
+    [Arguments("script", "'use strict'; async (fn()) => {}", "Invalid destructuring assignment target")]
+    [Arguments("module", "async (fn()) => {}", "Invalid destructuring assignment target")]
+    [Arguments("script", "async (await()) => {}", "'await' is not a valid identifier name in an async function")] // V8 reports "Unexpected token ')'"
+    [Arguments("module", "async (await()) => {}", "Unexpected token ')'")] // V8 reports "Invalid destructuring assignment target"
+    [Arguments("script", "async (((fn()))) => {}", "Invalid destructuring assignment target")]
+    [Arguments("module", "async (((fn()))) => {}", "Invalid destructuring assignment target")]
+    [Arguments("script", "async ((await())) => {}", "Invalid destructuring assignment target")] // V8 reports "Unexpected token ')'"
+    [Arguments("module", "async ((await())) => {}", "Unexpected token ')'")] // V8 reports "Invalid destructuring assignment target"
+    [Arguments("script", "async (fn() = 0) => {}", "Invalid destructuring assignment target")]
+    [Arguments("module", "async (fn() = 0) => {}", "Invalid left-hand side in assignment")]
+    [Arguments("script", "async (await() = 0) => {}", "'await' is not a valid identifier name in an async function")] // V8 reports "Unexpected token ')'"
+    [Arguments("module", "async (await() = 0) => {}", "Unexpected token ')'")] // V8 reports "Unexpected token ')'"
+    [Arguments("script", "async ((fn() = 0) => {}", "Invalid destructuring assignment target")]
+    [Arguments("module", "async ((fn() = 0) => {}", "Invalid left-hand side in assignment")]
+    [Arguments("script", "async ((await() = 0)) => {}", "Invalid destructuring assignment target")] // V8 reports "Unexpected token ')'"
+    [Arguments("module", "async ((await() = 0)) => {}", "Unexpected token ')'")] // V8 reports "Invalid destructuring assignment target"
+    [Arguments("script", "async (((fn())) = 0) => {}", "Invalid destructuring assignment target")]
+    [Arguments("module", "async (((fn())) = 0) => {}", "Invalid left-hand side in assignment")]
+    [Arguments("script", "async ((await()) = 0) => {}", "Invalid destructuring assignment target")] // V8 reports "'await' is not a valid identifier name in an async function"
+    [Arguments("module", "async ((await()) = 0) => {}", "Unexpected token ')'")] // V8 reports "Invalid destructuring assignment target"
+    [Arguments("script", "async (fn() += 0) => {}", "Invalid destructuring assignment target")]
+    [Arguments("module", "async (fn() += 0) => {}", "Invalid left-hand side in assignment")]
+    [Arguments("script", "async (fn() ??= 0) => {}", "Invalid left-hand side in assignment")]
+    [Arguments("module", "async (fn() ??= 0) => {}", "Invalid left-hand side in assignment")]
+    [Arguments("script", "async (++fn()) => {}", "Invalid destructuring assignment target")]
+    [Arguments("module", "async (++fn()) => {}", "Invalid left-hand side expression in prefix operation")]
+    [Arguments("script", "async (fn()++) => {}", "Invalid destructuring assignment target")]
+    [Arguments("module", "async (fn()++) => {}", "Invalid left-hand side expression in postfix operation")]
+    [Arguments("script", "async (x, ...fn()) => {}", "Invalid destructuring assignment target")] // V8 reports "Unexpected token '...'"
+    [Arguments("module", "async (x, ...fn()) => {}", "Invalid destructuring assignment target")] // V8 reports "Unexpected token '...'"
+    [Arguments("script", "async (x, ...fn() = 0) => {}", "Invalid destructuring assignment target")] // V8 reports "Unexpected token '...'"
+    [Arguments("module", "async (x, ...fn() = 0) => {}", "Invalid left-hand side in assignment")] // V8 reports "Unexpected token '...'"
+    [Arguments("script", "async (x, ...(fn() = 0)) => {}", "Invalid destructuring assignment target")] // V8 reports "Unexpected token '('"
+    [Arguments("module", "async (x, ...(fn() = 0)) => {}", "Invalid left-hand side in assignment")] // V8 reports "Unexpected token '('"
+    [Arguments("script", "async ([fn()]) => {}", "Invalid destructuring assignment target")]
+    [Arguments("module", "async ([fn()]) => {}", "Invalid destructuring assignment target")]
+    [Arguments("script", "async ([...fn()]) => {}", "Invalid destructuring assignment target")]
+    [Arguments("module", "async ([...fn()]) => {}", "Invalid destructuring assignment target")]
+    [Arguments("script", "async ({x: fn()}) => {}", "Invalid destructuring assignment target")]
+    [Arguments("module", "async ({x: fn()}) => {}", "Invalid destructuring assignment target")]
+    [Arguments("script", "async ({...fn()}) => {}", "Invalid destructuring assignment target")]
+    [Arguments("module", "async ({...fn()}) => {}", "Invalid destructuring assignment target")]
     public void ShouldAllowFunctionCallAssignmentTargets(string sourceType, string input, string? expectedError)
     {
         var parser = new Parser();
@@ -3140,110 +3141,110 @@ public partial class ParserTests
     // A shorthand property assignment (CoverInitializedName, e.g. `{a = 0}`) is only allowed when the object literal
     // containing it is refined into an object assignment pattern. (See also
     // https://tc39.es/ecma262/#sec-object-initializer-static-semantics-early-errors, Note 2.)
-    [Theory]
+    [Test]
     // The object literal is not refined because the destructuring assignment target is the member expression which
     // contains it - a valid assignment target on its own.
-    [InlineData("script", "({a = 0}.x = 0);", "Invalid shorthand property initializer")]
-    [InlineData("module", "({a = 0}.x = 0);", "Invalid shorthand property initializer")]
-    [InlineData("script", "({a = 0}.x += 0);", "Invalid shorthand property initializer")]
-    [InlineData("module", "({a = 0}.x += 0);", "Invalid shorthand property initializer")]
-    [InlineData("script", "({a = 0}.x ??= 0);", "Invalid shorthand property initializer")]
-    [InlineData("module", "({a = 0}.x ??= 0);", "Invalid shorthand property initializer")]
-    [InlineData("script", "[{a = 0}.x] = [];", "Invalid shorthand property initializer")]
-    [InlineData("module", "[{a = 0}.x] = [];", "Invalid shorthand property initializer")]
-    [InlineData("script", "[...{a = 0}.x] = [];", "Invalid shorthand property initializer")]
-    [InlineData("module", "[...{a = 0}.x] = [];", "Invalid shorthand property initializer")]
-    [InlineData("script", "({a: {b = 0}.x} = {});", "Invalid shorthand property initializer")]
-    [InlineData("module", "({a: {b = 0}.x} = {});", "Invalid shorthand property initializer")]
-    [InlineData("script", "({...{b = 0}.x} = {});", "Invalid shorthand property initializer")]
-    [InlineData("module", "({...{b = 0}.x} = {});", "Invalid shorthand property initializer")]
-    [InlineData("script", "[{a = 0}[0]] = [];", "Invalid shorthand property initializer")]
-    [InlineData("module", "[{a = 0}[0]] = [];", "Invalid shorthand property initializer")]
-    [InlineData("script", "[{a = 0}].x = 0;", "Invalid shorthand property initializer")]
-    [InlineData("module", "[{a = 0}].x = 0;", "Invalid shorthand property initializer")]
-    [InlineData("script", "[[{a = 0}.x]] = [];", "Invalid shorthand property initializer")]
-    [InlineData("module", "[[{a = 0}.x]] = [];", "Invalid shorthand property initializer")]
-    [InlineData("script", "({a: [{b = 0}.x]} = {});", "Invalid shorthand property initializer")]
-    [InlineData("module", "({a: [{b = 0}.x]} = {});", "Invalid shorthand property initializer")]
-    [InlineData("script", "([{a = 0}.x] = []);", "Invalid shorthand property initializer")]
-    [InlineData("module", "([{a = 0}.x] = []);", "Invalid shorthand property initializer")]
-    [InlineData("script", "[{a = 0}] = [{b = 0}.x] = [];", "Invalid shorthand property initializer")]
-    [InlineData("module", "[{a = 0}] = [{b = 0}.x] = [];", "Invalid shorthand property initializer")]
-    [InlineData("script", "[{a = 0}.x = 1] = [];", "Invalid shorthand property initializer")]
-    [InlineData("module", "[{a = 0}.x = 1] = [];", "Invalid shorthand property initializer")]
+    [Arguments("script", "({a = 0}.x = 0);", "Invalid shorthand property initializer")]
+    [Arguments("module", "({a = 0}.x = 0);", "Invalid shorthand property initializer")]
+    [Arguments("script", "({a = 0}.x += 0);", "Invalid shorthand property initializer")]
+    [Arguments("module", "({a = 0}.x += 0);", "Invalid shorthand property initializer")]
+    [Arguments("script", "({a = 0}.x ??= 0);", "Invalid shorthand property initializer")]
+    [Arguments("module", "({a = 0}.x ??= 0);", "Invalid shorthand property initializer")]
+    [Arguments("script", "[{a = 0}.x] = [];", "Invalid shorthand property initializer")]
+    [Arguments("module", "[{a = 0}.x] = [];", "Invalid shorthand property initializer")]
+    [Arguments("script", "[...{a = 0}.x] = [];", "Invalid shorthand property initializer")]
+    [Arguments("module", "[...{a = 0}.x] = [];", "Invalid shorthand property initializer")]
+    [Arguments("script", "({a: {b = 0}.x} = {});", "Invalid shorthand property initializer")]
+    [Arguments("module", "({a: {b = 0}.x} = {});", "Invalid shorthand property initializer")]
+    [Arguments("script", "({...{b = 0}.x} = {});", "Invalid shorthand property initializer")]
+    [Arguments("module", "({...{b = 0}.x} = {});", "Invalid shorthand property initializer")]
+    [Arguments("script", "[{a = 0}[0]] = [];", "Invalid shorthand property initializer")]
+    [Arguments("module", "[{a = 0}[0]] = [];", "Invalid shorthand property initializer")]
+    [Arguments("script", "[{a = 0}].x = 0;", "Invalid shorthand property initializer")]
+    [Arguments("module", "[{a = 0}].x = 0;", "Invalid shorthand property initializer")]
+    [Arguments("script", "[[{a = 0}.x]] = [];", "Invalid shorthand property initializer")]
+    [Arguments("module", "[[{a = 0}.x]] = [];", "Invalid shorthand property initializer")]
+    [Arguments("script", "({a: [{b = 0}.x]} = {});", "Invalid shorthand property initializer")]
+    [Arguments("module", "({a: [{b = 0}.x]} = {});", "Invalid shorthand property initializer")]
+    [Arguments("script", "([{a = 0}.x] = []);", "Invalid shorthand property initializer")]
+    [Arguments("module", "([{a = 0}.x] = []);", "Invalid shorthand property initializer")]
+    [Arguments("script", "[{a = 0}] = [{b = 0}.x] = [];", "Invalid shorthand property initializer")]
+    [Arguments("module", "[{a = 0}] = [{b = 0}.x] = [];", "Invalid shorthand property initializer")]
+    [Arguments("script", "[{a = 0}.x = 1] = [];", "Invalid shorthand property initializer")]
+    [Arguments("module", "[{a = 0}.x = 1] = [];", "Invalid shorthand property initializer")]
 
     // Only some of the object literals are refined. (The reported position is that of the first shorthand property
     // assignment, which may not be the one which remained unrefined - just like in the case of V8.)
-    [InlineData("script", "[{a = 0}, {b = 0}.x] = [];", "Invalid shorthand property initializer")]
-    [InlineData("module", "[{a = 0}, {b = 0}.x] = [];", "Invalid shorthand property initializer")]
-    [InlineData("script", "[{a = 0}.x, {b = 0}] = [];", "Invalid shorthand property initializer")]
-    [InlineData("module", "[{a = 0}.x, {b = 0}] = [];", "Invalid shorthand property initializer")]
+    [Arguments("script", "[{a = 0}, {b = 0}.x] = [];", "Invalid shorthand property initializer")]
+    [Arguments("module", "[{a = 0}, {b = 0}.x] = [];", "Invalid shorthand property initializer")]
+    [Arguments("script", "[{a = 0}.x, {b = 0}] = [];", "Invalid shorthand property initializer")]
+    [Arguments("module", "[{a = 0}.x, {b = 0}] = [];", "Invalid shorthand property initializer")]
 
     // The head of a for-in/of statement is refined the same way as the left-hand side of an assignment.
-    [InlineData("script", "for ([{a = 0}.x] of []) ;", "Invalid shorthand property initializer")]
-    [InlineData("module", "for ([{a = 0}.x] of []) ;", "Invalid shorthand property initializer")]
-    [InlineData("script", "for ({a = 0}.x of []) ;", "Invalid shorthand property initializer")]
-    [InlineData("module", "for ({a = 0}.x of []) ;", "Invalid shorthand property initializer")]
-    [InlineData("script", "for ([{a = 0}.x] in {}) ;", "Invalid shorthand property initializer")]
-    [InlineData("module", "for ([{a = 0}.x] in {}) ;", "Invalid shorthand property initializer")]
-    [InlineData("script", "for ([{a = 0}.x] = [] ;;) ;", "Invalid shorthand property initializer")]
-    [InlineData("module", "for ([{a = 0}.x] = [] ;;) ;", "Invalid shorthand property initializer")]
+    [Arguments("script", "for ([{a = 0}.x] of []) ;", "Invalid shorthand property initializer")]
+    [Arguments("module", "for ([{a = 0}.x] of []) ;", "Invalid shorthand property initializer")]
+    [Arguments("script", "for ({a = 0}.x of []) ;", "Invalid shorthand property initializer")]
+    [Arguments("module", "for ({a = 0}.x of []) ;", "Invalid shorthand property initializer")]
+    [Arguments("script", "for ([{a = 0}.x] in {}) ;", "Invalid shorthand property initializer")]
+    [Arguments("module", "for ([{a = 0}.x] in {}) ;", "Invalid shorthand property initializer")]
+    [Arguments("script", "for ([{a = 0}.x] = [] ;;) ;", "Invalid shorthand property initializer")]
+    [Arguments("module", "for ([{a = 0}.x] = [] ;;) ;", "Invalid shorthand property initializer")]
 
     // There is no assignment at all, so the object literal cannot be refined.
-    [InlineData("script", "({a = 0});", "Invalid shorthand property initializer")]
-    [InlineData("module", "({a = 0});", "Invalid shorthand property initializer")]
-    [InlineData("script", "f({a = 0});", "Invalid shorthand property initializer")]
-    [InlineData("module", "f({a = 0});", "Invalid shorthand property initializer")]
-    [InlineData("script", "[{a = 0}.x];", "Invalid shorthand property initializer")]
-    [InlineData("module", "[{a = 0}.x];", "Invalid shorthand property initializer")]
-    [InlineData("script", "({a: {b = 0}.x});", "Invalid shorthand property initializer")]
-    [InlineData("module", "({a: {b = 0}.x});", "Invalid shorthand property initializer")]
-    [InlineData("script", "({...{b = 0}.x});", "Invalid shorthand property initializer")]
-    [InlineData("module", "({...{b = 0}.x});", "Invalid shorthand property initializer")]
-    [InlineData("script", "[({a = 0})] = [];", "Invalid shorthand property initializer")]
-    [InlineData("module", "[({a = 0})] = [];", "Invalid shorthand property initializer")]
-    [InlineData("script", "({a = 0}) = {};", "Invalid shorthand property initializer")]
-    [InlineData("module", "({a = 0}) = {};", "Invalid shorthand property initializer")]
-    [InlineData("script", "f({a = 0}) = 0;", "Invalid shorthand property initializer")]
-    [InlineData("module", "f({a = 0}) = 0;", "Invalid shorthand property initializer")]
+    [Arguments("script", "({a = 0});", "Invalid shorthand property initializer")]
+    [Arguments("module", "({a = 0});", "Invalid shorthand property initializer")]
+    [Arguments("script", "f({a = 0});", "Invalid shorthand property initializer")]
+    [Arguments("module", "f({a = 0});", "Invalid shorthand property initializer")]
+    [Arguments("script", "[{a = 0}.x];", "Invalid shorthand property initializer")]
+    [Arguments("module", "[{a = 0}.x];", "Invalid shorthand property initializer")]
+    [Arguments("script", "({a: {b = 0}.x});", "Invalid shorthand property initializer")]
+    [Arguments("module", "({a: {b = 0}.x});", "Invalid shorthand property initializer")]
+    [Arguments("script", "({...{b = 0}.x});", "Invalid shorthand property initializer")]
+    [Arguments("module", "({...{b = 0}.x});", "Invalid shorthand property initializer")]
+    [Arguments("script", "[({a = 0})] = [];", "Invalid shorthand property initializer")]
+    [Arguments("module", "[({a = 0})] = [];", "Invalid shorthand property initializer")]
+    [Arguments("script", "({a = 0}) = {};", "Invalid shorthand property initializer")]
+    [Arguments("module", "({a = 0}) = {};", "Invalid shorthand property initializer")]
+    [Arguments("script", "f({a = 0}) = 0;", "Invalid shorthand property initializer")]
+    [Arguments("module", "f({a = 0}) = 0;", "Invalid shorthand property initializer")]
 
     // The left-hand side is reported as invalid before the shorthand property assignment is.
-    [InlineData("script", "({a = 0} += 1);", "Invalid left-hand side in assignment")]
-    [InlineData("module", "({a = 0} += 1);", "Invalid left-hand side in assignment")]
-    [InlineData("script", "[{a = 0}.x] += 1;", "Invalid shorthand property initializer")]
-    [InlineData("module", "[{a = 0}.x] += 1;", "Invalid shorthand property initializer")]
-    [InlineData("script", "({a = 0}?.x = 0);", "Invalid shorthand property initializer")] // V8 reports "Invalid left-hand side in assignment"
-    [InlineData("module", "({a = 0}?.x = 0);", "Invalid shorthand property initializer")] // V8 reports "Invalid left-hand side in assignment"
-    [InlineData("script", "({a = 0}.x) => 0;", "Invalid shorthand property initializer")] // V8 reports "Invalid destructuring assignment target"
-    [InlineData("module", "({a = 0}.x) => 0;", "Invalid shorthand property initializer")] // V8 reports "Invalid destructuring assignment target"
+    [Arguments("script", "({a = 0} += 1);", "Invalid left-hand side in assignment")]
+    [Arguments("module", "({a = 0} += 1);", "Invalid left-hand side in assignment")]
+    [Arguments("script", "[{a = 0}.x] += 1;", "Invalid shorthand property initializer")]
+    [Arguments("module", "[{a = 0}.x] += 1;", "Invalid shorthand property initializer")]
+    [Arguments("script", "({a = 0}?.x = 0);", "Invalid shorthand property initializer")] // V8 reports "Invalid left-hand side in assignment"
+    [Arguments("module", "({a = 0}?.x = 0);", "Invalid shorthand property initializer")] // V8 reports "Invalid left-hand side in assignment"
+    [Arguments("script", "({a = 0}.x) => 0;", "Invalid shorthand property initializer")] // V8 reports "Invalid destructuring assignment target"
+    [Arguments("module", "({a = 0}.x) => 0;", "Invalid shorthand property initializer")] // V8 reports "Invalid destructuring assignment target"
 
     // The object literal is refined, so the shorthand property assignment is legal.
-    [InlineData("script", "({a = 0} = {});", null)]
-    [InlineData("module", "({a = 0} = {});", null)]
-    [InlineData("script", "[{a = 0}] = [];", null)]
-    [InlineData("module", "[{a = 0}] = [];", null)]
-    [InlineData("script", "[{a = 0}, {b = 0}] = [];", null)]
-    [InlineData("module", "[{a = 0}, {b = 0}] = [];", null)]
-    [InlineData("script", "({a: {b = 0}} = {});", null)]
-    [InlineData("module", "({a: {b = 0}} = {});", null)]
-    [InlineData("script", "[{a = 0} = 1] = [];", null)]
-    [InlineData("module", "[{a = 0} = 1] = [];", null)]
-    [InlineData("script", "[...{a = 0}] = [];", null)]
-    [InlineData("module", "[...{a = 0}] = [];", null)]
-    [InlineData("script", "for ([{a = 0}] of []) ;", null)]
-    [InlineData("module", "for ([{a = 0}] of []) ;", null)]
-    [InlineData("script", "for ({a = 0} of [{}]) ;", null)]
-    [InlineData("module", "for ({a = 0} of [{}]) ;", null)]
-    [InlineData("script", "for ([{a = 0}] = [] ;;) ;", null)]
-    [InlineData("module", "for ([{a = 0}] = [] ;;) ;", null)]
-    [InlineData("script", "({a = 0}) => 0;", null)]
-    [InlineData("module", "({a = 0}) => 0;", null)]
-    [InlineData("script", "async ({a = 0}) => 0;", null)]
-    [InlineData("module", "async ({a = 0}) => 0;", null)]
+    [Arguments("script", "({a = 0} = {});", null)]
+    [Arguments("module", "({a = 0} = {});", null)]
+    [Arguments("script", "[{a = 0}] = [];", null)]
+    [Arguments("module", "[{a = 0}] = [];", null)]
+    [Arguments("script", "[{a = 0}, {b = 0}] = [];", null)]
+    [Arguments("module", "[{a = 0}, {b = 0}] = [];", null)]
+    [Arguments("script", "({a: {b = 0}} = {});", null)]
+    [Arguments("module", "({a: {b = 0}} = {});", null)]
+    [Arguments("script", "[{a = 0} = 1] = [];", null)]
+    [Arguments("module", "[{a = 0} = 1] = [];", null)]
+    [Arguments("script", "[...{a = 0}] = [];", null)]
+    [Arguments("module", "[...{a = 0}] = [];", null)]
+    [Arguments("script", "for ([{a = 0}] of []) ;", null)]
+    [Arguments("module", "for ([{a = 0}] of []) ;", null)]
+    [Arguments("script", "for ({a = 0} of [{}]) ;", null)]
+    [Arguments("module", "for ({a = 0} of [{}]) ;", null)]
+    [Arguments("script", "for ([{a = 0}] = [] ;;) ;", null)]
+    [Arguments("module", "for ([{a = 0}] = [] ;;) ;", null)]
+    [Arguments("script", "({a = 0}) => 0;", null)]
+    [Arguments("module", "({a = 0}) => 0;", null)]
+    [Arguments("script", "async ({a = 0}) => 0;", null)]
+    [Arguments("module", "async ({a = 0}) => 0;", null)]
 
     // There is no shorthand property assignment at all.
-    [InlineData("script", "[{a: 0}.x] = [];", null)]
-    [InlineData("module", "[{a: 0}.x] = [];", null)]
+    [Arguments("script", "[{a: 0}.x] = [];", null)]
+    [Arguments("module", "[{a: 0}.x] = [];", null)]
     public void ShouldHandleCoverInitializedNameEdgeCases(string sourceType, string input, string? expectedError)
     {
         var parser = new Parser();
@@ -3260,53 +3261,53 @@ public partial class ParserTests
         }
     }
 
-    [Theory]
-    [InlineData("as")]
-    [InlineData("do")]
-    [InlineData("if")]
-    [InlineData("in")]
-    [InlineData("of")]
-    [InlineData("for")]
-    [InlineData("get")]
-    [InlineData("let")]
-    [InlineData("new")]
-    [InlineData("set")]
-    [InlineData("try")]
-    [InlineData("var")]
-    [InlineData("case")]
-    [InlineData("else")]
-    [InlineData("enum")]
-    [InlineData("from")]
-    [InlineData("null")]
-    [InlineData("this")]
-    [InlineData("true")]
-    [InlineData("void")]
-    [InlineData("with")]
-    [InlineData("async")]
-    [InlineData("await")]
-    [InlineData("break")]
-    [InlineData("catch")]
-    [InlineData("class")]
-    [InlineData("const")]
-    [InlineData("false")]
-    [InlineData("super")]
-    [InlineData("throw")]
-    [InlineData("while")]
-    [InlineData("yield")]
-    [InlineData("delete")]
-    [InlineData("export")]
-    [InlineData("import")]
-    [InlineData("return")]
-    [InlineData("static")]
-    [InlineData("switch")]
-    [InlineData("typeof")]
-    [InlineData("finally")]
-    [InlineData("continue")]
-    [InlineData("debugger")]
-    [InlineData("function")]
-    [InlineData("arguments")]
-    [InlineData("instanceof")]
-    [InlineData("constructor")]
+    [Test]
+    [Arguments("as")]
+    [Arguments("do")]
+    [Arguments("if")]
+    [Arguments("in")]
+    [Arguments("of")]
+    [Arguments("for")]
+    [Arguments("get")]
+    [Arguments("let")]
+    [Arguments("new")]
+    [Arguments("set")]
+    [Arguments("try")]
+    [Arguments("var")]
+    [Arguments("case")]
+    [Arguments("else")]
+    [Arguments("enum")]
+    [Arguments("from")]
+    [Arguments("null")]
+    [Arguments("this")]
+    [Arguments("true")]
+    [Arguments("void")]
+    [Arguments("with")]
+    [Arguments("async")]
+    [Arguments("await")]
+    [Arguments("break")]
+    [Arguments("catch")]
+    [Arguments("class")]
+    [Arguments("const")]
+    [Arguments("false")]
+    [Arguments("super")]
+    [Arguments("throw")]
+    [Arguments("while")]
+    [Arguments("yield")]
+    [Arguments("delete")]
+    [Arguments("export")]
+    [Arguments("import")]
+    [Arguments("return")]
+    [Arguments("static")]
+    [Arguments("switch")]
+    [Arguments("typeof")]
+    [Arguments("finally")]
+    [Arguments("continue")]
+    [Arguments("debugger")]
+    [Arguments("function")]
+    [Arguments("arguments")]
+    [Arguments("instanceof")]
+    [Arguments("constructor")]
     public void UsesInternedInstancesForWellKnownTokens(string token)
     {
         var stringPool = new StringPool();
@@ -3319,7 +3320,7 @@ public partial class ParserTests
         Assert.Equal(0, stringPool.Count);
     }
 
-    [Fact]
+    [Test]
     public void UsesPooledInstancesForNotWellKnownTokens()
     {
         var stringPool = new StringPool();
@@ -3365,10 +3366,10 @@ public partial class ParserTests
         return new Parser(new ParserOptions { ExperimentalESFeatures = ExperimentalESFeatures.SourcePhaseImports | ExperimentalESFeatures.DeferImportEvaluation });
     }
 
-    [Theory]
-    [InlineData("import source x from 'mod';")]
-    [InlineData("import source source from 'mod';")]
-    [InlineData("import source from from 'mod';")]
+    [Test]
+    [Arguments("import source x from 'mod';")]
+    [Arguments("import source source from 'mod';")]
+    [Arguments("import source from from 'mod';")]
     public void SourcePhaseImport_ValidStaticForms(string code)
     {
         var parser = CreateImportPhasesParser();
@@ -3379,10 +3380,10 @@ public partial class ParserTests
         Assert.IsType<ImportDefaultSpecifier>(decl.Specifiers[0]);
     }
 
-    [Theory]
-    [InlineData("import source from 'mod';", 1)]
-    [InlineData("import source, { x } from 'mod';", 2)]
-    [InlineData("import source, * as ns from 'mod';", 2)]
+    [Test]
+    [Arguments("import source from 'mod';", 1)]
+    [Arguments("import source, { x } from 'mod';", 2)]
+    [Arguments("import source, * as ns from 'mod';", 2)]
     public void SourcePhaseImport_RegularImportWithSourceAsBinding(string code, int expectedSpecifierCount)
     {
         var parser = CreateImportPhasesParser();
@@ -3394,20 +3395,20 @@ public partial class ParserTests
         Assert.Equal("source", spec.Local.Name);
     }
 
-    [Theory]
-    [InlineData("import source { x } from 'mod';")]
-    [InlineData("import source * as ns from 'mod';")]
-    [InlineData("import source 'mod';")]
-    [InlineData("import source x, y from 'mod';")]
+    [Test]
+    [Arguments("import source { x } from 'mod';")]
+    [Arguments("import source * as ns from 'mod';")]
+    [Arguments("import source 'mod';")]
+    [Arguments("import source x, y from 'mod';")]
     public void SourcePhaseImport_InvalidStaticForms(string code)
     {
         var parser = CreateImportPhasesParser();
         Assert.Throws<SyntaxErrorException>(() => parser.ParseModule(code));
     }
 
-    [Theory]
-    [InlineData("import defer * as ns from 'mod';")]
-    [InlineData("import defer * as ns from 'mod' with { };")]
+    [Test]
+    [Arguments("import defer * as ns from 'mod';")]
+    [Arguments("import defer * as ns from 'mod' with { };")]
     public void ImportDefer_ValidStaticForms(string code)
     {
         var parser = CreateImportPhasesParser();
@@ -3418,10 +3419,10 @@ public partial class ParserTests
         Assert.IsType<ImportNamespaceSpecifier>(decl.Specifiers[0]);
     }
 
-    [Theory]
-    [InlineData("import defer from 'mod';", 1)]
-    [InlineData("import defer, { x } from 'mod';", 2)]
-    [InlineData("import defer, * as ns from 'mod';", 2)]
+    [Test]
+    [Arguments("import defer from 'mod';", 1)]
+    [Arguments("import defer, { x } from 'mod';", 2)]
+    [Arguments("import defer, * as ns from 'mod';", 2)]
     public void ImportDefer_RegularImportWithDeferAsBinding(string code, int expectedSpecifierCount)
     {
         var parser = CreateImportPhasesParser();
@@ -3433,21 +3434,21 @@ public partial class ParserTests
         Assert.Equal("defer", spec.Local.Name);
     }
 
-    [Theory]
-    [InlineData("import defer x from 'mod';")]
-    [InlineData("import defer { x } from 'mod';")]
-    [InlineData("import defer x, * as ns from 'mod';")]
-    [InlineData("export defer * as ns from 'mod';")]
+    [Test]
+    [Arguments("import defer x from 'mod';")]
+    [Arguments("import defer { x } from 'mod';")]
+    [Arguments("import defer x, * as ns from 'mod';")]
+    [Arguments("export defer * as ns from 'mod';")]
     public void ImportDefer_InvalidStaticForms(string code)
     {
         var parser = CreateImportPhasesParser();
         Assert.Throws<SyntaxErrorException>(() => parser.ParseModule(code));
     }
 
-    [Theory]
-    [InlineData("import.source('mod')")]
-    [InlineData("import.defer('mod')")]
-    [InlineData("import.defer('mod', { with: { type: 'json' } })")]
+    [Test]
+    [Arguments("import.source('mod')")]
+    [Arguments("import.defer('mod')")]
+    [Arguments("import.defer('mod', { with: { type: 'json' } })")]
     public void DynamicImportPhase_ValidForms(string code)
     {
         var parser = CreateImportPhasesParser();
@@ -3457,22 +3458,22 @@ public partial class ParserTests
         Assert.NotEqual(ImportPhase.None, expr.Phase);
     }
 
-    [Theory]
-    [InlineData("import.source()")]
-    [InlineData("import.defer()")]
-    [InlineData("import.source('mod', { with: { type: 'json' } })")]
-    [InlineData("new import.source('mod')")]
-    [InlineData("new import.defer('mod')")]
-    [InlineData("import.source(...['mod'])")]
-    [InlineData("import.defer(...['mod'])")]
-    [InlineData("import.UNKNOWN('mod')")]
+    [Test]
+    [Arguments("import.source()")]
+    [Arguments("import.defer()")]
+    [Arguments("import.source('mod', { with: { type: 'json' } })")]
+    [Arguments("new import.source('mod')")]
+    [Arguments("new import.defer('mod')")]
+    [Arguments("import.source(...['mod'])")]
+    [Arguments("import.defer(...['mod'])")]
+    [Arguments("import.UNKNOWN('mod')")]
     public void DynamicImportPhase_InvalidForms(string code)
     {
         var parser = CreateImportPhasesParser();
         Assert.Throws<SyntaxErrorException>(() => parser.ParseScript(code));
     }
 
-    [Fact]
+    [Test]
     public void SourcePhaseImport_NotEnabledWithoutFlag()
     {
         var parser = new Parser();
@@ -3487,17 +3488,17 @@ public partial class ParserTests
 
     #endregion
 
-    [Theory]
-    [InlineData("import('x')", -1)]
-    [InlineData("import('x',)", 10)]
-    [InlineData("import('x', {})", -1)]
-    [InlineData("import('x', {},)", 14)]
-    [InlineData("import.source('x')", -1)]
-    [InlineData("import.source('x',)", 17)]
-    [InlineData("import.defer('x')", -1)]
-    [InlineData("import.defer('x' ,)", 17)]
-    [InlineData("import.defer('x', {})", -1)]
-    [InlineData("import.defer('x', {},)", 20)]
+    [Test]
+    [Arguments("import('x')", -1)]
+    [Arguments("import('x',)", 10)]
+    [Arguments("import('x', {})", -1)]
+    [Arguments("import('x', {},)", 14)]
+    [Arguments("import.source('x')", -1)]
+    [Arguments("import.source('x',)", 17)]
+    [Arguments("import.defer('x')", -1)]
+    [Arguments("import.defer('x' ,)", 17)]
+    [Arguments("import.defer('x', {})", -1)]
+    [Arguments("import.defer('x', {},)", 20)]
     public void DynamicImport_AfterTrailingCommaShouldWork(string input, int expectedTrailingCommaPosition)
     {
         var actualTrailingCommaPosition = -1;
@@ -3513,24 +3514,24 @@ public partial class ParserTests
         Assert.Equal(expectedTrailingCommaPosition, actualTrailingCommaPosition);
     }
 
-    [Theory]
-    [InlineData("", new TokenKind[0])]
-    [InlineData(
+    [Test]
+    [Arguments("", new TokenKind[0])]
+    [Arguments(
         " /x/ ",
         new[] { TokenKind.RegExpLiteral },
         1, 1, 4)]
-    [InlineData(
+    [Arguments(
         "(/x/)",
         new[] { TokenKind.Punctuator, TokenKind.RegExpLiteral, TokenKind.Punctuator },
         1, 1, 4)]
-    [InlineData(
+    [Arguments(
         """
         let a
         /x/
         """,
         new[] { TokenKind.Identifier, TokenKind.Identifier, TokenKind.RegExpLiteral },
         2, 0, 3)]
-    [InlineData(
+    [Arguments(
         """
         let a<!--
         --> /x/
@@ -3538,7 +3539,7 @@ public partial class ParserTests
         """,
         new[] { TokenKind.Identifier, TokenKind.Identifier, TokenKind.RegExpLiteral },
         3, 0, 3)]
-    [InlineData(
+    [Arguments(
         """
         let a<!-- /x/
         /x/
@@ -3546,27 +3547,27 @@ public partial class ParserTests
         """,
         new[] { TokenKind.Identifier, TokenKind.Identifier, TokenKind.RegExpLiteral },
         2, 0, 3)]
-    [InlineData(
+    [Arguments(
         "({ *m() { yield /x/ } })",
         new[]
         {
             TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Identifier, TokenKind.Punctuator, TokenKind.Punctuator,
             TokenKind.Punctuator, TokenKind.Identifier, TokenKind.RegExpLiteral, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator,
         })]
-    [InlineData(
+    [Arguments(
         "async function f() { await /x/ }",
         new[]
         {
             TokenKind.Identifier, TokenKind.Keyword, TokenKind.Identifier, TokenKind.Punctuator, TokenKind.Punctuator, TokenKind.Punctuator,
             TokenKind.Identifier, TokenKind.RegExpLiteral, TokenKind.Punctuator,
         })]
-    [InlineData(
+    [Arguments(
         "yield /x/ 2",
         new[]
         {
             TokenKind.Identifier, TokenKind.Punctuator, TokenKind.Identifier, TokenKind.Punctuator, TokenKind.NumericLiteral,
         })]
-    [InlineData(
+    [Arguments(
         "await /x/ 2",
         new[]
         {

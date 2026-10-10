@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using Acornima.Helpers;
 using Acornima.Tests.Helpers;
+using TUnit.Core;
 using Xunit;
 
 namespace Acornima.Tests;
@@ -16,7 +17,7 @@ namespace Acornima.Tests;
 /// </summary>
 public class CharMaskGenerator
 {
-    [Fact]
+    [Test]
     public void GenerateMasks()
     {
         var sb = new StringBuilder();
@@ -169,7 +170,7 @@ public class CharMaskGenerator
         return range.Start << 8 | checked((byte)lengthLookupIndex);
     }
 
-    [Fact]
+    [Test]
     public void LookupWorks()
     {
         foreach (var (actual, expectedBmp, expectedAstral) in new[]

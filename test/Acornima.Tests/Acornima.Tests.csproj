@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
@@ -15,17 +15,8 @@
 
   <ItemGroup>
     <PackageReference Include="DiffEngine" />
-    <PackageReference Include="GitHubActionsTestLogger" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="UnicodeInformation.Preview" />
-    <PackageReference Include="xunit" />
-    <PackageReference Include="xunit.analyzers">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="all" />
-    <PackageReference Include="xunit.runner.console" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>

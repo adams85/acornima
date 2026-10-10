@@ -1,37 +1,39 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Acornima.Ast;
 using Acornima.Tests.Helpers;
 using Esprima.Tests.Helpers;
+using TUnit.Core;
 using Xunit;
 
 namespace Acornima.Tests;
 
 public class NodeListTests
 {
-    public static TheoryData<int, int, Lazy<NodeList<NumericLiteral>>> CreateTestData(int start, int count)
+    public static IEnumerable<(int, int, Lazy<NodeList<NumericLiteral>>)> CreateTestData(int start, int count)
     {
         var array = Enumerable
             .Range(start, count)
             .Select(x => new NumericLiteral(x, x.ToString(CultureInfo.InvariantCulture)))
             .ToArray();
 
-        return new TheoryData<int, int, Lazy<NodeList<NumericLiteral>>>
-        {
-            { start, count, Lazy.Create("Sequence", () => NodeList.From(array.Select(x => x))) },
-            { start, count, Lazy.Create("Collection", () => NodeList.From(new BreakingCollection<NumericLiteral>(array))) },
-            { start, count, Lazy.Create("ReadOnlyList", () => NodeList.From(new BreakingReadOnlyList<NumericLiteral>(array))) }
-        };
+        return
+        [
+            (start, count, Lazy.Create("Sequence", () => NodeList.From(array.Select(x => x)))),
+            (start, count, Lazy.Create("Collection", () => NodeList.From(new BreakingCollection<NumericLiteral>(array)))),
+            (start, count, Lazy.Create("ReadOnlyList", () => NodeList.From(new BreakingReadOnlyList<NumericLiteral>(array)))),
+        ];
     }
 
-    [Theory]
-    [MemberData(nameof(CreateTestData), 1, 0)]
-    [MemberData(nameof(CreateTestData), 1, 3)]
-    [MemberData(nameof(CreateTestData), 1, 4)]
-    [MemberData(nameof(CreateTestData), 1, 7)]
-    [MemberData(nameof(CreateTestData), 1, 10)]
-    [MemberData(nameof(CreateTestData), 1, 22)]
+    [Test]
+    [MethodDataSource(nameof(CreateTestData), Arguments = [1, 0])]
+    [MethodDataSource(nameof(CreateTestData), Arguments = [1, 3])]
+    [MethodDataSource(nameof(CreateTestData), Arguments = [1, 4])]
+    [MethodDataSource(nameof(CreateTestData), Arguments = [1, 7])]
+    [MethodDataSource(nameof(CreateTestData), Arguments = [1, 10])]
+    [MethodDataSource(nameof(CreateTestData), Arguments = [1, 22])]
     public void Create(int start, int count, Lazy<NodeList<NumericLiteral>> xs)
     {
         var list = xs.Value;

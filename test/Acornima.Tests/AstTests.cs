@@ -4,13 +4,14 @@ using System.IO;
 using System.Linq;
 using System.Numerics;
 using Acornima.Ast;
+using TUnit.Core;
 using Xunit;
 
 namespace Acornima.Tests;
 
 public class AstTests
 {
-    [Fact]
+    [Test]
     public void LiteralValueShouldBeCached()
     {
         var parser = new Parser();
@@ -32,13 +33,13 @@ public class AstTests
         Assert.Same(value, literal.Value);
     }
 
-    [Theory]
-    [InlineData("root", true, 1)]
-    [InlineData("root", false, 0)]
-    [InlineData("intermediate", true, 2)]
-    [InlineData("intermediate", false, 1)]
-    [InlineData("leaf", true, 5)]
-    [InlineData("leaf", false, 4)]
+    [Test]
+    [Arguments("root", true, 1)]
+    [Arguments("root", false, 0)]
+    [Arguments("intermediate", true, 2)]
+    [Arguments("intermediate", false, 1)]
+    [Arguments("leaf", true, 5)]
+    [Arguments("leaf", false, 4)]
     public void AncestorNodesTest(string nodeKind, bool includeSelf, int expectedCount)
     {
         var parserOptions = new ParserOptions().RecordParentNodeInUserData(true);
@@ -69,7 +70,7 @@ public class AstTests
         Assert.Equal(expectedNodes, actualNodesUsingParentAccessor);
     }
 
-    [Fact]
+    [Test]
     public void AncestorNodesShouldHandleNullNodes()
     {
         var source = File.ReadAllText(Path.Combine(ParserTests.GetFixturesPath(), ParserTests.FixturesDirName, "3rdparty", "raptor_frida_ios_trace.js"));
@@ -90,13 +91,13 @@ public class AstTests
         Assert.Equal(variableDeclarations, variableDeclarations2);
     }
 
-    [Theory]
-    [InlineData("root", true, 25)]
-    [InlineData("root", false, 24)]
-    [InlineData("intermediate", true, 7)]
-    [InlineData("intermediate", false, 6)]
-    [InlineData("leaf", true, 1)]
-    [InlineData("leaf", false, 0)]
+    [Test]
+    [Arguments("root", true, 25)]
+    [Arguments("root", false, 24)]
+    [Arguments("intermediate", true, 7)]
+    [Arguments("intermediate", false, 6)]
+    [Arguments("leaf", true, 1)]
+    [Arguments("leaf", false, 0)]
     public void DescendantNodesTest(string nodeKind, bool includeSelf, int expectedCount)
     {
         var parser = new Parser();
@@ -117,11 +118,11 @@ public class AstTests
         Assert.Equal(expectedNodes, actualNodes);
     }
 
-    [Theory]
-    [InlineData("let x = a + 1", false, NodeType.Program, new NodeType[0])]
-    [InlineData("let x = a + 1", true, NodeType.Program, new[] { NodeType.Program })]
-    [InlineData("let x = a + 1", false, NodeType.BinaryExpression, new[] { NodeType.VariableDeclaration, NodeType.VariableDeclarator, NodeType.Identifier, NodeType.BinaryExpression })]
-    [InlineData("let x = a + 1", true, NodeType.BinaryExpression, new[] { NodeType.Program, NodeType.VariableDeclaration, NodeType.VariableDeclarator, NodeType.Identifier, NodeType.BinaryExpression })]
+    [Test]
+    [Arguments("let x = a + 1", false, NodeType.Program, new NodeType[0])]
+    [Arguments("let x = a + 1", true, NodeType.Program, new[] { NodeType.Program })]
+    [Arguments("let x = a + 1", false, NodeType.BinaryExpression, new[] { NodeType.VariableDeclaration, NodeType.VariableDeclarator, NodeType.Identifier, NodeType.BinaryExpression })]
+    [Arguments("let x = a + 1", true, NodeType.BinaryExpression, new[] { NodeType.Program, NodeType.VariableDeclaration, NodeType.VariableDeclarator, NodeType.Identifier, NodeType.BinaryExpression })]
     public void DescendantNodesDescendIntoChildrenShouldWork(string input, bool includeSelf, NodeType filterType, NodeType[] expectedNodeTypes)
     {
         var parser = new Parser();
@@ -132,7 +133,7 @@ public class AstTests
         Assert.Equal(expectedNodeTypes, actualNodes.Select(node => node.Type));
     }
 
-    [Fact]
+    [Test]
     public void DescendantNodesShouldHandleNullNodes()
     {
         var source = File.ReadAllText(Path.Combine(ParserTests.GetFixturesPath(), ParserTests.FixturesDirName, "3rdparty", "raptor_frida_ios_trace.js"));
@@ -236,7 +237,7 @@ public class AstTests
             ),
         };
 
-    [Fact]
+    [Test]
     public void OperatorTokenConversions()
     {
         var opLookup = OperatorTokenConversionsData
@@ -253,7 +254,7 @@ public class AstTests
         }
     }
 
-    [Fact]
+    [Test]
     public void ChildNodesAndVisitorMustBeInSync()
     {
         var source = File.ReadAllText(Path.Combine(ParserTests.GetFixturesPath(), ParserTests.FixturesDirName, "3rdparty", "bundle.js"));
@@ -284,7 +285,7 @@ public class AstTests
         }
     }
 
-    [Fact]
+    [Test]
     public void ChildNodesCanBeImplementedByInheritors()
     {
         var id1 = new Identifier("a");
@@ -295,37 +296,32 @@ public class AstTests
         Assert.Equal(new[] { id1, id2 }, customNode.ChildNodes);
     }
 
-    public static IEnumerable<object[]> ReusedNodeInstancesData => new[]
-{
-        new object[]
-        {
+    public static IEnumerable<(string, Func<IEnumerable<Node>, IEnumerable<Node>>)> ReusedNodeInstancesData =>
+    [
+        (
             "export { a }; var a",
-            (IEnumerable<Node> nodes) => nodes.OfType<Identifier>().Where(id => ((Node?)id.UserData) is ExportSpecifier && id.Name == "a")
-        },
-        new object[]
-        {
+            nodes => nodes.OfType<Identifier>().Where(id => ((Node?)id.UserData) is ExportSpecifier && id.Name == "a")
+        ),
+        (
             "import { b } from 'x'",
-            (IEnumerable<Node> nodes) => nodes.OfType<Identifier>().Where(id => id.Name == "b")
-        },
-        new object[]
-        {
+            nodes => nodes.OfType<Identifier>().Where(id => id.Name == "b")
+        ),
+        (
             "({ c })",
-            (IEnumerable<Node> nodes) => nodes.OfType<Identifier>().Where(id => id.Name == "c")
-        },
-        new object[]
-        {
+            nodes => nodes.OfType<Identifier>().Where(id => id.Name == "c")
+        ),
+        (
             "var { v } = { }",
-            (IEnumerable<Node> nodes) => nodes.OfType<Identifier>().Where(id => id.Name == "v")
-        },
-        new object[]
-        {
+            nodes => nodes.OfType<Identifier>().Where(id => id.Name == "v")
+        ),
+        (
             "var { v = 0 } = { }",
-            (IEnumerable<Node> nodes) => nodes.OfType<Identifier>().Where(id => id.Name == "v")
-        },
-    };
+            nodes => nodes.OfType<Identifier>().Where(id => id.Name == "v")
+        ),
+    ];
 
-    [Theory]
-    [MemberData(nameof(ReusedNodeInstancesData))]
+    [Test]
+    [MethodDataSource(nameof(ReusedNodeInstancesData))]
     public void ReusedNodeInstancesEnumeratedOnlyOnce(string source, Func<IEnumerable<Node>, IEnumerable<Node>> reusedNodeSelector)
     {
         var parserOptions = new ParserOptions().RecordParentNodeInUserData(true);
@@ -337,8 +333,8 @@ public class AstTests
         Assert.Single(reusedNodeSelector(nodes));
     }
 
-    [Theory]
-    [MemberData(nameof(ReusedNodeInstancesData))]
+    [Test]
+    [MethodDataSource(nameof(ReusedNodeInstancesData))]
     public void ReusedNodeInstancesVisitedOnlyOnce(string source, Func<IEnumerable<Node>, IEnumerable<Node>> reusedNodeSelector)
     {
         var parserOptions = new ParserOptions().RecordParentNodeInUserData(true);
@@ -350,8 +346,8 @@ public class AstTests
         Assert.Single(reusedNodeSelector(nodes));
     }
 
-    [Theory]
-    [MemberData(nameof(ReusedNodeInstancesData))]
+    [Test]
+    [MethodDataSource(nameof(ReusedNodeInstancesData))]
     public void ReusedNodeInstancesRewrittenOnlyOnce(string source, Func<IEnumerable<Node>, IEnumerable<Node>> reusedNodeSelector)
     {
         var parserOptions = new ParserOptions().RecordParentNodeInUserData(true);

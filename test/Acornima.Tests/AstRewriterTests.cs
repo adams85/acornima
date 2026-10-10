@@ -4,7 +4,9 @@ using System.Xml.Linq;
 using Acornima.Ast;
 using Acornima.Jsx;
 using Acornima.Jsx.Ast;
+using TUnit.Core;
 using Xunit;
+
 using Module = Acornima.Ast.Module;
 
 namespace Acornima.Tests;
@@ -24,7 +26,7 @@ public class AstRewriterTests
         return node.DescendantNodesAndSelf().FirstOrDefault(descendantNode => descendantNode.GetType() == type);
     }
 
-    [Fact]
+    [Test]
     public void CanUpdateScript()
     {
         // Arrange
@@ -39,7 +41,7 @@ public class AstRewriterTests
         Assert.NotSame(program, result);
     }
 
-    [Fact]
+    [Test]
     public void CanUpdateModule()
     {
         // Arrange
@@ -54,59 +56,59 @@ public class AstRewriterTests
         Assert.NotSame(program, result);
     }
 
-    [Theory]
-    [InlineData(typeof(ArrayExpression), "[1,2,3]")]
-    [InlineData(typeof(ArrayPattern), "([[[[[[[[[[[[[[[[[[[[{a=b}]]]]]]]]]]]]]]]]]]]])=>0;")]
-    [InlineData(typeof(ArrowFunctionExpression), "()=>{}")]
-    [InlineData(typeof(AssignmentExpression), "a.let = foo")]
-    [InlineData(typeof(AssignmentPattern), "let {a,b=0,c:d,e:f=0,[g]:[h]}=0")]
-    [InlineData(typeof(AssignmentProperty), @"({ a, a:a, a:a=a, [a]:{a}, a:some_call()[a], a:this.a } = 0);")]
-    [InlineData(typeof(AwaitExpression), "async a => { await a }")]
-    [InlineData(typeof(BreakStatement), "while(true){ break; }")]
-    [InlineData(typeof(CallExpression), "a()")]
-    [InlineData(typeof(CatchClause), "try {} catch {}")]
-    [InlineData(typeof(ChainExpression), "a?.['b'].c")]
-    [InlineData(typeof(ClassDeclaration), "class A {}")]
-    [InlineData(typeof(ClassExpression), "(class A {})")]
-    [InlineData(typeof(ConditionalExpression), "a ? b : c;")]
-    [InlineData(typeof(ContinueStatement), "while(true){ continue; }")]
-    [InlineData(typeof(DebuggerStatement), "debugger;")]
-    [InlineData(typeof(DoWhileStatement), "do {} while(true);")]
-    [InlineData(typeof(EmptyStatement), "if(true);")]
-    [InlineData(typeof(ForInStatement), "for(a in {}){}")]
-    [InlineData(typeof(ForOfStatement), "for(let b of a) {}")]
-    [InlineData(typeof(ForStatement), "for(;;){}")]
-    [InlineData(typeof(Identifier), "var a = '0'")]
-    [InlineData(typeof(IfStatement), "if(true){ }")]
-    [InlineData(typeof(LabeledStatement), "label: {}")]
-    [InlineData(typeof(MetaProperty), "import.meta.url")]
-    [InlineData(typeof(NestedBlockStatement), "while(true){ break; }")]
-    [InlineData(typeof(NewExpression), "new Type();")]
-    [InlineData(typeof(NonLogicalBinaryExpression), "x | y ^ z")]
-    [InlineData(typeof(NonSpecialExpressionStatement), "()=>{};")]
-    [InlineData(typeof(ObjectExpression), "({ __proto__: null, get __proto__(){}, set __proto__(x){} })")]
-    [InlineData(typeof(ObjectPattern), "for (const {x, y} of z);")]
-    [InlineData(typeof(RestElement), "const [first,...rest] = a;")]
-    [InlineData(typeof(ReturnStatement), "return true")]
-    [InlineData(typeof(SequenceExpression), "x, y")]
-    [InlineData(typeof(SpreadElement), "var b = {...a}")]
-    [InlineData(typeof(StringLiteral), "'0'")]
-    [InlineData(typeof(Super), "class A extends B { constructor(){ super(); } }")]
-    [InlineData(typeof(SwitchCase), "switch('') { case '': break; }")]
-    [InlineData(typeof(SwitchStatement), "switch('') { }")]
-    [InlineData(typeof(TaggedTemplateExpression), "a`template`")]
-    [InlineData(typeof(TemplateLiteral), "a`\\xTT`")]
-    [InlineData(typeof(ThisExpression), "this.a()")]
-    [InlineData(typeof(ThrowStatement), "throw ''")]
-    [InlineData(typeof(TryStatement), "try {} catch {}")]
-    [InlineData(typeof(NonUpdateUnaryExpression), "x ** +y")]
-    [InlineData(typeof(UpdateExpression), "for (var i = 0; i < j; ++i);")]
-    [InlineData(typeof(VariableDeclaration), "const t = 2")]
-    [InlineData(typeof(VariableDeclaration), "let t = 1")]
-    [InlineData(typeof(VariableDeclaration), "var t = 0")]
-    [InlineData(typeof(VariableDeclarator), "var a = b;")]
-    [InlineData(typeof(WhileStatement), "while(true){ }")]
-    [InlineData(typeof(YieldExpression), "function* a() { yield a; }")]
+    [Test]
+    [Arguments(typeof(ArrayExpression), "[1,2,3]")]
+    [Arguments(typeof(ArrayPattern), "([[[[[[[[[[[[[[[[[[[[{a=b}]]]]]]]]]]]]]]]]]]]])=>0;")]
+    [Arguments(typeof(ArrowFunctionExpression), "()=>{}")]
+    [Arguments(typeof(AssignmentExpression), "a.let = foo")]
+    [Arguments(typeof(AssignmentPattern), "let {a,b=0,c:d,e:f=0,[g]:[h]}=0")]
+    [Arguments(typeof(AssignmentProperty), @"({ a, a:a, a:a=a, [a]:{a}, a:some_call()[a], a:this.a } = 0);")]
+    [Arguments(typeof(AwaitExpression), "async a => { await a }")]
+    [Arguments(typeof(BreakStatement), "while(true){ break; }")]
+    [Arguments(typeof(CallExpression), "a()")]
+    [Arguments(typeof(CatchClause), "try {} catch {}")]
+    [Arguments(typeof(ChainExpression), "a?.['b'].c")]
+    [Arguments(typeof(ClassDeclaration), "class A {}")]
+    [Arguments(typeof(ClassExpression), "(class A {})")]
+    [Arguments(typeof(ConditionalExpression), "a ? b : c;")]
+    [Arguments(typeof(ContinueStatement), "while(true){ continue; }")]
+    [Arguments(typeof(DebuggerStatement), "debugger;")]
+    [Arguments(typeof(DoWhileStatement), "do {} while(true);")]
+    [Arguments(typeof(EmptyStatement), "if(true);")]
+    [Arguments(typeof(ForInStatement), "for(a in {}){}")]
+    [Arguments(typeof(ForOfStatement), "for(let b of a) {}")]
+    [Arguments(typeof(ForStatement), "for(;;){}")]
+    [Arguments(typeof(Identifier), "var a = '0'")]
+    [Arguments(typeof(IfStatement), "if(true){ }")]
+    [Arguments(typeof(LabeledStatement), "label: {}")]
+    [Arguments(typeof(MetaProperty), "import.meta.url")]
+    [Arguments(typeof(NestedBlockStatement), "while(true){ break; }")]
+    [Arguments(typeof(NewExpression), "new Type();")]
+    [Arguments(typeof(NonLogicalBinaryExpression), "x | y ^ z")]
+    [Arguments(typeof(NonSpecialExpressionStatement), "()=>{};")]
+    [Arguments(typeof(ObjectExpression), "({ __proto__: null, get __proto__(){}, set __proto__(x){} })")]
+    [Arguments(typeof(ObjectPattern), "for (const {x, y} of z);")]
+    [Arguments(typeof(RestElement), "const [first,...rest] = a;")]
+    [Arguments(typeof(ReturnStatement), "return true")]
+    [Arguments(typeof(SequenceExpression), "x, y")]
+    [Arguments(typeof(SpreadElement), "var b = {...a}")]
+    [Arguments(typeof(StringLiteral), "'0'")]
+    [Arguments(typeof(Super), "class A extends B { constructor(){ super(); } }")]
+    [Arguments(typeof(SwitchCase), "switch('') { case '': break; }")]
+    [Arguments(typeof(SwitchStatement), "switch('') { }")]
+    [Arguments(typeof(TaggedTemplateExpression), "a`template`")]
+    [Arguments(typeof(TemplateLiteral), "a`\\xTT`")]
+    [Arguments(typeof(ThisExpression), "this.a()")]
+    [Arguments(typeof(ThrowStatement), "throw ''")]
+    [Arguments(typeof(TryStatement), "try {} catch {}")]
+    [Arguments(typeof(NonUpdateUnaryExpression), "x ** +y")]
+    [Arguments(typeof(UpdateExpression), "for (var i = 0; i < j; ++i);")]
+    [Arguments(typeof(VariableDeclaration), "const t = 2")]
+    [Arguments(typeof(VariableDeclaration), "let t = 1")]
+    [Arguments(typeof(VariableDeclaration), "var t = 0")]
+    [Arguments(typeof(VariableDeclarator), "var a = b;")]
+    [Arguments(typeof(WhileStatement), "while(true){ }")]
+    [Arguments(typeof(YieldExpression), "function* a() { yield a; }")]
     public void CanUpdateAll(Type type, string code)
     {
         // Arrange
@@ -126,20 +128,20 @@ public class AstRewriterTests
         Assert.NotSame(node, nodeResult);
     }
 
-    [Theory]
-    [InlineData(typeof(JsxMemberExpression), "var a = (< a . b >< / a . b >)")]
-    [InlineData(typeof(JsxText), "var a = (<a>TEXT</a>)")]
-    [InlineData(typeof(JsxOpeningFragment), "var a = (<>TEXT</>)")]
-    [InlineData(typeof(JsxClosingFragment), "var a = (<>TEXT</>)")]
-    [InlineData(typeof(JsxIdentifier), "var a = (<a>TEXT</a>)")]
-    [InlineData(typeof(JsxElement), "var a = (<a>TEXT</a>)")]
-    [InlineData(typeof(JsxOpeningElement), "var a = (<a>TEXT</a>)")]
-    [InlineData(typeof(JsxClosingElement), "var a = (<a>TEXT</a>)")]
-    [InlineData(typeof(JsxEmptyExpression), "var a = (<a>{}</a>)")]
-    [InlineData(typeof(JsxNamespacedName), "var a = (<namespace:a>{}</namespace:a>)")]
-    [InlineData(typeof(JsxSpreadAttribute), "var a = (<a {...b}>TEXT</a>)")]
-    [InlineData(typeof(JsxAttribute), "var a = (<a Attr={true}>TEXT</a>)")]
-    [InlineData(typeof(JsxExpressionContainer), "var a = (<a Attr={true}>TEXT</a>)")]
+    [Test]
+    [Arguments(typeof(JsxMemberExpression), "var a = (< a . b >< / a . b >)")]
+    [Arguments(typeof(JsxText), "var a = (<a>TEXT</a>)")]
+    [Arguments(typeof(JsxOpeningFragment), "var a = (<>TEXT</>)")]
+    [Arguments(typeof(JsxClosingFragment), "var a = (<>TEXT</>)")]
+    [Arguments(typeof(JsxIdentifier), "var a = (<a>TEXT</a>)")]
+    [Arguments(typeof(JsxElement), "var a = (<a>TEXT</a>)")]
+    [Arguments(typeof(JsxOpeningElement), "var a = (<a>TEXT</a>)")]
+    [Arguments(typeof(JsxClosingElement), "var a = (<a>TEXT</a>)")]
+    [Arguments(typeof(JsxEmptyExpression), "var a = (<a>{}</a>)")]
+    [Arguments(typeof(JsxNamespacedName), "var a = (<namespace:a>{}</namespace:a>)")]
+    [Arguments(typeof(JsxSpreadAttribute), "var a = (<a {...b}>TEXT</a>)")]
+    [Arguments(typeof(JsxAttribute), "var a = (<a Attr={true}>TEXT</a>)")]
+    [Arguments(typeof(JsxExpressionContainer), "var a = (<a Attr={true}>TEXT</a>)")]
     public void CanUpdateAllForJsx(Type type, string code)
     {
         // Arrange
@@ -159,15 +161,15 @@ public class AstRewriterTests
         Assert.NotSame(node, nodeResult);
     }
 
-    [Theory]
-    [InlineData(typeof(ExportDefaultDeclaration), "export default (1 + 2);")]
-    [InlineData(typeof(ExportAllDeclaration), "export * from 'foo';")]
-    [InlineData(typeof(ExportNamedDeclaration), "export {foo as bar} from 'foo';")]
-    [InlineData(typeof(ImportExpression), "import(`lib/${fname}.js`).then(doSomething);")]
-    [InlineData(typeof(ImportDeclaration), "import {a,b,c} from 'module'")]
-    [InlineData(typeof(ImportNamespaceSpecifier), "import * as foo from \"foo\";")]
-    [InlineData(typeof(ImportDefaultSpecifier), "import M from 'module'")]
-    [InlineData(typeof(ImportSpecifier), "import foo, {bar} from \"foo\";")]
+    [Test]
+    [Arguments(typeof(ExportDefaultDeclaration), "export default (1 + 2);")]
+    [Arguments(typeof(ExportAllDeclaration), "export * from 'foo';")]
+    [Arguments(typeof(ExportNamedDeclaration), "export {foo as bar} from 'foo';")]
+    [Arguments(typeof(ImportExpression), "import(`lib/${fname}.js`).then(doSomething);")]
+    [Arguments(typeof(ImportDeclaration), "import {a,b,c} from 'module'")]
+    [Arguments(typeof(ImportNamespaceSpecifier), "import * as foo from \"foo\";")]
+    [Arguments(typeof(ImportDefaultSpecifier), "import M from 'module'")]
+    [Arguments(typeof(ImportSpecifier), "import foo, {bar} from \"foo\";")]
     public void CanUpdateModuleNodes(Type type, string code)
     {
         // Arrange

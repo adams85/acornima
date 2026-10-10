@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.0.31903.59
+# Visual Studio Version 18
+VisualStudioVersion = 18.10.12224.181 stable
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Benchmarks", "Benchmarks", "{6BE7EC70-008F-4E44-8520-9C55A8536321}"
 EndProject
@@ -32,7 +32,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{C428FBAE-48E
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{FA882AB2-E8C6-40A0-84CD-6486155A04BB}"
 EndProject
-
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Acornima", "src\Acornima\Acornima.csproj", "{384C7882-6721-4885-9DFC-461BD6AE2ABA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Acornima.Extras", "src\Acornima.Extras\Acornima.Extras.csproj", "{F2B479F2-5104-4ACB-BC8A-92422C9F3736}"
@@ -44,6 +43,11 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Acornima.Tests.SourceGenerators", "test\Acornima.Tests.SourceGenerators\Acornima.Tests.SourceGenerators.csproj", "{DEC405F4-0329-4975-8E36-F7FDC4863CE6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Acornima.Tests.Test262", "test\Acornima.Tests.Test262\Acornima.Tests.Test262.csproj", "{A7CA9D3E-5247-4212-9E08-BDECBC63B8E1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{F2F78014-C481-44FA-80E1-0E0C9C37CBF0}"
+	ProjectSection(SolutionItems) = preProject
+		test\Directory.Build.props = test\Directory.Build.props
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -102,6 +106,7 @@ Global
 		{460A0A53-B9F6-47DB-83D7-763A39562A55} = {FA882AB2-E8C6-40A0-84CD-6486155A04BB}
 		{DEC405F4-0329-4975-8E36-F7FDC4863CE6} = {FA882AB2-E8C6-40A0-84CD-6486155A04BB}
 		{A7CA9D3E-5247-4212-9E08-BDECBC63B8E1} = {FA882AB2-E8C6-40A0-84CD-6486155A04BB}
+		{F2F78014-C481-44FA-80E1-0E0C9C37CBF0} = {71570FFF-0BEA-4AF7-8288-9E46627EA676}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E0941456-4B6F-44D0-9A68-07E7D70D890F}

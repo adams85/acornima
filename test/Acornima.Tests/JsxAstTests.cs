@@ -3,6 +3,7 @@ using System.Linq;
 using Acornima.Ast;
 using Acornima.Jsx;
 using Acornima.Jsx.Ast;
+using TUnit.Core;
 using Xunit;
 
 namespace Acornima.Tests;
@@ -12,13 +13,13 @@ public partial class JsxAstTests
     private static JsxName CreateJsxName(JsxParser parser, string tagName)
         => parser.ParseExpression($"<{tagName}></{tagName}>").As<JsxElement>().OpeningElement.Name;
 
-    [Theory]
-    [InlineData("a")]
-    [InlineData("b.a")]
-    [InlineData("ns:a")]
-    [InlineData("ns:b.a")]
-    [InlineData("d.c.b.a")]
-    [InlineData("ns:d.c.b.a")]
+    [Test]
+    [Arguments("a")]
+    [Arguments("b.a")]
+    [Arguments("ns:a")]
+    [Arguments("ns:b.a")]
+    [Arguments("d.c.b.a")]
+    [Arguments("ns:d.c.b.a")]
     public void JsxName_GetQualifiedName_Works(string tagName)
     {
         var parser = new JsxParser(new JsxParserOptions { JsxAllowNamespacedObjects = true });
@@ -26,7 +27,7 @@ public partial class JsxAstTests
         Assert.Equal(tagName, jsxName.GetQualifiedName());
     }
 
-    [Fact]
+    [Test]
     public void JsxName_ValueEqualityComparer_Works()
     {
         var parser = new JsxParser(new JsxParserOptions { JsxAllowNamespacedObjects = true });
