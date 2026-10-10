@@ -1,4 +1,4 @@
-[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/adams85/acornima/build.yml)](https://github.com/adams85/acornima/actions/workflows/build.yml)
+[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/adams85/acornima/ci.yml)](https://github.com/adams85/acornima/actions/workflows/ci.yml)
 [![NuGet Release](https://img.shields.io/nuget/v/Acornima)](https://www.nuget.org/packages/Acornima)
 [![Feedz Version](https://img.shields.io/feedz/v/acornima/acornima/Acornima)](https://feedz.io/org/acornima/repository/acornima/packages/Acornima)
 [![Donate](https://img.shields.io/badge/-buy_me_a%C2%A0coffee-gray?logo=buy-me-a-coffee)](https://www.buymeacoffee.com/adams85)

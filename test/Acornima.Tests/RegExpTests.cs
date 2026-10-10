@@ -596,7 +596,7 @@ public partial class RegExpTests
         Assert.Equal(flags, capturedContext.Item2);
         var regExpLength = 1 + pattern.Length + 1 + flags.Length;
         Assert.Equal(new Range(11, 11 + regExpLength), capturedContext.Item3);
-#if !NET462
+#if !NETFRAMEWORK && !NETCOREAPP2_1
         Assert.Equal($"/{pattern}/{flags}", input[capturedContext.Item3.ToSystemRange()]);
 #endif
         Assert.Equal(new SourceLocation(new Position(2, 9), new Position(2, 9 + regExpLength), sourceFile), capturedContext.Item4);

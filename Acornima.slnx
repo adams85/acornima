@@ -2,11 +2,6 @@
   <Folder Name="/Benchmarks/">
     <Project Path="benchmarks/Acornima.Benchmarks/Acornima.Benchmarks.csproj" />
   </Folder>
-  <Folder Name="/Build/">
-    <Project Path="build/_build.csproj">
-      <Build Project="false" />
-    </Project>
-  </Folder>
   <Folder Name="/Samples/">
     <Project Path="samples/Acornima.Cli/Acornima.Cli.csproj" />
     <Project Path="samples/JsxTranspiler/JsxTranspiler.csproj" />

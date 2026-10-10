@@ -244,7 +244,7 @@ public class AstTests
             .SelectMany(data => data.Operators.Select(op => (op, data)))
             .ToDictionary(it => it.op, it => it.data);
 
-        foreach (Operator op in Enum.GetValues(typeof(Operator)))
+        foreach (Operator op in Enum.GetValues(typeof(Operator))!)
         {
             if (op != Operator.Unknown)
             {

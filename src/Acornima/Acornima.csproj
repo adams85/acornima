@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net9.0;net462;netstandard2.1;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net9.0;net8.0;net462;netstandard2.1;netstandard2.0</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
     <AssemblyTitle>Acornima</AssemblyTitle>
@@ -20,7 +20,11 @@
   </ItemGroup>
 
   <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))">
-   <PackageReference Include="System.Runtime.CompilerServices.Unsafe" VersionOverride="6.0.0" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" VersionOverride="6.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>

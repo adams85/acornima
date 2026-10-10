@@ -8,7 +8,6 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using Acornima.Ast;
 using Acornima.Jsx;
-using DiffEngine;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using TUnit.Core;
@@ -259,8 +258,11 @@ public partial class ParserTests
             var file2 = Path.GetTempFileName() + ".json";
             File.WriteAllText(file1, expectedString);
             File.WriteAllText(file2, actualString);
+
+#if !NETCOREAPP || NET8_0_OR_GREATER
             // TODO: verify
-            DiffRunner.Launch(file1, file2);
+            DiffEngine.DiffRunner.Launch(file1, file2);
+#endif
 
             Assert.Equal(expectedString, actualString);
         }

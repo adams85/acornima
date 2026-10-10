@@ -1,0 +1,164 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+    tags: ['v[0-9]+.[0-9]+.[0-9]+']
+    paths-ignore:
+      - '**.md'
+  pull_request: {}
+  workflow_dispatch:
+
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  MAIN_TFM: "net10.0"
+
+jobs:
+  build-and-test-netfw:
+    strategy:
+      matrix:
+        dotnet-version: [
+          {rt: "4.6.2", tfm: net462},
+          {rt: "4.8.1", tfm: net481},
+        ]
+    name: Build & test on .NET ${{ matrix.dotnet-version.rt }}
+    runs-on: windows-latest
+    steps:
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - uses: actions/checkout@v7
+
+      - name: Build core test project
+        run: |
+          dotnet build test/Acornima.Tests/Acornima.Tests.csproj -c Release -f ${{ matrix.dotnet-version.tfm }} /p:EnableCITargets=true
+
+      - name: Run core tests
+        run: |
+          dotnet test --project test/Acornima.Tests/Acornima.Tests.csproj -c Release -f ${{ matrix.dotnet-version.tfm }} --no-build /p:EnableCITargets=true
+
+  build-and-test-netcore:
+    strategy:
+      matrix:
+        dotnet-version: [
+          {rt: "2.1.x", sdk: "2.1.100", tfm: netcoreapp2.1}, # for testing the netstandard2.0 build
+          {rt: "3.1.x", sdk: "3.1.100", tfm: netcoreapp3.1}, # for testing the netstandard2.1 build
+          {rt: "8.0.x", sdk: "8.0.100", tfm: net8.0},
+          {rt: "9.0.x", sdk: "9.0.100", tfm: net9.0},
+          {rt: "10.0.x", sdk: "10.0.100", tfm: net10.0}
+        ]
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+        exclude:
+          - dotnet-version: {rt: "2.1.x", sdk: "2.1.100", tfm: netcoreapp2.1}
+            os: ubuntu-latest
+          - dotnet-version: {rt: "2.1.x", sdk: "2.1.100", tfm: netcoreapp2.1}
+            os: macOS-latest
+          - dotnet-version: {rt: "3.1.x", sdk: "3.1.100", tfm: netcoreapp3.1}
+            os: ubuntu-latest
+          - dotnet-version: {rt: "3.1.x", sdk: "3.1.100", tfm: netcoreapp3.1}
+            os: macOS-latest
+    name: Build & test on .NET ${{ matrix.dotnet-version.rt }} (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: |
+            10.0.x
+            ${{ matrix.dotnet-version.rt }}
+
+      - uses: actions/checkout@v7
+
+      - name: Cache Test262 generated suite
+        if: matrix.dotnet-version.tfm == env.MAIN_TFM
+        uses: actions/cache@v5
+        with:
+          path: test/Acornima.Tests.Test262/Generated
+          key: test262-generated-${{ hashFiles('test/Acornima.Tests.Test262/Test262Harness.settings.json') }}
+
+      - name: Build core test project
+        if: matrix.dotnet-version.tfm != env.MAIN_TFM
+        run: |
+          dotnet build test/Acornima.Tests/Acornima.Tests.csproj -c Release -f ${{ matrix.dotnet-version.tfm }} /p:EnableCITargets=true
+
+      - name: Build solution
+        if: matrix.dotnet-version.tfm == env.MAIN_TFM
+        run: |
+          dotnet build Acornima.slnx -c Release
+
+      - name: Run core tests
+        if: matrix.dotnet-version.tfm != env.MAIN_TFM
+        run: |
+          dotnet test --project test/Acornima.Tests/Acornima.Tests.csproj -c Release -f ${{ matrix.dotnet-version.tfm }} --no-build /p:EnableCITargets=true
+
+      - name: Run all tests
+        if: matrix.dotnet-version.tfm == env.MAIN_TFM
+        run: |
+          dotnet test --solution Acornima.slnx -c Release -f ${{ matrix.dotnet-version.tfm }} --no-build
+
+  publish:
+    needs: [
+      build-and-test-netfw,
+      build-and-test-netcore
+    ]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    permissions:
+      id-token: write # enable GitHub OIDC token issuance for this job
+    steps:
+    - uses: actions/setup-dotnet@v6
+      with:
+        dotnet-version: 10.0.x
+
+    - uses: actions/checkout@v7
+
+    - name: Determine version from tag
+      if: startsWith(github.ref, 'refs/tags/')
+      run: |
+        arrTag=(${GITHUB_REF//\// })
+        VERSION="${arrTag[2]}"
+        VERSION="${VERSION//v}"
+        echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+
+    - name: Generate preview version
+      if: "!startsWith(github.ref, 'refs/tags/')"
+      run: |
+        VERSION="0.1.0-preview-$(date -u +'%Y%m%d-%H%M')"
+        echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+
+    # See also: https://andrewlock.net/version-vs-versionsuffix-vs-packageversion-what-do-they-all-mean/
+    - name: Build
+      run: |
+        dotnet build Acornima.slnx -c Release /p:ContinuousIntegrationBuild=true /p:Version=$VERSION /p:BuildNumber=$GITHUB_RUN_NUMBER
+
+    - name: Pack
+      run: |
+        dotnet pack Acornima.slnx -c Release --no-build /p:Version=$VERSION /p:BuildNumber=$GITHUB_RUN_NUMBER
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: packages
+        path: artifacts/package/release
+
+    # Symbol packages are auto-pushed, see: https://learn.microsoft.com/en-us/nuget/create-packages/symbol-packages-snupkg#publishing-a-symbol-package
+    - name: Push to Feedz
+      env:
+        NUGET_API_KEY: ${{ secrets.FEEDZ_NUGET_API_KEY }}
+      run: |
+        dotnet nuget push artifacts/package/release/*.nupkg --api-key "$NUGET_API_KEY" --source https://f.feedz.io/acornima/acornima/nuget/index.json
+
+    - name: Log in to NuGet (OIDC → temp API key)
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: NuGet/login@v1
+      id: login
+      with:
+        user: ${{ secrets.NUGET_USER }}
+
+    - name: Push to NuGet
+      if: startsWith(github.ref, 'refs/tags/')
+      env:
+        NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
+      run: |
+        dotnet nuget push artifacts/package/release/*.nupkg --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json
