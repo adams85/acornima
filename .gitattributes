@@ -12,3 +12,9 @@
 # make sure *nix stays *nix
 *.sh      eol=lf
 
+# Settings for Verify snapshots (https://github.com/verifytests/verify#text-file-settings)
+*.verified.cs text eol=lf working-tree-encoding=UTF-8
+*.verified.txt text eol=lf working-tree-encoding=UTF-8
+*.verified.xml text eol=lf working-tree-encoding=UTF-8
+*.verified.json text eol=lf working-tree-encoding=UTF-8
+*.verified.bin binary
