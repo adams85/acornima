@@ -223,7 +223,7 @@ public partial class Tokenizer
                         if (pattern.CharCodeAt(i) != '&')
                         {
                             // https://tc39.es/ecma262/#prod-ClassSetOperand
-                            if (EatClassSetCharacter(parser, out right))
+                            if (EatClassSetCharacter(parser, out _))
                             {
                                 continue;
                             }
@@ -272,7 +272,7 @@ public partial class Tokenizer
                     do
                     {
                         // https://tc39.es/ecma262/#prod-ClassSetOperand
-                        if (EatClassSetCharacter(parser, out right)
+                        if (EatClassSetCharacter(parser, out _)
                             || EatNestedClassOrClassStringDisjunction(parser) != CharSetNone)
                         {
                             continue;
