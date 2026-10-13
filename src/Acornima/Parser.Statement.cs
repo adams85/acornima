@@ -719,7 +719,14 @@ public partial class Parser
             if (init.Kind is VariableDeclarationKind.Using or VariableDeclarationKind.AwaitUsing && init.Declarations[0].Init is null)
             {
                 // Raise(init.Start, "Using declaration is not allowed in for-in loops"); // original acornjs error reporting
+                if (awaitAt < 0)
+                {
                 Raise(init.Start, InvalidUsingInForInLoop);
+            }
+                else
+                {
+                    Unexpected();
+                }
             }
 
             if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES9 && awaitAt >= 0)
@@ -1195,28 +1202,30 @@ public partial class Parser
             }
             else
             {
-                if (kind == VariableDeclarationKind.Const && !(_tokenizer._type == TokenType.In || _tokenizerOptions._ecmaVersion >= EcmaVersion.ES6 && IsContextual("of")))
+                if ((kind is VariableDeclarationKind.Const or VariableDeclarationKind.Using or VariableDeclarationKind.AwaitUsing || id.Type != NodeType.Identifier)
+                    && (!isFor || _tokenizer._type != TokenType.In && !(_tokenizerOptions._ecmaVersion >= EcmaVersion.ES6 && IsContextual("of"))))
                 {
-                    // Unexpected(); // original acornjs error reporting
-                    Raise(_tokenizer._lastTokenEnd, DeclarationMissingInitializer_Const);
-                }
-                else if (kind is VariableDeclarationKind.Using or VariableDeclarationKind.AwaitUsing && _tokenizerOptions.AllowExplicitResourceManagement() && _tokenizer._type != TokenType.In && !IsContextual("of"))
-                {
-                    // Raise(_tokenizer._lastTokenEnd, `Missing initializer in {kind} declaration`); // original acornjs error reporting
-                    if (kind == VariableDeclarationKind.AwaitUsing)
+                    switch (kind)
                     {
-                        Raise(_tokenizer._lastTokenEnd, DeclarationMissingInitializer_AwaitUsing);
-                    }
-                    else
-                    {
-                        Raise(_tokenizer._lastTokenEnd, DeclarationMissingInitializer_Using);
+                        case VariableDeclarationKind.Const:
+                            // Unexpected(); // original acornjs error reporting
+                            Raise(_tokenizer._lastTokenEnd, DeclarationMissingInitializer_Const);
+                            break;
+                        case VariableDeclarationKind.Using:
+                            // Raise(_tokenizer._lastTokenEnd, `Missing initializer in using declaration`); // original acornjs error reporting
+                            Raise(_tokenizer._lastTokenEnd, DeclarationMissingInitializer_Using);
+                            break;
+                        case VariableDeclarationKind.AwaitUsing:
+                            // Raise(_tokenizer._lastTokenEnd, `Missing initializer in await using declaration`); // original acornjs error reporting
+                            Raise(_tokenizer._lastTokenEnd, DeclarationMissingInitializer_AwaitUsing);
+                            break;
+                        default:
+                            // Raise(_tokenizer._lastTokenEnd, "Complex binding patterns require an initialization value"); // original acornjs error reporting
+                            Raise(_tokenizer._lastTokenEnd, DeclarationMissingInitializer_Destructuring);
+                            break;
                     }
                 }
-                else if (id.Type != NodeType.Identifier && !(isFor && (_tokenizer._type == TokenType.In || IsContextual("of"))))
-                {
-                    // Raise(_tokenizer._lastTokenEnd, "Complex binding patterns require an initialization value"); // original acornjs error reporting
-                    Raise(_tokenizer._lastTokenEnd, DeclarationMissingInitializer_Destructuring);
-                }
+
                 init = null;
             }
 

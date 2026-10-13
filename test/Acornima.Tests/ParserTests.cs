@@ -3262,6 +3262,89 @@ public partial class ParserTests
     }
 
     [Test]
+    [Arguments("script", "var x\nin", "Unexpected token 'in'")]
+    [Arguments("module", "var x\nin", "Unexpected token 'in'")]
+    [Arguments("script", "let x\nin", "Unexpected token 'in'")]
+    [Arguments("module", "let x\nin", "Unexpected token 'in'")]
+    [Arguments("script", "const x\nin", "Missing initializer in const declaration")]
+    [Arguments("module", "const x\nin", "Missing initializer in const declaration")]
+    [Arguments("script", "() => { using x\nin }", "Missing initializer in using declaration")]
+    [Arguments("module", "() => { using x\nin }", "Missing initializer in using declaration")]
+    [Arguments("script", "async () => { await using x\nin }", "Missing initializer in await using declaration")]
+    [Arguments("module", "async () => { await using x\nin }", "Missing initializer in await using declaration")]
+
+    [Arguments("script", "var x\nof", null)]
+    [Arguments("module", "var x\nof", null)]
+    [Arguments("script", "let x\nof", null)]
+    [Arguments("module", "let x\nof", null)]
+    [Arguments("script", "const x\nof", "Missing initializer in const declaration")]
+    [Arguments("module", "const x\nof", "Missing initializer in const declaration")]
+    [Arguments("script", "() => { using x\nof }", "Missing initializer in using declaration")]
+    [Arguments("module", "() => { using x\nof }", "Missing initializer in using declaration")]
+    [Arguments("script", "async () => { await using x\nof }", "Missing initializer in await using declaration")]
+    [Arguments("module", "async () => { await using x\nof }", "Missing initializer in await using declaration")]
+
+    [Arguments("script", "for (var x\nin {}) {}", null)]
+    [Arguments("module", "for (var x\nin {}) {}", null)]
+    [Arguments("script", "for (let x\nin {}) {}", null)]
+    [Arguments("module", "for (let x\nin {}) {}", null)]
+    [Arguments("script", "for (const x\nin {}) {}", null)]
+    [Arguments("module", "for (const x\nin {}) {}", null)]
+    [Arguments("script", "for (using x\nin {}) {}", "Invalid 'using' in for-in loop")]
+    [Arguments("module", "for (using x\nin {}) {}", "Invalid 'using' in for-in loop")]
+    [Arguments("script", "async () => { for await (using x\nin {}) {} }", "Unexpected token 'in'")]
+    [Arguments("module", "async () => { for await (using x\nin {}) {} }", "Unexpected token 'in'")]
+    [Arguments("script", "async () => { for (await using x\nin {}) {} }", "Invalid 'using' in for-in loop")]
+    [Arguments("module", "async () => { for (await using x\nin {}) {} }", "Invalid 'using' in for-in loop")]
+    [Arguments("script", "async () => { for await (await using x\nin {}) {} }", "Unexpected token 'in'")]
+    [Arguments("module", "async () => { for await (await using x\nin {}) {} }", "Unexpected token 'in'")]
+
+    [Arguments("script", "for (var x\nof []) {}", null)]
+    [Arguments("module", "for (var x\nof []) {}", null)]
+    [Arguments("script", "for (let x\nof []) {}", null)]
+    [Arguments("module", "for (let x\nof []) {}", null)]
+    [Arguments("script", "for (const x\nof []) {}", null)]
+    [Arguments("module", "for (const x\nof []) {}", null)]
+    [Arguments("script", "for (using x\nof []) {}", null)]
+    [Arguments("module", "for (using x\nof []) {}", null)]
+    [Arguments("script", "async () => { for await (using x\nof []) {} }", null)]
+    [Arguments("module", "async () => { for await (using x\nof []) {} }", null)]
+    [Arguments("script", "async () => { for (await using x\nof []) {} }", null)]
+    [Arguments("module", "async () => { for (await using x\nof []) {} }", null)]
+    [Arguments("script", "async () => { for await (await using x\nof []) {} }", null)]
+    [Arguments("module", "async () => { for await (await using x\nof []) {} }", null)]
+
+    [Arguments("script", "for (var x\ny) {}", "Unexpected identifier 'y'")]
+    [Arguments("module", "for (var x\ny) {}", "Unexpected identifier 'y'")]
+    [Arguments("script", "for (let x\ny) {}", "Unexpected identifier 'y'")]
+    [Arguments("module", "for (let x\ny) {}", "Unexpected identifier 'y'")]
+    [Arguments("script", "for (const x\ny) {}", "Missing initializer in const declaration")]
+    [Arguments("module", "for (const x\ny) {}", "Missing initializer in const declaration")]
+    [Arguments("script", "for (using x\ny) {}", "Missing initializer in using declaration")]
+    [Arguments("module", "for (using x\ny) {}", "Missing initializer in using declaration")]
+    [Arguments("script", "async () => { for await (using x\ny) {} }", "Missing initializer in using declaration")] // V8 reports "Invalid left-hand side in for-await-of loop: Must have a single binding."
+    [Arguments("module", "async () => { for await (using x\ny) {} }", "Missing initializer in using declaration")] // V8 reports "Invalid left-hand side in for-await-of loop: Must have a single binding."
+    [Arguments("script", "async () => { for (await using x\ny) {} }", "Missing initializer in await using declaration")]
+    [Arguments("module", "async () => { for (await using x\ny) {} }", "Missing initializer in await using declaration")]
+    [Arguments("script", "async () => { for await (await using x\ny) {} }", "Missing initializer in await using declaration")] // V8 reports "Invalid left-hand side in for-await-of loop: Must have a single binding."
+    [Arguments("module", "async () => { for await (await using x\ny) {} }", "Missing initializer in await using declaration")] // V8 reports "Invalid left-hand side in for-await-of loop: Must have a single binding."
+    public void ShouldHandleAutomaticSemicolonInsertionEdgeCases(string sourceType, string input, string? expectedError)
+    {
+        var parser = new Parser();
+        var parseAction = GetParseActionFor(sourceType);
+
+        if (expectedError is null)
+        {
+            Assert.NotNull(parseAction(parser, input));
+        }
+        else
+        {
+            var ex = Assert.Throws<SyntaxErrorException>(() => parseAction(parser, input));
+            Assert.Equal(expectedError, ex.Description);
+        }
+    }
+
+    [Test]
     [Arguments("as")]
     [Arguments("do")]
     [Arguments("if")]
