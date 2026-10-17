@@ -19,11 +19,9 @@ public partial class Parser
     // if possible.
     [return: NotNullIfNotNull(nameof(node))]
     private Node? ToAssignable(Node node, ref DestructuringErrors destructuringErrors, bool isBinding,
-        bool isInPattern = false, bool allowCall = false, LeftHandSideKind lhsKind = LeftHandSideKind.Unknown)
+        bool isInPattern = false, LeftHandSideKind lhsKind = LeftHandSideKind.Unknown)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/lval.js > `pp.toAssignable = function`
-
-        Debug.Assert(!isBinding || !allowCall);
 
         if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES6)
         {
@@ -155,7 +153,8 @@ public partial class Parser
                 //    RaiseRecoverable(node.Start, "Optional chaining cannot appear in left-hand side");
                 //    break;
 
-                case NodeType.CallExpression when allowCall && !isInPattern:
+                case NodeType.CallExpression when !isInPattern
+                    && (_tokenizerOptions.EcmaVersion < EcmaVersion.ES6 || !_strict && _tokenizerOptions.EcmaVersion >= EcmaVersion.ES17):
                     // Annex B.3.9: In non-strict mode, allow CallExpression as assignment target.
                     // The runtime should throw a ReferenceError instead.
                     break;
@@ -534,7 +533,8 @@ public partial class Parser
                 expr = parenthesizedExpression.Expression;
                 goto Reenter;
 
-            case NodeType.CallExpression when allowCall && !isInPattern:
+            case NodeType.CallExpression when allowCall && !isInPattern
+                && (_tokenizerOptions.EcmaVersion < EcmaVersion.ES6 || !_strict && _tokenizerOptions.EcmaVersion >= EcmaVersion.ES17):
                 // Annex B.3.9: In non-strict mode, allow CallExpression as assignment target.
                 // The runtime should throw a ReferenceError instead.
                 // Does NOT apply to logical assignments (&&=, ||=, ??=), which require 'simple' target.

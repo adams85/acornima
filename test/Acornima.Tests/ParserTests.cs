@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Numerics;
-using System.Xml.Linq;
 using Acornima.Ast;
 using Acornima.Helpers;
 using TUnit.Core;
@@ -3679,6 +3678,100 @@ public partial class ParserTests
             Assert.Equal(expectedRegExpStartColumn, token.Location.Start.Column);
             Assert.Equal(expectedRegExpLine, token.Location.End.Line);
             Assert.Equal(expectedRegExpEndColumn, token.Location.End.Column);
+        }
+    }
+
+    [Test]
+    [Arguments("({__proto__: null, __proto__: null})", EcmaVersion.ES5, null)]
+    [Arguments("'use strict'; ({__proto__: null, __proto__: null})", EcmaVersion.ES5, "Redefinition of property '__proto__'")]
+    [Arguments("({__proto__: null, __proto__: null})", EcmaVersion.ES2015, "Duplicate __proto__ fields are not allowed in object literals")]
+    [Arguments("({__proto__: null, __proto__: null})", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+
+    [Arguments("for (;;) function f() {}", EcmaVersion.ES5, null)]
+    [Arguments("'use strict'; for (;;) function f() {}", EcmaVersion.ES5, "In strict mode code, functions can only be declared at top level or inside a block")]
+    [Arguments("for (;;) function f() {}", EcmaVersion.ES2015, "In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement")]
+    [Arguments("'use strict'; for (;;) function f() {}", EcmaVersion.ES2015, "In strict mode code, functions can only be declared at top level or inside a block")]
+    [Arguments("for (;;) function f() {}", EcmaVersion.Latest, "In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement")]
+    [Arguments("'use strict'; for (;;) function f() {}", EcmaVersion.Latest, "In strict mode code, functions can only be declared at top level or inside a block")]
+
+    [Arguments("if (1) l: function f() {}", EcmaVersion.ES5, null)]
+    [Arguments("'use strict'; if (1) l: function f() {}", EcmaVersion.ES5, "In strict mode code, functions can only be declared at top level or inside a block")]
+    [Arguments("if (1) l: function f() {}", EcmaVersion.ES2015, "In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement")]
+    [Arguments("'use strict'; if (1) l: function f() {}", EcmaVersion.ES2015, "In strict mode code, functions can only be declared at top level or inside a block")]
+    [Arguments("if (1) l: function f() {}", EcmaVersion.Latest, "In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement")]
+    [Arguments("'use strict'; if (1) l: function f() {}", EcmaVersion.Latest, "In strict mode code, functions can only be declared at top level or inside a block")]
+
+    [Arguments("l: function f() {}", EcmaVersion.ES5, null)]
+    [Arguments("'use strict'; l: function f() {}", EcmaVersion.ES5, "In strict mode code, functions can only be declared at top level or inside a block")]
+    [Arguments("l: function f() {}", EcmaVersion.ES2015, null)]
+    [Arguments("'use strict'; l: function f() {}", EcmaVersion.ES2015, "In strict mode code, functions can only be declared at top level or inside a block")]
+    [Arguments("l: function f() {}", EcmaVersion.Latest, null)]
+    [Arguments("'use strict'; l: function f() {}", EcmaVersion.Latest, "In strict mode code, functions can only be declared at top level or inside a block")]
+
+    [Arguments("if (1) function f() {}", EcmaVersion.ES5, null)]
+    [Arguments("'use strict'; if (1) function f() {}", EcmaVersion.ES5, "In strict mode code, functions can only be declared at top level or inside a block")]
+    [Arguments("if (1) function f() {}", EcmaVersion.ES2015, null)]
+    [Arguments("'use strict'; if (1) function f() {}", EcmaVersion.ES2015, "In strict mode code, functions can only be declared at top level or inside a block")]
+    [Arguments("if (1) function f() {}", EcmaVersion.Latest, null)]
+    [Arguments("'use strict'; if (1) function f() {}", EcmaVersion.Latest, "In strict mode code, functions can only be declared at top level or inside a block")]
+
+    [Arguments("l: function f() {} var f", EcmaVersion.ES5, null)]
+    [Arguments("l: function f() {} var f", EcmaVersion.ES2015, null)]
+    [Arguments("l: function f() {} var f", EcmaVersion.Latest, null)]
+    [Arguments("l: function f() {} let f", EcmaVersion.ES2015, "Identifier 'f' has already been declared")]
+    [Arguments("l: function f() {} let f", EcmaVersion.Latest, "Identifier 'f' has already been declared")]
+
+    [Arguments("if (1) function f() {} var f", EcmaVersion.ES5, null)]
+    [Arguments("if (1) function f() {} var f", EcmaVersion.ES2015, null)]
+    [Arguments("if (1) function f() {} var f", EcmaVersion.Latest, null)]
+    [Arguments("if (1) function f() {} let f", EcmaVersion.ES2015, null)]
+    [Arguments("if (1) function f() {} let f", EcmaVersion.Latest, null)]
+
+    [Arguments("for (var x = 1 in {}) {}", EcmaVersion.ES5, null)]
+    [Arguments("'use strict'; for (var x = 1 in {}) {}", EcmaVersion.ES5, "for-in loop variable declaration may not have an initializer")]
+    [Arguments("for (var x = 1 in {}) {}", EcmaVersion.ES2015, "for-in loop variable declaration may not have an initializer")]
+    [Arguments("'use strict'; for (var x = 1 in {}) {}", EcmaVersion.ES2015, "for-in loop variable declaration may not have an initializer")]
+    [Arguments("for (var x = 1 in {}) {}", EcmaVersion.ES2016, "for-in loop variable declaration may not have an initializer")]
+    [Arguments("'use strict'; for (var x = 1 in {}) {}", EcmaVersion.ES2016, "for-in loop variable declaration may not have an initializer")]
+    [Arguments("for (var x = 1 in {}) {}", EcmaVersion.ES2017, null)]
+    [Arguments("'use strict'; for (var x = 1 in {}) {}", EcmaVersion.ES2017, "for-in loop variable declaration may not have an initializer")]
+    [Arguments("for (var x = 1 in {}) {}", EcmaVersion.Latest, null)]
+    [Arguments("'use strict'; for (var x = 1 in {}) {}", EcmaVersion.Latest, "for-in loop variable declaration may not have an initializer")]
+
+    [Arguments("for (var [x, y] = [] in {}) {}", EcmaVersion.ES2015, "for-in loop variable declaration may not have an initializer")]
+    [Arguments("for (var [x, y] = [] in {}) {}", EcmaVersion.ES2016, "for-in loop variable declaration may not have an initializer")]
+    [Arguments("for (var [x, y] = [] in {}) {}", EcmaVersion.ES2017, "for-in loop variable declaration may not have an initializer")]
+    [Arguments("for (var [x, y] = [] in {}) {}", EcmaVersion.Latest, "for-in loop variable declaration may not have an initializer")]
+
+    [Arguments("for (let x = 1 in {}) {}", EcmaVersion.ES2015, "for-in loop variable declaration may not have an initializer")]
+    [Arguments("for (let x = 1 in {}) {}", EcmaVersion.ES2016, "for-in loop variable declaration may not have an initializer")]
+    [Arguments("for (let x = 1 in {}) {}", EcmaVersion.ES2017, "for-in loop variable declaration may not have an initializer")]
+    [Arguments("for (let x = 1 in {}) {}", EcmaVersion.Latest, "for-in loop variable declaration may not have an initializer")]
+
+    [Arguments("f() = 1", EcmaVersion.ES5, null)]
+    [Arguments("'use strict'; f() = 1", EcmaVersion.ES5, null)]
+    [Arguments("f() = 1", EcmaVersion.ES2015, "Invalid left-hand side in assignment")]
+    [Arguments("'use strict'; f() = 1", EcmaVersion.ES2015, "Invalid left-hand side in assignment")]
+    [Arguments("f() = 1", EcmaVersion.ES2025, "Invalid left-hand side in assignment")]
+    [Arguments("'use strict'; f() = 1", EcmaVersion.ES2025, "Invalid left-hand side in assignment")]
+    [Arguments("f() = 1", EcmaVersion.ES2026, null)]
+    [Arguments("'use strict'; f() = 1", EcmaVersion.ES2026, "Invalid left-hand side in assignment")]
+    [Arguments("f() = 1", EcmaVersion.Latest, null)]
+    [Arguments("'use strict'; f() = 1", EcmaVersion.Latest, "Invalid left-hand side in assignment")]
+
+    public void ShouldHandleAnnexBEdgeCases(string input, EcmaVersion ecmaVersion, string? expectedError)
+    {
+        var parser = new Parser(new ParserOptions { EcmaVersion = ecmaVersion });
+        var parseAction = GetParseActionFor("script");
+
+        if (expectedError is null)
+        {
+            Assert.NotNull(parseAction(parser, input));
+        }
+        else
+        {
+            var ex = Assert.Throws<SyntaxErrorException>(() => parseAction(parser, input));
+            Assert.Equal(expectedError, ex.Description);
         }
     }
 }

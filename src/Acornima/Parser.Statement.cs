@@ -216,7 +216,6 @@ public partial class Parser
 
         var startMarker = StartNode();
 
-        bool hasContext;
         TokenType startType;
         VariableDeclarationKind kind;
 
@@ -252,27 +251,7 @@ public partial class Parser
                     return ExitRecursion(ParseForStatement(startMarker));
 
                 case Keyword.Function:
-                    // Function as sole body of either an if statement or a labeled statement
-                    // works, but not when it is part of a labeled statement that is the sole
-                    // body of an if statement.
-
-                    hasContext = context != StatementContext.Default;
-                    if (hasContext && _tokenizerOptions._ecmaVersion >= EcmaVersion.ES6)
-                    {
-                        if (_strict)
-                        {
-                            // Unexpected(); // original acornjs error reporting
-                            Raise(_tokenizer._start, StrictFunction);
-                        }
-                        else if (context is not (StatementContext.If or StatementContext.Label))
-                        {
-                            // Unexpected(); // original acornjs error reporting
-                            Raise(_tokenizer._start, SloppyFunction);
-
-                        }
-                    }
-
-                    return ExitRecursion(ParseFunctionStatement(startMarker, isAsync: false, declarationPosition: !hasContext));
+                    return ExitRecursion(ParseFunctionStatement(startMarker, isAsync: false, context));
 
                 case Keyword.Class:
                     if (context != StatementContext.Default)
@@ -368,15 +347,8 @@ public partial class Parser
         }
         else if (IsAsyncFunction())
         {
-            hasContext = context != StatementContext.Default;
-            if (hasContext)
-            {
-                // Unexpected(); // original acornjs error reporting
-                Raise(_tokenizer._start, AsyncFunctionInSingleStatementContext);
-            }
-
             Next();
-            return ExitRecursion(ParseFunctionStatement(startMarker, isAsync: true, declarationPosition: !hasContext));
+            return ExitRecursion(ParseFunctionStatement(startMarker, isAsync: true, context));
         }
         else if (startType == TokenType.At)
         {
@@ -655,9 +627,9 @@ public partial class Parser
                 }
 
                 var initPattern = ToAssignable(init, ref destructuringErrors, isBinding: false,
-                    isInPattern: destructuringErrors.IsInPattern, allowCall: !_strict, lhsKind: LeftHandSideKind.ForInOf);
+                    isInPattern: destructuringErrors.IsInPattern, lhsKind: LeftHandSideKind.ForInOf);
 
-                CheckLValPattern(initPattern, isInPattern: destructuringErrors.IsInPattern, allowCall: !_strict, lhsKind: LeftHandSideKind.ForInOf);
+                CheckLValPattern(initPattern, isInPattern: destructuringErrors.IsInPattern, allowCall: true, lhsKind: LeftHandSideKind.ForInOf);
 
                 return ParseForInOf(startMarker, isForIn: true, await: false, initPattern);
             }
@@ -676,9 +648,9 @@ public partial class Parser
                 }
 
                 var initPattern = ToAssignable(init, ref destructuringErrors, isBinding: false,
-                    isInPattern: destructuringErrors.IsInPattern, allowCall: !_strict, lhsKind: LeftHandSideKind.ForInOf);
+                    isInPattern: destructuringErrors.IsInPattern, lhsKind: LeftHandSideKind.ForInOf);
 
-                CheckLValPattern(initPattern, isInPattern: destructuringErrors.IsInPattern, allowCall: !_strict, lhsKind: LeftHandSideKind.ForInOf);
+                CheckLValPattern(initPattern, isInPattern: destructuringErrors.IsInPattern, allowCall: true, lhsKind: LeftHandSideKind.ForInOf);
 
                 return ParseForInOf(startMarker, isForIn: false, await: awaitAt >= 0, initPattern);
             }
@@ -750,14 +722,54 @@ public partial class Parser
         return null;
     }
 
-    private FunctionDeclaration ParseFunctionStatement(in Marker startMarker, bool isAsync, bool declarationPosition)
+    private FunctionDeclaration ParseFunctionStatement(in Marker startMarker, bool isAsync, StatementContext context)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseFunctionStatement = function`
 
+        // NOTE: Statement context checks for function declarations in `parseStatement`
+        // were moved here to reduce branching on the same conditions. (Plus, behavior
+        // in ES5 strict mode was changed to match the specification.)
+
+        FunctionOrClassFlags flags;
+
+        if (context == StatementContext.Default)
+        {
+            flags = FunctionOrClassFlags.Statement;
+        }
+        else
+        {
+            if (isAsync)
+            {
+                // Unexpected(); // original acornjs error reporting
+                Raise(_tokenizer._start, AsyncFunctionInSingleStatementContext);
+            }
+            else if (_strict)
+            {
+                // Unexpected(); // original acornjs error reporting
+                Raise(_tokenizer._start, StrictFunction);
+            }
+            else if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES6
+                && context is not (StatementContext.If or StatementContext.Label))
+            {
+                // Function is sole body of either an if statement or a labeled statement
+                // works, but not when it is part of a labeled statement that is the sole
+                // body of an if statement.
+
+                // Unexpected(); // original acornjs error reporting
+                Raise(_tokenizer._start, SloppyFunction);
+            }
+
+            // Per the ES5 specification, a function declaration may only appear at the top level
+            // of a script or function body and is not legal as the body of another statement.
+            // In practice, however, the major engines tolerated this, so we allow it here as well.
+
+            flags = (context & StatementContext.Label) != 0
+                ? FunctionOrClassFlags.Statement | FunctionOrClassFlags.SingleStatement
+                : FunctionOrClassFlags.Statement | FunctionOrClassFlags.SingleStatement | FunctionOrClassFlags.HangingStatement;
+        }
+
         Next();
-        var flags = declarationPosition
-            ? FunctionOrClassFlags.Statement
-            : FunctionOrClassFlags.Statement | FunctionOrClassFlags.HangingStatement;
+
         return (FunctionDeclaration)ParseFunction(startMarker, flags, isAsync);
     }
 
@@ -1156,10 +1168,10 @@ public partial class Parser
             && (variableDeclarator = variableDeclaration.Declarations[0]).Init is not null)
         {
             if (!isForIn
-                || _tokenizerOptions._ecmaVersion < EcmaVersion.ES8
                 || _strict
                 || variableDeclaration.Kind != VariableDeclarationKind.Var
-                || variableDeclarator.Id.Type != NodeType.Identifier)
+                || variableDeclarator.Id.Type != NodeType.Identifier
+                || _tokenizerOptions._ecmaVersion is >= EcmaVersion.ES6 and < EcmaVersion.ES8)
             {
                 // Raise(init.Start, $"{(isForIn ? "for-in" : "for-of")} loop variable declaration may not have an initializer"); // original acornjs error reporting
                 Raise(variableDeclarator.Id.Start, ForInOfLoopInitializer, new object[] { isForIn ? "for-in" : "for-of" });
@@ -1258,7 +1270,7 @@ public partial class Parser
         bool generator;
         if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES9 || !isAsync && _tokenizerOptions._ecmaVersion >= EcmaVersion.ES6)
         {
-            if (_tokenizer._type == TokenType.Star && (flags & FunctionOrClassFlags.HangingStatement) != 0)
+            if (_tokenizer._type == TokenType.Star && (flags & FunctionOrClassFlags.SingleStatement) != 0)
             {
                 // Unexpected(); // original acornjs error reporting
                 Raise(startMarker.Index, GeneratorInSingleStatementContext);

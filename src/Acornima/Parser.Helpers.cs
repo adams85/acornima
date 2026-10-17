@@ -425,7 +425,10 @@ public partial class Parser
     {
         None = 0,
         Statement = 1 << 0,
+        // The declaration is not bound in the enclosing scope.
         HangingStatement = 1 << 1,
         NullableId = 1 << 2,
+        // The declaration is the sole body of another statement.
+        SingleStatement = 1 << 3,
     }
 }

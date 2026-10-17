@@ -227,7 +227,7 @@ public partial class Parser
                 if (_tokenizer._type == TokenType.Eq)
                 {
                     leftNode = ToAssignable(leftNode, ref destructuringErrors, isBinding: false,
-                        isInPattern: destructuringErrors.IsInPattern, allowCall: !_strict, lhsKind: LeftHandSideKind.Assignment);
+                        isInPattern: destructuringErrors.IsInPattern, lhsKind: LeftHandSideKind.Assignment);
                 }
 
                 if (!ownsDestructuringErrors)
@@ -247,7 +247,7 @@ public partial class Parser
 
                 if (_tokenizer._type == TokenType.Eq)
                 {
-                    CheckLValPattern(leftNode, isInPattern: destructuringErrors.IsInPattern, allowCall: !_strict, lhsKind: LeftHandSideKind.Assignment);
+                    CheckLValPattern(leftNode, isInPattern: destructuringErrors.IsInPattern, allowCall: true, lhsKind: LeftHandSideKind.Assignment);
                 }
                 else
                 {
@@ -255,7 +255,7 @@ public partial class Parser
                     // not 'web-compat' (Annex B.3.9 does not apply to logical assignments).
                     CheckLValSimple(leftNode,
                         isInPattern: destructuringErrors.IsInPattern,
-                        allowCall: !_strict && op is not (Operator.LogicalAndAssignment or Operator.LogicalOrAssignment or Operator.NullishCoalescingAssignment),
+                        allowCall: op is not (Operator.LogicalAndAssignment or Operator.LogicalOrAssignment or Operator.NullishCoalescingAssignment),
                         lhsKind: LeftHandSideKind.Assignment);
                 }
 
@@ -454,7 +454,7 @@ public partial class Parser
             {
                 CheckLValSimple(argument,
                     isInPattern: !IsNullRef(ref destructuringErrors) && destructuringErrors.IsInPattern,
-                    allowCall: !_strict,
+                    allowCall: true,
                     lhsKind: LeftHandSideKind.PrefixUpdate);
             }
             else
@@ -517,7 +517,7 @@ public partial class Parser
                 op = UpdateExpression.OperatorFromString((string)_tokenizer._value.Value!);
                 CheckLValSimple(expr,
                     isInPattern: !IsNullRef(ref destructuringErrors) && destructuringErrors.IsInPattern,
-                    allowCall: !_strict,
+                    allowCall: true,
                     lhsKind: LeftHandSideKind.PostfixUpdate);
                 Next();
                 expr = FinishNode(startMarker, new UpdateExpression(op, expr, prefix: false));
