@@ -721,8 +721,8 @@ public partial class Parser
                 // Raise(init.Start, "Using declaration is not allowed in for-in loops"); // original acornjs error reporting
                 if (awaitAt < 0)
                 {
-                Raise(init.Start, InvalidUsingInForInLoop);
-            }
+                    Raise(init.Start, InvalidUsingInForInLoop);
+                }
                 else
                 {
                     Unexpected();

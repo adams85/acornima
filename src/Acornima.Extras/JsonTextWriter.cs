@@ -248,11 +248,11 @@ internal sealed class JsonTextWriter : JsonWriter
             {
                 case '\\':
                 case '"':
-                    {
-                        writer.Write('\\');
-                        writer.Write(ch);
-                        break;
-                    }
+                {
+                    writer.Write('\\');
+                    writer.Write(ch);
+                    break;
+                }
 
                 case '\b':
                     writer.Write("\\b");
@@ -271,19 +271,19 @@ internal sealed class JsonTextWriter : JsonWriter
                     break;
 
                 default:
+                {
+                    if (ch < ' ')
                     {
-                        if (ch < ' ')
-                        {
-                            writer.Write("\\u");
-                            writer.Write(((int)ch).ToString("x4", CultureInfo.InvariantCulture));
-                        }
-                        else
-                        {
-                            writer.Write(ch);
-                        }
-
-                        break;
+                        writer.Write("\\u");
+                        writer.Write(((int)ch).ToString("x4", CultureInfo.InvariantCulture));
                     }
+                    else
+                    {
+                        writer.Write(ch);
+                    }
+
+                    break;
+                }
             }
         }
 
