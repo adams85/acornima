@@ -759,9 +759,9 @@ public partial class Parser
                 Raise(_tokenizer._start, SloppyFunction);
             }
 
-            // Per the ES5 specification, a function declaration may only appear at the top level
-            // of a script or function body and is not legal as the body of another statement.
-            // In practice, however, the major engines tolerated this, so we allow it here as well.
+            // Per the ES5 specification, function declarations are not allowed as the
+            // single-statement body of another statement. In practice, however,
+            // the major engines tolerated this, so we allow it here as well.
 
             flags = (context & StatementContext.Label) != 0
                 ? FunctionOrClassFlags.Statement | FunctionOrClassFlags.SingleStatement
