@@ -294,7 +294,7 @@ public partial class TokenizerTests
         Assert.True(isBigInt
             ? Tokenizer.TryParseBigInt(input.SliceBetween(token.Start, token.End), allowSeparator: true, out parsedBigIntegerValue)
             : Tokenizer.TryParseNumber(input.SliceBetween(token.Start, token.End), allowSeparator: true, strict: true, out parsedDoubleValue));
-        Assert.Equal(expectedValueObj, isBigInt ? (object)parsedBigIntegerValue : parsedDoubleValue);
+        Assert.Equal(expectedValueObj, isBigInt ? parsedBigIntegerValue : parsedDoubleValue);
     }
 
     [Test]
@@ -469,7 +469,7 @@ public partial class TokenizerTests
             Assert.True(isBigInt
                 ? Tokenizer.TryParseBigInt(input.SliceBetween(token.Start, token.End), allowSeparator: true, out parsedBigIntegerValue)
                 : Tokenizer.TryParseNumber(input.SliceBetween(token.Start, token.End), allowSeparator: true, strict, out parsedDoubleValue));
-            Assert.Equal(expectedValueObj, isBigInt ? (object)parsedBigIntegerValue : parsedDoubleValue);
+            Assert.Equal(expectedValueObj, isBigInt ? parsedBigIntegerValue : parsedDoubleValue);
         }
         else
         {

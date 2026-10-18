@@ -1254,7 +1254,7 @@ public partial class Parser
             Next();
 
             var innerStartMarker = StartNode();
-            var parameters = new ArrayList<Node>();
+            var exprList = new ArrayList<Expression>();
 
             var destructuringErrors = new DestructuringErrors();
             var oldYieldPos = _yieldPosition;
@@ -1309,16 +1309,16 @@ public partial class Parser
                     // We deviate a bit from the original acornjs implementation here to
                     // make the parsing of non-async and async arrow functions consistent.
                     // (The comma after rest element case is checked by CheckPatternErrors below.)
-                    parameters.Add(ParseSpread(ref destructuringErrors));
+                    exprList.Add(ParseSpread(ref destructuringErrors));
                     if (_tokenizer._type == TokenType.Comma && destructuringErrors.GetTrailingComma() < 0)
                     {
                         // As opposed to the original acornjs implementation, we report the position of the rest element.
-                        destructuringErrors.SetTrailingComma(parameters.LastItemRef().As<SpreadElement>().Argument.Start, isParam: true);
+                        destructuringErrors.SetTrailingComma(exprList.LastItemRef().As<SpreadElement>().Argument.Start, isParam: true);
                     }
                 }
                 else
                 {
-                    parameters.Add(ParseMaybeAssign(ref destructuringErrors, ExpressionContext.Default));
+                    exprList.Add(ParseMaybeAssign(ref destructuringErrors, ExpressionContext.Default));
                 }
             }
 
@@ -1333,11 +1333,11 @@ public partial class Parser
                 _yieldPosition = oldYieldPos;
                 _awaitPosition = oldAwaitPos;
 
-                return ParseArrowExpression(startMarker, NodeList.From(ref parameters), isAsync: false, context);
+                return ParseArrowExpression(startMarker, NodeList.From(ref exprList).AsNodes()!, isAsync: false, context);
             }
 
             // We deviate a bit from the original acornjs implementation here to make trailing comma errors recoverable.
-            if (parameters.Count == 0)
+            if (exprList.Count == 0)
             {
                 Unexpected(_tokenizer._lastTokenStart, TokenType.ParenRight, TokenType.ParenRight.Value);
             }
@@ -1362,18 +1362,13 @@ public partial class Parser
                 _awaitPosition = oldAwaitPos;
             }
 
-            if (parameters.Count > 1)
+            if (exprList.Count > 1)
             {
-                var exprList = new ArrayList<Expression>(new Expression[parameters.Count]);
-                for (var i = 0; i < parameters.Count; i++)
-                {
-                    exprList[i] = (Expression)parameters[i];
-                }
                 val = FinishNodeAt(innerStartMarker, innerEndMarker, new SequenceExpression(NodeList.From(ref exprList)));
             }
             else
             {
-                val = (Expression)parameters[0];
+                val = exprList[0];
             }
         }
         else

@@ -268,7 +268,7 @@ public partial class TokenizerTests
     {
         for (var value = 0UL; value < 1000; value++)
         {
-            Assert.Equal((double)(long)value, Tokenizer.UInt64ToDouble(value));
+            Assert.Equal((long)value, Tokenizer.UInt64ToDouble(value));
         }
 
         Assert.Equal(9223372036854775808d, Tokenizer.UInt64ToDouble(1UL << 63));
