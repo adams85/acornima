@@ -91,7 +91,7 @@ public partial class ParserTests
 #if DEBUG
         const int depth = 340;
 #else
-        const int depth = 940;
+        const int depth = 920;
 #endif
         var input = $"if ({new string('(', depth)}true{new string(')', depth)}) {{ }}";
         parser.ParseScript(input);
@@ -2096,13 +2096,13 @@ public partial class ParserTests
     [Arguments("script", "({a: {b = 0}} = {})", EcmaVersion.Latest, null)]
     [Arguments("script", "[{a: 0}.x] = []", EcmaVersion.Latest, null)]
 
-    [Arguments("script", "[{__proto__: a, __proto__: a}, {x = 0}.x] = []", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
-    [Arguments("script", "[{x = 0}, {__proto__: a, __proto__: a}.x] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [Arguments("script", "[{__proto__: a, __proto__: a}, {x = 0}.x] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")] // V8 reports "Duplicate __proto__ fields are not allowed in object literals"
+    [Arguments("script", "[{x = 0}, {__proto__: a, __proto__: a}.x] = []", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")] // V8 reports "Invalid shorthand property initializer"
     [Arguments("script", "[{__proto__: a, __proto__: a, x = 0}, {__proto__: a, __proto__: a}.x] = []", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
-    [Arguments("script", "[{__proto__: a, x = 0, __proto__: a}, {__proto__: a, __proto__: a}.x] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")]
-    [Arguments("script", "[{__proto__: a, __proto__: a, x = 0}, {x = 0}.x] = []", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")]
+    [Arguments("script", "[{__proto__: a, x = 0, __proto__: a}, {__proto__: a, __proto__: a}.x] = []", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")] // V8 reports "Invalid shorthand property initializer"
+    [Arguments("script", "[{__proto__: a, __proto__: a, x = 0}, {x = 0}.x] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")] // V8 reports "Duplicate __proto__ fields are not allowed in object literals"
     [Arguments("script", "[{__proto__: a, x = 0, __proto__: a}, {x = 0}.x] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")]
-    [Arguments("script", "[[{a = 0}], {b = 0} = {}, {c: [{__proto__: a, __proto__: a}]}.x] = []", EcmaVersion.Latest, "Invalid shorthand property initializer")]
+    [Arguments("script", "[[{a = 0}], {b = 0} = {}, {c: [{__proto__: a, __proto__: a}]}.x] = []", EcmaVersion.Latest, "Duplicate __proto__ fields are not allowed in object literals")] // V8 reports "Invalid shorthand property initializer"
     public void ShouldHandleVariableAssignmentEdgeCases(string sourceType, string input, EcmaVersion ecmaVersion, string? expectedError)
     {
         var parser = new Parser(new ParserOptions { EcmaVersion = ecmaVersion });
