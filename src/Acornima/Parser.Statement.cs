@@ -606,68 +606,65 @@ public partial class Parser
         {
             var startsWithLet = IsContextual("let");
             var containsEscape = _tokenizer._containsEscape;
-            var destructuringErrors = new DestructuringErrors();
+            var ownDestructuringErrors = new DestructuringErrors();
 
             var oldForInitPosition = _forInitPosition;
             _forInitPosition = _tokenizer._start;
 
             Debug.Assert(!_suppressOnNode);
 
-            init = awaitAt < 0
-                ? ParseExpression(ref destructuringErrors, ExpressionContext.ForInit)
-                : ParseExprSubscripts(ref destructuringErrors, ExpressionContext.AwaitForInit);
+            var initExpr = awaitAt < 0
+                ? ParseExpression(ref ownDestructuringErrors, ExpressionContext.ForInit)
+                : ParseExprSubscripts(ref ownDestructuringErrors, ExpressionContext.AwaitForInit);
 
             Swap(ref _forInitPosition, ref oldForInitPosition);
 
             Node initPattern;
             if (_tokenizer._type == TokenType.In)
             {
-                if (awaitAt >= 0) // this implies _ecmaVersion >= EcmaVersion.ES9
-                {
-                    // We deviate a bit from the original acornjs implementation here to match the error reporting behavior of V8.
-                    CheckExpressionErrors(ref destructuringErrors, andThrow: true);
-                    Unexpected(awaitAt, TokenType.Name, "await");
-                }
+                // We deviate a bit from the original acornjs implementation here to match the error reporting behavior of V8.
+                FinalizeAsExpressionAndReportUnexpected(ref ownDestructuringErrors, awaitAt); // awaitAt >= 0 implies _ecmaVersion >= EcmaVersion.ES9
 
-                initPattern = ToAssignable(init, ref destructuringErrors, isBinding: false,
-                    isInPattern: destructuringErrors.IsInPattern, lhsKind: LeftHandSideKind.ForInOf);
+                initPattern = ToAssignable(initExpr, ref ownDestructuringErrors, isBinding: false,
+                    isInPattern: ownDestructuringErrors.IsInPattern, lhsKind: LeftHandSideKind.ForInOf);
 
-                CheckLValPattern(initPattern, isInPattern: destructuringErrors.IsInPattern, allowCall: true, lhsKind: LeftHandSideKind.ForInOf);
+                CheckLValPattern(initPattern, isInPattern: ownDestructuringErrors.IsInPattern, allowCall: true, lhsKind: LeftHandSideKind.ForInOf);
 
                 return ParseForInOf(startMarker, isForIn: true, await: false, initPattern);
             }
             else if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES6 && IsContextual("of"))
             {
                 if (awaitAt < 0 && _tokenizerOptions._ecmaVersion >= EcmaVersion.ES8
-                    && oldForInitPosition == init.Start && !containsEscape && init is Identifier { Name: "async" })
+                    && oldForInitPosition == initExpr.Start && !containsEscape && initExpr is Identifier { Name: "async" })
                 {
-                    Raise(init.Start, ForOfAsync);
+                    Raise(initExpr.Start, ForOfAsync);
                 }
 
                 if (startsWithLet)
                 {
                     // Raise(init.Start, "The left-hand side of a for-of loop may not start with 'let'"); // original acornjs error reporting
-                    Raise(init.Start, ForOfLet);
+                    Raise(initExpr.Start, ForOfLet);
                 }
 
-                initPattern = ToAssignable(init, ref destructuringErrors, isBinding: false,
-                    isInPattern: destructuringErrors.IsInPattern, lhsKind: LeftHandSideKind.ForInOf);
+                initPattern = ToAssignable(initExpr, ref ownDestructuringErrors, isBinding: false,
+                    isInPattern: ownDestructuringErrors.IsInPattern, lhsKind: LeftHandSideKind.ForInOf);
 
-                CheckLValPattern(initPattern, isInPattern: destructuringErrors.IsInPattern, allowCall: true, lhsKind: LeftHandSideKind.ForInOf);
+                CheckLValPattern(initPattern, isInPattern: ownDestructuringErrors.IsInPattern, allowCall: true, lhsKind: LeftHandSideKind.ForInOf);
 
                 return ParseForInOf(startMarker, isForIn: false, await: awaitAt >= 0, initPattern);
             }
             else
             {
-                InvokeOnNodeIfDeferred(init, maybeDestructuring: true);
-
                 // We deviate a bit from the original acornjs implementation here to match the error reporting behavior of V8.
-                CheckExpressionErrors(ref destructuringErrors, andThrow: true);
 
                 if (awaitAt >= 0)
                 {
                     Unexpected();
                 }
+
+                FinalizeAsExpression(initExpr, ref ownDestructuringErrors);
+
+                init = initExpr;
             }
         }
 
