@@ -275,12 +275,6 @@ public partial class Parser
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/parseutil.js > `pp.checkPatternErrors = function`
 
-        // TODO: move to callsite?
-        if (Unsafe.IsNullRef(ref destructuringErrors))
-        {
-            return;
-        }
-
         var position = destructuringErrors.GetTrailingComma();
         if (position >= 0)
         {
@@ -310,24 +304,12 @@ public partial class Parser
         }
     }
 
-    private bool CheckExpressionErrors(ref DestructuringErrors destructuringErrors, bool andThrow = false)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void CheckExpressionErrors(ref DestructuringErrors destructuringErrors, int nodeStart = 0)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/parseutil.js > `pp.checkExpressionErrors = function`
 
-        // TODO: move to callsite?
-        if (Unsafe.IsNullRef(ref destructuringErrors))
-        {
-            return false;
-        }
-
-        var hasError = destructuringErrors.ShorthandAssign >= 0 || destructuringErrors.DoubleProto >= 0;
-
-        if (!andThrow)
-        {
-            return hasError;
-        }
-
-        if (hasError)
+        if (destructuringErrors.ShorthandAssign >= nodeStart || destructuringErrors.DoubleProto >= nodeStart)
         {
             // We deviate a bit from the original acornjs implementation here to match the error reporting behavior of V8.
 
@@ -341,8 +323,8 @@ public partial class Parser
             //    RaiseRecoverable(destructuringErrors.DoubleProto, "Redefinition of __proto__ property");
             //}
 
-            if (destructuringErrors.ShorthandAssign >= 0
-                && (destructuringErrors.DoubleProto < 0 || destructuringErrors.ShorthandAssign < destructuringErrors.DoubleProto))
+            if (destructuringErrors.ShorthandAssign >= nodeStart
+                && (destructuringErrors.DoubleProto < nodeStart || destructuringErrors.ShorthandAssign < destructuringErrors.DoubleProto))
             {
                 Raise(destructuringErrors.ShorthandAssign, InvalidCoverInitializedName);
             }
@@ -351,8 +333,67 @@ public partial class Parser
                 Raise(destructuringErrors.DoubleProto, DuplicateProto);
             }
         }
+    }
 
-        return false;
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void FinalizeAsExpression(Expression expr, ref DestructuringErrors destructuringErrors)
+    {
+        CheckExpressionErrors(ref destructuringErrors);
+
+        if (_options._onNode is { } onNode)
+        {
+            InvokeDeferredOnNode(expr, onNode);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void FinalizeAsExpression(ReadOnlySpan<Expression?> exprList, ref DestructuringErrors destructuringErrors)
+    {
+        CheckExpressionErrors(ref destructuringErrors);
+
+        if (_options._onNode is { } onNode)
+        {
+            InvokeDeferredOnNode(exprList, onNode);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void FinalizeAsExpressionIfDestructuring(Expression expr, ref DestructuringErrors destructuringErrors, int nodeStart = 0)
+    {
+        if (!Unsafe.IsNullRef(ref destructuringErrors))
+        {
+            CheckExpressionErrors(ref destructuringErrors, nodeStart);
+
+            if (_options._onNode is { } onNode)
+            {
+                InvokeDeferredOnNode(expr, onNode);
+            }
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void FinalizeAsExpressionAndReportUnexpected(ref DestructuringErrors destructuringErrors)
+    {
+        if (!Unsafe.IsNullRef(ref destructuringErrors))
+        {
+            CheckExpressionErrors(ref destructuringErrors);
+        }
+
+        Unexpected();
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void FinalizeAsExpressionAndReportUnexpected(ref DestructuringErrors destructuringErrors, int awaitAt)
+    {
+        if (awaitAt >= 0)
+        {
+            if (!Unsafe.IsNullRef(ref destructuringErrors))
+            {
+                CheckExpressionErrors(ref destructuringErrors);
+            }
+
+            Unexpected(awaitAt, TokenType.Name, "await");
+        }
     }
 
     private void CheckYieldAwaitInDefaultParams()

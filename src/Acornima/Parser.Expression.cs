@@ -285,9 +285,7 @@ public partial class Parser
 
         if (ownsDestructuringErrors)
         {
-            InvokeOnNodeIfDeferred(left, maybeDestructuring: true);
-
-            CheckExpressionErrors(ref actualDestructuringErrors, andThrow: true);
+            FinalizeAsExpression(left, ref actualDestructuringErrors);
         }
         else
         {
@@ -313,14 +311,10 @@ public partial class Parser
         var startMarker = StartNode();
 
         var expr = ParseMaybeBinary(ref destructuringErrors, context);
-        if (CheckExpressionErrors(ref destructuringErrors))
-        {
-            return expr;
-        }
 
         if (_tokenizer._type == TokenType.Question && !(expr.Type == NodeType.ArrowFunctionExpression && expr._range.Start == startMarker.Index))
         {
-            InvokeOnNodeIfDeferred(expr, maybeDestructuring: !IsNullRef(ref destructuringErrors));
+            FinalizeAsExpressionIfDestructuring(expr, ref destructuringErrors);
 
             Next();
 
@@ -344,14 +338,10 @@ public partial class Parser
         var startMarker = StartNode();
 
         var expr = ParseMaybeUnary(sawUnary: false, incDec: false, ref destructuringErrors, context);
-        if (CheckExpressionErrors(ref destructuringErrors))
-        {
-            return expr;
-        }
 
         return expr.Start == startMarker.Index && expr.Type == NodeType.ArrowFunctionExpression
             ? expr
-            : ParseBinaryOp(startMarker, expr, minPrec: -1, maybeDestructuring: !IsNullRef(ref destructuringErrors), context);
+            : ParseBinaryOp(startMarker, expr, minPrec: -1, ref destructuringErrors, context);
     }
 
     // Parse binary operators with the operator precedence parsing
@@ -360,7 +350,7 @@ public partial class Parser
     // defer further parser to one of its callers when it encounters an
     // operator that has a lower precedence than the set it is parsing.
     [MethodImpl((MethodImplOptions)512  /* AggressiveOptimization */)]
-    private Expression ParseBinaryOp(in Marker leftStartMarker, Expression left, int minPrec, bool maybeDestructuring, ExpressionContext context)
+    private Expression ParseBinaryOp(in Marker leftStartMarker, Expression left, int minPrec, ref DestructuringErrors destructuringErrors, ExpressionContext context)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/expression.js > `pp.parseExprOp = function`
 
@@ -370,7 +360,7 @@ public partial class Parser
             && ((context & ExpressionContext.ForInit) == 0 || _tokenizer._type != TokenType.In)
             && (_tokenizer._type.Keyword is null || !_tokenizer._containsEscape || _tokenizer._lastTokenEndLocation.Line == _tokenizer._startLocation.Line))
         {
-            InvokeOnNodeIfDeferred(left, maybeDestructuring);
+            FinalizeAsExpressionIfDestructuring(left, ref destructuringErrors);
 
             Operator op;
             bool coalesce;
@@ -401,7 +391,7 @@ public partial class Parser
             var rightStartMarker = StartNode();
             // NOTE: We don't need stack overflow protection here because this recursion is known to be bounded (by the number of precedence levels).
             var right = ParseBinaryOp(rightStartMarker, ParseMaybeUnary(sawUnary: false, incDec: false, ref NullRef<DestructuringErrors>(), context),
-                prec, maybeDestructuring: false, context);
+                prec, ref NullRef<DestructuringErrors>(), context);
             var node = BuildBinary(leftStartMarker, left, right, op, logical || coalesce);
 
             if (logical && _tokenizer._type == TokenType.Coalesce
@@ -413,7 +403,7 @@ public partial class Parser
 
             // NOTE: Original acornjs implementation does a recursive call here, but we can optimize that into a loop to keep the call stack shallow.
             left = node;
-            maybeDestructuring = false;
+            destructuringErrors = ref NullRef<DestructuringErrors>();
         }
 
         return left;
@@ -470,7 +460,7 @@ public partial class Parser
 
             // Original acornjs implementation needs this check, however it can be skipped here as both double proto and
             // shorthand initializer is checked eagerly in this implementation (see ParseObject and ParsePropertyValue).
-            // CheckExpressionErrors(ref destructuringErrors, andThrow: true);
+            // CheckExpressionErrors(ref destructuringErrors);
 
             if (update)
             {
@@ -529,26 +519,22 @@ public partial class Parser
         else
         {
             expr = ParseExprSubscripts(ref destructuringErrors, context);
-            if (CheckExpressionErrors(ref destructuringErrors))
-            {
-                return expr;
-            }
-
-            var maybeDestructuring = !IsNullRef(ref destructuringErrors);
 
             while (_tokenizer._type.Postfix && !CanInsertSemicolon())
             {
-                InvokeOnNodeIfDeferred(expr, maybeDestructuring);
+                FinalizeAsExpressionIfDestructuring(expr, ref destructuringErrors);
 
-                op = UpdateExpression.OperatorFromString((string)_tokenizer._value.Value!);
                 CheckLValSimple(expr,
                     isInPattern: !IsNullRef(ref destructuringErrors) && destructuringErrors.IsInPattern,
                     allowCall: true,
                     lhsKind: LeftHandSideKind.PostfixUpdate);
+
+                op = UpdateExpression.OperatorFromString((string)_tokenizer._value.Value!);
+
                 Next();
 
                 expr = FinishNode(startMarker, new UpdateExpression(op, expr, prefix: false));
-                maybeDestructuring = false;
+                destructuringErrors = ref NullRef<DestructuringErrors>();
             }
         }
 
@@ -658,55 +644,46 @@ public partial class Parser
             expr = ParseExprAtom(ref destructuringErrors, context & ~ExpressionContext.Decorator);
         }
 
-        if (!IsNullRef(ref destructuringErrors))
-        {
-            if (oldShorthandAssign >= 0)
-            {
-                Swap(ref destructuringErrors.ShorthandAssign, ref oldShorthandAssign);
-            }
-            else
-            {
-                oldShorthandAssign = destructuringErrors.ShorthandAssign;
-            }
-
-            if (oldDoubleProto >= 0)
-            {
-                Swap(ref destructuringErrors.DoubleProto, ref oldDoubleProto);
-            }
-            else
-            {
-                oldDoubleProto = destructuringErrors.DoubleProto;
-            }
-
-            if (oldShorthandAssign >= expr.Start || oldDoubleProto >= expr.Start)
-            {
-                return expr;
-            }
-        }
+        Expression result;
 
         if (expr.Type == NodeType.ArrowFunctionExpression
             && _tokenizer._input.SliceBetween(_tokenizer._lastTokenStart, _tokenizer._lastTokenEnd) is not ")")
         {
-            return expr;
+            result = expr;
+        }
+        else
+        {
+            result = ParseSubscripts(startMarker, expr, noCalls: false, ref destructuringErrors, context);
         }
 
-        var result = ParseSubscripts(startMarker, expr, noCalls: false, maybeDestructuring: !IsNullRef(ref destructuringErrors), context);
-
-        if (!IsNullRef(ref destructuringErrors) && !ReferenceEquals(result, expr))
+        if (!IsNullRef(ref destructuringErrors))
         {
-            if (destructuringErrors.ParenthesizedAssign >= result.Start)
+            if (!ReferenceEquals(result, expr))
             {
-                destructuringErrors.ParenthesizedAssign = -1;
+                if (destructuringErrors.ParenthesizedAssign >= result.Start)
+                {
+                    destructuringErrors.ParenthesizedAssign = -1;
+                }
+
+                if (destructuringErrors.ParenthesizedBind >= result.Start)
+                {
+                    destructuringErrors.ParenthesizedBind = -1;
+                }
+
+                if (destructuringErrors.GetTrailingComma() >= result.Start)
+                {
+                    destructuringErrors.TrailingComma = -1;
+                }
             }
 
-            if (destructuringErrors.ParenthesizedBind >= result.Start)
+            if (oldShorthandAssign >= 0)
             {
-                destructuringErrors.ParenthesizedBind = -1;
+                destructuringErrors.ShorthandAssign = oldShorthandAssign;
             }
 
-            if (destructuringErrors.GetTrailingComma() >= result.Start)
+            if (oldDoubleProto >= 0)
             {
-                destructuringErrors.TrailingComma = -1;
+                destructuringErrors.DoubleProto = oldDoubleProto;
             }
         }
 
@@ -714,7 +691,7 @@ public partial class Parser
     }
 
     [MethodImpl((MethodImplOptions)512  /* AggressiveOptimization */)]
-    private Expression ParseSubscripts(in Marker startMarker, Expression baseExpr, bool noCalls, bool maybeDestructuring, ExpressionContext context)
+    private Expression ParseSubscripts(in Marker startMarker, Expression baseExpr, bool noCalls, ref DestructuringErrors destructuringErrors, ExpressionContext context)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/expression.js > `pp.parseSubscripts = function`
 
@@ -729,7 +706,8 @@ public partial class Parser
 
         for (; ; )
         {
-            var element = ParseSubscript(startMarker, baseExpr, noCalls, maybeDestructuring, maybeAsyncArrow, ref optionalChainPos, ref hasCall, context);
+            var element = ParseSubscript(startMarker, baseExpr, noCalls, maybeAsyncArrow,
+                ref optionalChainPos, ref hasCall, ref destructuringErrors, context);
 
             if (ReferenceEquals(element, baseExpr) || element.Type == NodeType.ArrowFunctionExpression)
             {
@@ -743,13 +721,13 @@ public partial class Parser
 
             baseExpr = element;
             maybeAsyncArrow = false;
-            maybeDestructuring = false;
+            destructuringErrors = ref NullRef<DestructuringErrors>();
         }
     }
 
     [MethodImpl((MethodImplOptions)512  /* AggressiveOptimization */)]
-    private Expression ParseSubscript(in Marker startMarker, Expression baseExpr, bool noCalls, bool maybeDestructuring, bool maybeAsyncArrow,
-        ref int optionalChainPos, ref bool hasCall, ExpressionContext context)
+    private Expression ParseSubscript(in Marker startMarker, Expression baseExpr, bool noCalls, bool maybeAsyncArrow,
+        ref int optionalChainPos, ref bool hasCall, ref DestructuringErrors destructuringErrors, ExpressionContext context)
     {
         // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/expression.js > `pp.parseSubscript = function`
 
@@ -778,7 +756,7 @@ public partial class Parser
             || (optional && _tokenizer._type != TokenType.ParenLeft && _tokenizer._type != TokenType.BackQuote)
             || Eat(TokenType.Dot))
         {
-            InvokeOnNodeIfDeferred(baseExpr, maybeDestructuring);
+            FinalizeAsExpressionIfDestructuring(baseExpr, ref destructuringErrors, baseExpr.Start);
 
             Expression property;
             if (computed)
@@ -807,14 +785,14 @@ public partial class Parser
         }
         else if (!noCalls && Eat(TokenType.ParenLeft))
         {
-            InvokeOnNodeIfDeferred(baseExpr, maybeDestructuring);
+            FinalizeAsExpressionIfDestructuring(baseExpr, ref destructuringErrors, baseExpr.Start);
 
             if (hasCall && (context & ExpressionContext.Decorator) != 0)
             {
                 Raise(_tokenizer._lastTokenStart, InvalidDecoratorMemberExpr);
             }
 
-            var destructuringErrors = new DestructuringErrors();
+            var ownDestructuringErrors = new DestructuringErrors();
             var oldYieldPos = _yieldPosition;
             var oldAwaitPos = _awaitPosition;
             var oldAwaitIdentPos = _awaitIdentifierPosition;
@@ -825,13 +803,13 @@ public partial class Parser
 
             NodeList<Expression> exprList = ParseExprList(close: TokenType.ParenRight,
                 allowTrailingComma: _tokenizerOptions._ecmaVersion >= EcmaVersion.ES8, allowEmptyItem: false,
-                ref destructuringErrors)!;
+                ref ownDestructuringErrors)!;
 
             _suppressOnNode = false;
 
             if (maybeAsyncArrow && !optional && !CanInsertSemicolon() && Eat(TokenType.Arrow))
             {
-                CheckPatternErrors(ref destructuringErrors, isAssign: false);
+                CheckPatternErrors(ref ownDestructuringErrors, isAssign: false);
                 CheckYieldAwaitInDefaultParams();
                 if (_awaitIdentifierPosition > 0)
                 {
@@ -845,9 +823,7 @@ public partial class Parser
                 return ParseArrowExpression(startMarker, exprList.AsNodes()!, isAsync: true, context);
             }
 
-            InvokeOnNodeIfDeferred(exprList.AsNodes().AsSpan(), maybeDestructuring: true);
-
-            CheckExpressionErrors(ref destructuringErrors, andThrow: true);
+            FinalizeAsExpression(exprList.AsSpan(), ref ownDestructuringErrors);
 
             if (oldYieldPos != 0)
             {
@@ -866,7 +842,7 @@ public partial class Parser
         }
         else if (_tokenizer._type == TokenType.BackQuote)
         {
-            InvokeOnNodeIfDeferred(baseExpr, maybeDestructuring);
+            FinalizeAsExpressionIfDestructuring(baseExpr, ref destructuringErrors, baseExpr.Start);
 
             if (optionalChainPos >= 0)
             {
@@ -1312,7 +1288,7 @@ public partial class Parser
             var innerStartMarker = StartNode();
             var exprList = new ArrayList<Expression>();
 
-            var destructuringErrors = new DestructuringErrors();
+            var ownDestructuringErrors = new DestructuringErrors();
             var oldYieldPos = _yieldPosition;
             var oldAwaitPos = _awaitPosition;
             // Do not save awaitIdentPos to allow checking awaits nested in parameters
@@ -1335,8 +1311,7 @@ public partial class Parser
                     // Expect(TokenType.Comma); // original acornjs error reporting
                     if (!Eat(TokenType.Comma))
                     {
-                        CheckExpressionErrors(ref destructuringErrors, andThrow: true);
-                        Unexpected();
+                        FinalizeAsExpressionAndReportUnexpected(ref ownDestructuringErrors);
                     }
 
                     // We deviate a bit from the original acornjs implementation here to make trailing comma errors recoverable.
@@ -1368,16 +1343,16 @@ public partial class Parser
                     // We deviate a bit from the original acornjs implementation here to
                     // make the parsing of non-async and async arrow functions consistent.
                     // (The comma after rest element case is checked by CheckPatternErrors below.)
-                    exprList.Add(ParseSpread(ref destructuringErrors));
-                    if (_tokenizer._type == TokenType.Comma && destructuringErrors.GetTrailingComma() < 0)
+                    exprList.Add(ParseSpread(ref ownDestructuringErrors));
+                    if (_tokenizer._type == TokenType.Comma && ownDestructuringErrors.GetTrailingComma() < 0)
                     {
                         // As opposed to the original acornjs implementation, we report the position of the rest element.
-                        destructuringErrors.SetTrailingComma(exprList.LastItemRef().As<SpreadElement>().Argument.Start, isParam: true);
+                        ownDestructuringErrors.SetTrailingComma(exprList.LastItemRef().As<SpreadElement>().Argument.Start, isParam: true);
                     }
                 }
                 else
                 {
-                    exprList.Add(ParseMaybeAssign(ref destructuringErrors, ExpressionContext.Default));
+                    exprList.Add(ParseMaybeAssign(ref ownDestructuringErrors, ExpressionContext.Default));
                 }
             }
 
@@ -1389,7 +1364,7 @@ public partial class Parser
 
             if (canBeArrow && !CanInsertSemicolon() && Eat(TokenType.Arrow))
             {
-                CheckPatternErrors(ref destructuringErrors, isAssign: false);
+                CheckPatternErrors(ref ownDestructuringErrors, isAssign: false);
                 CheckYieldAwaitInDefaultParams();
                 _yieldPosition = oldYieldPos;
                 _awaitPosition = oldAwaitPos;
@@ -1403,14 +1378,12 @@ public partial class Parser
                 Unexpected(_tokenizer._lastTokenStart, TokenType.ParenRight, TokenType.ParenRight.Value);
             }
 
-            InvokeOnNodeIfDeferred(parameters.AsSpan(), maybeDestructuring: true);
-
             if (spreadStart >= 0)
             {
                 Unexpected(spreadStart, TokenType.Ellipsis, TokenType.Ellipsis.Value);
             }
 
-            CheckExpressionErrors(ref destructuringErrors, andThrow: true);
+            FinalizeAsExpression(exprList.AsSpan(), ref ownDestructuringErrors);
 
             if (allowTrailingComma && lastIsComma)
             {
@@ -1491,7 +1464,7 @@ public partial class Parser
 
         var calleeStartMarker = StartNode();
         var callee = ParseSubscripts(calleeStartMarker, ParseExprAtom(ref NullRef<DestructuringErrors>(), ExpressionContext.ForNew),
-            noCalls: true, maybeDestructuring: false, ExpressionContext.Default);
+            noCalls: true, destructuringErrors: ref NullRef<DestructuringErrors>(), ExpressionContext.Default);
 
         if (callee.Type == NodeType.Super)
         {
@@ -1591,8 +1564,7 @@ public partial class Parser
                 //Expect(TokenType.Comma); // original acornjs error reporting
                 if (!Eat(TokenType.Comma))
                 {
-                    CheckExpressionErrors(ref destructuringErrors, andThrow: true);
-                    Unexpected();
+                    FinalizeAsExpressionAndReportUnexpected(ref destructuringErrors);
                 }
 
                 // We deviate a bit from the original acornjs implementation here to make trailing comma errors recoverable.
@@ -1726,7 +1698,7 @@ public partial class Parser
             }
 
             value = ParsePropertyValue(ref key, ref computed, out kind, out method, out shorthand, isPattern: false, isGenerator, isAsync,
-            containsEsc, objectStartIndex, startMarker, ref destructuringErrors);
+                containsEsc, objectStartIndex, startMarker, ref destructuringErrors);
         }
 
         Debug.Assert(!isPattern || kind == PropertyKind.Init);
@@ -2069,8 +2041,7 @@ public partial class Parser
                 // Expect(TokenType.Comma); // original acornjs error reporting
                 if (!Eat(TokenType.Comma))
                 {
-                    CheckExpressionErrors(ref destructuringErrors, andThrow: true);
-                    Unexpected();
+                    FinalizeAsExpressionAndReportUnexpected(ref destructuringErrors);
                 }
 
                 // We deviate a bit from the original acornjs implementation here to make trailing comma errors recoverable.

@@ -75,24 +75,15 @@ public partial class Parser
     // (Luckily, none of the nodes listed above start a scope, so deferring OnNode for those won't
     // mess up scope reporting.)
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void InvokeOnNodeIfDeferred(Node node, bool maybeDestructuring)
+    private void InvokeDeferredOnNode(Expression expr, OnNodeHandler onNode)
     {
-        if (maybeDestructuring && _options._onNode is { } onNode)
+        if (expr is ArrayExpression arrayExpression)
         {
-            InvokeDeferredOnNode(node, onNode);
+            InvokeDeferredOnNode(arrayExpression.Elements.AsSpan(), onNode);
         }
-    }
-
-    private void InvokeDeferredOnNode(Node node, OnNodeHandler onNode)
-    {
-        if (node is ArrayExpression arrayExpression)
+        else if (expr is ObjectExpression objectExpression)
         {
-            InvokeDeferredOnNode(arrayExpression.Elements.AsNodes().AsSpan(), onNode);
-        }
-        else if (node is ObjectExpression objectExpression)
-        {
-            foreach (var property in ((ObjectExpression)node).Properties)
+            foreach (var property in objectExpression.Properties)
             {
                 if (property is SpreadElement spreadElement)
                 {
@@ -100,7 +91,7 @@ public partial class Parser
                 }
                 else
                 {
-                    InvokeDeferredOnNode(((ObjectProperty)property).Value, onNode);
+                    InvokeDeferredOnNode(property.As<ObjectProperty>().Value.As<Expression>(), onNode);
                 }
 
                 onNode(property, new OnNodeContext(_tokenizer, default, _scopeStack));
@@ -111,39 +102,30 @@ public partial class Parser
             return;
         }
 
-        onNode(node, new OnNodeContext(_tokenizer, default, _scopeStack));
+        onNode(expr, new OnNodeContext(_tokenizer, default, _scopeStack));
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void InvokeOnNodeIfDeferred(ReadOnlySpan<Node?> nodeList, bool maybeDestructuring)
+    private void InvokeDeferredOnNode(ReadOnlySpan<Expression?> exprList, OnNodeHandler onNode)
     {
-        if (maybeDestructuring && _options._onNode is { } onNode)
+        foreach (var expr in exprList)
         {
-            InvokeDeferredOnNode(nodeList, onNode);
-        }
-    }
-
-    private void InvokeDeferredOnNode(ReadOnlySpan<Node?> nodeList, OnNodeHandler onNode)
-    {
-        foreach (var node in nodeList)
-        {
-            if (node is not null)
+            if (expr is not null)
             {
-                if (node is SpreadElement spreadElement)
+                if (expr is SpreadElement spreadElement)
                 {
                     InvokeDeferredOnNode(spreadElement.Argument, onNode);
                 }
-                else if (node is AssignmentExpression assignmentExpression)
+                else if (expr is AssignmentExpression assignmentExpression)
                 {
                     InvokeDeferredOnNode(assignmentExpression.Right, onNode);
                 }
                 else
                 {
-                    InvokeDeferredOnNode(node, onNode);
+                    InvokeDeferredOnNode(expr, onNode);
                     continue;
                 }
 
-                onNode(node, new OnNodeContext(_tokenizer, default, _scopeStack));
+                onNode(expr, new OnNodeContext(_tokenizer, default, _scopeStack));
             }
         }
     }
