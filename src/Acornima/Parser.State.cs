@@ -23,6 +23,9 @@ public partial class Parser
     private int _potentialArrowAt;
     private int _forInitPosition;
 
+    // Used to distinguish potential statement labels
+    private int _statementStart;
+
     // Positions to delayed-check that yield/await does not exist in default parameters.
     private int _yieldPosition, _awaitPosition, _awaitIdentifierPosition;
 
@@ -98,7 +101,7 @@ public partial class Parser
 
         GetIsReservedWord(_inModule, ecmaVersion, allowReserved, out _isReservedWord, out _isReservedWordBind);
 
-        _potentialArrowAt = -1;
+        _potentialArrowAt = _statementStart = -1;
         _forInitPosition = _yieldPosition = _awaitPosition = _awaitIdentifierPosition = 0;
 
         _labels.Clear();

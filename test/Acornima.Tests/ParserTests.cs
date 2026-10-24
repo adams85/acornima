@@ -1065,6 +1065,10 @@ public partial class ParserTests
     [Arguments("script", "() => { (class { x = () => arguments }) }", EcmaVersion.Latest, "'arguments' is not allowed in class field initializer or static initialization block")]
     [Arguments("script", "() => class { x = () => { arguments } }", EcmaVersion.Latest, "'arguments' is not allowed in class field initializer or static initialization block")]
     [Arguments("script", "() => class { x = function() { arguments } }", EcmaVersion.Latest, null)]
+
+    [Arguments("script", "'use strict'; arguments: 1", EcmaVersion.Latest, null)]
+    [Arguments("script", "class C { x = () => { arguments: 1 } }", EcmaVersion.Latest, null)]
+    [Arguments("script", "class C { static { arguments: for (;;) { break arguments } } }", EcmaVersion.Latest, null)]
     public void ShouldHandleArgumentsEdgeCases(string sourceType, string input, EcmaVersion ecmaVersion, string? expectedError)
     {
         var parser = new Parser(new ParserOptions { EcmaVersion = ecmaVersion });

@@ -2017,7 +2017,7 @@ public partial class Parser
 
     private void CheckUnreserved(Identifier id)
     {
-        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/expression.js > `pp.checkUnreserved = function`
+        // https://github.com/acornjs/acorn/blob/ffadf59c5716832a93cf2ecfb868c0a523bc5623/acorn/src/expression.js > `pp.checkUnreserved = function`
 
         var name = id.Name;
         var nameSpan = name.AsSpan();
@@ -2052,13 +2052,16 @@ public partial class Parser
             }
         }
 
-        if (InClassFieldInit && name == "arguments")
+        if (InClassFieldInit
+            && name == "arguments" && (id.Start != _statementStart || _tokenizer._type != TokenType.Colon))
         {
             // RaiseRecoverable(id.Start, "Cannot use 'arguments' in class field initializer"); // original acornjs error reporting
             Raise(id.Start, ArgumentsDisallowedInInitializerAndStaticBlock);
         }
 
-        if (InClassStaticBlock && (name is "arguments" or "await"))
+        if (InClassStaticBlock
+            && (name == "await"
+                || name == "arguments" && (id.Start != _statementStart || _tokenizer._type != TokenType.Colon)))
         {
             // Raise(id.Start, $"Cannot use {name} in class static initialization block"); // original acornjs error reporting
             if (name == "arguments")

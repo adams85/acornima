@@ -210,11 +210,12 @@ public partial class Parser
     // does not help.
     private Statement ParseStatement(StatementContext context, bool topLevel = false)
     {
-        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseStatement = function`
+        // https://github.com/acornjs/acorn/blob/ffadf59c5716832a93cf2ecfb868c0a523bc5623/acorn/src/statement.js > `pp.parseStatement = function`
 
         EnterRecursion();
 
         var startMarker = StartNode();
+        _statementStart = startMarker.Index;
 
         TokenType startType;
         VariableDeclarationKind kind;
@@ -406,7 +407,7 @@ public partial class Parser
 
     private Statement ParseBreakContinueStatement(in Marker startMarker, TokenType keyword)
     {
-        // https://github.com/acornjs/acorn/blob/8.11.3/acorn/src/statement.js > `pp.parseBreakContinueStatement = function`
+        // https://github.com/acornjs/acorn/blob/ffadf59c5716832a93cf2ecfb868c0a523bc5623/acorn/src/statement.js > `pp.parseBreakContinueStatement = function`
 
         Next();
 
@@ -439,7 +440,9 @@ public partial class Parser
         }
         else if (_tokenizer._type == TokenType.Name)
         {
-            label = ParseIdentifier();
+            // We deviate a bit from the original acornjs implementation here to match the error reporting behavior of V8.
+            label = ParseIdentifier(liberal: "arguments".Equals(_tokenizer._value.Value));
+
             Semicolon();
 
             // Verify that there is an actual destination to break or
