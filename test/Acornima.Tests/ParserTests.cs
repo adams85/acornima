@@ -3348,6 +3348,150 @@ public partial class ParserTests
     }
 
     [Test]
+    [Arguments("script", "a \\u{69}n b;", "Keyword must not contain escaped characters")]
+    [Arguments("module", "a \\u{69}n b;", "Keyword must not contain escaped characters")]
+    [Arguments("script", "a \\u{69}nstanceof b;", "Keyword must not contain escaped characters")]
+    [Arguments("module", "a \\u{69}nstanceof b;", "Keyword must not contain escaped characters")]
+    [Arguments("script",
+        """
+        class C {
+          x = 1
+          \u{69}n
+          y = a
+          \u{69}nstanceof
+          z = 1
+          \u{69}n() {}
+        }
+        """, null)]
+    [Arguments("script",
+        """
+        class C {
+          #x;
+          m(o) {
+            return #x \u{69}n o;
+          }
+        }
+        """, "Unexpected identifier '#x'")]
+    [Arguments("script",
+        """
+        class C {
+          #x;
+          y = #x
+              \u{69}n o
+        }
+        """, "Unexpected identifier '#x'")]
+    [Arguments("script",
+        """
+        class X
+        {
+          #x;
+          m() {
+            for (this.#x in {}) {}
+          }
+        }
+        """, null)]
+    [Arguments("script",
+        """
+        class X
+        {
+          #x;
+          m() {
+            for (this.#x
+                 in {}) {}
+          }
+        }
+        """, null)]
+    [Arguments("script",
+        """
+        class X
+        {
+          #x;
+          m() {
+            for (#x in {}) {}
+          }
+        }
+        """, "Unexpected identifier '#x'")]
+    [Arguments("script",
+        """
+        class X
+        {
+          #x;
+          m() {
+            for (#x
+                 in {}) {}
+          }
+        }
+        """, "Unexpected identifier '#x'")]
+    [Arguments("script",
+        """
+        class X
+        {
+          #x;
+          m() {
+            for (this.#x \u{69}n {}) {}
+          }
+        }
+        """, "Keyword must not contain escaped characters")]
+    [Arguments("script",
+        """
+        class X
+        {
+          #x;
+          m() {
+            for (this.#x
+                 \u{69}n {}) {}
+          }
+        }
+        """, "Keyword must not contain escaped characters")]
+    [Arguments("script",
+        """
+        class X
+        {
+          #x;
+          m() {
+            for (#x \u{69}n {}) {}
+          }
+        }
+        """, "Unexpected identifier '#x'")]
+    [Arguments("script",
+        """
+        class X
+        {
+          #x;
+          m() {
+            for (#x
+                 in {}) {}
+          }
+        }
+        """, "Unexpected identifier '#x'")]
+    [Arguments("script",
+        """
+        class X
+        {
+          #x;
+          m() {
+            for (#x
+                 \u{69}n {}) {}
+          }
+        }
+        """, "Unexpected identifier '#x'")]
+    public void ShouldHandleKeywordEdgeCases(string sourceType, string input, string? expectedError)
+    {
+        var parser = new Parser();
+        var parseAction = GetParseActionFor(sourceType);
+
+        if (expectedError is null)
+        {
+            Assert.NotNull(parseAction(parser, input));
+        }
+        else
+        {
+            var ex = Assert.Throws<SyntaxErrorException>(() => parseAction(parser, input));
+            Assert.Equal(expectedError, ex.Description);
+        }
+    }
+
+    [Test]
     [Arguments("as")]
     [Arguments("do")]
     [Arguments("if")]

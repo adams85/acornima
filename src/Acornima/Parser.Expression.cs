@@ -350,7 +350,9 @@ public partial class Parser
 
         int prec;
         // NOTE: TokenType.Precedence defaults to -1 for non-binary operator tokens.
-        while ((prec = _tokenizer._type.Precedence) > minPrec && ((context & ExpressionContext.ForInit) == 0 || _tokenizer._type != TokenType.In))
+        while ((prec = _tokenizer._type.Precedence) > minPrec
+            && ((context & ExpressionContext.ForInit) == 0 || _tokenizer._type != TokenType.In)
+            && (_tokenizer._type.Keyword is null || !_tokenizer._containsEscape || _tokenizer._lastTokenEndLocation.Line == _tokenizer._startLocation.Line))
         {
             Operator op;
             bool coalesce;
@@ -498,7 +500,7 @@ public partial class Parser
             expr = ParsePrivateIdentifier();
 
             // only could be private fields in 'in', such as #x in obj
-            if (_tokenizer._type != TokenType.In)
+            if (_tokenizer._type != TokenType.In || _tokenizer._containsEscape)
             {
                 // Unexpected(); // original acornjs error reporting
                 Unexpected(expr.Start, TokenType.PrivateId, expr.As<PrivateIdentifier>().Name);
