@@ -9,148 +9,134 @@ public class JsxAstToJsonConverter : AstToJsonConverter, IJsxAstVisitor
 
     object? IJsxAstVisitor.VisitJsxAttribute(JsxAttribute node)
     {
-        using (StartNodeObject(node))
-        {
-            Member("name", node.Name);
-            Member("value", node.Value);
-        }
+        StartNodeObject(node);
+        Member("name", node.Name);
+        Member("value", node.Value);
+        EndNodeObject(node);
 
         return node;
     }
 
     object? IJsxAstVisitor.VisitJsxClosingElement(JsxClosingElement node)
     {
-        using (StartNodeObject(node))
-        {
-            Member("name", node.Name);
-        }
+        StartNodeObject(node);
+        Member("name", node.Name);
+        EndNodeObject(node);
 
         return node;
     }
 
     object? IJsxAstVisitor.VisitJsxClosingFragment(JsxClosingFragment node)
     {
-        using (StartNodeObject(node))
-        {
-        }
+        StartNodeObject(node);
+        EndNodeObject(node);
 
         return node;
     }
 
     object? IJsxAstVisitor.VisitJsxElement(JsxElement node)
     {
-        using (StartNodeObject(node))
-        {
-            Member("openingElement", node.OpeningElement);
-            Member("children", node.Children);
-            Member("closingElement", node.ClosingElement);
-        }
+        StartNodeObject(node);
+        Member("openingElement", node.OpeningElement);
+        Member("children", node.Children);
+        Member("closingElement", node.ClosingElement);
+        EndNodeObject(node);
 
         return node;
     }
 
     object? IJsxAstVisitor.VisitJsxEmptyExpression(JsxEmptyExpression node)
     {
-        using (StartNodeObject(node))
-        {
-        }
+        StartNodeObject(node);
+        EndNodeObject(node);
 
         return node;
     }
 
     object? IJsxAstVisitor.VisitJsxExpressionContainer(JsxExpressionContainer node)
     {
-        using (StartNodeObject(node))
-        {
-            Member("expression", node.Expression);
-        }
+        StartNodeObject(node);
+        Member("expression", node.Expression);
+        EndNodeObject(node);
 
         return node;
     }
 
     object? IJsxAstVisitor.VisitJsxFragment(JsxFragment node)
     {
-        using (StartNodeObject(node))
-        {
-            Member("openingFragment", node.OpeningFragment);
-            Member("children", node.Children);
-            Member("closingFragment", node.ClosingFragment);
-        }
+        StartNodeObject(node);
+        Member("openingFragment", node.OpeningFragment);
+        Member("children", node.Children);
+        Member("closingFragment", node.ClosingFragment);
+        EndNodeObject(node);
 
         return node;
     }
 
     object? IJsxAstVisitor.VisitJsxIdentifier(JsxIdentifier node)
     {
-        using (StartNodeObject(node))
-        {
-            Member("name", node.Name);
-        }
+        StartNodeObject(node);
+        Member("name", node.Name);
+        EndNodeObject(node);
 
         return node;
     }
 
     object? IJsxAstVisitor.VisitJsxMemberExpression(JsxMemberExpression node)
     {
-        using (StartNodeObject(node))
-        {
-            Member("object", node.Object);
-            Member("property", node.Property);
-        }
+        StartNodeObject(node);
+        Member("object", node.Object);
+        Member("property", node.Property);
+        EndNodeObject(node);
 
         return node;
     }
 
     object? IJsxAstVisitor.VisitJsxNamespacedName(JsxNamespacedName node)
     {
-        using (StartNodeObject(node))
-        {
-            Member("namespace", node.Namespace);
-            Member("name", node.Name);
-        }
+        StartNodeObject(node);
+        Member("namespace", node.Namespace);
+        Member("name", node.Name);
+        EndNodeObject(node);
 
         return node;
     }
 
     object? IJsxAstVisitor.VisitJsxOpeningElement(JsxOpeningElement node)
     {
-        using (StartNodeObject(node))
-        {
-            Member("name", node.Name);
-            Member("attributes", node.Attributes);
-            Member("selfClosing", node.SelfClosing);
-        }
+        StartNodeObject(node);
+        Member("name", node.Name);
+        Member("attributes", node.Attributes);
+        Member("selfClosing", node.SelfClosing);
+        EndNodeObject(node);
 
         return node;
     }
 
     object? IJsxAstVisitor.VisitJsxOpeningFragment(JsxOpeningFragment node)
     {
-        using (StartNodeObject(node))
-        {
-            Member("selfClosing", node.SelfClosing);
-        }
+        StartNodeObject(node);
+        Member("selfClosing", node.SelfClosing);
+        EndNodeObject(node);
 
         return node;
     }
 
     object? IJsxAstVisitor.VisitJsxSpreadAttribute(JsxSpreadAttribute node)
     {
-        using (StartNodeObject(node))
-        {
-            Member("argument", node.Argument);
-        }
+        StartNodeObject(node);
+        Member("argument", node.Argument);
+        EndNodeObject(node);
 
         return node;
     }
 
     object? IJsxAstVisitor.VisitJsxText(JsxText node)
     {
-        using (StartNodeObject(node))
-        {
-            Member("value", node.Value);
-            Member("raw", node.Raw);
-        }
+        StartNodeObject(node);
+        Member("value", node.Value);
+        Member("raw", node.Raw);
+        EndNodeObject(node);
 
         return node;
     }
