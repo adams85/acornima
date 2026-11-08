@@ -14,6 +14,8 @@ public class AstToJsonConverter : AstVisitor
     private protected readonly bool _includeRange;
     private protected readonly LocationMembersPlacement _locationMembersPlacement;
 
+    private bool _faulted;
+
     public AstToJsonConverter(JsonWriter writer, AstToJsonOptions options)
     {
         _writer = writer ?? throw new ArgumentNullException(nameof(writer));
@@ -80,6 +82,14 @@ public class AstToJsonConverter : AstVisitor
 
     private void OnEndNodeObject(Node element)
     {
+        // When an exception is propagating, the writer may be in a state (e.g. a member name is pending) where
+        // ending the object would throw a new exception from the finally block of NodeObject.Dispose, hiding the original one.
+        // (When the original exception is an InsufficientExecutionStackException, this would even lead to a stack overflow.)
+        if (_faulted)
+        {
+            return;
+        }
+
         if ((_includeLineColumn || _includeRange)
             && _locationMembersPlacement == LocationMembersPlacement.End)
         {
@@ -205,6 +215,13 @@ public class AstToJsonConverter : AstVisitor
         _writer.EndArray();
     }
 
+    protected override void Reset()
+    {
+        base.Reset();
+
+        _faulted = false;
+    }
+
     public void Convert(Node node)
     {
         if (node is null)
@@ -221,12 +238,26 @@ public class AstToJsonConverter : AstVisitor
     {
         if (node is not null)
         {
-            return base.Visit(node);
+            try
+            {
+                return base.Visit(node);
+            }
+            // Exception filters run before the stack is unwound, so the faulted state is set before any NodeObject.Dispose is executed.
+            catch (Exception) when (MarkFaulted())
+            {
+                throw;
+            }
         }
         else
         {
             _writer.Null();
             return node!;
+        }
+
+        bool MarkFaulted()
+        {
+            _faulted = true;
+            return false;
         }
     }
 
