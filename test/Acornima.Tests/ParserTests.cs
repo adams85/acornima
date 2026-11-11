@@ -3922,4 +3922,44 @@ public partial class ParserTests
             Assert.Equal(expectedError, ex.Description);
         }
     }
+
+    [Test]
+    [Arguments("a: b: for (;;) { continue a; }", true)]
+    [Arguments("a: b: for (;;) { continue b; }", true)]
+    [Arguments("a: b: c: for (;;) { continue a; }", true)]
+    [Arguments("a: b: c: for (;;) { continue b; }", true)]
+    [Arguments("a: b: c: for (;;) { continue c; }", true)]
+    [Arguments("a: b: c: for (;;) { break a; }", true)]
+    [Arguments("a: b: c: for (;;) { break b; }", true)]
+    [Arguments("a: b: c: for (;;) { break c; }", true)]
+    [Arguments("a: b: c: d: for (;;) { continue a; }", true)]
+    [Arguments("a: b: c: d: for (;;) { continue b; }", true)]
+    [Arguments("a: b: c: d: for (;;) { continue c; }", true)]
+    [Arguments("a: b: c: d: for (;;) { continue d; }", true)]
+    [Arguments("a: b: c: d: for (;;) { break a; }", true)]
+    [Arguments("a: b: c: d: for (;;) { break d; }", true)]
+    [Arguments("a: b: c: while (true) { continue a; }", true)]
+    [Arguments("a: b: c: do { continue a; } while (true)", true)]
+    [Arguments("a: b: c: for (x in y) { continue a; }", true)]
+    [Arguments("a: { b: c: for (;;) { continue b; } }", true)]
+    [Arguments("a: { b: c: for (;;) { continue c; } }", true)]
+    [Arguments("a: { b: for (;;) { continue a; } }", false)]
+    [Arguments("a: { b: c: for (;;) { continue a; } }", false)]
+    [Arguments("a: b: { c: for (;;) { continue a; } }", false)]
+    [Arguments("a: b: c: { for (;;) { continue a; } }", false)]
+    [Arguments("a: b: c: { break a; }", true)]
+    [Arguments("a: b: c: if (x) { continue a; }", false)]
+    public void ShouldValidateContinueAgainstStackedLabels(string input, bool valid)
+    {
+        var parser = new Parser();
+
+        if (valid)
+        {
+            Assert.NotNull(parser.ParseScript(input));
+        }
+        else
+        {
+            Assert.Throws<SyntaxErrorException>(() => parser.ParseScript(input));
+        }
+    }
 }
