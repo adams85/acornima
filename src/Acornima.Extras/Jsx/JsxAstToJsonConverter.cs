@@ -28,8 +28,7 @@ public class JsxAstToJsonConverter : AstToJsonConverter, IJsxAstVisitor
 
     object? IJsxAstVisitor.VisitJsxClosingFragment(JsxClosingFragment node)
     {
-        StartNodeObject(node);
-        EndNodeObject(node);
+        EmptyNodeObject(node);
 
         return node;
     }
@@ -47,8 +46,7 @@ public class JsxAstToJsonConverter : AstToJsonConverter, IJsxAstVisitor
 
     object? IJsxAstVisitor.VisitJsxEmptyExpression(JsxEmptyExpression node)
     {
-        StartNodeObject(node);
-        EndNodeObject(node);
+        EmptyNodeObject(node);
 
         return node;
     }

@@ -89,6 +89,7 @@ public class AstToJsonConverter : AstVisitor
         _writer.EndObject();
     }
 
+    [Obsolete("This type is deprecated as it may lead to unsafe code and will therefore be removed from the public API in a future major version.")]
     protected readonly struct NodeObject : IDisposable
     {
         private readonly AstToJsonConverter _converter;
@@ -106,16 +107,24 @@ public class AstToJsonConverter : AstVisitor
         }
     }
 
-    // NOTE: Prefer calling StartNodeObject and EndNodeObject directly over the `using (StartNodeObject(node)) { ... }` pattern.
-    // When an exception is thrown while writing the members, the `using` pattern ends the object in a finally block,
-    // which throws a new exception if a member name is pending, hiding the original one (or, when the original exception is
-    // an InsufficientExecutionStackException, leading to a stack overflow). See also https://github.com/adams85/acornima/issues/55.
+    /// <remarks>
+    /// <para>
+    /// Prefer calling <see cref="StartNodeObject"/> and <see cref="EndNodeObject(Node)"/> directly over the
+    /// <c>using (StartNodeObject(node)) { ... }</c> pattern, which, in extreme cases, may lead to a <see cref="StackOverflowException"/>
+    /// that terminates the process. (See also: https://github.com/adams85/acornima/issues/55)
+    /// </para>
+    /// <para>
+    /// The return type of this method will be changed to <see langword="void" /> in a future major version.
+    /// </para>
+    /// </remarks>
+#pragma warning disable CS0618 // Type or member is obsolete
     protected NodeObject StartNodeObject(Node node)
     {
         OnStartNodeObject(node);
         Member("type", node.TypeText);
         return new NodeObject(this, node);
     }
+#pragma warning restore CS0618 // Type or member is obsolete
 
     protected void EndNodeObject(Node node)
     {
@@ -433,6 +442,7 @@ public class AstToJsonConverter : AstVisitor
     protected internal override object? VisitDebuggerStatement(DebuggerStatement node)
     {
         EmptyNodeObject(node);
+
         return node;
     }
 
@@ -458,6 +468,7 @@ public class AstToJsonConverter : AstVisitor
     protected internal override object? VisitEmptyStatement(EmptyStatement node)
     {
         EmptyNodeObject(node);
+
         return node;
     }
 
@@ -516,7 +527,6 @@ public class AstToJsonConverter : AstVisitor
         {
             Member("directive", directive.Value);
         }
-
         Member("expression", node.Expression);
         EndNodeObject(node);
 
@@ -841,7 +851,6 @@ public class AstToJsonConverter : AstVisitor
         StartNodeObject(node);
         Member("body", node.Body);
         Member("sourceType", node.SourceType);
-
         if (node is Script script)
         {
             Member("strict", script.Strict);
@@ -930,6 +939,7 @@ public class AstToJsonConverter : AstVisitor
     protected internal override object? VisitSuper(Super node)
     {
         EmptyNodeObject(node);
+
         return node;
     }
 
@@ -990,6 +1000,7 @@ public class AstToJsonConverter : AstVisitor
     protected internal override object? VisitThisExpression(ThisExpression node)
     {
         EmptyNodeObject(node);
+
         return node;
     }
 
