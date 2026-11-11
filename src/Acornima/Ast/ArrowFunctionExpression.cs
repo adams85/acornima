@@ -33,7 +33,7 @@ public sealed partial class ArrowFunctionExpression : Expression, IFunction
     /// </remarks>
     public StatementOrExpression Body { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     bool IFunction.Generator => false;
-    [Obsolete("This property is deprecated in the ESTree specification and therefore will be removed from the public API in a future major version.")]
+    [Obsolete("This property is deprecated in the ESTree specification and will therefore be removed from the public API in a future major version.")]
     public bool Expression { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
     public bool Async { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
