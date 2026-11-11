@@ -1071,7 +1071,7 @@ public partial class Parser
             if (label.StatementStart == startMarker.Index)
             {
                 // Update information about previous labels on this node
-                label.StatementStart = startMarker.Index;
+                label.StatementStart = _tokenizer._start;
                 label.Kind = kind;
             }
             else
