@@ -12,6 +12,8 @@ on:
 env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
+  BUILD_SDK_VER: "10.0.x"
+  BUILD_SDK_MIN_VER: "10.0.100"
   MAIN_TFM: "net10.0"
 
 jobs:
@@ -19,54 +21,55 @@ jobs:
     strategy:
       matrix:
         dotnet-version: [
-          {rt: "4.6.2", tfm: net462},
-          {rt: "4.8.1", tfm: net481},
+          {sdk: "4.6.2", tfm: net462},
+          {sdk: "4.8.1", tfm: net481},
         ]
-    name: Build & test on .NET ${{ matrix.dotnet-version.rt }}
+    name: Build & test on .NET ${{ matrix.dotnet-version.sdk }}
     runs-on: windows-latest
     steps:
       - uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: 10.0.x
+          dotnet-version: ${{ env.BUILD_SDK_VER }}
 
       - uses: actions/checkout@v7
 
       - name: Build core test project
         run: |
-          dotnet build test/Acornima.Tests/Acornima.Tests.csproj -c Release -f ${{ matrix.dotnet-version.tfm }} /p:EnableCITargets=true
+          dotnet build test/Acornima.Tests/Acornima.Tests.csproj -c Release -f ${{ matrix.dotnet-version.tfm }} /p:CITargetFramework=${{ matrix.dotnet-version.tfm }}
 
       - name: Run core tests
         run: |
-          dotnet test --project test/Acornima.Tests/Acornima.Tests.csproj -c Release -f ${{ matrix.dotnet-version.tfm }} --no-build /p:EnableCITargets=true
+          dotnet test --project test/Acornima.Tests/Acornima.Tests.csproj -c Release -f ${{ matrix.dotnet-version.tfm }} --no-build /p:CITargetFramework=${{ matrix.dotnet-version.tfm }}
 
   build-and-test-netcore:
     strategy:
       matrix:
         dotnet-version: [
-          {rt: "2.1.x", sdk: "2.1.100", tfm: netcoreapp2.1}, # for testing the netstandard2.0 build
-          {rt: "3.1.x", sdk: "3.1.100", tfm: netcoreapp3.1}, # for testing the netstandard2.1 build
-          {rt: "8.0.x", sdk: "8.0.100", tfm: net8.0},
-          {rt: "9.0.x", sdk: "9.0.100", tfm: net9.0},
-          {rt: "10.0.x", sdk: "10.0.100", tfm: net10.0}
+          {sdk: "2.1.x", tfm: netcoreapp2.1}, # for testing the netstandard2.0 build
+          {sdk: "3.1.x", tfm: netcoreapp3.1}, # for testing the netstandard2.1 build
+          {sdk: "8.0.x", tfm: net8.0},
+          {sdk: "9.0.x", tfm: net9.0},
+          {sdk: "10.0.x", tfm: net10.0},
+          {sdk: "11.0.x", tfm: net11.0}
         ]
         os: [ubuntu-latest, windows-latest, macOS-latest]
         exclude:
-          - dotnet-version: {rt: "2.1.x", sdk: "2.1.100", tfm: netcoreapp2.1}
+          - dotnet-version: {sdk: "2.1.x", tfm: netcoreapp2.1}
             os: ubuntu-latest
-          - dotnet-version: {rt: "2.1.x", sdk: "2.1.100", tfm: netcoreapp2.1}
+          - dotnet-version: {sdk: "2.1.x", tfm: netcoreapp2.1}
             os: macOS-latest
-          - dotnet-version: {rt: "3.1.x", sdk: "3.1.100", tfm: netcoreapp3.1}
+          - dotnet-version: {sdk: "3.1.x", tfm: netcoreapp3.1}
             os: ubuntu-latest
-          - dotnet-version: {rt: "3.1.x", sdk: "3.1.100", tfm: netcoreapp3.1}
+          - dotnet-version: {sdk: "3.1.x", tfm: netcoreapp3.1}
             os: macOS-latest
-    name: Build & test on .NET ${{ matrix.dotnet-version.rt }} (${{ matrix.os }})
+    name: Build & test on .NET ${{ matrix.dotnet-version.sdk }} (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: |
-            10.0.x
-            ${{ matrix.dotnet-version.rt }}
+            ${{ env.BUILD_SDK_VER }}
+            ${{ matrix.dotnet-version.sdk }}
 
       - uses: actions/checkout@v7
 
@@ -77,10 +80,14 @@ jobs:
           path: test/Acornima.Tests.Test262/Generated
           key: test262-generated-${{ hashFiles('test/Acornima.Tests.Test262/Test262Harness.settings.json') }}
 
+      - name: Set roll-forward to latestMajor
+        run: |
+          dotnet new global.json --sdk-version ${{ env.BUILD_SDK_MIN_VER }} --roll-forward latestMajor --test-runner Microsoft.Testing.Platform --force
+
       - name: Build core test project
         if: matrix.dotnet-version.tfm != env.MAIN_TFM
         run: |
-          dotnet build test/Acornima.Tests/Acornima.Tests.csproj -c Release -f ${{ matrix.dotnet-version.tfm }} /p:EnableCITargets=true
+          dotnet build test/Acornima.Tests/Acornima.Tests.csproj -c Release -f ${{ matrix.dotnet-version.tfm }} /p:CITargetFramework=${{ matrix.dotnet-version.tfm }}
 
       - name: Build solution
         if: matrix.dotnet-version.tfm == env.MAIN_TFM
@@ -90,17 +97,49 @@ jobs:
       - name: Run core tests
         if: matrix.dotnet-version.tfm != env.MAIN_TFM
         run: |
-          dotnet test --project test/Acornima.Tests/Acornima.Tests.csproj -c Release -f ${{ matrix.dotnet-version.tfm }} --no-build /p:EnableCITargets=true
+          dotnet test --project test/Acornima.Tests/Acornima.Tests.csproj -c Release -f ${{ matrix.dotnet-version.tfm }} --no-build /p:CITargetFramework=${{ matrix.dotnet-version.tfm }}
 
       - name: Run all tests
         if: matrix.dotnet-version.tfm == env.MAIN_TFM
         run: |
           dotnet test --solution Acornima.slnx -c Release -f ${{ matrix.dotnet-version.tfm }} --no-build
 
+  build-and-test-nativeaot:
+    strategy:
+      matrix:
+        dotnet-version: [
+          {sdk: "10.0.x", tfm: net10.0},
+          {sdk: "11.0.x", tfm: net11.0},
+        ]
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+    name: Build & test on .NET NativeAOT ${{ matrix.dotnet-version.sdk }} (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: |
+            ${{ env.BUILD_SDK_VER }}
+            ${{ matrix.dotnet-version.sdk }}
+
+      - uses: actions/checkout@v7
+
+      - name: Set roll-forward to latestMajor
+        run: |
+          dotnet new global.json --sdk-version ${{ env.BUILD_SDK_MIN_VER }} --roll-forward latestMajor --test-runner Microsoft.Testing.Platform --force
+
+      - name: Publish test project
+        run: |
+          dotnet publish test/Acornima.Tests.NativeAOT/Acornima.Tests.NativeAOT.csproj -c Release -f ${{ matrix.dotnet-version.tfm }} -o artifacts/publish /p:CITargetFramework=${{ matrix.dotnet-version.tfm }}
+
+      - name: Run tests
+        run: |
+          artifacts/publish/Acornima.Tests.NativeAOT
+
   publish:
     needs: [
       build-and-test-netfw,
-      build-and-test-netcore
+      build-and-test-netcore,
+      build-and-test-nativeaot
     ]
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
@@ -109,7 +148,7 @@ jobs:
     steps:
     - uses: actions/setup-dotnet@v6
       with:
-        dotnet-version: 10.0.x
+        dotnet-version: ${{ env.BUILD_SDK_VER }}
 
     - uses: actions/checkout@v7
 

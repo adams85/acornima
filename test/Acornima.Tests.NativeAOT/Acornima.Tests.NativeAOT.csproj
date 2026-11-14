@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net10.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(CITargetFramework)' != ''">$(CITargetFramework)</TargetFrameworks>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\..\src\Karambolo.Public.snk</AssemblyOriginatorKeyFile>
+    <TrimmerSingleWarn>false</TrimmerSingleWarn>
+    <PublishAot>true</PublishAot>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Remove="GitHubActionsTestLogger" />
+    <PackageReference Remove="xunit.analyzers" />
+    <PackageReference Remove="xunit.v3.assert" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Acornima.Extras\Acornima.Extras.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\test\Acornima.Tests\Fixtures.Parser\3rdparty\zod-4.6.7.module.js" CopyToOutputDirectory="PreserveNewest" Link="Data\%(Filename)%(Extension)" />
+    <None Include="..\..\test\Acornima.Tests\Fixtures.Parser\JSX\full-syntax.module.js" CopyToOutputDirectory="PreserveNewest" Link="Data\%(Filename)%(Extension)x" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="TUnit.Assertions" />
+  </ItemGroup>
+
+</Project>
