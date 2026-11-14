@@ -133,7 +133,7 @@ internal sealed class JsonTextWriter : JsonWriter
         if (double.IsNaN(n) || double.IsInfinity(n))
             throw new ArgumentOutOfRangeException(nameof(n), n, null);
 
-        Write(n.ToString(CultureInfo.InvariantCulture), TokenKind.Scalar);
+        Write(n.ToString("G17", CultureInfo.InvariantCulture), TokenKind.Scalar);
     }
 
     private bool Pretty => _indent.Length > 0;
