@@ -49,7 +49,7 @@ public sealed class ParseCommand
     // TODO: more options
 
     [Argument(0, Description = "The JS code to parse. If omitted, the code will be read from the standard input.")]
-    public string? Code { get; }
+    public string? Code { get; set; }
 
     private T CreateParserOptions<T>() where T : ParserOptions, new() => new T
     {

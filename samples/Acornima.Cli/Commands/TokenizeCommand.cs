@@ -47,7 +47,7 @@ public sealed class TokenizeCommand
     // TODO: more options
 
     [Argument(0, Description = "The JS code to tokenize. If omitted, the code will be read from the standard input.")]
-    public string? Code { get; }
+    public string? Code { get; set; }
 
     private T CreateTokenizerOptions<T>(OnCommentHandler? commentHandler) where T : TokenizerOptions, new() => new T
     {
