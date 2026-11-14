@@ -744,12 +744,12 @@ public partial class Parser
             if (isAsync)
             {
                 // Unexpected(); // original acornjs error reporting
-                Raise(_tokenizer._start, AsyncFunctionInSingleStatementContext);
+                Raise(startMarker.Index, AsyncFunctionInSingleStatementContext);
             }
             else if (_strict)
             {
                 // Unexpected(); // original acornjs error reporting
-                Raise(_tokenizer._start, StrictFunction);
+                Raise(startMarker.Index, StrictFunction);
             }
             else if (_tokenizerOptions._ecmaVersion >= EcmaVersion.ES6
                 && context is not (StatementContext.If or StatementContext.Label))
@@ -759,7 +759,7 @@ public partial class Parser
                 // body of an if statement.
 
                 // Unexpected(); // original acornjs error reporting
-                Raise(_tokenizer._start, SloppyFunction);
+                Raise(startMarker.Index, SloppyFunction);
             }
 
             // Per the ES5 specification, function declarations are not allowed as the
