@@ -89,42 +89,11 @@ public class AstToJsonConverter : AstVisitor
         _writer.EndObject();
     }
 
-    [Obsolete("This type is deprecated as it may lead to unsafe code and will therefore be removed from the public API in a future major version.")]
-    protected readonly struct NodeObject : IDisposable
-    {
-        private readonly AstToJsonConverter _converter;
-        private readonly Node _node;
-
-        public NodeObject(AstToJsonConverter converter, Node node)
-        {
-            _converter = converter;
-            _node = node;
-        }
-
-        public void Dispose()
-        {
-            _converter.OnEndNodeObject(_node);
-        }
-    }
-
-    /// <remarks>
-    /// <para>
-    /// Prefer calling <see cref="StartNodeObject"/> and <see cref="EndNodeObject(Node)"/> directly over the
-    /// <c>using (StartNodeObject(node)) { ... }</c> pattern, which, in extreme cases, may lead to a <see cref="StackOverflowException"/>
-    /// that terminates the process. (See also: https://github.com/adams85/acornima/issues/55)
-    /// </para>
-    /// <para>
-    /// The return type of this method will be changed to <see langword="void" /> in a future major version.
-    /// </para>
-    /// </remarks>
-#pragma warning disable CS0618 // Type or member is obsolete
-    protected NodeObject StartNodeObject(Node node)
+    protected void StartNodeObject(Node node)
     {
         OnStartNodeObject(node);
         Member("type", node.TypeText);
-        return new NodeObject(this, node);
     }
-#pragma warning restore CS0618 // Type or member is obsolete
 
     protected void EndNodeObject(Node node)
     {
